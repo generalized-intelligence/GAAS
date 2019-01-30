@@ -17,6 +17,10 @@
 
 >当前版本的 GAAS 包含 SLAM、避障路径规划、飞行控制模块；用于支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
 
+![UAV demo](https://s2.ax1x.com/2019/01/30/klODfS.jpg)
+
+An example of hardware
+
 
 ## Setup
 
