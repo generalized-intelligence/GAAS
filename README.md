@@ -22,26 +22,21 @@
 
 NOTE: Tested in ubuntu 16.04 and ros-kinetic
 
-1. Install ROS-Kinetic
+### 1. Install ROS-Kinetic
 
     We recommend installing ros-kinetic-desktop-full from the following address:
     http://wiki.ros.org/kinetic/Installation/Ubuntu
 
-2. Install Octomap-Server and mavros
+### 2. Install Octomap-Server and mavros
 
     cd ~/catkin_ws/src
-    
     git clone https://github.com/OctoMap/octomap_mapping.git
-    
     git clone https://github.com/mavlink/mavros.git
-    
     cd ..
-    
     catkin build
-    
     source ~/catkin_ws/devel/setup.bash
 
-3. Gazebo
+### 3. Gazebo
 
     If you followed step 1 and has installed ros-kinetic-desktop-full, you should already have gazebo7 installed. Now install the corresponding ros plugin:
     
@@ -51,39 +46,33 @@ NOTE: Tested in ubuntu 16.04 and ros-kinetic
     
     sudo apt install ros-kinetic-<your gazebo version>-*
 
-4. PCL
+### 4. PCL
 
     Install at the following address:
     
     http://www.pointclouds.org/documentation/tutorials/compiling_pcl_posix.php
 
-5. YGZ-slam
+### 5. YGZ-slam
 
-    Install at the following address:
-    
-    https://github.com/gaoxiang12/ygz-stereo-inertial
+    Detailed information can be found in the folder
 
-6. PX4
+### 6. PX4
 
     NOTE: Tested on px4 v1.8.0
     
     mkdir ~/px4 && cd ~/px4
-    
     git clone https://github.com/PX4/Firmware.git
-    
     cd Firmware
-    
     git checkout v1.8.0
-
 
 
 NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。
 
-1.安装 ROS-Kinetic
+### 1.安装 ROS-Kinetic
 
     建议安装 ros-kinetic-desktop-full; 可按照此地址进行安装：http://wiki.ros.org/kinetic/Installation/Ubuntu.
 
-2.安装 Octomap-Server 以及 mavros
+### 2.安装 Octomap-Server 以及 mavros
 
     cd ~/catkin_ws/src
     git clone https://github.com/OctoMap/octomap_mapping.git
@@ -92,7 +81,7 @@ NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。
     catkin build
     source ~/catkin_ws/devel/setup.bash
 
-3. Gazebo
+### 3. Gazebo
 
 如果您在第一步安装了 ros-kinetic-desktop-full, 您已经具有了 gazebo7；, 接下来请安装对应 ros plugin:
 
