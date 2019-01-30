@@ -38,11 +38,11 @@ NOTE: Tested in ubuntu 16.04 and ros-kinetic
 
 ### 3. Gazebo
 
-    If you followed step 1 and has installed ros-kinetic-desktop-full, you should already have gazebo7 installed. Now install the corresponding ros plugin:
+If you followed step 1 and has installed ros-kinetic-desktop-full, you should already have gazebo7 installed. Now install the corresponding ros plugin:
     
     sudo apt install ros-kinetic-gazebo-*
     
-    If you would like to use another version of Gazebo, please see http://gazebosim.org/ for different versions of the plugin:
+If you would like to use another version of Gazebo, please see http://gazebosim.org/ for different versions of the plugin:
     
     sudo apt install ros-kinetic-<your gazebo version>-*
 
