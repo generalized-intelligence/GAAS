@@ -1,0 +1,1378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1008</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout_7">
+    <item row="0" column="0">
+     <layout class="QHBoxLayout" name="horizontalLayout_main_controls">
+      <item>
+       <widget class="QToolButton" name="toolButton_1">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the unprocessed input data (Shortcut: 1).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Input</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="toolButton_2">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the processed input data (Shortcut: 2).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Processed</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="toolButton_3">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Continuous registration (Shortcut: 3).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Continuous registration</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="toolButton_4">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Registers new data once and returns to showing the processed input data (Shortcut: 4).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Single registration</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="toolButton_5">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Shows the acquired model (Shortcut: 5).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Show model</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QToolButton" name="toolButton_6">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Removes all unfit points (Shortcut: 6)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Clean</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_main_controls">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QToolButton" name="toolButton_0">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reset the scanning pipeline (Shortcut: 0).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Reset</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="1" column="0">
+     <widget class="QWidget" name="placeholder_in_hand_scanner" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>324</width>
+     <height>228</height>
+    </size>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Settings</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QToolBox" name="toolBox">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string/>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="page_input_data_processing">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>300</width>
+          <height>408</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Input data processing</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QGroupBox" name="groupBox_crop_xyz">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="title">
+            <string>Crop coordinates</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="1" column="3">
+             <widget class="QSpinBox" name="spinBox_y_max">
+              <property name="minimum">
+               <number>-100</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_z_min">
+              <property name="text">
+               <string>z min</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_z_min</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QSpinBox" name="spinBox_x_max">
+              <property name="minimum">
+               <number>-100</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="spinBox_y_min">
+              <property name="minimum">
+               <number>-100</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_x_min">
+              <property name="text">
+               <string>x min</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_x_min</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QSpinBox" name="spinBox_z_max">
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>1000</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="spinBox_x_min">
+              <property name="minimum">
+               <number>-100</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QLabel" name="label_xyz_erode_size">
+              <property name="text">
+               <string>Erode size</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_xyz_erode_size</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_y_min">
+              <property name="text">
+               <string>y min</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_y_min</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_x_max">
+              <property name="text">
+               <string>x max</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_x_max</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QSpinBox" name="spinBox_z_min">
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>1000</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QLabel" name="label_y_max">
+              <property name="text">
+               <string>y max</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_y_max</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QLabel" name="label_z_max">
+              <property name="text">
+               <string>z max</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_z_max</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2" colspan="2">
+             <widget class="QSpinBox" name="spinBox_xyz_erode_size">
+              <property name="maximum">
+               <number>50</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_segment_hsv">
+           <property name="toolTip">
+            <string/>
+           </property>
+           <property name="title">
+            <string>Color segmentation</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout">
+            <item row="0" column="3">
+             <widget class="QSpinBox" name="spinBox_h_max">
+              <property name="maximum">
+               <number>360</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QLabel" name="label_s_max">
+              <property name="text">
+               <string>S max</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_s_max</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="spinBox_s_min">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_h_min">
+              <property name="text">
+               <string>H min</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_h_min</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="label_h_max">
+              <property name="text">
+               <string>H max</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_h_max</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_s_min">
+              <property name="text">
+               <string>S min</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_s_min</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QSpinBox" name="spinBox_v_min">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_v_min">
+              <property name="text">
+               <string>V min</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_v_min</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <widget class="QSpinBox" name="spinBox_v_max">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="spinBox_h_min">
+              <property name="maximum">
+               <number>360</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QLabel" name="label_v_max">
+              <property name="text">
+               <string>V max</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_v_max</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QSpinBox" name="spinBox_s_max">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0" colspan="2">
+             <widget class="QLabel" name="label_hsv_dilate_size">
+              <property name="text">
+               <string>Dilate size</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_hsv_dilate_size</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2" colspan="2">
+             <widget class="QSpinBox" name="spinBox_hsv_dilate_size">
+              <property name="maximum">
+               <number>50</number>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0" colspan="2">
+             <widget class="QCheckBox" name="checkBox_color_segmentation_inverted">
+              <property name="text">
+               <string>Inverted</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="2">
+             <widget class="QCheckBox" name="checkBox_color_segmentation_enabled">
+              <property name="text">
+               <string>Enabled</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+           <zorder>spinBox_h_min</zorder>
+           <zorder>label_s_min</zorder>
+           <zorder>spinBox_v_min</zorder>
+           <zorder>spinBox_v_max</zorder>
+           <zorder>label_s_max</zorder>
+           <zorder>label_v_max</zorder>
+           <zorder>spinBox_h_max</zorder>
+           <zorder>label_h_min</zorder>
+           <zorder>label_h_max</zorder>
+           <zorder>label_v_min</zorder>
+           <zorder>spinBox_s_max</zorder>
+           <zorder>spinBox_s_min</zorder>
+           <zorder>checkBox_color_segmentation_inverted</zorder>
+           <zorder>label_hsv_dilate_size</zorder>
+           <zorder>spinBox_hsv_dilate_size</zorder>
+           <zorder>checkBox_color_segmentation_enabled</zorder>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_input_data_processing">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="page_registration">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>300</width>
+          <height>401</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Registration</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QGroupBox" name="groupBox_convergence">
+           <property name="title">
+            <string>Convergence and failure criteria</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_epsilon">
+              <property name="text">
+               <string>Epsilon</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_max_iterations">
+              <property name="text">
+               <string>Max iterations</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_max_iterations</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_min_overlap">
+              <property name="text">
+               <string>Min overlap</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_min_overlap</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_max_fitness">
+              <property name="text">
+               <string>Max fitness</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="spinBox_max_iterations">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>500</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QSpinBox" name="spinBox_min_overlap">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineEdit_epsilon"/>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="lineEdit_max_fitness"/>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_correspondence_rejection">
+           <property name="title">
+            <string>Correspondence rejection</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_correspondence_rejection_factor">
+              <property name="text">
+               <string>Factor</string>
+              </property>
+              <property name="buddy">
+               <cstring>doubleSpinBox_correspondence_rejection_factor</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QDoubleSpinBox" name="doubleSpinBox_correspondence_rejection_factor">
+              <property name="minimum">
+               <double>1.000000000000000</double>
+              </property>
+              <property name="maximum">
+               <double>100.000000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_correspondence_rejection_max_angle">
+              <property name="text">
+               <string>Max angle</string>
+              </property>
+              <property name="buddy">
+               <cstring>spinBox_correspondence_rejection_max_angle</cstring>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="spinBox_correspondence_rejection_max_angle">
+              <property name="maximum">
+               <number>180</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_registration">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="page_integration">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>300</width>
+          <height>401</height>
+         </rect>
+        </property>
+        <attribute name="label">
+         <string>Integration</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QGroupBox" name="groupBox_averaging">
+           <property name="title">
+            <string>Averaging</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_max_squared_distance">
+              <property name="text">
+               <string>Max squared distance</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineEdit_max_squared_distance"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_averaging_max_angle">
+              <property name="text">
+               <string>Max angle</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="spinBox_averaging_max_angle">
+              <property name="maximum">
+               <number>180</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBox_outlier_removal">
+           <property name="title">
+            <string>Outlier removal</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_6">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_max_age">
+              <property name="text">
+               <string>Max age</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QSpinBox" name="spinBox_max_age">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_min_directions">
+              <property name="text">
+               <string>Min directions</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QSpinBox" name="spinBox_min_directions">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_integration">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionReset_camera"/>
+   <addaction name="actionToggle_coloring"/>
+   <addaction name="actionMesh_representation"/>
+   <addaction name="actionHelp"/>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1008</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionSaveAs"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <action name="actionHelp">
+   <property name="text">
+    <string>Help</string>
+   </property>
+  </action>
+  <action name="actionReset_camera">
+   <property name="text">
+    <string>Reset camera</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reset the camera (Shortcut: c)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionToggle_coloring">
+   <property name="text">
+    <string>Coloring</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle the coloring (Shortcut: k):&lt;/p&gt;&lt;p&gt;- RGB&lt;/p&gt;&lt;p&gt;- One color&lt;/p&gt;&lt;p&gt;- Visibility-confidence&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionMesh_representation">
+   <property name="text">
+    <string>Mesh representation</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle the display of the mesh (Shortcut: s):&lt;/p&gt;&lt;p&gt;- Points&lt;/p&gt;&lt;p&gt;- Wireframe&lt;/p&gt;&lt;p&gt;- Closed surface&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </action>
+  <action name="actionSaveAs">
+   <property name="text">
+    <string>Save As ...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>toolButton_1</tabstop>
+  <tabstop>toolButton_2</tabstop>
+  <tabstop>toolButton_3</tabstop>
+  <tabstop>toolButton_4</tabstop>
+  <tabstop>toolButton_5</tabstop>
+  <tabstop>toolButton_0</tabstop>
+  <tabstop>spinBox_x_min</tabstop>
+  <tabstop>spinBox_x_max</tabstop>
+  <tabstop>spinBox_y_min</tabstop>
+  <tabstop>spinBox_y_max</tabstop>
+  <tabstop>spinBox_z_min</tabstop>
+  <tabstop>spinBox_z_max</tabstop>
+  <tabstop>spinBox_xyz_erode_size</tabstop>
+  <tabstop>spinBox_h_min</tabstop>
+  <tabstop>spinBox_h_max</tabstop>
+  <tabstop>spinBox_s_min</tabstop>
+  <tabstop>spinBox_s_max</tabstop>
+  <tabstop>spinBox_v_min</tabstop>
+  <tabstop>spinBox_v_max</tabstop>
+  <tabstop>spinBox_hsv_dilate_size</tabstop>
+  <tabstop>checkBox_color_segmentation_inverted</tabstop>
+  <tabstop>checkBox_color_segmentation_enabled</tabstop>
+  <tabstop>lineEdit_epsilon</tabstop>
+  <tabstop>spinBox_max_iterations</tabstop>
+  <tabstop>spinBox_min_overlap</tabstop>
+  <tabstop>lineEdit_max_fitness</tabstop>
+  <tabstop>doubleSpinBox_correspondence_rejection_factor</tabstop>
+  <tabstop>spinBox_correspondence_rejection_max_angle</tabstop>
+  <tabstop>lineEdit_max_squared_distance</tabstop>
+  <tabstop>spinBox_averaging_max_angle</tabstop>
+  <tabstop>spinBox_max_age</tabstop>
+  <tabstop>spinBox_min_directions</tabstop>
+ </tabstops>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>spinBox_x_min</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setXMin(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>840</x>
+     <y>129</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>565</x>
+     <y>106</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_x_max</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setXMax(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>924</x>
+     <y>123</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>665</x>
+     <y>120</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_y_min</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setYMin(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>800</x>
+     <y>154</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>570</x>
+     <y>144</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_y_max</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setYMax(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>908</x>
+     <y>158</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>669</x>
+     <y>156</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_z_min</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setZMin(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>821</x>
+     <y>189</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>574</x>
+     <y>176</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_z_max</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setZMax(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>930</x>
+     <y>189</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>671</x>
+     <y>191</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_h_min</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setHMin(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>817</x>
+     <y>308</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>564</x>
+     <y>284</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_h_max</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setHMax(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>960</x>
+     <y>308</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>662</x>
+     <y>295</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_s_min</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setSMin(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>817</x>
+     <y>343</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>565</x>
+     <y>320</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_s_max</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setSMax(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>960</x>
+     <y>343</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>664</x>
+     <y>332</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_v_min</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setVMin(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>817</x>
+     <y>378</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>569</x>
+     <y>355</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_v_max</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setVMax(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>960</x>
+     <y>378</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>666</x>
+     <y>368</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_color_segmentation_inverted</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setColorSegmentationInverted(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>834</x>
+     <y>440</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>669</x>
+     <y>432</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_xyz_erode_size</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setXYZErodeSize(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>875</x>
+     <y>225</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>666</x>
+     <y>225</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_hsv_dilate_size</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setHSVDilateSize(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>880</x>
+     <y>397</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>668</x>
+     <y>398</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEdit_epsilon</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setEpsilon()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>921</x>
+     <y>160</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>675</x>
+     <y>145</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_max_iterations</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setMaxIterations(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>921</x>
+     <y>195</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>677</x>
+     <y>184</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_min_overlap</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setMinOverlap(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>921</x>
+     <y>230</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>676</x>
+     <y>220</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEdit_max_fitness</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setMaxFitness()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>921</x>
+     <y>262</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>677</x>
+     <y>257</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_correspondence_rejection_factor</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setCorrespondenceRejectionFactor(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>949</x>
+     <y>336</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>676</x>
+     <y>315</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_correspondence_rejection_max_angle</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setCorrespondenceRejectionMaxAngle(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>949</x>
+     <y>371</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>678</x>
+     <y>358</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEdit_max_squared_distance</sender>
+   <signal>editingFinished()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setMaxSquaredDistance()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>968</x>
+     <y>194</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>679</x>
+     <y>186</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_averaging_max_angle</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setAveragingMaxAngle(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>968</x>
+     <y>229</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>679</x>
+     <y>221</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_max_age</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setMaxAge(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>949</x>
+     <y>303</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>678</x>
+     <y>285</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>spinBox_min_directions</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setMinDirections(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>949</x>
+     <y>338</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>677</x>
+     <y>325</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_color_segmentation_enabled</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>setColorSegmentationEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>882</x>
+     <y>436</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>674</x>
+     <y>475</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>setXMin(int)</slot>
+  <slot>setXMax(int)</slot>
+  <slot>setYMin(int)</slot>
+  <slot>setYMax(int)</slot>
+  <slot>setZMin(int)</slot>
+  <slot>setZMax(int)</slot>
+  <slot>setHMin(int)</slot>
+  <slot>setHMax(int)</slot>
+  <slot>setSMin(int)</slot>
+  <slot>setSMax(int)</slot>
+  <slot>setVMin(int)</slot>
+  <slot>setVMax(int)</slot>
+  <slot>setColorSegmentationInverted(bool)</slot>
+  <slot>setXYZErodeSize(int)</slot>
+  <slot>setHSVDilateSize(int)</slot>
+  <slot>setEpsilon()</slot>
+  <slot>setMaxIterations(int)</slot>
+  <slot>setMinOverlap(int)</slot>
+  <slot>setMaxFitness()</slot>
+  <slot>setCorrespondenceRejectionFactor(double)</slot>
+  <slot>setCorrespondenceRejectionMaxAngle(int)</slot>
+  <slot>setMaxSquaredDistance()</slot>
+  <slot>setAveragingMaxAngle(int)</slot>
+  <slot>setMaxAge(int)</slot>
+  <slot>setMinDirections(int)</slot>
+  <slot>setColorSegmentationEnabled(bool)</slot>
+ </slots>
+</ui>

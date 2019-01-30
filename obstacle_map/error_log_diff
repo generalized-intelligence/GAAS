@@ -1,0 +1,9 @@
+
+PointCloud:
+‘const boost::shared_ptr<const sensor_msgs::PointCloud_<std::allocator<void> > >’ to ‘sensor_msgs::PointCloud_<std::allocator<void> >’
+
+
+PointCloud::ConstPtr:
+
+
+‘const boost::shared_ptr<const geometry_msgs::PoseStamped_<std::allocator<void> > >’ to ‘geometry_msgs::PoseStamped_<std::allocator<void> >’

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package>
+  <name>fast</name>
+  <version>1.0.0</version>
+  <description>
+    A ROS wrapper for the FAST corner detector by Edward Rosten.
+    The sourcefiles are from the CVD library: http://www.edwardrosten.com/cvd/
+  </description>
+  <maintainer email="forster@ifi.uzh.ch">Christian Forster</maintainer>
+  <license>LGPL</license>
+  <url>http://www.edwardrosten.com/work/fast.html</url>
+  <buildtool_depend>catkin</buildtool_depend>
+</package>

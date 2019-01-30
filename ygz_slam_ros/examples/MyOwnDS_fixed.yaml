@@ -1,0 +1,90 @@
+%YAML:1.0
+
+# Dataset dirs
+LeftFolder: /home/gi/ros_bag_to_dataset/imagel
+RightFolder: /home/gi/ros_bag_to_dataset/imager
+IMUFolder:  /home/gi/ros_bag_to_dataset/imu_log/imu.csv
+#IMUFolder:  /home/gi/ygz_with_gps/ygz_stereo_inertial_master/noised_imu.csv
+
+TimeFolder: /home/gi/ros_bag_to_dataset/time.csv
+#TimeFolder: /home/gi/ORB-YGZ-SLAM-WITH-IMU/Examples/Stereo/EuRoC_TimeStamps/MH01.txt;
+
+# if running in pure stereo vision mode
+PureVisionMode: true
+#PureVisionMode: false
+
+# do we need visualization?
+UseViewer: true
+
+# Camera calibration and distortion parameters (OpenCV)
+Camera.fx: 461.61715800778137
+Camera.fy: 460.27704323210554
+Camera.cx: 407.817761443163
+Camera.cy: 253.14790375799288
+
+Camera.k1: -0.11807990560793971
+Camera.k2: 0.03542977346785178
+Camera.p1: -0.0341345813605138
+Camera.p2: 0.010164502015527026
+
+Camera.width: 752
+Camera.height: 480
+
+# stereo baseline times fx
+Camera.bf: -47.147253560575436
+
+#--------------------------------------------------------------------------------------------
+# Stereo Rectification. Only if you need to pre-rectify the images.
+# Camera.fx, .fy, etc must be the same as in LEFT.P
+#--------------------------------------------------------------------------------------------
+RIGHT.height: 480
+RIGHT.width: 752
+RIGHT.D: !!opencv-matrix
+   rows: 1
+   cols: 5
+   dt: d
+   data: [-0.1163305796351286, 0.027194602511876755, -0.03179171677963021, 0.012030370793553905, 0.0]
+RIGHT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   #data: [457.587, 0.0, 379.999, 0.0, 456.134, 255.238, 0.0, 0.0, 1]
+   data: [461.61715800778137, 0, 407.817761443163, 0, 460.27704323210554, 253.14790375799288, 0,  0, 1] 
+RIGHT.R:  !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   #data: [0.996704,-0.081038,0.00359, 0.081040,0.996710,-0.000317,   -0.003552,0.000607,0.9999935]
+   data: [0.996704,-0.081038,0.00359, 0.081040,0.996710,0.000317,   -0.003552,0.000607,0.9999935]
+RIGHT.P:  !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data: [461.61715800778137, 0, 407.817761443163, 0, 0, 460.27704323210554, 253.14790375799288, 0, 0, 0, 1, 0]
+
+LEFT.height: 480
+LEFT.width: 752
+LEFT.D: !!opencv-matrix
+   rows: 1
+   cols: 5
+   dt: d
+   data: [-0.11807990560793971, 0.03542977346785178, -0.0341345813605138, 0.010164502015527026, 0.0]
+LEFT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   #data: [458.654, 0.0, 367.215, 0.0, 457.296, 248.375, 0.0, 0.0, 1.0]
+   data: [466.30418390488694, 0, 380.994985694494, 0,465.20367396375593,  217.92387628823178,  0, 1, 0]
+
+LEFT.R:  !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   #data: [0.997005,-0.075781,-0.015413, 0.0758311,0.997117,0.00268994 ,0.01516522,-0.00385071,0.999877]
+   data: [0.997005,-0.075781,-0.015413, 0.0758311,0.997117,0.00268994 ,0.01516522,-0.00385071,0.999877]
+LEFT.P:  !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data: [466.30418390488694, 0, 380.994985694494, 47.147253560575436,  0,465.20367396375593,  217.92387628823178, 0,  0, 0, 1, 0]
+#----
