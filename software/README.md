@@ -37,7 +37,7 @@ PX4 is used as default and flight control, and is the only option as of now.
 
 软件部分的主要目标是实现一套易用的默认配置，同时满足可定制需求。
 
-出于兼容性的考虑，支持的传感器是双目照相机。主动测距传感器（RGBD相机，激光雷达等）暂时不被考虑。
+出于兼容性的考虑，支持的传感器是双目照相机。主动测距传感器（RGBD 相机，激光雷达等）暂时不被考虑。
 
 软件部分包含以下几个模块：
 
@@ -46,8 +46,8 @@ PX4 is used as default and flight control, and is the only option as of now.
     3.Dynamic Target（待补充）
     4.Local Planner/Global Planner（待补充）
 
-其中每个模块会包含一个默认实现。如需替换其中的模块，需要完成原本的ros topic/service的替换。所用到的ros topic/service 如下所示。
-飞控部分暂定使用px4作为默认实现。这部分暂不提供可选。
+其中每个模块会包含一个默认实现。如需替换其中的模块，需要完成原本的 ros topic/service 的替换。所用到的 ros topic/service 如下所示。
+飞控部分暂定使用 PX4 作为默认实现。这部分暂不提供可选。
 
 ## 1.SLAM:
 
