@@ -156,6 +156,7 @@ class Px4Controller:
         BODY_OFFSET_NED
         '''
         if self.frame is "BODY" and msg.header.frame_id=='frame.body':
+            print("Body Frame")
             new_x, new_y, new_z = self.body2ned(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
             print(new_x, new_y, new_z)
             NED_x = new_x + self.local_pose.pose.position.x
