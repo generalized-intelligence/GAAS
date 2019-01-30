@@ -1,0 +1,6 @@
+Thirdparty/
+PCL
+Octomap
+ros-...-octomap-msgs  # use apt install.
+sudo apt install ros-kinetic-octomap-rviz-plugins
+

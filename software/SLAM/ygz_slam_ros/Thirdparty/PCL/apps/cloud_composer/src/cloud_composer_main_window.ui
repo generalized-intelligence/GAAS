@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ComposerMainWindow</class>
+ <widget class="QMainWindow" name="ComposerMainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1280</width>
+    <height>741</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Cloud Composer</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="pcl::cloud_composer::CloudViewer" name="cloud_viewer_"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1280</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_new_project_"/>
+    <addaction name="action_open_cloud_as_new_project_"/>
+    <addaction name="separator"/>
+    <addaction name="action_open_project_"/>
+    <addaction name="action_save_project_"/>
+    <addaction name="action_save_project_as_"/>
+    <addaction name="action_save_selected_cloud_"/>
+    <addaction name="separator"/>
+    <addaction name="action_exit_"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>&amp;Edit</string>
+    </property>
+    <widget class="QMenu" name="menu_Insert_Cloud">
+     <property name="title">
+      <string>&amp;Insert Cloud...</string>
+     </property>
+     <addaction name="action_insert_from_file_"/>
+     <addaction name="action_insert_from_openNi_source_"/>
+     <addaction name="action_insert_from_rgb_depth_"/>
+    </widget>
+    <addaction name="menu_Insert_Cloud"/>
+    <addaction name="separator"/>
+    <addaction name="action_undo_"/>
+    <addaction name="action_redo_"/>
+    <addaction name="separator"/>
+    <addaction name="action_camera_undo_"/>
+    <addaction name="action_camera_redo_"/>
+    <addaction name="separator"/>
+    <addaction name="action_clear_selection_"/>
+    <addaction name="action_select_all_"/>
+    <addaction name="action_invert_selection_"/>
+    <addaction name="action_rectangular_frustum_select_"/>
+    <addaction name="action_new_cloud_from_selection_"/>
+    <addaction name="separator"/>
+    <addaction name="action_copy_"/>
+    <addaction name="action_paste_"/>
+    <addaction name="action_cut_"/>
+    <addaction name="action_delete_"/>
+    <addaction name="separator"/>
+    <addaction name="action_preferences_"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <addaction name="action_show_axes_"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_help_"/>
+    <addaction name="action_about_"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuView"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <property name="movable">
+    <bool>false</bool>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::TopToolBarArea</set>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>32</width>
+     <height>32</height>
+    </size>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="action_new_project_"/>
+   <addaction name="action_open_project_"/>
+   <addaction name="action_open_cloud_as_new_project_"/>
+   <addaction name="action_save_project_"/>
+   <addaction name="action_save_selected_cloud_"/>
+   <addaction name="separator"/>
+   <addaction name="action_insert_from_file_"/>
+   <addaction name="action_insert_from_rgb_depth_"/>
+   <addaction name="action_insert_from_openNi_source_"/>
+   <addaction name="action_delete_"/>
+   <addaction name="separator"/>
+   <addaction name="action_show_axes_"/>
+   <addaction name="separator"/>
+   <addaction name="action_trackball_camera_style_"/>
+   <addaction name="action_manipulate_clicked_"/>
+   <addaction name="action_manipulate_selected_"/>
+   <addaction name="action_rectangular_frustum_select_"/>
+   <addaction name="separator"/>
+   <addaction name="action_new_cloud_from_selection_"/>
+  </widget>
+  <widget class="QDockWidget" name="dockCloudBrowser">
+   <property name="windowTitle">
+    <string>Cloud Browser</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContentsCloudBrowser">
+    <layout class="QGridLayout" name="cloud_browser_layout_">
+     <item row="0" column="0">
+      <widget class="pcl::cloud_composer::CloudBrowser" name="cloud_browser_"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockConsole">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContentsConsole"/>
+  </widget>
+  <widget class="QDockWidget" name="dockItemInspector">
+   <property name="windowTitle">
+    <string>Inspector</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContentsItemInspector">
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="0" column="0">
+      <widget class="pcl::cloud_composer::ItemInspector" name="item_inspector_"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockTools">
+   <property name="windowTitle">
+    <string>Tools</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContentsTools">
+    <layout class="QGridLayout" name="gridLayout_4">
+     <item row="0" column="0">
+      <widget class="QTreeView" name="tool_box_view_">
+       <property name="rootIsDecorated">
+        <bool>true</bool>
+       </property>
+       <property name="headerHidden">
+        <bool>true</bool>
+       </property>
+       <attribute name="headerVisible">
+        <bool>false</bool>
+       </attribute>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QTreeView" name="tool_parameter_view_">
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
+       <property name="headerHidden">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QPushButton" name="action_run_tool_">
+       <property name="text">
+        <string>Run Tool</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockUndoView">
+   <property name="windowTitle">
+    <string>Undo Stack View</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContentsUndoView">
+    <layout class="QGridLayout" name="gridLayout_5">
+     <item row="0" column="0">
+      <widget class="QUndoView" name="undo_view_" native="true"/>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="action_new_project_">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/new_project.png</normaloff>:/new_project.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;New Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="action_open_project_">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/open_project.png</normaloff>:/open_project.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_open_cloud_as_new_project_">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/open_cloud_as_new_project.png</normaloff>:/open_cloud_as_new_project.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open &amp;Cloud as New Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="action_save_project_">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/save_project.png</normaloff>:/save_project.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="action_exit_">
+   <property name="text">
+    <string>&amp;Exit</string>
+   </property>
+  </action>
+  <action name="action_insert_from_file_">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/insert_from_file.png</normaloff>:/insert_from_file.png</iconset>
+   </property>
+   <property name="text">
+    <string>From &amp;File...</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert Cloud From File</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="action_insert_from_openNi_source_">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/insert_from_OpenNi.png</normaloff>:/insert_from_OpenNi.png</iconset>
+   </property>
+   <property name="text">
+    <string>From &amp;OpenNi Source</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert Cloud From OpenNi Source</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="action_undo_">
+   <property name="text">
+    <string>&amp;Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="action_redo_">
+   <property name="text">
+    <string>&amp;Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Y</string>
+   </property>
+  </action>
+  <action name="action_camera_undo_">
+   <property name="text">
+    <string>Camera Undo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Z</string>
+   </property>
+  </action>
+  <action name="action_camera_redo_">
+   <property name="text">
+    <string>Camera Redo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Y</string>
+   </property>
+  </action>
+  <action name="action_copy_">
+   <property name="text">
+    <string>&amp;Copy</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="action_paste_">
+   <property name="text">
+    <string>&amp;Paste</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+V</string>
+   </property>
+  </action>
+  <action name="action_cut_">
+   <property name="text">
+    <string>Cut</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="action_delete_">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/delete.png</normaloff>:/delete.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Delete</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="action_preferences_">
+   <property name="text">
+    <string>Preferences</string>
+   </property>
+  </action>
+  <action name="action_about_">
+   <property name="text">
+    <string>&amp;About</string>
+   </property>
+  </action>
+  <action name="action_help_">
+   <property name="text">
+    <string>&amp;Help</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="action_save_project_as_">
+   <property name="text">
+    <string>Save Project As</string>
+   </property>
+  </action>
+  <action name="action_select_all_">
+   <property name="text">
+    <string>Select &amp;All</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="action_invert_selection_">
+   <property name="text">
+    <string>Invert Selection</string>
+   </property>
+  </action>
+  <action name="action_clear_selection_">
+   <property name="text">
+    <string>Clear Selection (Esc)</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear Selection</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
+   </property>
+  </action>
+  <action name="action_show_axes_">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/show_axes.png</normaloff>:/show_axes.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show Axes</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle Showing Axes</string>
+   </property>
+  </action>
+  <action name="action_rectangular_frustum_select_">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/frustum_selection.png</normaloff>:/frustum_selection.png</iconset>
+   </property>
+   <property name="text">
+    <string>Rectangular &amp;Frustum</string>
+   </property>
+   <property name="toolTip">
+    <string>Select a Rectangular Frustum</string>
+   </property>
+   <property name="shortcut">
+    <string>F</string>
+   </property>
+  </action>
+  <action name="action_new_cloud_from_selection_">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/new_cloud_from_selection.png</normaloff>:/new_cloud_from_selection.png</iconset>
+   </property>
+   <property name="text">
+    <string>Create New Cloud from Selection</string>
+   </property>
+   <property name="toolTip">
+    <string>Creates a new cloud from selection (Selection must only be clouds/points)</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+X</string>
+   </property>
+  </action>
+  <action name="action_manipulate_selected_">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/selection_move.png</normaloff>:/selection_move.png</iconset>
+   </property>
+   <property name="text">
+    <string>Manipulate Selected Items</string>
+   </property>
+   <property name="toolTip">
+    <string>Rotate/Pan/etc the selected items</string>
+   </property>
+  </action>
+  <action name="action_trackball_camera_style_">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/camera_move.png</normaloff>:/camera_move.png</iconset>
+   </property>
+   <property name="text">
+    <string>Trackball Camera Style</string>
+   </property>
+   <property name="toolTip">
+    <string>Set to move camera</string>
+   </property>
+  </action>
+  <action name="action_manipulate_clicked_">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/click_move.png</normaloff>:/click_move.png</iconset>
+   </property>
+   <property name="text">
+    <string>Manipulate Clicked Item</string>
+   </property>
+   <property name="toolTip">
+    <string>Move clicked item</string>
+   </property>
+  </action>
+  <action name="action_save_selected_cloud_">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/save_selected_cloud.png</normaloff>:/save_selected_cloud.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save Selected Cloud</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the currently selected cloud to file</string>
+   </property>
+  </action>
+  <action name="action_insert_from_rgb_depth_">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/rgb_depth.png</normaloff>:/rgb_depth.png</iconset>
+   </property>
+   <property name="text">
+    <string>Insert Cloud from RGB and Depth Image</string>
+   </property>
+   <property name="toolTip">
+    <string>Select and RGB image with accompanying Depth to create Pointcloud</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>pcl::cloud_composer::CloudViewer</class>
+   <extends>QTabWidget</extends>
+   <header>pcl/apps/cloud_composer/cloud_viewer.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>pcl::cloud_composer::ItemInspector</class>
+   <extends>QTableView</extends>
+   <header>pcl/apps/cloud_composer/item_inspector.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QUndoView</class>
+   <extends>QWidget</extends>
+   <header>qundoview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>pcl::cloud_composer::CloudBrowser</class>
+   <extends>QTreeView</extends>
+   <header>pcl/apps/cloud_composer/cloud_browser.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../resources/resources.qrc"/>
+ </resources>
+ <connections/>
+</ui>

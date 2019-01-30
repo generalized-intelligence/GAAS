@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC -O3 -DNDEBUG  -shared -Wl,-soname,libgmock.so -o /home/gishr/software/codes/scripts/stereo_dense_reconstruction/stereo_dense_reconstruction/lib/libgmock.so CMakeFiles/gmock.dir/usr/src/gtest/src/gtest-all.cc.o CMakeFiles/gmock.dir/src/gmock-all.cc.o  -L/opt/ros/kinetic/lib -lpthread -Wl,-rpath,/opt/ros/kinetic/lib 
