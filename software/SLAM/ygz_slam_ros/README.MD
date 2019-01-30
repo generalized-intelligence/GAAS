@@ -35,7 +35,7 @@ To use ygz slam with ROS wrapper, please use the following method.
 
     本项目大部分基于 https://github.com/gaoxiang12/ygz-stereo-inertial
     
-    非常感谢 高博@https://github.com/gaoxiang12 对此项的支持
+    非常感谢 高博@https://github.com/gaoxiang12 对此项目的支持
 
 若想使用此项目， 请参考下列步骤。
 
