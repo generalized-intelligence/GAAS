@@ -203,9 +203,9 @@ Distributed under the BSD 3-Clause license. See ``LICENSE`` for more information
 
 ## Contribute
 
-Please follow CONTRIBUTE.md
+Please follow CONTRIBUTING.md
 
-请参阅 CONTRIBUTE.md
+请参阅 CONTRIBUTING.md
 
 Il Vole
 
