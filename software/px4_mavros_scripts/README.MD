@@ -37,3 +37,48 @@ you can use :
     rostopic echo /mavros/state
 
 to check the connection between PX4 and mavros.
+
+
+
+## 中文使用指南
+
+此文件夹内包含一些基于python以及Gazebo的脚本， 脚本可以用来控制基于PX4的无人机在offboard模式下进行指点飞行。 使用脚本需要你已经安装了mavros， gazebo7 并且编译了px4。
+
+如果想使用脚本：
+
+## 1_px4_mavros_offboard_controller
+
+### 1. mavros
+
+    roslaunch mavros px4.launch fcu_url:="udp://:14540@127.0.0.1:14557"
+
+### 2. px4 v1.8.0
+
+    cd ~/px4/Firmware
+    make posix_sitl_default gazebo
+
+gazebo窗口会弹出， 并且你会看到无人机在世界坐标系中心， 在另外一个终端， 使用：
+
+    rostopic echo /mavros/state
+
+你应该看到 “连接” 字样。
+
+### 3. px4 main loop
+    
+    cd 1_px4_mavros_offboard_controller
+    python px4_python_mavros_mainloop.py
+    
+此时你应该看到无人机逐渐起飞到预设高度
+
+### 4. simulation controller
+
+使用commander.py 中的api来控制无人机。
+
+### NOTE:
+
+你可以使用：
+
+    rostopic echo /mavros/state
+
+来判断mavros以及px4的连接状态， 请确保显示结果为 "connected"。
+
