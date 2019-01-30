@@ -7,6 +7,7 @@
 ## Dependencies
 
     please install the following dependencies:
+    
     1. Pangolin (for visualization): https://github.com/stevenlovegrove/Pangolin
     2. Eigen3: sudo apt-get install libeigen3-dev
     3. g2o: sudo apt-get install libcxsparse-dev libqt4-dev libcholmod3.0.6 libsuitesparse-dev qt4-qmake
