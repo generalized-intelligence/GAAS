@@ -1,6 +1,8 @@
 ## ygz slam with ROS wrapper
 
     This project is heavily based on https://github.com/gaoxiang12/ygz-stereo-inertial
+    
+    Special thanks to gaoxiang@https://github.com/gaoxiang12
 
 To use ygz slam with ROS wrapper, please use the following method.
 
