@@ -39,3 +39,18 @@ class Commander:
         pose.pose.position.y = y
         pose.pose.position.z = z
         return pose
+
+
+
+if __name__ == '__main__':
+
+    con = Commander()
+    con.move(1,0,0)
+    time.sleep(3)
+    con.move(0,1,0)
+    time.sleep(3)
+    con.turn(90)
+    time.sleep(3)    
+    con.move(0,1,0)
+    time.sleep(3) 
+    con.move(0,0,-2)
