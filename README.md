@@ -16,18 +16,51 @@
 
 
 ## Setup
+NOTE: 目前只在ubuntu 16.04 以及 ros-kinetic 环境下测试通过。
 
-1.安装 ROS-Kinetic 或更高版本ros。
+1.安装 ROS-Kinetic
 
-2.安装 Octomap-Server、Gazebo、PCL.
+    建议安装ros-kinetic-desktop-full; 可按照此地址进行安装：http://wiki.ros.org/kinetic/Installation/Ubuntu.
 
-3.依照 YGZ-slam 依赖项进行配置。项目地址:https://github.com/gaoxiang12/ygz-stereo-inertial
+2.安装 Octomap-Server 以及mavros
 
-4.如果使用模拟器：
-	下载 PX4 源码。地址：https://github.com/PX4/Firmware 编译。
-	使用 px4_sitl_posix。
-  
-  如果使用实机进行模拟：可以直接下载 PX4 固件进行烧录。
+    cd ~/catkin_ws/src
+    git clone https://github.com/OctoMap/octomap_mapping.git
+    git clone https://github.com/mavlink/mavros.git
+    cd ..
+    catkin build
+    source ~/catkin_ws/devel/setup.bash
+
+3. Gazebo
+
+如果您在第一步安装了ros-kinetic-desktop-full, 您已经具有了gazebo7；, 接下来请安装对应ros plugin:
+
+    sudo apt install ros-kinetic-gazebo-*
+
+如果您想使用其他版本的gazebo, 请参考：http://gazebosim.org/, 并安装对应版本的ros plugin:
+
+    sudo apt install ros-kinetic-<your gazebo version>-*
+
+
+4. PCL
+
+    请参考此链接安装：http://www.pointclouds.org/documentation/tutorials/compiling_pcl_posix.php
+
+
+3. YGZ-slam
+
+    请参考此链接安装：:https://github.com/gaoxiang12/ygz-stereo-inertial
+
+
+4. PX4
+
+目前只在px4 v1.8.0测试通过
+
+    mkdir ~/px4 && cd ~/px4
+    git clone https://github.com/PX4/Firmware.git
+    cd Firmware
+    git checkout v1.8.0
+    
 
 ## Usage example
 
@@ -74,9 +107,9 @@ Distributed under the BSD 3-Clause license. See ``LICENSE`` for more information
 
 [GAAS GitHub](https://github.com/generalized-intelligence/GAAS)
 
-## Contributing
+## Contribute
 
-请参阅 CONTRIBUTING for GAAS.md
+请参阅 CONTRIBUTE for GAAS.md
 
 Il Vole
 
