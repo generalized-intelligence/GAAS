@@ -48,17 +48,17 @@ If you would like to use another version of Gazebo, please see http://gazebosim.
 
 ### 4. PCL
 
-    Install at the following address:
+Install at the following address:
     
     http://www.pointclouds.org/documentation/tutorials/compiling_pcl_posix.php
 
 ### 5. YGZ-slam
 
-    Detailed information can be found in the folder
+Detailed information can be found in the folder
 
 ### 6. PX4
 
-    NOTE: Tested on px4 v1.8.0
+NOTE: Tested on px4 v1.8.0
     
     mkdir ~/px4 && cd ~/px4
     git clone https://github.com/PX4/Firmware.git
@@ -70,7 +70,7 @@ NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。
 
 ### 1.安装 ROS-Kinetic
 
-    建议安装 ros-kinetic-desktop-full; 可按照此地址进行安装：http://wiki.ros.org/kinetic/Installation/Ubuntu.
+建议安装 ros-kinetic-desktop-full; 可按照此地址进行安装：http://wiki.ros.org/kinetic/Installation/Ubuntu.
 
 ### 2.安装 Octomap-Server 以及 mavros
 
