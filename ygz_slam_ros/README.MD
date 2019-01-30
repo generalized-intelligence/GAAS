@@ -16,7 +16,8 @@
 
 ## Compile
 
-    In the root folder: ./generate.sh
+    In the root folder:
+    ./generate.sh
     
 ## Usage
 
