@@ -1,5 +1,5 @@
 
-# NOTE:
+## NOTE:
     This project is heavily based on OpenSFM: https://github.com/mapillary/OpenSfM
 
 
