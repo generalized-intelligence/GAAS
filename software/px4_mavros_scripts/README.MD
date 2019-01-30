@@ -1,3 +1,5 @@
+## User Guide
+
 This folder contains some python scripts for controlling px4 in offboard mode in Gazebo simulation environment. It assumes you have properly installed mavros, gazebo7 and compiled px4 firmware detailed in the github front page.
 
 To run the scripts:
@@ -37,6 +39,7 @@ you can use :
     rostopic echo /mavros/state
 
 to check the connection between PX4 and mavros.
+
 
 
 
