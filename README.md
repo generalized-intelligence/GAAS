@@ -1,3 +1,4 @@
+![GA Logo](https://s2.ax1x.com/2019/01/30/klnmHP.jpg)
 # Generalized Autonomy Aviation System
 # GAAS
 > 泛化自动驾驶飞行器系统 Generalized Autonomy Aviation System（以下简称 GAAS）是一个面向未来飞行器设计的开源驾驶以及运行管理系统。
@@ -7,12 +8,6 @@
 > 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作。并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人飞行器上（也许是飞行汽车）。
 
 >当前版本的 GAAS 包含 SLAM、避障路径规划、飞行控制模块；用于支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
-
-
-
-
-![GA Logo](https://s2.ax1x.com/2019/01/29/kQa7X6.jpg)
-
 
 
 ## Setup
@@ -109,7 +104,7 @@ Distributed under the BSD 3-Clause license. See ``LICENSE`` for more information
 
 ## Contribute
 
-请参阅 CONTRIBUTE for GAAS.md
+请参阅 CONTRIBUTE.md
 
 Il Vole
 
