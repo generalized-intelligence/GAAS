@@ -1,3 +1,5 @@
+![GAAS Demo](https://s2.ax1x.com/2019/01/31/k16ojg.png)
+
 The primary goal of the software is to provide an easy-to-use default configuration, which can also be altered for more advanced demands.
 
 Considering the potential complication caused by compatibility of various hardware, the supported sensors are stereo cameras. Proximity sensors (RGBD cameras and LiDAR) are not being considered.
