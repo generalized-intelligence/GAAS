@@ -19,7 +19,7 @@
 
 ![UAV demo](https://s2.ax1x.com/2019/01/30/klODfS.jpg)
 
-An example of hardware
+An example of the hardware
 
 
 ## Setup
@@ -28,7 +28,7 @@ NOTE: Tested in ubuntu 16.04 and ros-kinetic
 
 ### 1. Install ROS-Kinetic
 
-    We recommend installing ros-kinetic-desktop-full from the following address:
+We recommend installing ros-kinetic-desktop-full from the following address:
     http://wiki.ros.org/kinetic/Installation/Ubuntu
 
 ### 2. Install Octomap-Server and mavros
@@ -160,13 +160,13 @@ Multi-Drone Collaboration
 
 即将推出：
 
-带避障的视觉跟踪任务
+    1. 带避障的视觉跟踪任务
 
-视觉精准降落
+    2. 视觉精准降落
 
-区域自动探索建模
+    3. 区域自动探索建模
 
-多机协同执行任务
+    4. 多机协同执行任务
 
 
 ## Development setup
