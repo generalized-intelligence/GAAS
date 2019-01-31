@@ -183,17 +183,15 @@ void geodeticOffsetInv( double refLat, double refLon,
 
 void FetchImuCallback(const sensor_msgs::Imu& imu)
 {
-  //LOG(INFO) << "fetching imu" << endl;
   IMUData t_imu(imu.angular_velocity.x,
-		imu.angular_velocity.y,
-		imu.angular_velocity.z,
-		imu.linear_acceleration.x,
-		imu.linear_acceleration.y,
-		imu.linear_acceleration.z,
-		imu.header.stamp.toNSec() );
+                imu.angular_velocity.y,
+                imu.angular_velocity.z,
+                imu.linear_acceleration.x,
+                imu.linear_acceleration.y,
+                imu.linear_acceleration.z,
+                imu.header.stamp.toNSec() );
   
   temp_vimu.push_back(t_imu);
-  //LOG(INFO) << "fecthing imu2" << endl;
 }
 
 
@@ -207,7 +205,7 @@ void Display(cv_bridge::CvImageConstPtr cv_ptrLeft, cv_bridge::CvImageConstPtr c
 
 void FetchGPSCallback(const sensor_msgs::NavSatFix& gps_info)
 {
-  //cout<<"Got NavSatFix info!!!!!!"<<endl;
+
   GPS_pos new_pos;
   if(!long_lat_ever_init)
   {
@@ -225,7 +223,6 @@ void FetchGPSCallback(const sensor_msgs::NavSatFix& gps_info)
   new_pos.z = gps_info.altitude - init_altitude;
   new_pos.time_ms = gps_info.header.stamp.toNSec();
   
-//   cout <<"GPS_POS:"<<newx<<" "<<newy<<" "<<new_pos.z<<endl;
   gps_list.push_back(new_pos);
 }
 
@@ -243,6 +240,7 @@ void set_attitude_by_msg_dji(const geometry_msgs::QuaternionStamped& msg,Vehicle
     //LOG(WARNING)<<atti.q.toRotationMatrix()<<endl;
     atti.time_ms = msg.header.stamp.toNSec();
 }
+
 void set_attitude_by_msg_px4(const nav_msgs::Odometry& msg,VehicleAttitude& atti,bool do_reform = false)
 {
     atti.q.x() = msg.pose.pose.orientation.x;
@@ -260,7 +258,6 @@ void set_attitude_by_msg_px4(const nav_msgs::Odometry& msg,VehicleAttitude& atti
 
 void FetchAttitudeCallback_dji(const geometry_msgs::QuaternionStamped& atti_msg)
 {
-  //cout<<"Got atti_msg!!"<<endl;
   if(!atti_ever_init)
   {
     set_attitude_by_msg_dji(atti_msg,init_atti,false);
@@ -270,7 +267,6 @@ void FetchAttitudeCallback_dji(const geometry_msgs::QuaternionStamped& atti_msg)
   VehicleAttitude new_atti;
   set_attitude_by_msg_dji(atti_msg,new_atti,true);
   atti_list.push_back(new_atti);
-  //cout<<"atti_msg pushed into list!"<<endl;
   
 }
 
@@ -302,10 +298,10 @@ void FetchHeightCallback(const double height)
   height_list.push_back(height-init_height);
 }
 
+
 void deg2rad(double heading_deg)
 {
   pixhawk_heading_rad =  (heading_deg * pi)/180;
-
 }
 
 
