@@ -24,13 +24,18 @@ you should see "connected"
 ### 3. px4 main loop
     
     cd 1_px4_mavros_offboard_controller
+
     python px4_python_mavros_mainloop.py
 
 now you should see the drone gradually takes off to a predefined height.
 
 ### 4. simulation controller
-use functions defined in commander.py to controll the drone.
 
+use functions defined in commander.py to controll the drone. Or:
+
+    cd 1_px4_mavros_offboard_controller
+
+    python commander.py
 
 ### NOTE:
 

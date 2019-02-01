@@ -1,6 +1,6 @@
 import rospy
 from mavros_msgs.msg import GlobalPositionTarget, State, PositionTarget
-from mavros_msgs.srv import CommandBool,SetMode
+from mavros_msgs.srv import CommandBool, CommandTOL, SetMode
 from geometry_msgs.msg import PoseStamped, Twist
 from sensor_msgs.msg import Imu, NavSatFix
 from std_msgs.msg import Float32, Float64, String
@@ -19,7 +19,7 @@ class Px4Controller:
         self.local_pose = None
         self.current_state = None
         self.current_heading = None
-        self.takeoff_height = 2
+        self.takeoff_height = 3.2
         self.initial_heading = 0
 
         self.cur_target_pose = None
@@ -31,6 +31,8 @@ class Px4Controller:
         self.received_imu = False
         self.frame = "BODY"
 
+        self.state = None
+
         '''
         ros subscribers
         '''
@@ -41,6 +43,8 @@ class Px4Controller:
 
         self.set_target_position_sub = rospy.Subscriber("gi/set_pose/position", PoseStamped, self.set_target_position_callback)
         self.set_target_yaw_sub = rospy.Subscriber("gi/set_pose/orientation", Float32, self.set_target_yaw_callback)
+        self.custom_activity_sub = rospy.Subscriber("gi/set_activity/type", String, self.custom_activity_callback)
+
 
         '''
         ros publishers
@@ -53,12 +57,13 @@ class Px4Controller:
         self.armService = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
         self.flightModeService = rospy.ServiceProxy('/mavros/set_mode', SetMode)
 
+
         print("Px4 Controller Initialized!")
 
 
     def start(self):
         rospy.init_node("offboard_node")
-        rate = rospy.Rate(20)
+        # rate = rospy.Rate(20)
 
         self.cur_target_pose = self.construct_target(0, 0, self.takeoff_height, self.current_heading)
 
@@ -67,6 +72,13 @@ class Px4Controller:
             self.local_target_pub.publish(self.cur_target_pose)
             self.arm_state = self.arm()
             self.offboard_state = self.offboard()
+
+
+        # while self.offboard_state is False:
+        #     self.local_target_pub.publish(self.cur_target_pose)
+        #     self.arm_state = self.arm()
+        #     self.offboard_state = self.offboard()
+
 
         # self.initial_heading = self.q2yaw(self.imu.orientation)
 
@@ -79,8 +91,17 @@ class Px4Controller:
         '''
         while self.arm_state and self.offboard_state and (rospy.is_shutdown() is False):
 
+
             self.local_target_pub.publish(self.cur_target_pose)
 
+            if (self.state is "LAND") and (self.local_pose.pose.position.z < 0.15):
+
+                if(self.disarm()):
+
+                    self.state = "DISARMED"
+
+
+            time.sleep(0.1)
 
 
     def construct_target(self, x, y, z, yaw, yaw_rate = 1):
@@ -118,6 +139,7 @@ class Px4Controller:
         else:
             return False
 
+
     def local_pose_callback(self, msg):
         self.local_pose = msg
 
@@ -134,6 +156,7 @@ class Px4Controller:
 
         self.received_imu = True
 
+
     def gps_callback(self, msg):
         self.gps = msg
 
@@ -149,6 +172,32 @@ class Px4Controller:
         return NED_x, NED_y, NED_z
 
 
+    '''
+    Receive A Custom Activity
+    '''
+    def custom_activity_callback(self, msg):
+
+        print("Received Custom Activity:", msg.data)
+
+        if msg.data == "LAND":
+            print("LANDING!")
+            self.state = "LAND"
+            self.cur_target_pose = self.construct_target(self.local_pose.pose.position.x,
+                                                         self.local_pose.pose.position.y,
+                                                         0.1,
+                                                         self.current_heading)
+
+        if msg.data == "HOVER":
+            print("HOVERING!")
+            self.state = "HOVER"
+            self.hover()
+
+
+        else:
+            print("Received Custom Activity:", msg.data, "not supported yet!")
+
+
+
     def set_target_position_callback(self, msg):
         print("Received New Position Task!")
 
@@ -156,7 +205,6 @@ class Px4Controller:
         BODY_OFFSET_NED
         '''
         if self.frame is "BODY" and msg.header.frame_id=='frame.body':
-            print("Body Frame")
             new_x, new_y, new_z = self.body2ned(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
             print(new_x, new_y, new_z)
             NED_x = new_x + self.local_pose.pose.position.x
@@ -205,6 +253,14 @@ class Px4Controller:
             print("Vehicle arming failed!")
             return False
 
+    def disarm(self):
+        if self.armService(False):
+            return True
+        else:
+            print("Vehicle disarming failed!")
+            return False
+
+
     def offboard(self):
         if self.flightModeService(custom_mode='OFFBOARD'):
             return True
@@ -213,9 +269,16 @@ class Px4Controller:
             return False
 
 
+    def hover(self):
+
+        self.cur_target_pose = self.construct_target(self.local_pose.pose.position.x,
+                                                     self.local_pose.pose.position.y,
+                                                     self.local_pose.pose.position.z,
+                                                     self.current_heading)
 
 
 if __name__ == '__main__':
 
     con = Px4Controller()
     con.start()
+

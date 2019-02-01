@@ -1,6 +1,6 @@
 import rospy
 from mavros_msgs.msg import GlobalPositionTarget, State
-from mavros_msgs.srv import CommandBool,SetMode
+from mavros_msgs.srv import CommandBool, CommandTOL, SetMode
 from geometry_msgs.msg import PoseStamped, Twist
 from sensor_msgs.msg import Imu, NavSatFix
 from std_msgs.msg import Float32, String
@@ -15,6 +15,7 @@ class Commander:
         rate = rospy.Rate(20)
         self.position_target_pub = rospy.Publisher('gi/set_pose/position', PoseStamped, queue_size=10)
         self.yaw_target_pub = rospy.Publisher('gi/set_pose/orientation', Float32, queue_size=10)
+        self.custom_activity_pub = rospy.Publisher('gi/set_activity/type', String, queue_size=10)
 
 
     def move(self, x, y, z):
@@ -23,15 +24,23 @@ class Commander:
     def turn(self, yaw_degree):
         self.yaw_target_pub.publish(yaw_degree)
 
+    
+    # land in current position
+    def land(self):
+        self.custom_activity_pub.publish(String("LAND"))
+
+
+    # hover at current position
+    def hover(self):
+        self.custom_activity_pub.publish(String("HOVER"))
+
 
     def set_pose(self, x=0, y=0, z=2, BODY_OFF_SET_NED = True):
         pose = PoseStamped()
         
         if BODY_OFF_SET_NED:
-            print "11"
             pose.header.frame_id = 'frame.body'
         else:
-            print "22"
             pose.header.frame_id = 'frame.local_ned'        
 
         pose.header.stamp = rospy.Time.now()
@@ -40,17 +49,12 @@ class Commander:
         pose.pose.position.z = z
         return pose
 
+   
+con = Commander()
+con.move(1,0,0)
+time.sleep(2)
+con.turn(90)
+time.sleep(2)
+con.land()
 
 
-if __name__ == '__main__':
-
-    con = Commander()
-    con.move(1,0,0)
-    time.sleep(3)
-    con.move(0,1,0)
-    time.sleep(3)
-    con.turn(90)
-    time.sleep(3)    
-    con.move(0,1,0)
-    time.sleep(3) 
-    con.move(0,0,-2)
