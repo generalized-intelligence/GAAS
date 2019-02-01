@@ -40,7 +40,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 
 1.请确保提交的部分代码的依赖项已经完善处理。
 
-2. Update the README.md with details of changes to the interface, this includes new environment variables, exposed ports, useful file locations and container parameters.
+2. Update the README.md with details of changes to the interface, this includes new environment variables, **exposed ports**, useful file locations and container parameters.
 
 2.请确保更新对应模块的README，表述清楚**接口的变更**，新引入的全局变量/环境变量等对外部有影响的量，暴露的端口，文件路径和配置项。
 

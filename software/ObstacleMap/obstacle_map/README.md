@@ -1,3 +1,22 @@
+
+## NOTE:
+    This project is heavily based on OpenSFM: https://github.com/mapillary/OpenSfM
+
+
+## User Guide
+Compile use the original method, after compiling, in separate terminals:
+
+    ./do_obstacle_map.sh
+
+and
+
+    ./bin/match_pointcloud_and_slam_pose
+
+modify corresponding bash file and .cpp to customize.
+
+
+
+
 # Dense 3D Reconstruction from Stereo
 
 This is a ROS package for real-time 3D reconstruction from stereo images. Currently this version uses [LIBELAS](http://www.cvlibs.net/software/libelas/) 

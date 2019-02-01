@@ -1,6 +1,8 @@
-![GA Logo](https://s2.ax1x.com/2019/01/30/klnmHP.jpg)
 # Generalized Autonomy Aviation System
 # GAAS
+
+<img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
+
 > Generalized Autonomy Aviation System (GAAS, pronounciate as "gas") is an open source project dedicated to autonomy flight and operation control system for futuristic aerial vehicles.
 
 > Imagine commuting with "flying car", having food and packages delivered by drones to your door. To contribute to the described future, we would like to get the two most fundamental issues out of the way: the safety of aerial vehicles, and the demand for skilled pilots. 
@@ -17,73 +19,66 @@
 
 >当前版本的 GAAS 包含 SLAM、避障路径规划、飞行控制模块；用于支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
 
+![UAV demo](https://s2.ax1x.com/2019/01/30/klODfS.jpg)
+
+An example of the hardware
+
 
 ## Setup
 
 NOTE: Tested in ubuntu 16.04 and ros-kinetic
 
-1. Install ROS-Kinetic
+### 1. Install ROS-Kinetic
 
-    We recommend installing ros-kinetic-desktop-full from the following address:
+We recommend installing ros-kinetic-desktop-full from the following address:
     http://wiki.ros.org/kinetic/Installation/Ubuntu
 
-2. Install Octomap-Server and mavros
+### 2. Install Octomap-Server and mavros
 
     cd ~/catkin_ws/src
-    
     git clone https://github.com/OctoMap/octomap_mapping.git
-    
     git clone https://github.com/mavlink/mavros.git
-    
     cd ..
-    
     catkin build
-    
     source ~/catkin_ws/devel/setup.bash
 
-3. Gazebo
+### 3. Gazebo
 
-    If you followed step 1 and has installed ros-kinetic-desktop-full, you should already have gazebo7 installed. Now install the corresponding ros plugin:
+If you followed step 1 and has installed ros-kinetic-desktop-full, you should already have gazebo7 installed. Now install the corresponding ros plugin:
     
     sudo apt install ros-kinetic-gazebo-*
     
-    If you would like to use another version of Gazebo, please see http://gazebosim.org/ for different versions of the plugin:
+If you would like to use another version of Gazebo, please see http://gazebosim.org/ for different versions of the plugin:
     
     sudo apt install ros-kinetic-<your gazebo version>-*
 
-4. PCL
+### 4. PCL
 
-    Install at the following address:
+Install at the following address:
     
     http://www.pointclouds.org/documentation/tutorials/compiling_pcl_posix.php
 
-5. YGZ-slam
+### 5. YGZ-slam
 
-    Install at the following address:
-    
-    https://github.com/gaoxiang12/ygz-stereo-inertial
+Detailed information can be found in the folder
 
-6. PX4
+### 6. PX4
 
-    NOTE: Tested on px4 v1.8.0
+NOTE: Tested on px4 v1.8.0
     
     mkdir ~/px4 && cd ~/px4
-    
     git clone https://github.com/PX4/Firmware.git
-    
     cd Firmware
-    
     git checkout v1.8.0
-
 
 
 NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。
 
-1.安装 ROS-Kinetic
+### 1.安装 ROS-Kinetic
 
-    建议安装 ros-kinetic-desktop-full; 可按照此地址进行安装：http://wiki.ros.org/kinetic/Installation/Ubuntu.
+建议安装 ros-kinetic-desktop-full; 可按照此地址进行安装：http://wiki.ros.org/kinetic/Installation/Ubuntu.
 
-2.安装 Octomap-Server 以及 mavros
+### 2.安装 Octomap-Server 以及 mavros
 
     cd ~/catkin_ws/src
     git clone https://github.com/OctoMap/octomap_mapping.git
@@ -92,7 +87,7 @@ NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。
     catkin build
     source ~/catkin_ws/devel/setup.bash
 
-3. Gazebo
+### 3. Gazebo
 
 如果您在第一步安装了 ros-kinetic-desktop-full, 您已经具有了 gazebo7；, 接下来请安装对应 ros plugin:
 
@@ -167,13 +162,13 @@ Multi-Drone Collaboration
 
 即将推出：
 
-带避障的视觉跟踪任务
+    1. 带避障的视觉跟踪任务
 
-视觉精准降落
+    2. 视觉精准降落
 
-区域自动探索建模
+    3. 区域自动探索建模
 
-多机协同执行任务
+    4. 多机协同执行任务
 
 
 ## Development setup
