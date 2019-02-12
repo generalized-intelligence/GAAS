@@ -1,5 +1,7 @@
 # Generalized Autonomy Aviation System
 
+You Can Chat and Found Support at:
+
 [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 # GAAS
