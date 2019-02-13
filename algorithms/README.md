@@ -1,7 +1,7 @@
 In this repository, we have listed some common computer vision algorithms, in order for aviation unit to accomplish certain tasks, such as:
-*Image Detection
-*Image Segmentation
-*Object Tracking
+* Image Detection
+* Image Segmentation
+* Object Tracking
 
 Each sub-repository contains a complete set of algorithms for an individual task.
 
