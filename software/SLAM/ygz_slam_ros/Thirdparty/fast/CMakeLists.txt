@@ -10,6 +10,8 @@ ELSE()
   SET(IS_ARM FALSE)
 ENDIF()
 
+SET(IS_ARM FALSE)
+
 SET(BUILD_TEST TRUE)
 
 #######################################
