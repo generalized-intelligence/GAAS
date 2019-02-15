@@ -19,7 +19,7 @@ class Px4Controller:
         self.local_pose = None
         self.current_state = None
         self.current_heading = None
-        self.takeoff_height = 3.2
+        self.takeoff_height = 3.0
         self.initial_heading = 0
 
         self.cur_target_pose = None
