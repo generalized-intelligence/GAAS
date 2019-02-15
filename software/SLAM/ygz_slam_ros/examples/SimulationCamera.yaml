@@ -51,7 +51,7 @@ Camera.RGB: 1
 ThDepth: 35
 
 # Vocabulary path
-VocPath: /home/gishr/software/px4/slam_dev/x86_slam-dev2/voc/brief_k10L6.bin
+VocPath: voc/brief_k10L6.bin
 #--------------------------------------------------------------------------------------------
 # Stereo Rectification. Only if you need to pre-rectify the images.
 # Camera.fx, .fy, etc must be the same as in LEFT.P

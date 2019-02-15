@@ -1,3 +1,0 @@
-/home/gishr/software/px4/slam_dev/nvidia_slam/Thirdparty/g2o/build/CMakeFiles/edit_cache.dir
-/home/gishr/software/px4/slam_dev/nvidia_slam/Thirdparty/g2o/build/CMakeFiles/rebuild_cache.dir
-/home/gishr/software/px4/slam_dev/nvidia_slam/Thirdparty/g2o/build/CMakeFiles/g2o.dir
