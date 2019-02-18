@@ -16,8 +16,10 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/features2d.hpp>
+#include <opencv2/xfeatures2d.hpp>
+#include <opencv2/features2d/features2d.hpp>
 #include "opencv2/calib3d.hpp"
-#include "opencv2/xfeatures2d.hpp"
+//#include "opencv2/xfeatures2d.hpp"
 
 using namespace DBoW2;
 using namespace std;
@@ -35,7 +37,13 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
 
 // number of training images
 //const int NIMAGES = 4;
+//const int NIMAGES = 1700;
 const int NIMAGES = 3000;
+
+const int RET_QUERY_LEN = 4;
+const int TOO_CLOSE_THRES = 15;
+const float DB_QUERY_SCORE_THRES = 0.5;//0.65;
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -79,6 +87,8 @@ void loadFeatures(vector<vector<cv::Mat > > &features ,vector<vector<cv::KeyPoin
 
   cv::Ptr<cv::ORB> orb = cv::ORB::create();
 
+  //cv::BriefDescriptorExtractor brief; 
+  cv::Ptr<cv::xfeatures2d::BriefDescriptorExtractor> brief = cv::xfeatures2d::BriefDescriptorExtractor::create();
   cout << "Extracting ORB features..." << endl;
   for(int i = 0; i < NIMAGES; ++i)
   {
@@ -90,7 +100,10 @@ void loadFeatures(vector<vector<cv::Mat > > &features ,vector<vector<cv::KeyPoin
     vector<cv::KeyPoint> keypoints;
     cv::Mat descriptors;
 
-    orb->detectAndCompute(image, mask, keypoints, descriptors);
+    //orb->detectAndCompute(image, mask, keypoints, descriptors);
+    orb->detect(image,keypoints);
+    brief->compute(image,keypoints,descriptors);
+    
 
     features.push_back(vector<cv::Mat >());
     changeStructure(descriptors, features.back());
@@ -118,7 +131,7 @@ void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out)
 void testVocCreation(const vector<vector<cv::Mat > > &features)
 {
   // branching factor and depth levels 
-  const int k = 9;
+  const int k = 10;
   const int L = 3;
   const WeightingType weight = TF_IDF;
   const ScoringType score = L1_NORM;
@@ -170,7 +183,11 @@ void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_mat
 
 bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list,int &save_index)
 {
-  using namespace cv::xfeatures2d;
+  //TODO:refer VINS KeyFrame::findConnection().
+
+
+
+  //using namespace cv::xfeatures2d;
   FlannBasedMatcher matcher = FlannBasedMatcher(makePtr<flann::LshIndexParams>(12,20,2));
   std::vector< DMatch > matches;
   matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
@@ -190,7 +207,7 @@ bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &k
 
   for( int i = 0; i < matches.size(); i++ )
   {
-    if( matches[i].distance <= 2*min_dist )
+    if( matches[i].distance <= 1.75*min_dist ) // 3.0 too large;2.0 too large.
     {
       good_matches.push_back( matches[i]); 
     }
@@ -200,7 +217,7 @@ bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &k
   std::vector<cv::Point2f> match_points2;
 
   cout<<"Good matches count:"<<good_matches.size()<<"."<<endl;
-  if(good_matches.size()<8)
+  if(good_matches.size()<8) // 8 -> 12
   {
     cout<<"Good matches count:"<<good_matches.size()<<"< 8,MATCH FAILED."<<endl;
     return false;
@@ -226,10 +243,26 @@ bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &k
     //cout<<6;
     match_points2.push_back( kp_list[index2][ good_matches[i].trainIdx ].pt );
   }
-  saveImagePair(index1,index2,save_index,good_matches,kp_list,kdesp_list);
-  Mat fundamental_matrix = findFundamentalMat(match_points1, match_points2, FM_RANSAC, 3, 0.99);
-  cout<<"MATCH SUCCESS."<<endl;
-  return true;
+  Mat isOutlierMask;
+  Mat fundamental_matrix = findFundamentalMat(match_points1, match_points2, FM_RANSAC, 3, 0.99,isOutlierMask);
+  int final_good_matches_count = 0;
+  std::vector<DMatch> final_good_matches;
+  for(int i = 0;i<good_matches.size();i++)
+  {
+    if (isOutlierMask.at<int>(i)!=0)
+    {
+      final_good_matches.push_back(good_matches[i]);
+      final_good_matches_count++;
+    }
+    
+  }
+  if(final_good_matches_count>8)
+  {
+    saveImagePair(index1,index2,save_index,final_good_matches,kp_list,kdesp_list);
+    cout<<"MATCH SUCCESS."<<endl;
+    return true;
+  }
+  return false;
 
 }
 
@@ -274,7 +307,6 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
   // add images to the database
 
 
-  db.add(features[0]);
   int loop_id = 0;
   for(int i = 0; i < NIMAGES; i++)
   {
@@ -288,26 +320,33 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
     cout << "Querying the database: " << endl;
 
     QueryResults ret;
-    db.query(features[i], ret, 4);
+    db.query(features[i], ret, RET_QUERY_LEN,i-TOO_CLOSE_THRES);
 
+    db.add(features[0]);
     // ret[0] is always the same image in this case, because we added it to the 
     // database. ret[1] is the second best match.
 
     cout << "Searching for Image " << i << ". " << ret << endl;
     //ret[0].Score;ret[0].Id
-    if (ret[0].Score>0.65)
+    db.add(features[i]);
+    
+    for(int wind_index =0;wind_index<ret.size();wind_index++)
     {
-      if (ret[0].Id<i-10)
-      {
-        if (match_2_images_flann(i,ret[0].Id,kp_list,kdesp_list,loop_id)) // check if this loop candidate satisfies Epipolar Geometry constrain.
+        if (ret[wind_index].Score>DB_QUERY_SCORE_THRES)
         {
-          cout<<"Loop between ["<<i<<"\t"<<ret[0].Id<<"]"<<endl;
+          if (ret[wind_index].Id<i-TOO_CLOSE_THRES)
+          {
+            if (match_2_images_flann(i,ret[wind_index].Id,kp_list,kdesp_list,loop_id)) // check if this loop candidate satisfies Epipolar Geometry constrain.
+            {
+              cout<<"Loop between ["<<i<<"\t"<<ret[wind_index].Id<<"]"<<endl;
+              break; // match one frame only once.
+            }
+          }
         }
-      }
-    }
-    else
-    {
-      db.add(features[i]);
+        else
+        {
+          break;
+        }
     }
   }
 
