@@ -201,6 +201,12 @@ Distributed under the BSD 3-Clause license. See ``LICENSE`` for more information
 
 [GAAS GitHub](https://github.com/generalized-intelligence/GAAS)
 
+## Special Thanks
+
+It is worth mentioning that we did not build everything from scratch, but on top of the solid foundations built by pioneers in the field. We would like to thank communities such as [PX4](https://px4.io) and [Dronecode](https://www.dronecode.org) for constantly pushing the industry foward. What they have built are what allowed us to build GAAS!
+
+我们的项目并不是从零开始，而是站在了过去十余年无人机行业先驱的肩膀上。非常感谢 PX4 与 Dronecode 等组织对无人机行业发展的推动，让我们今天得以有机会制作 GAAS!
+
 ## Contribute
 
 Please follow CONTRIBUTING.md
