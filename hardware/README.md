@@ -51,7 +51,7 @@ hardware 目录放置推荐的硬件配置，方便使用者购买相应的元�
 4.在现有的测试机配置基础上优化动力配置及 PID，提供更高效的飞行平台。
 
 
-关于PX4参数设定：
+PX4 相关参数设定：
 
 EKF2_AID_MASK   姿态控制传感器融合  
 
@@ -65,5 +65,9 @@ SYS_COMPANION   飞控 TELEM2 端口工作模式
 
 EKF2_HGT_MODE   高度传感器类型
 
-默认我们将使用 Barometric pressure 来调用气压计作为高度传感器 ，我们更建议使用Range sensor 参数并购买 Lidar v3 型激光传感器作为高度传感器。
+默认我们将使用 Barometric pressure 来调用气压计作为高度传感器。
+
+我们更建议使用 Range sensor 参数并购买 Lidar lite v3 型激光传感器作为高度传感器，并指定 SENS_EN_LL40LS 使用的端口 PWM / I2C 。
+
+（使用过程中视情况对可对 Lidar lite v3 单独供电以获得最佳效果 ）
 
