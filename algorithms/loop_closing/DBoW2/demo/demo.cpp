@@ -27,7 +27,7 @@ using namespace cv;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-void loadFeatures(vector<vector<cv::Mat > > &features ,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list);
+void loadFeatures(vector<vector<cv::Mat > > &features ,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list,std::string detect_method = "orb",std::string compute_method = "brief");
 void changeStructure(const cv::Mat &plain, vector<cv::Mat> &out);
 void testVocCreation(const vector<vector<cv::Mat > > &features);
 void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db_path,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list);
@@ -42,7 +42,9 @@ const int NIMAGES = 3000;
 
 const int RET_QUERY_LEN = 4;
 const int TOO_CLOSE_THRES = 15;
-const float DB_QUERY_SCORE_THRES = 0.5;//0.65;
+const float DB_QUERY_SCORE_THRES = 0.4;//0.5;//0.65;
+const int STEP1_KP_NUM = 8;//12;
+const int STEP2_KP_NUM = 5;//8;
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -80,7 +82,7 @@ int main()
 
 // ----------------------------------------------------------------------------
 
-void loadFeatures(vector<vector<cv::Mat > > &features ,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list)
+void loadFeatures(vector<vector<cv::Mat > > &features ,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list,std::string detect_method,std::string compute_method)
 {
   features.clear();
   features.reserve(NIMAGES);
@@ -89,6 +91,9 @@ void loadFeatures(vector<vector<cv::Mat > > &features ,vector<vector<cv::KeyPoin
 
   //cv::BriefDescriptorExtractor brief; 
   cv::Ptr<cv::xfeatures2d::BriefDescriptorExtractor> brief = cv::xfeatures2d::BriefDescriptorExtractor::create();
+  cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create();
+  //cv::Ptr<cv::KAZE> kaze = cv::KAZE::create();
+
   cout << "Extracting ORB features..." << endl;
   for(int i = 0; i < NIMAGES; ++i)
   {
@@ -100,10 +105,12 @@ void loadFeatures(vector<vector<cv::Mat > > &features ,vector<vector<cv::KeyPoin
     vector<cv::KeyPoint> keypoints;
     cv::Mat descriptors;
 
-    //orb->detectAndCompute(image, mask, keypoints, descriptors);
-    orb->detect(image,keypoints);
-    brief->compute(image,keypoints,descriptors);
-    
+    orb->detectAndCompute(image, mask, keypoints, descriptors);
+    //orb->detect(image,keypoints);
+    //brief->compute(image,keypoints,descriptors);
+    //surf->detectAndCompute(image,mask,keypoints,descriptors);
+    //surf->compute(image,keypoints,descriptors);
+    //kaze->detectAndCompute(image,mask,keypoints,descriptors);
 
     features.push_back(vector<cv::Mat >());
     changeStructure(descriptors, features.back());
@@ -111,6 +118,10 @@ void loadFeatures(vector<vector<cv::Mat > > &features ,vector<vector<cv::KeyPoin
     
     kp_list.push_back(keypoints);
     kdesp_list.push_back(descriptors);
+    if(i%10 == 0)
+    {
+        cout<<"Processing image " <<i <<"."<<endl;
+    }
   }
 }
 
@@ -217,7 +228,7 @@ bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &k
   std::vector<cv::Point2f> match_points2;
 
   cout<<"Good matches count:"<<good_matches.size()<<"."<<endl;
-  if(good_matches.size()<8) // 8 -> 12
+  if(good_matches.size()<STEP1_KP_NUM) // 8 -> 12
   {
     cout<<"Good matches count:"<<good_matches.size()<<"< 8,MATCH FAILED."<<endl;
     return false;
@@ -256,7 +267,7 @@ bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &k
     }
     
   }
-  if(final_good_matches_count>8)
+  if(final_good_matches_count>STEP2_KP_NUM)
   {
     saveImagePair(index1,index2,save_index,final_good_matches,kp_list,kdesp_list);
     cout<<"MATCH SUCCESS."<<endl;
@@ -285,7 +296,7 @@ void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_mat
     cv::drawMatches(image,kp_list[id1],image2,kp_list[id2],good_matches,merged_img);
     stringstream output_ss;
 
-    output_ss<<"loops/image"<<save_index<<".png";
+    output_ss<<"loops/image"<<save_index<<"__"<<id1<<"_"<<id2<<".png";
     cv::imwrite(output_ss.str(),merged_img);
     save_index++;
 }
