@@ -19,7 +19,7 @@ class Px4Controller:
         self.local_pose = None
         self.current_state = None
         self.current_heading = None
-        self.takeoff_height = 3.0
+        self.takeoff_height = 3.2
         self.initial_heading = 0
 
         self.cur_target_pose = None
@@ -162,15 +162,15 @@ class Px4Controller:
         self.gps = msg
 
 
-    def body2ned(self, body_target_x, body_target_y, body_target_z):
+    def body2enu(self, body_target_x, body_target_y, body_target_z):
 
         heading_delta = self.initial_heading - self.current_heading
 
-        NED_y = body_target_y * math.cos(heading_delta) - body_target_x * math.sin(heading_delta)
-        NED_x = body_target_y * math.sin(heading_delta) + body_target_x * math.cos(heading_delta)
-        NED_z = body_target_z
+        ENU_y = body_target_y * math.cos(heading_delta) - body_target_x * math.sin(heading_delta)
+        ENU_x = body_target_y * math.sin(heading_delta) + body_target_x * math.cos(heading_delta)
+        ENU_z = body_target_z
 
-        return NED_x, NED_y, NED_z
+        return ENU_x, ENU_y, ENU_z
 
 
     '''
@@ -203,21 +203,21 @@ class Px4Controller:
         print("Received New Position Task!")
 
         '''
-        BODY_OFFSET_NED
+        BODY_OFFSET_ENU
         '''
         if self.frame is "BODY" and msg.header.frame_id=='frame.body':
-            new_x, new_y, new_z = self.body2ned(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
+            new_x, new_y, new_z = self.body2enu(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
             print(new_x, new_y, new_z)
-            NED_x = new_x + self.local_pose.pose.position.x
-            NED_y = new_y + self.local_pose.pose.position.y
-            NED_z = new_z + self.local_pose.pose.position.z
+            ENU_x = new_x + self.local_pose.pose.position.x
+            ENU_y = new_y + self.local_pose.pose.position.y
+            ENU_z = new_z + self.local_pose.pose.position.z
 
-            self.cur_target_pose = self.construct_target(NED_x, NED_y, NED_z, self.current_heading)
+            self.cur_target_pose = self.construct_target(ENU_x, ENU_y, ENU_z, self.current_heading)
 
         else:
-            print("LOCAL NED")
+            print("LOCAL ENU")
             '''
-            LOCAL_NED
+            LOCAL_ENU
             '''
             self.cur_target_pose = self.construct_target(msg.pose.position.x,
                                                          msg.pose.position.y,

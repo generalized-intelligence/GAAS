@@ -8,7 +8,7 @@ You Can Chat and Find Support at:
 
 <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
 
-> Generalized Autonomy Aviation System (GAAS, pronounciate as "gas") is an open source project dedicated to autonomy flight and operation control system for futuristic aerial vehicles.
+> Generalized Autonomy Aviation System (GAAS, pronounciate as "gas") is an open source project dedicated to autonomy flight and operating control system for futuristic aerial vehicles.
 
 > Imagine commuting with "flying car", having food and packages delivered by drones to your door. To contribute to the described future, we would like to get the two most fundamental issues out of the way: the safety of aerial vehicles, and the demand for skilled pilots. 
 
