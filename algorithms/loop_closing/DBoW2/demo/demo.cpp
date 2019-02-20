@@ -9,8 +9,8 @@
 #include <iostream>
 #include <vector>
 
-// DBoW2
-#include "DBoW2.h" // defines OrbVocabulary and OrbDatabase
+// DBoW2/3
+#include "DBoW3.h" // defines OrbVocabulary and OrbDatabase
 
 // OpenCV
 #include <opencv2/core.hpp>
@@ -21,7 +21,7 @@
 #include "opencv2/calib3d.hpp"
 //#include "opencv2/xfeatures2d.hpp"
 
-using namespace DBoW2;
+using namespace DBoW3;
 using namespace std;
 using namespace cv;
 
@@ -38,14 +38,25 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
 // number of training images
 //const int NIMAGES = 4;
 //const int NIMAGES = 1700;
-const int NIMAGES = 3000;
+
+//const int NIMAGES = 1798;
+//const int NIMAGES=2250;
+const int NIMAGES=1470;
+
+
+//const int NIMAGES = 40;
 
 const int RET_QUERY_LEN = 4;
-const int TOO_CLOSE_THRES = 15;
-const float DB_QUERY_SCORE_THRES = 0.4;//0.5;//0.65;
+//const int TOO_CLOSE_THRES = 15;
+const int TOO_CLOSE_THRES = 400;
+
+
+//const float DB_QUERY_SCORE_THRES = 0.4;//0.5;//0.65;
+const float DB_QUERY_SCORE_THRES = 0.0075;//0.015;//0.5;//0.65;
 const int STEP1_KP_NUM = 8;//12;
 const int STEP2_KP_NUM = 5;//8;
 
+const double ORB_TH_HIGH = 20;//pretty good.//10; pretty good//5;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -59,23 +70,20 @@ void wait()
 
 int main()
 {
- try{
   vector<vector<cv::Mat > > features;
 
   vector<vector<cv::KeyPoint> > kp_list;
   vector<cv::Mat> kdesp_list;
   loadFeatures(features,kp_list,kdesp_list);  //image to features.
 
-  testVocCreation(features); //Do not create any voc.Use a pretrained one.
+  //testVocCreation(features); //Do not create any voc.Use a pretrained one.
 
   //wait();
 
   testDatabase(features,"small_voc.yml.gz",kp_list,kdesp_list);//do test.
- }
- catch (...) {
     // this executes if f() throws std::string or int or any other unrelated type
-   cout<<"Caught error!"<<endl;
- }
+
+
 
   return 0;
 }
@@ -147,7 +155,9 @@ void testVocCreation(const vector<vector<cv::Mat > > &features)
   const WeightingType weight = TF_IDF;
   const ScoringType score = L1_NORM;
 
-  OrbVocabulary voc(k, L, weight, score);
+  //OrbVocabulary voc(k, L, weight, score);
+  Vocabulary voc(k, L, weight, score);
+  //BriefVocabulary voc(k,L,weight,score);
 
   cout << "Creating a small " << k << "^" << L << " vocabulary..." << endl;
   voc.create(features);
@@ -188,11 +198,11 @@ void testVocCreation(const vector<vector<cv::Mat > > &features)
 
 
 
-void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_matches,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list);
+void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_matches,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list,double score);
 
 // ----------------------------------------------------------------------------
 
-bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list,int &save_index)
+bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list,int &save_index,double score)
 {
   //TODO:refer VINS KeyFrame::findConnection().
 
@@ -200,6 +210,7 @@ bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &k
 
   //using namespace cv::xfeatures2d;
   FlannBasedMatcher matcher = FlannBasedMatcher(makePtr<flann::LshIndexParams>(12,20,2));
+  //FlannBasedMatcher matcher = FlannBasedMatcher();
   std::vector< DMatch > matches;
   matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
 
@@ -213,12 +224,12 @@ bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &k
     if( dist < min_dist ) min_dist = dist;
     if( dist > max_dist ) max_dist = dist;
   }
-
+  cout<<"min_dist:"<<min_dist<<endl;
   std::vector< DMatch > good_matches;
 
   for( int i = 0; i < matches.size(); i++ )
   {
-    if( matches[i].distance <= 1.75*min_dist ) // 3.0 too large;2.0 too large.
+    if( matches[i].distance <= 2*min_dist && matches[i].distance< ORB_TH_HIGH) // 3.0 too large;2.0 too large.
     {
       good_matches.push_back( matches[i]); 
     }
@@ -269,7 +280,7 @@ bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &k
   }
   if(final_good_matches_count>STEP2_KP_NUM)
   {
-    saveImagePair(index1,index2,save_index,final_good_matches,kp_list,kdesp_list);
+    saveImagePair(index1,index2,save_index,final_good_matches,kp_list,kdesp_list,score);
     cout<<"MATCH SUCCESS."<<endl;
     return true;
   }
@@ -277,7 +288,7 @@ bool match_2_images_flann(int index1,int index2,vector<vector<cv::KeyPoint> > &k
 
 }
 
-void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_matches,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list)
+void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_matches,vector<vector<cv::KeyPoint> > &kp_list,vector<cv::Mat> &kdesp_list,double score)
 {
     stringstream ss;
     ss << "images/image" << id1 << ".png"; 
@@ -296,7 +307,7 @@ void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_mat
     cv::drawMatches(image,kp_list[id1],image2,kp_list[id2],good_matches,merged_img);
     stringstream output_ss;
 
-    output_ss<<"loops/image"<<save_index<<"__"<<id1<<"_"<<id2<<".png";
+    output_ss<<"loops/image"<<save_index<<"__"<<id1<<"_"<<id2<<"___"<<score<<".png";
     cv::imwrite(output_ss.str(),merged_img);
     save_index++;
 }
@@ -307,9 +318,16 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
   cout << "Creating a small database..." << endl;
 
   // load the vocabulary from disk
-  OrbVocabulary voc(db_path.c_str());
+  //OrbVocabulary voc(db_path.c_str());
+  //Vocabulary voc(db_path.c_str());
+  Vocabulary voc("../orbvoc.dbow3");
+  //BriefVocabulary voc(db_path.c_str());
   
-  OrbDatabase db(voc, false, 0); // false = do not use direct index
+  
+  //OrbDatabase db(voc, false, 0); // false = do not use direct index
+  Database db(voc, false, 0); // false = do not use direct index
+  //BriefDatabase db(voc, false, 0); // false = do not use direct index
+
   // (so ignore the last param)
   // The direct index is useful if we want to retrieve the features that 
   // belong to some vocabulary node.
@@ -347,7 +365,7 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
         {
           if (ret[wind_index].Id<i-TOO_CLOSE_THRES)
           {
-            if (match_2_images_flann(i,ret[wind_index].Id,kp_list,kdesp_list,loop_id)) // check if this loop candidate satisfies Epipolar Geometry constrain.
+            if (match_2_images_flann(i,ret[wind_index].Id,kp_list,kdesp_list,loop_id,ret[wind_index].Score)) // check if this loop candidate satisfies Epipolar Geometry constrain.
             {
               cout<<"Loop between ["<<i<<"\t"<<ret[wind_index].Id<<"]"<<endl;
               break; // match one frame only once.
@@ -371,8 +389,11 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
   
   // once saved, we can load it again  
   cout << "Retrieving database once again..." << endl;
-  OrbDatabase db2("small_db.yml.gz");
-  cout << "... done! This is: " << endl << db2 << endl;
+  //OrbDatabase db2("small_db.yml.gz");
+  Database db2("small_db.yml.gz");
+  //BriefDatabase db2("small_db.yml.gz");
+  
+  cout << "... done!" << endl ;//<< db2 << endl;
 }
 
 // ----------------------------------------------------------------------------

@@ -13,7 +13,7 @@
 
 using namespace std;
 
-namespace DBoW2
+namespace DBoW3
 {
 
 // ---------------------------------------------------------------------------
@@ -59,5 +59,5 @@ void QueryResults::saveM(const std::string &filename) const
 
 // ---------------------------------------------------------------------------
 
-} // namespace DBoW2
+} // namespace DBoW3
 

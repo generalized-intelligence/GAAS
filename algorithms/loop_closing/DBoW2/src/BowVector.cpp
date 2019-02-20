@@ -15,7 +15,7 @@
 
 #include "BowVector.h"
 
-namespace DBoW2 {
+namespace DBoW3 {
 
 // --------------------------------------------------------------------------
 
@@ -64,7 +64,7 @@ void BowVector::normalize(LNorm norm_type)
   double norm = 0.0; 
   BowVector::iterator it;
 
-  if(norm_type == DBoW2::L1)
+  if(norm_type == DBoW3::L1)
   {
     for(it = begin(); it != end(); ++it)
       norm += fabs(it->second);
@@ -90,7 +90,7 @@ std::ostream& operator<< (std::ostream &out, const BowVector &v)
   BowVector::const_iterator vit;
   std::vector<unsigned int>::const_iterator iit;
   unsigned int i = 0; 
-  const unsigned int N = v.size();
+  const size_t N = v.size();
   for(vit = v.begin(); vit != v.end(); ++vit, ++i)
   {
     out << "<" << vit->first << ", " << vit->second << ">";
@@ -123,8 +123,41 @@ void BowVector::saveM(const std::string &filename, size_t W) const
   
   f.close();
 }
+// --------------------------------------------------------------------------
+
+void BowVector::toStream(std::ostream &str)const{
+    uint32_t s=size();
+    str.write((char*)&s,sizeof(s));
+    for(auto d:*this){
+        str.write((char*)&d.first,sizeof(d.first));
+        str.write((char*)&d.second,sizeof(d.second));
+    }
+}
+// --------------------------------------------------------------------------
+
+void BowVector::fromStream(std::istream &str){
+clear();
+uint32_t s;
+
+str.read((char*)&s,sizeof(s));
+for(int i=0;i<s;i++){
+    WordId wid;
+    WordValue wv;
+    str.read((char*)&wid,sizeof(wid));
+    str.read((char*)&wv,sizeof(wv));
+    insert(std::make_pair(wid,wv));
+}
+
+}
+
+uint64_t BowVector::getSignature()const{
+uint64_t sig=0;
+for(auto ww:*this) sig+=ww.first+1e6*ww.second;
+return sig;
+}
+
 
 // --------------------------------------------------------------------------
 
-} // namespace DBoW2
+} // namespace DBoW3
 

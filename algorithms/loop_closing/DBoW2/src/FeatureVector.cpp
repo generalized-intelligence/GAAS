@@ -12,7 +12,7 @@
 #include <vector>
 #include <iostream>
 
-namespace DBoW2 {
+namespace DBoW3 {
 
 // ---------------------------------------------------------------------------
 
@@ -82,4 +82,4 @@ std::ostream& operator<<(std::ostream &out,
 
 // ---------------------------------------------------------------------------
 
-} // namespace DBoW2
+} // namespace DBoW3
