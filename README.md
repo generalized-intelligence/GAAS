@@ -94,13 +94,13 @@ Obstacle avoidance, 3D tap-to-fly and navigation (independent of GPS):
 
 Upcoming features:
 
-	Tracking and Following with Obstacle Avoidance
+	1. Tracking and Following with Obstacle Avoidance
 
-	Computer Vision enabled Accurate Landing
+	2. Computer Vision enabled Accurate Landing
 
-	Auto-Search and 3D Modelling
+	3. Auto-Search and 3D Modelling
 
-	Multi-Drone Collaboration
+	4. Multi-Drone Collaboration
 
 ## Development Setup
 
