@@ -136,61 +136,64 @@ NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。
 
 ### 1.安装 ROS-Kinetic
 
-建议安装 ros-kinetic-desktop-full; 可按照此地址进行安装：http://wiki.ros.org/kinetic/Installation/Ubuntu.
+建议安装 ros-kinetic-desktop-full; 可按照此地址进行安装：
+	http://wiki.ros.org/kinetic/Installation/Ubuntu.
 
 ### 2.安装 Octomap-Server 以及 mavros
 
-cd ~/catkin_ws/src
-git clone https://github.com/OctoMap/octomap_mapping.git
-git clone https://github.com/mavlink/mavros.git
-cd ..
-catkin build
-source ~/catkin_ws/devel/setup.bash
+	cd ~/catkin_ws/src
+	git clone https://github.com/OctoMap/octomap_mapping.git
+	git clone https://github.com/mavlink/mavros.git
+	cd ..
+	catkin build
+	source ~/catkin_ws/devel/setup.bash
 
 ### 3. Gazebo
 
 如果您在第一步安装了 ros-kinetic-desktop-full, 您已经具有了 gazebo7；, 接下来请安装对应 ros plugin:
 
-sudo apt install ros-kinetic-gazebo-*
+	sudo apt install ros-kinetic-gazebo-*
 
 如果您想使用其他版本的 gazebo, 请参考：http://gazebosim.org/, 并安装对应版本的 ros plugin:
 
-sudo apt install ros-kinetic-<your gazebo version>-*
+	sudo apt install ros-kinetic-<your gazebo version>-*
 
 
-4. PCL
+### 4. PCL
 
-请参考此链接安装：http://www.pointclouds.org/documentation/tutorials/compiling_pcl_posix.php
-
-
-5. YGZ-slam
-
-请参考此链接安装：:https://github.com/gaoxiang12/ygz-stereo-inertial
+请参考此链接安装：
+	http://www.pointclouds.org/documentation/tutorials/compiling_pcl_posix.php
 
 
-6. PX4
+### 5. YGZ-slam
+
+请参考此链接安装:
+	https://github.com/gaoxiang12/ygz-stereo-inertial
+
+
+### 6. PX4
+NOTE:  仅在 px4 v1.8.0 上进行过测试。
+    
+    mkdir ~/px4 && cd ~/px4
+    git clone https://github.com/PX4/Firmware.git
+    cd Firmware
+    git checkout v1.8.0
 
 ## 使用案例
-目前只在 PX4 v1.8.0 测试通过
-
-mkdir ~/px4 && cd ~/px4
-git clone https://github.com/PX4/Firmware.git
-cd Firmware
-git checkout v1.8.0
 
 1.带避障，不依赖 GPS 的路径规划指点飞行。
 
-step<1> 如果是室内环境使用或需要高精度飞行，ROS launch file 加入 SLAM；否则跳过此步骤。
+	step<1> 如果是室内环境使用或需要高精度飞行，ROS launch file 加入 SLAM；否则跳过此步骤。
 
-step<2> 对于室外环境，配置 GPS 轨迹(使用地图)。对于室内部分，在 3D 模型中配置轨迹。
+	step<2> 对于室外环境，配置 GPS 轨迹(使用地图)。对于室内部分，在 3D 模型中配置轨迹。
 
-step<3> ROS launch file 加入避障部分。
+	step<3> ROS launch file 加入避障部分。
 
-step<4> 启动飞行器，等待 PX4 自检通过。
+	step<4> 启动飞行器，等待 PX4 自检通过。
 
-step<5> 启动 Mavros。
+	step<5> 启动 Mavros。
 
-step<6> 开始执行任务。
+	step<6> 开始执行任务。
 
 即将推出：
 
