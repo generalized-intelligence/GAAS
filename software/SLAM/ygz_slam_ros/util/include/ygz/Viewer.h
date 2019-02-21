@@ -9,7 +9,8 @@
 #include <mutex>
 #include <set>
 #include <pangolin/pangolin.h>
-
+#include <memory>
+using namespace std;
 // 可视化程序
 // 构造后默认调用Run，用AddFrame增加新的帧，用Close关闭
 // 或者，用SetBackend关联到后端，那么就仅画出current和后端所有关键帧、地图点

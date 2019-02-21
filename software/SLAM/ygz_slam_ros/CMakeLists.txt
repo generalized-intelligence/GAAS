@@ -74,7 +74,7 @@ find_package(catkin REQUIRED COMPONENTS
                                 visualization_msgs
                                 tf)
 #find_package(CUDA  REQUIRED)
-
+find_package(DBoW3 REQUIRED PATH Thirdparty/DBow3)
 # to show 'include' in QtCreator
 FILE(GLOB_RECURSE INC_ALL "*/*.h")
 add_custom_target(headers SOURCES ${INC_ALL})
@@ -84,7 +84,14 @@ ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
 ${PROJECT_SOURCE_DIR}/src
 ${PROJECT_SOURCE_DIR}/Thirdparty/fast/include
-${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2
+#${PROJECT_SOURCE_DIR}/Thirdparty/DBow2/DBoW2
+
+${DBoW3_DIRS}
+${OpenCV_INCLUDE_DIRS}
+${DBoW3_DIRS}
+
+${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/src
+#${PROJECT_SOURCE_DIR}/Thirdparty/DVision/
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
@@ -102,7 +109,9 @@ set(THIRD_PARTY_LIBS
         ${OpenCV_LIBS}
         ${EIGEN3_LIBS}
         ${Pangolin_LIBRARIES}
-        ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
+        #${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/lib/libDBo.so
+        ${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/build/src/libDBoW3.so
+        ${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/build/libloopclosingmanager.so
         ${PROJECT_SOURCE_DIR}/Thirdparty/fast/build/libfast.so
         ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
         ${BLAS_LIBRARIES}
@@ -113,6 +122,7 @@ set(THIRD_PARTY_LIBS
         ${PCL_LIBRARIES}
         ${OCTOMAP_LIBRARIES}
         ${Ceres_LIBRARIES}
+        ${DBoW3_LIBRARIES}
 )
 
 # subdirectories

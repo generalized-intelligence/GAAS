@@ -6,10 +6,11 @@
 #include <stdexcept>
 #include <glog/logging.h>
 
-#include "Thirdparty/DBoW2/DBoW2/FORB.h"
-#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
-#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
-#include "Thirdparty/DBoW2/DBoW2/TemplatedVocabulary.h"
+//#include "Thirdparty/DBoW2/DBoW2/FORB.h"
+//#include "Thirdparty/DBoW2/DBoW2/BowVector.h"
+//#include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
+//#include "Thirdparty/DBoW2/DBoW2/TemplatedVocabulary.h"
+#include "Thirdparty/DBow3/src/DBoW3.h"
 
 #include "se3.hpp"
 
@@ -18,7 +19,7 @@
 
 namespace ygz {
 
-    typedef DBoW2::TemplatedVocabulary<DBoW2::FORB::TDescriptor, DBoW2::FORB>
+    typedef DBoW3::Vocabulary //DBoW2::TemplatedVocabulary<DBoW2::FORB::TDescriptor, DBoW2::FORB>
             ORBVocabulary;
 
     namespace setting {

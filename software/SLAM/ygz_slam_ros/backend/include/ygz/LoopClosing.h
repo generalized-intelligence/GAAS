@@ -12,26 +12,26 @@
 #include <ygz/CeresHelper.h>
 #include <ygz/utility.h>
 
-#include <DBoW2/BowVector.h>
-#include <DBoW2/FeatureVector.h>
-#include <DBoW2/TemplatedVocabulary.h>
-#include <DBoW2/TemplatedDatabase.h>
-#include <DBoW2/DBoW2.h>
+//#include <DBoW2/BowVector.h>
+//#include <DBoW2/FeatureVector.h>
+//#include <DBoW2/TemplatedVocabulary.h>
+//#include <DBoW2/TemplatedDatabase.h>
+//#include <DBoW2/DBoW2.h>
+#include "LoopClosingManager.h"
 
 #include "Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
 #include <opencv2/opencv.hpp>
 #include <eigen3/Eigen/Dense>
 
-#include <DUtils/DUtils.h>
+//#include <DUtils/DUtils.h>
 
 
 
 namespace ygz{
   
   using namespace std;
-  using namespace DBoW2;
-  using namespace DVision;
-  using namespace DUtils;
+  using namespace DBoW3;
+  //using namespace DVision;
   using namespace Eigen;
   
   class Tracker;
@@ -65,8 +65,8 @@ namespace ygz{
 //     vector<shared_ptr<Frame> > mvLoopClosureCandidates;
     
       
-    BriefDatabase mDB;
-    BriefVocabulary* mVoc;
+    //BriefDatabase mDB;
+    //BriefVocabulary* mVoc;
 
     map<int, cv::Mat> image_pool;
 
