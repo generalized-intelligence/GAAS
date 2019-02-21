@@ -1,10 +1,10 @@
 This repository lists recommended hardware for building your own prototype.
 
-This is the list of hardware that we used for testing, you could but the same hardware for your prototype:
+This is a list of hardware that we used for testing. You may use the same hardware for your prototype:
 
-In order to facilitate indoor testing and daily maintenance, we have not selected too large or too small models. Excellent performance and easy maintenance are the original intention of us to build this drone.
+In order to facilitate indoor testing and daily maintenance, we have not selected models that are too large or too small. Excellent performance and easy maintenance are our original intention to build this drone.
 
-And if you wish, we could help you buy all of this hardware and send it to you. Or we can send link to you if you could use taobao.com. Please contact us for more detail hi@giai.tech.
+And if you wish, we could help you buy all of this hardware and send it to you. Or we can send you the links if you could use taobao.com. Please contact us for more details at hi@giai.tech.
 
 <img src="https://s2.ax1x.com/2019/02/20/k2Jruj.jpg" align="right" width="400px" alt="GA">
 
@@ -68,7 +68,7 @@ We recommend using the Range sensor parameter and purchasing a Lidar lite v3 las
 
 (Lidar lite v3 can be powered separately for best results during use)
   
-
+---
 
 hardware 目录放置推荐的硬件配置，方便使用者购买相应的元件制作原型机。
 
