@@ -65,7 +65,7 @@ Install at the following address:
 
 ### 5. YGZ-slam
 
-Detailed information can be found in the folder
+Detailed information can be found in the folder: https://github.com/gaoxiang12/ygz-stereo-inertial
 
 ### 6. PX4
 
