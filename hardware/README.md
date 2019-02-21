@@ -1,10 +1,10 @@
 This repository lists recommended hardware for building your own prototype.
 
-This is a list of hardware that we used for testing. You may use the same hardware for your prototype:
-
 In order to facilitate indoor testing and daily maintenance, we have not selected models that are too large or too small. Excellent performance and easy maintenance are our original intention to build this drone.
 
 And if you wish, we could help you buy all of this hardware and send it to you. Or we can send you the links if you could use taobao.com. Please contact us for more details at hi@giai.tech.
+
+This is a list of hardware that we used for testing. You may use the same hardware for your prototype:
 
 <img src="https://s2.ax1x.com/2019/02/20/k2Jruj.jpg" align="right" width="400px" alt="GA">
 
