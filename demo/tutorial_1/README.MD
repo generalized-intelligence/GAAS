@@ -1,6 +1,7 @@
+## Click below to watch the first step-by-step tutorial!
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=NrxKOEnidOo
 " target="_blank"><img src="http://img.youtube.com/vi/NrxKOEnidOo/0.jpg" 
-alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
+alt="IMAGE ALT TEXT HERE" width="480" height="360" border="10" /></a>
 
 ## User Guide
 This folder contains some python scripts for controlling px4 in offboard mode in Gazebo simulation environment. It assumes you have properly installed mavros, gazebo7 and compiled px4 firmware detailed in the github front page.
