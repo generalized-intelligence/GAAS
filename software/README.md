@@ -2,7 +2,7 @@
 
 The primary goal of the software is to provide an easy-to-use default configuration, which can also be altered for more advanced demands.
 
-Considering the potential complication caused by compatibility of various hardware, the supported sensors are stereo cameras. Proximity sensors (RGBD cameras and LiDAR) are not being considered.
+Considering the potential complication caused by compatibility of various hardware, the supported sensors are stereo cameras. Proximity sensors (RGBD cameras and LiDAR) are not being considered for now.
 
 The software contains the following modules:
 
