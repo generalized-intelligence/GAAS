@@ -11,7 +11,7 @@ The software contains the following modules:
     3.Dynamic Target（To Be Continued）
     4.Local Planner/Global Planner（To Be Continued）
 
-Each module contains a default implementation. If you would like to replace any of the modules, the original ros topic/service needs to be replaced. The corresponding ros topics/service is as the following.
+Each module contains a default implementation, and you can alter for other implementations. If you would like to replace any of the modules, the original ros topic/service needs to be replaced. The corresponding ros topics/service is as the following.
 PX4 is used as default and flight control, and is the only option as of now.
 
 ## 1.SLAM:
