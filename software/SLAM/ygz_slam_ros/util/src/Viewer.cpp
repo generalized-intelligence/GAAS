@@ -12,12 +12,16 @@
 
 namespace ygz {
 
-    Viewer::Viewer(bool startViewer) {
+    Viewer::Viewer(bool startViewer, bool displayMapPoints)
+    {
 
-        if (startViewer) {
+        if (startViewer)
+        {
             mbRunning = true;
             mViewerThread = thread(&Viewer::Run, this);
         }
+        
+        mDipalyMapPoints = displayMapPoints;
 
         mBiasLogLabels.clear();
         mBiasLogLabels.push_back("bg_x");
@@ -101,7 +105,8 @@ namespace ygz {
 
         while (!pangolin::ShouldQuit() && mbRunning) {
 
-            if (mbNewFrameUpdated) {
+            if (mbNewFrameUpdated)
+            {
 
                 {
                     unique_lock<mutex> lock(mMutexNewFrame);
@@ -110,14 +115,21 @@ namespace ygz {
                     mbNewFrameUpdated = false;
                 }
 
-                for (shared_ptr<Feature> feat: mCurrentFrame->mFeaturesLeft) {
+                for (shared_ptr<Feature> feat: mCurrentFrame->mFeaturesLeft)
+                {
                     if (feat == nullptr)
                         continue;
-                    if (feat->mpPoint && feat->mpPoint->isBad() == false)
-                        mPoints.insert(feat->mpPoint);
+                    
+                    if (mDipalyMapPoints)
+                    {
+                        if (feat->mpPoint && feat->mpPoint->isBad() == false)
+                            mPoints.insert(feat->mpPoint);
+                    }
+
                 }
 
-                if (mbRecordTrajectory) {
+                if (mbRecordTrajectory)
+                {
                     mTrajectory.push_back(mCurrentFrame->Ow());
                 }
 

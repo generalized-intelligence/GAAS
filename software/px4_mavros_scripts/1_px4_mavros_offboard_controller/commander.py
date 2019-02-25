@@ -18,17 +18,15 @@ class Commander:
         self.custom_activity_pub = rospy.Publisher('gi/set_activity/type', String, queue_size=10)
 
 
-    def move(self, x, y, z, BODY_OFF_SET_ENU=True):
-        self.position_target_pub.publish(self.set_pose(x, y, z, BODY_OFF_SET_ENU))
+    def move(self, x, y, z, BODY_OFFSET_ENU=True):
+        self.position_target_pub.publish(self.set_pose(x, y, z, BODY_OFFSET_ENU))
 
     def turn(self, yaw_degree):
         self.yaw_target_pub.publish(yaw_degree)
 
-    
     # land in current position
     def land(self):
         self.custom_activity_pub.publish(String("LAND"))
-
 
     # hover at current position
     def hover(self):

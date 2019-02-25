@@ -6,13 +6,18 @@ namespace ygz {
     
     LoopClosing::LoopClosing(string voc_path)
     {
-        mVoc = new BriefVocabulary(voc_path);
-        mDB.setVocabulary(*mVoc, false, 0);
+        //mVoc = new BriefVocabulary(voc_path);
+        //mDB.setVocabulary(*mVoc, false, 0);
         cout<<"Loading Vocabulary finished!"<<endl;
     }
     
     
     //query the frame and add the frame to database
+    int LoopClosing::DetectLoop(shared_ptr<Frame> pFrame, int frame_idx)
+    {
+        ;
+    }
+/*
     int LoopClosing::DetectLoop(shared_ptr<Frame> pFrame, int frame_idx)
     {
         // put image into image_pool; for visualization
@@ -36,7 +41,7 @@ namespace ygz {
         //Queries the database with some features and return QueryResult
         //int(4) means number of result to return, which is a vector, 4 means there would return 4 results
         //the last para means the frame distance that would be reuturned to this frame
-        mDB.query(pFrame->brief_descriptors, QueryResult, 4, frame_idx-50);
+        //mDB.query(pFrame->brief_descriptors, QueryResult, 4, frame_idx-50);
         
         
         //queried results from high to low and displaying the top 4 scores!!!!!!!!!
@@ -50,7 +55,7 @@ namespace ygz {
 
         
         // Ads an entry to the database and returns its index
-        mDB.add(pFrame->brief_descriptors);
+        //mDB.add(pFrame->brief_descriptors);
         cout<<"added frame to database!"<<pFrame->IsKeyFrame()<<endl;
         
         
@@ -119,7 +124,7 @@ namespace ygz {
             return -1;
         
     }
-
+*/
     //given frame index, retrieve correspoding frame
     shared_ptr<Frame> LoopClosing::getFrame(size_t index)
     {
@@ -346,7 +351,7 @@ namespace ygz {
         }
         else
         {
-            mDB.add(pFrame->brief_descriptors);
+            //mDB.add(pFrame->brief_descriptors);
         }
         
         

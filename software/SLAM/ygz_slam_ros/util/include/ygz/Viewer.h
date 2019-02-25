@@ -9,7 +9,8 @@
 #include <mutex>
 #include <set>
 #include <pangolin/pangolin.h>
-
+#include <memory>
+using namespace std;
 // 可视化程序
 // 构造后默认调用Run，用AddFrame增加新的帧，用Close关闭
 // 或者，用SetBackend关联到后端，那么就仅画出current和后端所有关键帧、地图点
@@ -27,7 +28,7 @@ namespace ygz {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
-        Viewer(bool startViewer = true);
+        Viewer(bool startViewer = true, bool displayMapPoints = false);
 
         ~Viewer();
 
@@ -135,6 +136,7 @@ namespace ygz {
         bool mbShowTrajGT = false;      // 是否画出真实轨迹
         bool mbShowCurrentImg = true;   // 是否显示当前帧图像
         bool mbRecordTrajectory = true; // 是否记录历史轨迹
+        bool mDipalyMapPoints = false;   // dispaly map points
 
     public:
         // Debug functions

@@ -1187,7 +1187,8 @@ namespace ygz {
     int Tracker::OptimizeCurrentPoseWithoutIMU() {
         const double gps_weight = 5.0;
 	//const double AttitudeWeight = 7.0;//1000;
-	const double AttitudeWeight = 20;//200
+	//const double AttitudeWeight = 20;//200
+    const double AttitudeWeight = 200;//200
 	const double height_weight = 50;//1000;//50.0;// 50 -1000 are both ok.
         // 不带IMU的清爽很多，只要优化当前帧的PR即可
         assert(mpCurrentFrame != nullptr);
@@ -1235,8 +1236,9 @@ namespace ygz {
 	bool GlobalUseAttitude = true;
 	if (GlobalUseAttitude)
 	{
-	    if(this->use_mVA)
-	    {
+	    //if(this->use_mVA)
+	    //{
+	        cout<<"USING PX4 ATTITUDE INFO!!!"<<endl;
 		EdgeAttitude *pEdgeAttitude = new EdgeAttitude();
 		pEdgeAttitude->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex*> (vPR));
 		Vector3d so3_r = SO3d::log(this->mVA.q.toRotationMatrix());
@@ -1246,12 +1248,16 @@ namespace ygz {
 		pEdgeAttitude->setInformation(info_mat*AttitudeWeight);
 		
 		optimizer.addEdge(pEdgeAttitude);
-	    }
-	    else
-	    {
-	        LOG(WARNING)<<"use_mVA is false.Attitude not used."<<endl;
-	    }
+	    //}
+	    //else
+	    //{
+	    //    LOG(WARNING)<<"use_mVA is false.Attitude not used."<<endl;
+	    //}
 	}
+	else
+    {
+        cout<<"NOT USING PX4 ATTITUDE INFO!!!"<<endl;
+    }
 	
 	bool UseHeightBundle = true;//Height bundle used to fix drift.
 	if (UseHeightBundle)

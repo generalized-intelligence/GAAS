@@ -19,7 +19,7 @@ class Px4Controller:
         self.local_pose = None
         self.current_state = None
         self.current_heading = None
-        self.takeoff_height = 3.2
+        self.takeoff_height = 3.0
         self.initial_heading = 0
 
         self.cur_target_pose = None
@@ -73,15 +73,6 @@ class Px4Controller:
             self.local_target_pub.publish(self.cur_target_pose)
             self.arm_state = self.arm()
             self.offboard_state = self.offboard()
-
-
-        # while self.offboard_state is False:
-        #     self.local_target_pub.publish(self.cur_target_pose)
-        #     self.arm_state = self.arm()
-        #     self.offboard_state = self.offboard()
-
-
-        # self.initial_heading = self.q2yaw(self.imu.orientation)
 
         self.initial_heading = math.pi / 2
         print("Initial heading set to: ", self.initial_heading)

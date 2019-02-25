@@ -58,7 +58,7 @@ namespace ygz {
     int ORBMatcher::SearchByBoW(shared_ptr<Frame> frame1, shared_ptr<Frame> frame2, std::vector<Match> &matches,
                                 bool only3D) {
 
-        const DBoW2::FeatureVector &vFeatVecF1 = frame1->mFeatVec;
+        const DBoW3::FeatureVector &vFeatVecF1 = frame1->mFeatVec;
 
         int nmatches = 0;
 
@@ -67,10 +67,10 @@ namespace ygz {
             rotHist[i].reserve(500);
 
         // We perform the matching over ORB that belong to the same vocabulary node (at a certain level)
-        DBoW2::FeatureVector::const_iterator F1it = vFeatVecF1.begin();
-        DBoW2::FeatureVector::const_iterator F2it = frame2->mFeatVec.begin();
-        DBoW2::FeatureVector::const_iterator F1end = vFeatVecF1.end();
-        DBoW2::FeatureVector::const_iterator F2end = frame2->mFeatVec.end();
+        DBoW3::FeatureVector::const_iterator F1it = vFeatVecF1.begin();
+        DBoW3::FeatureVector::const_iterator F2it = frame2->mFeatVec.begin();
+        DBoW3::FeatureVector::const_iterator F1end = vFeatVecF1.end();
+        DBoW3::FeatureVector::const_iterator F2end = frame2->mFeatVec.end();
 
         while (F1it != F1end && F2it != F2end) {
             if (F1it->first == F2it->first) {
@@ -804,8 +804,8 @@ namespace ygz {
     int ORBMatcher::SearchForTriangulation(shared_ptr<Frame> pKF1, shared_ptr<Frame> pKF2, Matrix3d &F12,
                                            std::vector<Match> &vMatchedPairs) {
 
-        const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
-        const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
+        const DBoW3::FeatureVector &vFeatVec1 = pKF1->mFeatVec;
+        const DBoW3::FeatureVector &vFeatVec2 = pKF2->mFeatVec;
 
         // Find matches between not tracked keypoints
         // Matching speed-up by ORB Vocabulary
@@ -821,10 +821,10 @@ namespace ygz {
 
         const float factor = 1.0f / setting::HISTO_LENGTH;
 
-        DBoW2::FeatureVector::const_iterator f1it = vFeatVec1.begin();
-        DBoW2::FeatureVector::const_iterator f2it = vFeatVec2.begin();
-        DBoW2::FeatureVector::const_iterator f1end = vFeatVec1.end();
-        DBoW2::FeatureVector::const_iterator f2end = vFeatVec2.end();
+        DBoW3::FeatureVector::const_iterator f1it = vFeatVec1.begin();
+        DBoW3::FeatureVector::const_iterator f2it = vFeatVec2.begin();
+        DBoW3::FeatureVector::const_iterator f1end = vFeatVec1.end();
+        DBoW3::FeatureVector::const_iterator f2end = vFeatVec2.end();
 
         while (f1it != f1end && f2it != f2end) {
             if (f1it->first == f2it->first) {

@@ -22,8 +22,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/eigen.hpp>
 
-#include <Thirdparty/DBoW2/DVision/DVision.h>
-#include <Thirdparty/DBoW2/DUtils/DUtils.h>
+#include <Thirdparty/DBow3/src/DVision.h>
+#include <Thirdparty/DBow3/src/DUtils.h>
 
 
 using cv::Mat;
@@ -491,8 +491,8 @@ namespace ygz {
         bool mbIsKeyFrame = false;
 
         // Bag of Words Vector structures.
-        DBoW2::BowVector mBowVec;
-        DBoW2::FeatureVector mFeatVec;
+        DBoW3::BowVector mBowVec;
+        DBoW3::FeatureVector mFeatVec;
         
         
         // 从上一个帧到这里的IMU

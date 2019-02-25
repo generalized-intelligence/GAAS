@@ -100,8 +100,12 @@ cv::Mat M1l, M2l, M1r, M2r;
 #define GD_geocentF      0.003352810664
 
 
-
 mavros_msgs::State current_state;
+
+
+std::ofstream SlamPoseHistory, px4PoseHistory;
+
+
 void state_cb(const mavros_msgs::State::ConstPtr& msg){
     current_state = *msg;
 }
@@ -362,6 +366,67 @@ void pixhawkIMU_sub(const sensor_msgs::Imu &curQ)
      
 }
 
+void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor_msgs::ImageConstPtr &msgRight,const geometry_msgs::PoseStamped &posemsg)
+{
+    System& system = *pSystem;
+    try
+    {
+        cv_ptrLeft = cv_bridge::toCvShare(msgLeft);
+        cv_ptrRight = cv_bridge::toCvShare(msgRight);
+    }
+    catch (cv_bridge::Exception& e)
+    {
+        ROS_ERROR("cv_bridge exception: %s", e.what());
+        return;
+    }
+    cv::Mat imLeftRect, imRightRect;
+    //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
+    //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
+
+    imLeftRect = cv_ptrLeft->image;
+    imRightRect = cv_ptrRight->image;
+
+    VehicleAttitude atti;
+    atti.q.x() = posemsg.pose.orientation.x;
+    atti.q.y() = posemsg.pose.orientation.y;
+    atti.q.z() = posemsg.pose.orientation.z;
+    atti.q.w() = posemsg.pose.orientation.w;
+    /*if(do_reform)
+    {
+        atti.q = atti.q*(init_atti.q.inverse());
+    }*/
+    //LOG(WARNING)<<"Attitude input:\n\n"<<endl;
+    //LOG(WARNING)<<atti.q.toRotationMatrix()<<endl;
+    atti.time_ms = posemsg.header.stamp.toNSec();
+    pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
+                                           0,0,0,false,atti,true,0,false);
+    
+    
+    Vector3d pos = pos_and_atti.translation();
+    Matrix3d mat = pos_and_atti.rotationMatrix();
+    Quaterniond quat(mat);
+    
+    
+    SlamPoseHistory << to_string(pos[0]) + "," + to_string(pos[1]) + "," + to_string(pos[2]) + "\n";
+    //px4PoseHistory << to_string(posemsg.pose.position.x) + "," + to_string(posemsg.pose.position.y) + "," + to_string(posemsg.pose.position.z) + "\n";
+    
+    geometry_msgs::PoseStamped SlamPose;
+    SlamPose.header.stamp = ros::Time::now();
+    auto &pose_obs = SlamPose.pose.position;
+    pose_obs.x = pos(0,0);
+    pose_obs.y = pos(1,0);
+    pose_obs.z = pos(2,0);
+    auto &pose_atti = SlamPose.pose.orientation;
+    pose_atti.w = quat.w();
+    pose_atti.x = quat.x();
+    pose_atti.y = quat.y();
+    pose_atti.z = quat.z();
+    SLAMpose->publish(SlamPose);
+    
+    
+    temp_vimu.clear();
+}
+
 void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight)
 {
     System& system = *pSystem;
@@ -585,7 +650,9 @@ int main(int argc, char **argv) {
         cout<<"SHABI, YOU NEED TO SPECIFY CONFIG PATH!"<<endl;
         return 0;
     }
-
+    
+    SlamPoseHistory.open("./slampose.csv");
+    px4PoseHistory.open("./px4pose.csv");
 
     google::InitGoogleLogging(argv[0]);    
     string config_path = argv[1];
@@ -666,13 +733,27 @@ int main(int argc, char **argv) {
     
     //for PX4 device:
     ros::Subscriber atti_sub_px4 = nh.subscribe("/mavros/global_position/local",100,FetchAttitudeCallback_px4);
-    
-    
-    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_pol;
-    message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub);
+
+//old version
+    //typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_pol;
+
+
+
+    //message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub);
     //sync.setMaxIntervalDuration(ros::Duration(0.01));
     
-    sync.registerCallback(boost::bind(FetchImageCallback, _1, _2));
+    //sync.registerCallback(boost::bind(FetchImageCallback, _1, _2));
+
+
+
+//new version with attitude by pixhawk mavlink msg.
+    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image,geometry_msgs::PoseStamped> sync_pol;
+    message_filters::Subscriber<geometry_msgs::PoseStamped> px4_attitude_sub(nh, "/mavros/local_position/pose", 10);
+    message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub,px4_attitude_sub);
+    sync.registerCallback(//boost::bind(
+            TEMP_FetchImageAndAttitudeCallback
+            //,_1,_2,_3)
+            );
     
     
     //NOTE for test

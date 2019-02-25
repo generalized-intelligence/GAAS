@@ -1,6 +1,7 @@
 #include "ygz/Settings.h"
 #include "ygz/Align.h"
-
+using namespace Eigen;
+using namespace std;
 namespace ygz {
 
     // SSE 就交给你们了

@@ -47,24 +47,19 @@ namespace ygz {
             this->obstacle_map_thread = thread(&Tracker::do_obstacle_map_building_main,this);
             this->obstacle_map_thread.detach();//分离出来独立运行即可.
         }
-
     }
 
     TrackerLK::TrackerLK() {
         mState = NO_IMAGES_YET;
     }
 
+    
     SE3d TrackerLK::InsertStereo(            
 	    const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const double &timestamp,
-            const VecIMU &vimu,
-	    VehicleAttitude va,
-	    bool use_atti,
-            double gps_x,
-            double gps_y,
-            double gps_z,
-            bool use_gps,
-	    double height,
-	    bool use_height)
+        const VecIMU &vimu,
+        VehicleAttitude va,
+        bool use_atti,
+        double gps_x, double gps_y, double gps_z, bool use_gps, double height, bool use_height)
     {
         
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
@@ -104,7 +99,7 @@ namespace ygz {
         this->mUseGPS = use_gps;
 
         this->mVA = va;
-        this->mUseGPS = use_atti;
+        this->use_mVA =  use_atti;
         this->mHeight = height;
         this->use_mHeight = use_height;
         

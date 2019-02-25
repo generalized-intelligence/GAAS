@@ -11,7 +11,8 @@ namespace ygz {
         // Read rectification parameters
         cv::FileStorage fsSettings(configPath, cv::FileStorage::READ);
 
-        if (!fsSettings.isOpened()) {
+        if (!fsSettings.isOpened())
+        {
             LOG(FATAL) << "ERROR: Wrong path to settings" << endl;
             return;
         }
@@ -42,28 +43,26 @@ namespace ygz {
             mpTracker->SetPureVisionMode(true);
         }
         
-        cout<<"system 0.1"<<endl;
         
         // create a backend
         mpBackend = shared_ptr<BackendSlidingWindowG2O>(new BackendSlidingWindowG2O(mpTracker));
         mpTracker->SetBackEnd(mpBackend);
         
-        cout<<"system 0.2"<<endl;
         
         // create a viewer
         bool useViewer = string(fsSettings["UseViewer"]) == "true";
-        if (useViewer) {
-            mpViewer = shared_ptr<Viewer>(new Viewer());
+        bool displayMapPoints = string(fsSettings["displayMapPoints"]) == "true";
+        if (useViewer)
+        {
+            mpViewer = shared_ptr<Viewer>(new Viewer(true, displayMapPoints));
             mpTracker->SetViewer(mpViewer);
         }
         
-        cout<<"system 0.3"<<endl;
-        
         //loopClosing instance related
         string mVocPath = fsSettings["VocPath"];
-        cout<<"system 1"<<endl;
+
         mpLoopClosing = shared_ptr<LoopClosing>(new LoopClosing(mVocPath));
-        cout<<"system 2"<<endl;
+
         
         mpTracker->setLoopClosing(mpLoopClosing);
 
