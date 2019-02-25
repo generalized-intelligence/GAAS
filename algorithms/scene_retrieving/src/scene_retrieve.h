@@ -13,20 +13,22 @@
 #include "opencv2/calib3d.hpp"
 //#include "opencv2/xfeatures2d.hpp"
 
-using namespace DBoW3;
 using namespace std;
 using namespace cv;
 
-using namespace cv;
 
-class Scene
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl/common/transforms.h>
+
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/PCLPointCloud2.h>
+
+class Scene  // a scene is divided into multi images with depth.the point3d represents its position in the axis of the whole scene ,not the 3d position in its image.
 {
 public:
     Scene();
-    void fromCVMat(const std::vector<cv::Point3d>& points_3d,const std::vector<Mat>& point_desps)
-    {
-      ;
-    }
+    void fromCVMat(const std::vector<std::vector<cv::Point3d>>& points_3d,const std::vector<Mat>& point_desps);
     void saveFile(const std::string &filename)
     {
       ;
@@ -39,19 +41,41 @@ public:
     {
       ;
     }
+    void setVisiblePointCloud(const std::string &pointcloud_filename);
+    inline int getImageCount();
+    inline cv::Mat& getDespByIndex(int i);
 private:
     bool hasScale = false;
-    std::vector <cv::Point3d> vec_p3d;
+    std::vector<std::vector <cv::Point3d>> vec_p3d;
     std::vector <cv::Mat> point_desps;
-    cv::Mat m_RT = cv::Mat::eye(4,4,CV_32F);
+    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud_of_scene;//Take care:this cloud is not required, so do not use it in any algorithm.
+    cv::Mat m_RT_Scene_Fix = cv::Mat::eye(4,4,CV_32F);//fix 3d pose of scene.
 };
 
 class SceneRetriever
 {
 public:
     SceneRetriever();
-    SceneRetriever(const Scene& original_scene);
+    SceneRetriever(Scene& original_scene_input);
     SceneRetriever(const std::string& scene_file);
+    int retrieveSceneFromStereoImage(const cv::Mat image_left_rect,const cv::Mat image_right_rect,double camera_bf,
+				      cv::Mat &RT_mat_of_stereo_cam_output,bool &match_success);
+    int retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in,cv::Mat&RT_mat_of_mono_cam_output,bool& match_success);
+    
+    int retrieveSceneWithMultiStereoCam(const std::vector<cv::Mat> leftCams,const std::vector<cv::Mat> rightCams,
+				      std::vector<cv::Mat> RT_pose_of_stereo_cams,
+				      cv::Mat &RT_mat_of_multi_stereo_cam_output,
+				      bool &match_success
+				       );
+    int retrieveSceneWithMultiMonoCam(const std::vector<cv::Mat> images,std::vector<cv::Mat> RT_pose_of_mono_cams,cv::Mat &RT_mat_of_multi_mono_cam_output,bool& match_success);
+    
+    
+    
+    std::pair<std::vector<std::vector<DMatch>>,std::vector<int>> matchImageWithScene2D(const cv::Mat image);
+    void debugVisualize();//visualize pointcloud and cam pose.
+    
     
 private:
+    Scene original_scene;
+    LoopClosingManager loop_closing_manager_of_scene;
 };
