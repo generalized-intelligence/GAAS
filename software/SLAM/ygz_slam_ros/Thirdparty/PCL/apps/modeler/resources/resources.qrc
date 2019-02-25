@@ -1,8 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>fileopen.png</file>
-        <file>filesave.png</file>
-        <file>help.png</file>
-        <file>print.png</file>
-    </qresource>
-</RCC>

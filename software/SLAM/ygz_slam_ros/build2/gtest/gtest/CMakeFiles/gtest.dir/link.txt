@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC  -Wall -march=native -O3 -pthread -fopenmp -std=c++11 -lstdc++fs -msse -msse2 -march=native  -O3 -DNDEBUG   -shared -Wl,-soname,libgtest.so -o /home/gishr/software/GAAS_dev/software/SLAM/ygz_slam_ros/lib/libgtest.so CMakeFiles/gtest.dir/src/gtest-all.cc.o  -L/home/gishr/software/GAAS_dev/software/SLAM/ygz_slam_ros/build2/gtest/gtest/src 

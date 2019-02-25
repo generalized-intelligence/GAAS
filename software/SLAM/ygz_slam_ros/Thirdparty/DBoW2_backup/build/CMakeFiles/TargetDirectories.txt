@@ -1,3 +1,0 @@
-/home/gishr/software/GAAS_dev/software/SLAM/ygz_slam_ros/Thirdparty/DBoW2/build/CMakeFiles/edit_cache.dir
-/home/gishr/software/GAAS_dev/software/SLAM/ygz_slam_ros/Thirdparty/DBoW2/build/CMakeFiles/rebuild_cache.dir
-/home/gishr/software/GAAS_dev/software/SLAM/ygz_slam_ros/Thirdparty/DBoW2/build/CMakeFiles/DBoW2.dir
