@@ -262,7 +262,7 @@ if __name__ == '__main__':
             sys.exit(1)
 
         # environment at generation time
-        CMAKE_PREFIX_PATH = '/home/gishr/catkin_ws/devel;/home/gishr/software/MYNT-EYE-S-SDK-master/wrappers/ros/devel;/home/gishr/software/cooleye/src/cooleye_d1_linux_sdk_ros/ros/devel;/opt/ros/kinetic'.split(';')
+        CMAKE_PREFIX_PATH = '/home/gi/catkin_ws/devel;/opt/ros/kinetic'.split(';')
         # prepend current workspace if not already part of CPP
         base_path = os.path.dirname(__file__)
         if base_path not in CMAKE_PREFIX_PATH:
