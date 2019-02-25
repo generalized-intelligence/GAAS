@@ -12,3 +12,4 @@
 */*/build/*
 *.kdev*
 software/SLAM/ygz_slam_ros/bin/*
+software/SLAM/ygz_slam_ros/build/*
