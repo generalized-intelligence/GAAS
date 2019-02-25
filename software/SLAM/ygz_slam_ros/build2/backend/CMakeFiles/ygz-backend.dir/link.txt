@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC  -Wall -march=native -O3 -pthread -fopenmp -std=c++11 -lstdc++fs -msse -msse2 -march=native  -O3 -DNDEBUG   -shared -Wl,-soname,libygz-backend.so -o ../../lib/libygz-backend.so CMakeFiles/ygz-backend.dir/src/BackendSlidingWindowG2O.cpp.o CMakeFiles/ygz-backend.dir/src/LoopClosing.cpp.o 
