@@ -23,12 +23,13 @@ using namespace cv;
 
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/PCLPointCloud2.h>
+#include "LoopClosingManager.h"
 
 class Scene  // a scene is divided into multi images with depth.the point3d represents its position in the axis of the whole scene ,not the 3d position in its image.
 {
 public:
     Scene();
-    void fromCVMat(const std::vector<std::vector<cv::Point3d>>& points_3d,const std::vector<Mat>& point_desps);
+    void fromCVMat(std::vector<std::vector<cv::KeyPoint>> points_2d,const std::vector<std::vector<cv::Point3d>>& points_3d,const std::vector<Mat>& point_desps);
     void saveFile(const std::string &filename)
     {
       ;
@@ -43,9 +44,22 @@ public:
     }
     void setVisiblePointCloud(const std::string &pointcloud_filename);
     inline int getImageCount();
-    inline cv::Mat& getDespByIndex(int i);
+    inline cv::Mat& getDespByIndex(int i)
+    {
+      return this->point_desps[i];
+    }
+    inline std::vector<std::vector<cv::KeyPoint>>& getP2D()
+    {
+      return this->vec_p2d;
+    }
+    inline std::vector<std::vector<cv::Point3d>>& getP3D()
+    {
+      return this->vec_p3d;
+    }
 private:
+  
     bool hasScale = false;
+    std::vector<std::vector<cv::KeyPoint>> vec_p2d;
     std::vector<std::vector <cv::Point3d>> vec_p3d;
     std::vector <cv::Mat> point_desps;
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud_of_scene;//Take care:this cloud is not required, so do not use it in any algorithm.
@@ -76,6 +90,7 @@ public:
     
     
 private:
+    void _init_retriever();
     Scene original_scene;
     LoopClosingManager loop_closing_manager_of_scene;
 };

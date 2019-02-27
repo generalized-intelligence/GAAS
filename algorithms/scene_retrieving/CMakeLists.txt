@@ -25,6 +25,7 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 #   Find Dependencies
 # ----------------------------------------------------------------------------
 find_package(OpenCV  REQUIRED)
+#find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
 IF(USE_CONTRIB)
 add_definitions(-DUSE_CONTRIB)
 ENDIF()
@@ -35,9 +36,9 @@ ELSE()
     SET(OPENCV_VERSION_3 OFF)
 ENDIF()
 
-include_directories(${OpenCV_INCLUDE_DIRS})
-
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS})
+include_directories(${OpenCV_INCLUDE_DIRS}
+			../loop_closing/DBow3/src)
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${DBow3_LIBS} ../loop_closing/DBow3/build/libloopclosingmanager.so)
 
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION
