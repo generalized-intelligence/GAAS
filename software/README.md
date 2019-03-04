@@ -9,7 +9,8 @@ The software contains the following modules:
     1.SLAM
     2.Obstacle Map
     3.Dynamic Target（To Be Continued）
-    4.Local Planner/Global Planner（To Be Continued）
+    4.Local Planner/Global Planner: A* implementation, requires improvement
+
 
 Each module contains a default implementation, and you can alter for other implementations. If you would like to replace any of the modules, the original ros topic/service needs to be replaced. The corresponding ros topics/service is as the following.
 PX4 is used as default and flight control, and is the only option as of now.

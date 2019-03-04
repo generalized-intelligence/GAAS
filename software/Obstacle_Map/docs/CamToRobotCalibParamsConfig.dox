@@ -1,0 +1,11 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~PHI_X" : \b [double] Euler angle X min: -6.28, default: 1.3, max: 6.28
+- \b "~PHI_Y" : \b [double] Euler angle Y min: -6.28, default: -3.14, max: 6.28
+- \b "~PHI_Z" : \b [double] Euler angle Z min: -6.28, default: 1.57, max: 6.28
+- \b "~TRANS_X" : \b [double] Translation in X-axis min: -100.0, default: 0.0, max: 100.0
+- \b "~TRANS_Y" : \b [double] Translation in Y-axis min: -100.0, default: 0.0, max: 100.0
+- \b "~TRANS_Z" : \b [double] Translation in Z-axis min: -100.0, default: 0.28, max: 100.0
+

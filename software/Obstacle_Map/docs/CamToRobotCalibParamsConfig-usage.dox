@@ -1,0 +1,12 @@
+\subsubsection usage Usage
+\verbatim
+<node name="stereo_dense_reconstruction" pkg="stereo_dense_reconstruction" type="stereo_dense_reconstruction">
+  <param name="PHI_X" type="double" value="1.3" />
+  <param name="PHI_Y" type="double" value="-3.14" />
+  <param name="PHI_Z" type="double" value="1.57" />
+  <param name="TRANS_X" type="double" value="0.0" />
+  <param name="TRANS_Y" type="double" value="0.0" />
+  <param name="TRANS_Z" type="double" value="0.28" />
+</node>
+\endverbatim
+
