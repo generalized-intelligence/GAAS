@@ -513,7 +513,6 @@ namespace ygz {
             window_keypoints.push_back(key);
         }
         
-        //this fucking idiot declared a operator()!!!!!!!!!!
         extractor(mImLeft, window_keypoints, window_brief_descriptors);
     }
     
