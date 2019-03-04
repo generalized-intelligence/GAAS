@@ -529,7 +529,6 @@ namespace ygz {
 	//只判断当前帧的特征点数量是不是足够多
         LOG(INFO) << "stereo init created " << cntValidFeat << " features." << endl;
 	
-	//这个mediandepth还要传个2进入。。。太傻比了
         double medianDepth = mpCurrentFrame->ComputeSceneMedianDepth(2);
         float medianInvDepth = 1.0 / medianDepth;
 
