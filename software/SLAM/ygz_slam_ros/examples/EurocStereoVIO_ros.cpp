@@ -647,7 +647,7 @@ int main(int argc, char **argv) {
 
     if(argc != 2)
     {
-        cout<<"SHABI, YOU NEED TO SPECIFY CONFIG PATH!"<<endl;
+        cout<<"YOU NEED TO SPECIFY CONFIG PATH!"<<endl;
         return 0;
     }
     
@@ -714,7 +714,7 @@ int main(int argc, char **argv) {
         setting::TBC = SE3d(Rbc_, tbc_);
     }    
     
-    //shabi..................................
+
     ros::init(argc, argv, "ygz_with_gps");
     ros::NodeHandle nh;
     
