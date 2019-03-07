@@ -82,14 +82,14 @@ private:
     cv::Mat m_RT_Scene_Fix = cv::Mat::eye(4,4,CV_32F);//fix 3d pose of scene.
 };
 
-std::tuple<std::vector<cv::KeyPoint>,std::vector<cv::Point3d>,cv::Mat> generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr)
+SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,const cv::Mat& RotationMat,const cv::Mat& TranslationMat)
 {
     std::vector<cv::KeyPoint> key_points2d_candidate;
     std::vector<cv::KeyPoint> key_points2d_final;
     std::vector<cv::Point3d> points3d;
     cv::Mat feature;
     ptr_frameinfo pleft_image_info = LoopClosingManager::extractFeature(imgl);
-    ptr_frameinfo pright_image_info = LoopClosingManager::extractFeature()
+    ptr_frameinfo pright_image_info = LoopClosingManager::extractFeature(imgr);
     
     cv::Mat feature_l,feature_r;
     feature_l = pleft_image_info->descriptors;
@@ -153,7 +153,12 @@ std::tuple<std::vector<cv::KeyPoint>,std::vector<cv::Point3d>,cv::Mat> generateS
 	  //push_back(pleft_image_info->descriptors[good_2dmatches_index[index]]);
 	}
     }
-    cv::reprojectImageTo3D(disparity_of_points,points3d,Q_mat);
+`   cv::reprojectImageTo3D(disparity_of_points,points3d,Q_mat);
+    //do rotation and translation to points3d.
+    for(int i = 0;i<points3d.size();i++)
+    {
+        points3d[i] = RotationMat*points3d[i] + TranslationMat;
+    }
     cv::KeyPoint::convert(matched_points,key_points2d_final);
     return std::make_tuple<>(key_points2d_final,points3d,descriptors_reserved);
 }
