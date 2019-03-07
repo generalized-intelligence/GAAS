@@ -14,8 +14,10 @@ from opensfm import io
 from opensfm import config
 from opensfm import context
 from opensfm import geo
-
-
+import cv2
+#import opensfm.features
+#from opensfm import dataset
+from opensfm import features
 logger = logging.getLogger(__name__)
 
 
@@ -432,11 +434,16 @@ class DataSet(object):
         return os.path.join(self._feature_path(), image + '.npz')
 
     def save_features_json(self,filepath,points,image):
-        img = cv.imread(image)
-        features.denormalized_image_coordinates(points,img.size[0],img.size[1])
+        img = cv2.imread(self. _image_file(image))
+        print ('image:',image)
+        print ('img:',img)
+        print ('image.shape',img.shape)
+        h,w,d = img.shape
+        denormed_points = features.denormalized_image_coordinates(points,w,h)
         _out = {}
-        for i,item in enumerate(points):
-            _out[str(i)] = map(str,list(item))
+        for i,item in enumerate(denormed_points):
+            _out[str(i)] = list(map(str,list(item)))
+        print (_out)
         with open(filepath+".json","w") as f:
             json.dump(_out,f,indent=4)
 
