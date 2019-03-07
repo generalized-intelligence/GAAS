@@ -1,0 +1,22 @@
+# Ignore everything
+*
+
+# Pick what to include
+!bin
+!data/berlin/config.yaml
+!data/berlin/gcp_list.txt
+!data/berlin/images
+!doc
+!LICENSE
+!opensfm
+!README.md
+!requirements.txt
+!setup.cfg
+!setup.py
+!viewer
+
+# Picking exceptions
+doc/build
+**/*.so
+**/*.pyc
+**/__pycache__

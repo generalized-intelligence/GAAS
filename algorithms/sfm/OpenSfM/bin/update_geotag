@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+
+'''
+Script for writing GPS positions from reconstruction to the images.
+
+It requires the reconstruction
+'''
+
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import argparse
+
+from opensfm import dataset
+from opensfm import io
+from opensfm.geotag_from_gpx import add_gps_to_exif
+import opensfm.reconstruction as rc
+
+parser = argparse.ArgumentParser(
+    description='Write updated geotag information to image files.'
+    ' It requires a reconstruction with updated GPS positions.'
+    ' This can be obtained by running the bin/align script.')
+parser.add_argument(
+    'dataset',
+    help='path to the dataset to be processed')
+parser.add_argument(
+    '--overwrite_originals',
+    help='write geotag back to the original images.'
+    ' By default, the images are written in dataset/images_updated_geotag'
+    ' and the original images are not overwritten.',
+    action='store_true')
+parser.add_argument(
+    '--reconstruction_file',
+    help='reconstruction containing image positions')
+args = parser.parse_args()
+
+data_path = args.dataset
+
+data = dataset.DataSet(data_path)
+reference = data.load_reference()
+
+updated_image_path = os.path.join(data.data_path, 'images_updated_geotag')
+if not args.overwrite_originals and not os.path.exists(updated_image_path):
+    os.makedirs(updated_image_path)
+
+if args.reconstruction_file is None:
+    reconstructions = data.load_reconstruction()
+else:
+    with open(args.reconstruction_file) as f:
+        reconstructions = io.json_loads(f.read())
+
+for reconstruction in reconstructions:
+    # write updated gps/compass to the image file
+    for image in reconstruction.shots:
+        image_path = data.image_files[image]
+        if args.overwrite_originals:
+            new_image_path = None
+        else:
+            new_image_path = os.path.join(updated_image_path, image)
+        lat, lon, alt, compass = rc.shot_lla_and_compass(
+            reconstruction.shots[image], reference)
+        add_gps_to_exif(image_path, lat, lon, compass, alt, new_image_path)

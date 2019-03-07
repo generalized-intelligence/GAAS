@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+import os.path, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import numpy as np
+import argparse
+import datetime
+
+from opensfm import video
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Parse gpx file and exctact video frames.')
+    parser.add_argument('--gpx', help='path to the gpx file')
+    parser.add_argument('--video', help='path to the video file')
+    parser.add_argument('--output', help='path to the image output folder', default='.')
+    parser.add_argument('--dx', help='distance between key frames (in meters)', default=5)
+    parser.add_argument('--dt', help='time offset between key frames (in seconds)')
+    parser.add_argument('--start_time',
+        help='time of the first frame of the video (in ISO8601 format, example {0})'.format(
+            datetime.datetime.now().isoformat()))
+    args = parser.parse_args()
+
+    dx = float(args.dx)
+    dt = args.dt
+    if dt is not None: dt = float(dt)
+    video_file = args.video
+    output_path = args.output
+    start_time = args.start_time
+    gpx_file = args.gpx
+
+    video.import_video_with_gpx(video_file, gpx_file, output_path, dx, dt, start_time)
