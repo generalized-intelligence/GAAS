@@ -1,9 +1,11 @@
 
 #include <iostream>
-#include <io.h>
+///#include <io.h>
 #include <math.h>
-#include <opencv2/opencv.hpp>
+#include <Eigen/Core>
 #include <opencv2/core/eigen.hpp>
+#include <opencv2/opencv.hpp>
+
 
 #include <math.h>
 
@@ -15,6 +17,7 @@
 
 
 using namespace std;
+using namespace nlohmann;
 //Scene Pointer
 Scene* pScene = NULL;
 
@@ -38,7 +41,7 @@ void MakeSceneFromPath(const string& path)
     std::ifstream ifstr_json( jsonpath.c_str() );
     json reconstruction_j;
     ifstr_json >> reconstruction_j;
-    auto shots = json["shots"];
+    auto shots = reconstruction_j["shots"];
     map<string,Mat> img2Rotation,img2Translation;
     for (json::iterator it = shots.begin(); it != shots.end(); ++it) 
     {
@@ -77,12 +80,15 @@ void MakeSceneFromPath(const string& path)
             keypoint_y = img_kp_json[point_index][1].get<float>();
             kps.push_back(Point2f(keypoint_x,keypoint_y));
         }
-        Mat curr_img;
-        imread(img_filename,curr_img);
+        Mat curr_img = imread(img_filename);
         ExtractFeaturesFromCertainKeyPoints(curr_img,kps,current_img_desps);
         img2kpDesps[img_filename] = current_img_desps;
-        img2Kp2Ds[img_filename] = kps;
-        img2Kp3ds[img_filename] = vector<cv::Point3d>;
+	
+	std::vector<cv::KeyPoint> kps_;
+	cv::KeyPoint::convert(kps,kps_);
+        img2Kp2Ds[img_filename] = kps_;
+	
+        img2Kp3ds[img_filename] = vector<cv::Point3d>();
         img2Kp3ds[img_filename].resize(img2Kp2Ds.size());
     }
     //step<3>.Get 3d position of these points,and make a frame of scene.
@@ -111,16 +117,21 @@ void MakeSceneFromPath(const string& path)
         track_id = std::stoi(track_id_str);
         feature_id = std::stoi(feature_id_str);
         img2Kp3ds[img_filename][feature_id] = Point3d(
-			reconstruction["points"][track_id_str]["coordinates"][0].get<double>(),
-			reconstruction["points"][track_id_str]["coordinates"][1].get<double>(),
-			reconstruction["points"][track_id_str]["coordinates"][2].get<double>()
+			reconstruction_j["points"][track_id_str]["coordinates"][0].get<double>(),
+			reconstruction_j["points"][track_id_str]["coordinates"][1].get<double>(),
+			reconstruction_j["points"][track_id_str]["coordinates"][2].get<double>()
 						);
     }
     for (json::iterator it = shots.begin(); it != shots.end(); ++it)
     {
         cv::Mat rotation_mat,translation_mat;
         string img_filename = it.key();
-        pScene->addFrame(img2Kp2Ds[img_filename],img2Kp3ds[img_filename],img2kpDesps[img_filename]);
+	cv::Mat temp_desp_mat;
+	for(int index = 0;index< img2kpDesps[img_filename].size();index++)
+	{
+	  temp_desp_mat.push_back(img2kpDesps[img_filename][index]);
+	}
+        pScene->addFrame(img2Kp2Ds[img_filename],img2Kp3ds[img_filename],temp_desp_mat);
     }
     //step<4>.See if this scene has scale factor.
     
@@ -132,12 +143,13 @@ void MakeSceneFromPath(const string& path)
 int main(int argc,char** argv)
 {
     cout<<"CAUTION:Do not forget set opensfm config feature_type to 'ORB'."<<endl;
-    if(argc<2)
+    if(argc<3)
     {
         cout<<"Usage: MakeSceneFromOpenSfMModel OpenSfM_project_dir"<<endl;
         return -1;
     }
     string project_path(argv[1]);
+    string voc_path(argv[2]);
     pScene = new Scene();
     orb = cv::ORB::create();
     return 0;

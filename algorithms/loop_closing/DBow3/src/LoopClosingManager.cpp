@@ -8,7 +8,7 @@ LoopClosingManager::LoopClosingManager(const std::string &voc_path)
 {
     this->frame_index = 0;
     this->loop_id = 0;
-    this->orb = cv::ORB::create();
+    //this->orb = cv::ORB::create();
     this->loadVoc(voc_path);
     this->frame_db = Database(this->voc,false,0);
 }
@@ -16,7 +16,7 @@ LoopClosingManager::LoopClosingManager(const std::string &voc_path,const std::st
 {
     this->frame_index = 0;
     this->loop_id = 0;
-    this->orb = cv::ORB::create();
+    //this->orb = cv::ORB::create();
     this->loadVoc(voc_path);
     this->frame_db = Database(frame_db_path.c_str());
 }
@@ -53,7 +53,8 @@ int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info,std::vector<DMat
           if ((current_frame_has_index && results[wind_index].Id<this->frame_index-TOO_CLOSE_THRES) || (!current_frame_has_index))
           {
             // check if this loop candidate satisfies Epipolar Geometry constrain.
-            if (match_2_images_flann(info,results[wind_index].Id,this->loop_id,results[wind_index].Score,this->frameinfo_list))
+	    std::vector<DMatch> matches_out;
+            if (match_2_images_flann(info,results[wind_index].Id,this->loop_id,results[wind_index].Score,this->frameinfo_list,matches_out))
             {
 	      if (current_frame_has_index)
 	      {
@@ -90,14 +91,15 @@ int LoopClosingManager::loadVoc(const std::string &voc_path)
 
 }
 
-static ptr_frameinfo LoopClosingManager::extractFeature(const cv::Mat& image)
+ptr_frameinfo LoopClosingManager::extractFeature(const cv::Mat& image)
 {
     cv::Mat mask;
     auto pframeinfo = shared_ptr<FrameInfo>(new FrameInfo);
     //ptr_frameinfo->keypoints
     //vector<cv::KeyPoint> keypoints;
-
-    this->orb->detectAndCompute(image, mask, pframeinfo->keypoints,pframeinfo->descriptors);
+    cv::Ptr<cv::ORB> orb;
+    orb = cv::ORB::create();
+    orb->detectAndCompute(image, mask, pframeinfo->keypoints,pframeinfo->descriptors);
     //orb->detect(image,keypoints);
     //brief->compute(image,keypoints,descriptors);
     //surf->detectAndCompute(image,mask,keypoints,descriptors);

@@ -1,15 +1,27 @@
 #include "scene_retrieve.h"
 
-SceneRetriever::SceneRetriever(Scene& original_scene_input)
+/*SceneRetriever::SceneRetriever(Scene& original_scene_input)
 {
     this->original_scene=original_scene;
-    this->_init_scene();
+    this->_init_retriever();
+}*/
+
+Scene::Scene()
+{
+    return;//TODO:fill in init functions.
+}
+int Scene::getImageCount()
+{
+    return this->vec_p2d.size();
 }
 
-SceneRetriever::SceneRetriever(const string& scene_file)
+
+
+SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
 {
     this->original_scene.loadFile(scene_file);
-    this->_init_scene();
+    this->ploop_closing_manager_of_scene = new LoopClosingManager(voc);
+    this->_init_retriever();
 }
 void SceneRetriever::_init_retriever()
 {
@@ -17,15 +29,18 @@ void SceneRetriever::_init_retriever()
     auto p3d = this->original_scene.getP3D();
     for(int frame_index = 0;frame_index<original_scene.getImageCount();frame_index++)
     {
-        ptr_frameinfo frame_info(new struct FrameInfo(.keypoints = p2d[frame_index],.descriptors = this->original_scene.getDespByIndex(frame_index)));
-        this->loop_closing_manager_of_scene.addKeyFrame(frame_info);
+        struct FrameInfo* pfr = new struct FrameInfo;
+	pfr->keypoints=p2d[frame_index];
+	pfr->descriptors = this->original_scene.getDespByIndex(frame_index);
+        ptr_frameinfo frame_info(pfr);
+        this->ploop_closing_manager_of_scene->addKeyFrame(frame_info);
     }
 }
 
 
-std::pair<std::vector<std::vector<DMatch>>,std::vector<int>> SceneRetriever::matchImageWithScene2D(const cv::Mat image);
+/*std::pair<std::vector<std::vector<DMatch> >,std::vector<int>> SceneRetriever::matchImageWithScene2D(const cv::Mat image);
 {
-/*    //step<1> extract feature.
+    //step<1> extract feature.
     for (int i=0;i<this->original_scene.getImageCount();i++)
     {
       cv::Mat& desp = this->original_scene.getDespByIndex(i);
@@ -37,22 +52,23 @@ std::pair<std::vector<std::vector<DMatch>>,std::vector<int>> SceneRetriever::mat
     this->loop_closing_manager_of_scene.queryKeyFrames(...);
     //step<3> do match.return 2d matching.
     return ...
-*/	
-}
+	
+}*/
 int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, const cv::Mat image_right_rect, const cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
 {
     //step<1> generate sparse pointcloud of image pair input and scene.
   
     //<1>-(1) match left image with scene.
-    std::vector<DMatch>& good_matches_output;
-    int loop_index= this->loop_closing_manager_of_scene.detectLoopByKeyFrame(frameinfo_left,good_matches_output,false);
+    std::vector<DMatch> good_matches_output;
+    ptr_frameinfo frameinfo_left = LoopClosingManager::extractFeature(image_left_rect);
+    int loop_index= this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(frameinfo_left,good_matches_output,false);
     if(loop_index<0)
     {
         //frame match failed.
         return -1;
     }
-    //<1>-(2) calc left image point 3d position.
-    ptr_frameinfo frameinfo_left = this->loop_closing_manager_of_scene.extractFeature(image_left_rect);
+    //<1>-(2) calc left image point 3d position.LoopClosingManager
+    //ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
     std::vector<Point2f> InputKeypoints;
     std::vector<Point2f> PyrLKmatched_points;
     
@@ -60,22 +76,17 @@ int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
     //for(int index = 0;index<frameinfo_left->keypoints.size();index++)
     for(int index = 0;index<good_matches_output.size();index++)// iterate matches.
     {
-        int kp_index = good_matches[index].queryIdx;
+        int kp_index = good_matches_output[index].queryIdx;
         InputKeypoints.push_back(frameinfo_left->keypoints[kp_index].pt);//only reserve matched points.
     }
     std::vector<unsigned char> PyrLKResults;
-    
+    std::vector<float> err;
     cv::calcOpticalFlowPyrLK( image_left_rect,
 		image_right_rect,
 		InputKeypoints,
 		PyrLKmatched_points,
 		PyrLKResults,
-		//OutputArray  	err,
-		//Size  	winSize = Size(21, 21),
-		//int  	maxLevel = 3,
-		//TermCriteria  	criteria = TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 0.01),
-		//int  	flags = 0,
-		//double  	minEigThreshold = 1e-4 
+		err
 	);
     std::vector<Point2f> matched_points;
     std::vector<float> disparity_of_points;
@@ -84,7 +95,7 @@ int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
         if(PyrLKResults[index] == 1)
 	{
 	  matched_points.push_back(InputKeypoints[index]);
-	  disparity_of_points.push_back(PyrLKmatched_points[index][0]-InputKeypoints[index][0]);
+	  disparity_of_points.push_back(PyrLKmatched_points[index].x-InputKeypoints[index].x);
 	}
     }
     std::vector<Point3f> points_3d;
@@ -122,9 +133,9 @@ int SceneRetriever::retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in_r
         match_success = false;
         return -1;
     }
-    ptr_frameinfo mono_image_info = this->loop_closing_manager_of_scene.extractFeature(image_in_rect);
+    ptr_frameinfo mono_image_info = this->ploop_closing_manager_of_scene->extractFeature(image_in_rect);
     std::vector <DMatch> good_matches;
-    int loop_index = this->loop_closing_manager_of_scene.detectLoopByKeyFrame(mono_image_info,good_matches,false);
+    int loop_index = this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(mono_image_info,good_matches,false);
     if (loop_index<0)
     {
         return -1;//Loop not found!
@@ -164,10 +175,10 @@ int SceneRetriever::retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in_r
         );
     //check inliers.
     cv::Mat R,retMat;
-    if(cv_solvepnpransac_result && inliers.size()>8)
+    if(cv_solvepnpransac_result )//&& inliers.size()>8)
     {
       cv::Rodrigues(rvec,R);//match success
-      retMat=cv::Mat::eye(4,4);
+      retMat=cv::Mat::eye(4,4,CV_32F);
       retMat.rowRange(Range(0,3)).colRange(Range(0,3)) = R;
       retMat.colRange(3,1).rowRange(0,3) = tvec;
       RT_mat_of_mono_cam_output = retMat;

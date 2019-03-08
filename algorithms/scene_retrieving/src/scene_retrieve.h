@@ -17,7 +17,8 @@
 #include <pcl/point_cloud.h>
 #include <pcl/common/transforms.h>
 
-#include <pcl_conversions/pcl_conversions.h>
+//#include <pcl_conversions/pcl_conversions.h"
+#include<pcl/conversions.h>
 #include <pcl/PCLPointCloud2.h>
 #include "LoopClosingManager.h"
 
@@ -69,7 +70,7 @@ public:
     
     inline void addFrame(const SceneFrame& frame)
     {
-        this->addFrame(std::get<0>(frame),std::get<1>(frame),std::get<2>(frame))
+        this->addFrame(std::get<0>(frame),std::get<1>(frame),std::get<2>(frame));
     }
     
     inline void setHasScale(bool hasScale_in)
@@ -146,9 +147,9 @@ public:
     }
     
     
-private:
   
     bool hasScale = false;
+private:
     std::vector<std::vector<cv::KeyPoint>> vec_p2d;
     std::vector<std::vector <cv::Point3d>> vec_p3d;
     std::vector <cv::Mat> point_desps;
@@ -157,7 +158,7 @@ private:
     
 };
 
-SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,const cv::Mat& RotationMat,const cv::Mat& TranslationMat)
+SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,const cv::Mat& RotationMat,const cv::Mat& TranslationMat,const cv::Mat& Q_mat)
 {
     std::vector<cv::KeyPoint> key_points2d_candidate;
     std::vector<cv::KeyPoint> key_points2d_final;
@@ -178,7 +179,8 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,c
     std::vector< DMatch > matches;
     //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
     matcher.match(feature_l, feature_r, matches);
-    double max_dist = 0; double min_dist = 100;
+    double max_dist = 0; 
+    double min_dist = 100;
     for( int i = 0; i < matches.size(); i++ )
     {
         double dist = matches[i].distance;
@@ -199,22 +201,24 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,c
     {   
         lk_input_keypoints.push_back(pleft_image_info->keypoints[good_matches[i].queryIdx].pt);//will check if LKFlow exist.
 	good_2dmatches_index.push_back(good_matches[i].queryIdx);
-    }
+    }//LoopClosingManager
     
     
     std::vector<unsigned char> PyrLKResults;
-    cv::calcOpticalFlowPyrLK( imgl,
+    std::vector<float> optflow_err;
+    //cv::Size_<int> optflow_err;
+    
+    //Size winSize(31,31);
+    //TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,20,0.03);
+    
+    cv::calcOpticalFlowPyrLK(imgl,
 		imgr,
 		lk_input_keypoints,
 		lk_output_keypoints,
 		PyrLKResults,
-		//OutputArray  	err,
-		//Size  	winSize = Size(21, 21),
-		//int  	maxLevel = 3,
-		//TermCriteria  	criteria = TermCriteria(TermCriteria::COUNT+TermCriteria::EPS, 30, 0.01),
-		//int  	flags = 0,
-		//double  	minEigThreshold = 1e-4 
-	);
+		optflow_err);//,
+		//winSize,3, termcrit, 0, 0.001);
+    
     std::vector<Point2f> matched_points;
     std::vector<float> disparity_of_points;
     cv::Mat descriptors_reserved;
@@ -223,8 +227,9 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,c
         if(PyrLKResults[index] == 1)
 	{
 	  matched_points.push_back(lk_input_keypoints[index]);
-	  disparity_of_points.push_back(lk_output_keypoints[index][0]-lk_input_keypoints[index][0]);
-	  descriptors_reserved.push_back(pleft_image_info->descriptors[good_2dmatches_index[index]]);
+	  disparity_of_points.push_back(lk_output_keypoints[index].x-lk_input_keypoints[index].x);
+	  Mat desp_reserved = pleft_image_info->descriptors.colRange(good_2dmatches_index[index],good_2dmatches_index[index]+1).clone().reshape(0);
+	  descriptors_reserved.push_back(desp_reserved);//get this row out of mat.
 	  //push_back(pleft_image_info->descriptors[good_2dmatches_index[index]]);
 	}
     }
@@ -232,7 +237,14 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,c
     //do rotation and translation to points3d.
     for(int i = 0;i<points3d.size();i++)
     {
-        points3d[i] = RotationMat*points3d[i] + TranslationMat;
+        cv::Mat point3d_temp(points3d[i]);
+	
+	cv::Mat transformed = RotationMat*point3d_temp + TranslationMat;
+	Point3d output;
+	output.x = transformed.at<double>(0);
+	output.y = transformed.at<double>(1);
+	output.z = transformed.at<double>(2);
+        points3d[i] = output;//do transform in mat form.
     }
     cv::KeyPoint::convert(matched_points,key_points2d_final);
     return std::make_tuple<>(key_points2d_final,points3d,descriptors_reserved);
@@ -241,12 +253,10 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,c
 class SceneRetriever
 {
 public:
-    SceneRetriever();
-    SceneRetriever(Scene& original_scene_input);
-    SceneRetriever(const std::string& scene_file);
-    int retrieveSceneFromStereoImage(const cv::Mat image_left_rect,const cv::Mat image_right_rect,double camera_bf,
-				      cv::Mat &RT_mat_of_stereo_cam_output,bool &match_success);
-    int retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in,cv::Mat&RT_mat_of_mono_cam_output,bool& match_success);
+    SceneRetriever(const string& voc);
+    //SceneRetriever(Scene& original_scene_input);
+    SceneRetriever(const string&voc,const std::string& scene_file);
+    int retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in_rect,const cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success);
     
     int retrieveSceneWithMultiStereoCam(const std::vector<cv::Mat> leftCams,const std::vector<cv::Mat> rightCams,
 				      std::vector<cv::Mat> RT_pose_of_stereo_cams,
@@ -254,6 +264,7 @@ public:
 				      bool &match_success
 				       );
     int retrieveSceneWithMultiMonoCam(const std::vector<cv::Mat> images,std::vector<cv::Mat> RT_pose_of_mono_cams,cv::Mat &RT_mat_of_multi_mono_cam_output,bool& match_success);
+    int retrieveSceneFromStereoImage(const cv::Mat image_left_rect, const cv::Mat image_right_rect, const cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success);
     
     
     
@@ -264,5 +275,5 @@ public:
 private:
     void _init_retriever();
     Scene original_scene;
-    LoopClosingManager loop_closing_manager_of_scene;
+    LoopClosingManager* ploop_closing_manager_of_scene;
 };

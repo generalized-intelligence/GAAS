@@ -24,46 +24,48 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 # ----------------------------------------------------------------------------
 #   Find Dependencies
 # ----------------------------------------------------------------------------
-find_package(OpenCV  REQUIRED)
-
-find_package(catkin REQUIRED COMPONENTS
-                                cv_bridge
-                                image_transport
-                                roscpp
-                                sensor_msgs
-				geometry_msgs
-                                nav_msgs
-                                std_msgs
-                                octomap_msgs
-                                octomap_rviz_plugins
-                                visualization_msgs
-                                tf)
+LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
+find_package(OpenCV 3.3.1 REQUIRED)
+find_package(Eigen3 3.1.0 REQUIRED)
+#find_package(catkin REQUIRED COMPONENTS
+#                                cv_bridge
+#                                image_transport
+#                                roscpp
+#                                sensor_msgs
+#				geometry_msgs
+#                                nav_msgs
+#                                std_msgs
+#                                octomap_msgs
+#                                octomap_rviz_plugins
+#                               visualization_msgs
+#                               tf)
 
 #find_package(PCL REQUIRED PATH ../../software/SLAM/ygz_slam_ros/Thirdparty/PCL)
 find_package(PCL REQUIRED)
 
 
-#find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
+find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
 IF(USE_CONTRIB)
 add_definitions(-DUSE_CONTRIB)
 ENDIF()
-if(NOT OpenCV_VERSION VERSION_LESS "3.0")
-    ADD_DEFINITIONS(-DOPENCV_VERSION_3)
-    SET(OPENCV_VERSION_3 ON)
-ELSE()
-    SET(OPENCV_VERSION_3 OFF)
-ENDIF()
+#if(NOT OpenCV_VERSION VERSION_LESS "3.0")
+#    ADD_DEFINITIONS(-DOPENCV_VERSION_3)
+#    SET(OPENCV_VERSION_3 ON)
+#ELSE()
+#    SET(OPENCV_VERSION_3 OFF)
+#ENDIF()
 
 
 include_directories(${OpenCV_INCLUDE_DIRS}
 			${PCL_INCLUDE_DIRS}
 			../loop_closing/DBow3/src
 			./include/
-		    ${catkin_INCLUDE_DIRS}
+                        ${catkin_INCLUDE_DIRS}
+                        ${EIGEN3_INCLUDE_DIR}
                         )
 
-
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBow3_LIBS} ../loop_closing/DBow3/build/libloopclosingmanager.so)
+MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS})
 
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION
@@ -209,6 +211,7 @@ SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${EXTRA_EXE_LI
 #------------------------------------------------
 # DIRS
 #------------------------------------------------
+
 ADD_SUBDIRECTORY(src)
 
 

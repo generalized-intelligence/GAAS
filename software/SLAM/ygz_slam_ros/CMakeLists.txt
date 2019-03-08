@@ -50,7 +50,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -msse2 -march=native")
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 
 # thirdparty libs 
-find_package(OpenCV)
+find_package(OpenCV 3.3.1 REQUIRED)
 MESSAGE("OPENCV PATH: ${OpenCV_INCLUDE_DIRS}")
 
 find_package(Eigen3 3.1.0 REQUIRED)
@@ -74,7 +74,8 @@ find_package(catkin REQUIRED COMPONENTS
                                 visualization_msgs
                                 tf)
 #find_package(CUDA  REQUIRED)
-find_package(DBoW3 REQUIRED PATH Thirdparty/DBow3)
+#find_package(DBoW3 REQUIRED PATH Thirdparty/DBow3/build)
+find_package(DBoW3)
 # to show 'include' in QtCreator
 FILE(GLOB_RECURSE INC_ALL "*/*.h")
 add_custom_target(headers SOURCES ${INC_ALL})
@@ -88,7 +89,6 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/fast/include
 
 ${DBoW3_DIRS}
 ${OpenCV_INCLUDE_DIRS}
-${DBoW3_DIRS}
 
 ${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/src
 #${PROJECT_SOURCE_DIR}/Thirdparty/DVision/

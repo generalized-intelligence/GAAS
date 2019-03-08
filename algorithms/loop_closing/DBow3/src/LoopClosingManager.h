@@ -87,7 +87,7 @@ public:
       return frameinfo_list[i];
     }
 private:
-    cv::Ptr<cv::ORB> orb;
+    
     Vocabulary voc;
     
 private:
