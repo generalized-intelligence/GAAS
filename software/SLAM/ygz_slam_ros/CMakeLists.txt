@@ -134,7 +134,6 @@ include_directories(
         system/include
 )
 
-
 add_subdirectory(util)
 
 add_subdirectory(common)

@@ -25,8 +25,24 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 #   Find Dependencies
 # ----------------------------------------------------------------------------
 find_package(OpenCV  REQUIRED)
-set()
-find_package(PCL REQUIRED PATH ../../software/SLAM/ygz_slam_ros/Thirdparty/PCL)
+
+find_package(catkin REQUIRED COMPONENTS
+                                cv_bridge
+                                image_transport
+                                roscpp
+                                sensor_msgs
+				geometry_msgs
+                                nav_msgs
+                                std_msgs
+                                octomap_msgs
+                                octomap_rviz_plugins
+                                visualization_msgs
+                                tf)
+
+#find_package(PCL REQUIRED PATH ../../software/SLAM/ygz_slam_ros/Thirdparty/PCL)
+find_package(PCL REQUIRED)
+
+
 #find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
 IF(USE_CONTRIB)
 add_definitions(-DUSE_CONTRIB)
@@ -38,11 +54,16 @@ ELSE()
     SET(OPENCV_VERSION_3 OFF)
 ENDIF()
 
+
 include_directories(${OpenCV_INCLUDE_DIRS}
 			${PCL_INCLUDE_DIRS}
 			../loop_closing/DBow3/src
+			./include/
+		    ${catkin_INCLUDE_DIRS}
                         )
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${DBow3_LIBS} ../loop_closing/DBow3/build/libloopclosingmanager.so)
+
+
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBow3_LIBS} ../loop_closing/DBow3/build/libloopclosingmanager.so)
 
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION

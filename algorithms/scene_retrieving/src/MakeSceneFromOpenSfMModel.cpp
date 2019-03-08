@@ -125,7 +125,6 @@ void MakeSceneFromPath(const string& path)
     //step<4>.See if this scene has scale factor.
     
     
-
 }
 
 
