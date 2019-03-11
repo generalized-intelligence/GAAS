@@ -19,7 +19,7 @@
 using namespace std;
 using namespace nlohmann;
 //Scene Pointer
-Scene* pScene = NULL;
+//Scene* pScene = NULL;
 
 cv::Ptr<cv::ORB> orb;
 void ExtractFeaturesFromCertainKeyPoints(const cv::Mat& img_in,const vector<Point2f> kps_in,vector<cv::Mat>& desp_output)
@@ -32,8 +32,9 @@ void ExtractFeaturesFromCertainKeyPoints(const cv::Mat& img_in,const vector<Poin
 }
 
 
-void MakeSceneFromPath(const string& path)
+std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
 {
+    std::shared_ptr pScene(new Scene());
     LoopClosingManager lcm();
     //step<1> parse json.
     string jsonpath(path.c_str());
@@ -134,8 +135,8 @@ void MakeSceneFromPath(const string& path)
         pScene->addFrame(img2Kp2Ds[img_filename],img2Kp3ds[img_filename],temp_desp_mat);
     }
     //step<4>.See if this scene has scale factor.
-    
-    
+    pScene->hasScale = false;// for default.
+    return pScene;
 }
 
 
@@ -150,7 +151,7 @@ int main(int argc,char** argv)
     }
     string project_path(argv[1]);
     string voc_path(argv[2]);
-    pScene = new Scene();
     orb = cv::ORB::create();
+    std::shared_ptr<Scene> pScene = MakeSceneFromOpenSfMModel(project_path);
     return 0;
 }
