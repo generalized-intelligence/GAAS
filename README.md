@@ -1,6 +1,14 @@
 # Generalized Autonomy Aviation System
 
+
 ![lisence](https://img.shields.io/github/license/generalized-intelligence/GAAS.svg?style=for-the-badge)
+![issues](https://img.shields.io/github/issues-raw/generalized-intelligence/GAAS.svg?style=for-the-badge)
+![commit](https://img.shields.io/github/commit-activity/w/generalized-intelligence/GAAS.svg?style=for-the-badge)
+
+
+![star](https://img.shields.io/github/stars/generalized-intelligence/GAAS.svg?style=social)
+
+![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)
 
 
 You Can Chat and Find Support at: [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
