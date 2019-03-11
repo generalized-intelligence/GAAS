@@ -1,5 +1,8 @@
 # Generalized Autonomy Aviation System
 
+<!-- Place this tag where you want the button to render. -->
+<a class="github-button" href="https://github.com/generalized-intelligence/GAAS" data-size="large" data-show-count="true" aria-label="Star generalized-intelligence/GAAS on GitHub">Star</a>
+
 You Can Chat and Find Support at: [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Or watch the step-by-step [tutorial](https://github.com/generalized-intelligence/GAAS/blob/master/demo/tutorial_1/README.MD)
