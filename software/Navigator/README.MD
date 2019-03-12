@@ -1,18 +1,20 @@
-GI mav navigator project
+#GI mav navigator project
 
-# usage
+## usage
 
-## in the Navigator root folder
+### in the Navigator root folder
 
     roslaunch launch/debug.launch
 
-## in the obstacle Map root folder
+### in the obstacle Map root folder
 
     sh do_reconstruction.sh
     
+and
+    
     ./bin/match_pointcloud_and_slam_pose
 
-## in the Navigator root folder
+### in the Navigator root folder
 
     python Navigator.py
 
