@@ -63,9 +63,10 @@ public:
     
     inline void addFrame(const std::vector<cv::KeyPoint>& points2d_in,const std::vector<cv::Point3d>points3d_in,const cv::Mat& point_desp_in)
     {
-        this->vec_p2d.push_back(points2d_in);
-        this->vec_p3d.push_back(points3d_in);
-        this->point_desps.push_back(point_desp_in);
+        
+        this->vec_p2d.push_back(vector<cv::KeyPoint>(points2d_in));
+        this->vec_p3d.push_back(vector<cv::Point3d>(points3d_in));
+        this->point_desps.push_back(cv::Mat(point_desp_in));
     }
     
     inline void addFrame(const SceneFrame& frame)

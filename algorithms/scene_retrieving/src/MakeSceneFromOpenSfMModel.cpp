@@ -25,16 +25,22 @@ cv::Ptr<cv::ORB> orb;
 void ExtractFeaturesFromCertainKeyPoints(const cv::Mat& img_in,const vector<Point2f> kps_in,vector<cv::Mat>& desp_output)
 {
     //reference loop closing manager,extract orb feature of these points.
+    cv::Mat gray;
+    cv::Mat desp;
+    cv::cvtColor(img_in,gray,cv::COLOR_RGB2GRAY);
     vector<cv::KeyPoint> kp_vec;
     cv::KeyPoint::convert(kps_in,kp_vec);
-    orb->compute(img_in,kp_vec,desp_output);
+    orb->compute(gray,kp_vec,desp);
+    cout<<"kps_in.size():"<<kps_in.size()<<"\tdesp.rows:"<<desp.rows<<endl;
+    desp_output.resize(desp.rows);
+    for(int r=0;r<desp.rows;r++) desp_output[r]=desp.rowRange(r,r+1).clone();
     return;
 }
 
 
 std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
 {
-    std::shared_ptr pScene(new Scene());
+    std::shared_ptr<Scene> pScene(new Scene());
     LoopClosingManager lcm();
     //step<1> parse json.
     string jsonpath(path.c_str());
@@ -42,8 +48,8 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
     std::ifstream ifstr_json( jsonpath.c_str() );
     json reconstruction_j;
     ifstr_json >> reconstruction_j;
-    auto shots = reconstruction_j["shots"];
-    map<string,Mat> img2Rotation,img2Translation;
+    auto shots = reconstruction_j[0]["shots"];
+    auto img2Rotation = new map<string,Mat>;    auto img2Translation = new map<string ,Mat>;
     for (json::iterator it = shots.begin(); it != shots.end(); ++it) 
     {
         cv::Mat rotation_mat,translation_mat;
@@ -57,34 +63,52 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
         //cv::Mat cur_image;
         //cv::imread(path+"images"+img_filename,cur_image);
         //ptr_frameinfo p = lcm.extractFeature(cur_image);
-        img2Rotation[img_filename] = rotation_mat;
-        img2Translation[img_filename] = translation_mat;
+        (*img2Rotation)[img_filename] = rotation_mat;
+        (*img2Translation)[img_filename] = translation_mat;
         //std::cout << it.key() << " : " << it.value() << "\n";
     }
     //step<2> build graph,do triangulate via these features.Load "features/xxxnpz and get keypoints info."
-    map<string, vector<cv::Mat> > img2kpDesps;
+    map<string, vector<cv::Mat> >* pMapdesp = new map<string, vector<cv::Mat> >;
+    map<string, vector<cv::Mat> >& img2kpDesps = *pMapdesp;
+    //map<string, vector<cv::Mat> > img2kpDesps;// = *pMapdesp;    
+    
+    //map<string, vector<cv::KeyPoint> >* pMap2d = new map<string, vector<cv::KeyPoint> >;
+    //map<string, vector<cv::KeyPoint> > &img2Kp2Ds = *pMap2d;
     map<string, vector<cv::KeyPoint> > img2Kp2Ds;
-    map<string,vector<cv::Point3d>> img2Kp3ds;
+    
+    map<string,vector<cv::Point3d> >* pMap3d = new map<string,vector<cv::Point3d> >; 
+    map<string,vector<cv::Point3d>> &img2Kp3ds = *pMap3d;
     for(json::iterator it = shots.begin();it!=shots.end();++it)
     {
         string img_filename = it.key();
-        std::ifstream ifstr_img_keypoints_json(img_filename.c_str());
+        std::ifstream ifstr_img_keypoints_json((path+"/features/"+img_filename+".npz.json").c_str());
         json img_kp_json;
         ifstr_img_keypoints_json>> img_kp_json;
         vector<cv::Point2f> kps;
         vector<cv::Mat> current_img_desps;
-        for(json::iterator it = img_kp_json.begin();it!=img_kp_json.end();++it)
+        for(json::iterator it2 = img_kp_json.begin();it2!=img_kp_json.end();++it2)
         {
-            string point_index = it.key();//make keypoints.
-            float keypoint_x,keypoint_y;
-            keypoint_x = img_kp_json[point_index][0].get<float>();
-            keypoint_y = img_kp_json[point_index][1].get<float>();
-            kps.push_back(Point2f(keypoint_x,keypoint_y));
+            string point_index = it2.key();//make keypoints.
+            string keypoint_x_str,keypoint_y_str;
+	    /*for(json::iterator it_inner = img_kp_json[point_index].begin();it_inner!=img_kp_json[point_index].end();++it_inner)
+	    {
+	      cout<<"Inner object:"<<*it_inner;
+	    }*/
+            keypoint_x_str = img_kp_json[point_index][0].get<string>();
+            keypoint_y_str = img_kp_json[point_index][1].get<string>();
+	    float kpx,kpy;
+	    kpx = std::stof(keypoint_x_str);
+	    kpy = std::stof(keypoint_y_str);
+	    //cout<<"kpx,kpy:"<<kpx<<" "<<kpy<<endl;
+            kps.push_back(Point2f(kpx,kpy));
         }
-        Mat curr_img = imread(img_filename);
+        Mat curr_img = imread(path+"/images/"+img_filename);
         ExtractFeaturesFromCertainKeyPoints(curr_img,kps,current_img_desps);
         img2kpDesps[img_filename] = current_img_desps;
-	
+	/*
+	std::vector<cv::KeyPoint> *kps_ = new vector<cv::KeyPoint>;
+	cv::KeyPoint::convert(kps,*kps_);
+        img2Kp2Ds[img_filename] = *kps_;*/
 	std::vector<cv::KeyPoint> kps_;
 	cv::KeyPoint::convert(kps,kps_);
         img2Kp2Ds[img_filename] = kps_;
@@ -94,7 +118,7 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
     }
     //step<3>.Get 3d position of these points,and make a frame of scene.
     //open undistorted_tracks.csv. actually it's a tsv file.
-    ifstream track_ifstr("undistorted_track.csv");
+    ifstream track_ifstr((path+"/undistorted_tracks.csv").c_str());
     vector<vector <string> >fields;
     string line;
     while(getline(track_ifstr,line))
@@ -107,6 +131,7 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
             fields.back().push_back(field);
         }
     }
+    std::map<string,std::vector<int> > map_index_with_3d_pos;
     for(int line_index=0;line_index<fields.size();line_index++) // traverse all tracks to find point 3d coordinate.
     {
         vector<string>& curr_line = fields[line_index];
@@ -117,25 +142,55 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
         feature_id_str = curr_line[2];
         track_id = std::stoi(track_id_str);
         feature_id = std::stoi(feature_id_str);
-        img2Kp3ds[img_filename][feature_id] = Point3d(
-			reconstruction_j["points"][track_id_str]["coordinates"][0].get<double>(),
-			reconstruction_j["points"][track_id_str]["coordinates"][1].get<double>(),
-			reconstruction_j["points"][track_id_str]["coordinates"][2].get<double>()
-						);
+	//string px,py,pz;
+	cout<<"curr_line[0]:"<<curr_line[0]<<endl;
+        cout<<"at line_index:"<<line_index<<"track_id:"<<track_id_str<<"feature_id:"<<feature_id_str;
+	//auto z = reconstruction_j[0];
+	//auto a = reconstruction_j[0]["points"];
+	cout <<"bb";
+	//auto b = reconstruction_j[0]["points"][track_id_str];
+	cout <<"cc";
+	//auto c = reconstruction_j[0]["points"][track_id_str]["coordinates"];
+        cout <<"  0";
+	if(reconstruction_j[0]["points"].find(track_id_str)==reconstruction_j[0]["points"].end() )
+	{
+	  //is a outlier.
+	  continue;
+	}
+	double px = reconstruction_j[0]["points"][track_id_str]["coordinates"][0].get<double>();
+	cout<<"1";
+	double py = reconstruction_j[0]["points"][track_id_str]["coordinates"][1].get<double>();
+	cout<<"2";
+	double pz = reconstruction_j[0]["points"][track_id_str]["coordinates"][2].get<double>();
+	cout<<"3"<<endl;
+        img2Kp3ds[img_filename][feature_id] = Point3d(px,py,pz);
+	//map_index_with_3d_pos[img_filename].push_back(feature_id);//Unused now.
     }
+    cout<<"3d points loaded."<<endl;
     for (json::iterator it = shots.begin(); it != shots.end(); ++it)
     {
-        cv::Mat rotation_mat,translation_mat;
+        //cv::Mat rotation_mat,translation_mat;
         string img_filename = it.key();
-	cv::Mat temp_desp_mat;
+	cv::Mat temp_desp_mat(img2kpDesps[img_filename].size(),//rows
+			      32,//cols
+		              0
+	);
+	cout<<"temp_desp_mat:"<<temp_desp_mat.cols<<"|"<<temp_desp_mat.rows<<endl;
+	cout<<"Image:"<<img_filename<<img2kpDesps[img_filename].size()<<";"<<img2kpDesps[img_filename][0].rows<<","<<img2kpDesps[img_filename][0].cols<<endl;
+	
 	for(int index = 0;index< img2kpDesps[img_filename].size();index++)
 	{
-	  temp_desp_mat.push_back(img2kpDesps[img_filename][index]);
+	    cout<<"index:"<<index<<endl;
+	    cv::Mat& temp = img2kpDesps[img_filename][index];
+	    cout<<temp.cols<<"|"<<temp.rows<<endl;
+	    //temp_desp_mat.rowRange(index,index+1) = img2kpDesps[img_filename][index].row(0);//img2kpDesps[img_filename][index].rowRange(0,1);//.clone();
+	    temp_desp_mat.row(index) = img2kpDesps[img_filename][index].row(0);//img2kpDesps[img_filename][index].rowRange(0,1);//.clone();
 	}
-        pScene->addFrame(img2Kp2Ds[img_filename],img2Kp3ds[img_filename],temp_desp_mat);
+        pScene->addFrame(img2Kp2Ds[img_filename],img2Kp3ds[img_filename],temp_desp_mat.clone());
     }
     //step<4>.See if this scene has scale factor.
-    pScene->hasScale = false;// for default.
+    
+    //pScene->hasScale = false;// for default.
     return pScene;
 }
 
@@ -146,12 +201,15 @@ int main(int argc,char** argv)
     cout<<"CAUTION:Do not forget set opensfm config feature_type to 'ORB'."<<endl;
     if(argc<3)
     {
-        cout<<"Usage: MakeSceneFromOpenSfMModel OpenSfM_project_dir"<<endl;
+        cout<<"Usage: MakeSceneFromOpenSfMModel OpenSfM_project_dir voc_path"<<endl;
         return -1;
     }
     string project_path(argv[1]);
     string voc_path(argv[2]);
     orb = cv::ORB::create();
-    std::shared_ptr<Scene> pScene = MakeSceneFromOpenSfMModel(project_path);
+    std::shared_ptr<Scene>* pp;
+    pp = new std::shared_ptr<Scene>;
+    *pp= MakeSceneFromPath(project_path);
+    (*pp)->saveFile("scene.scene");
     return 0;
 }
