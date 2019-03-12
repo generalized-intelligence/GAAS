@@ -3,7 +3,7 @@
 
 ![lisence](https://img.shields.io/github/license/generalized-intelligence/GAAS.svg?style=for-the-badge)
 ![issues](https://img.shields.io/github/issues-raw/generalized-intelligence/GAAS.svg?style=for-the-badge)
-![commit](https://img.shields.io/github/commit-activity/w/generalized-intelligence/GAAS.svg?style=for-the-badge)
+
 
 
 ![star](https://img.shields.io/github/stars/generalized-intelligence/GAAS.svg?style=social)
