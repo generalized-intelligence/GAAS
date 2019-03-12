@@ -1,4 +1,4 @@
-#GI mav navigator project
+# GI mav navigator project
 
 ## usage
 
