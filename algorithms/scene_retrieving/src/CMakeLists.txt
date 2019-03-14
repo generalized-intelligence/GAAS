@@ -6,6 +6,7 @@ add_subdirectory(nlohmann_json)
 
 add_library(scene_retrieve scene_retrieve.cpp)
 
+
 link_libraries("${PROJECT_SOURCE_DIR}/../loop_closing/DBow3/build/libloopclosingmanager.so")
 target_link_libraries(scene_retrieve
 			${REQUIRED_LIBRARIES}
@@ -28,3 +29,10 @@ target_link_libraries(MakeSceneFromOpenSfMModel
                       )
 
 target_link_libraries(MakeSceneFromOpenSfMModel PRIVATE nlohmann_json::nlohmann_json)
+
+
+add_executable(demo_stereo
+               demo_stereo_main.cpp)
+target_link_libraries(demo_stereo
+			${REQUIRED_LIBRARIES}
+			scene_retrieve)
