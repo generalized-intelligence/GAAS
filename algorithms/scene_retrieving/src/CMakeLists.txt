@@ -30,9 +30,13 @@ target_link_libraries(MakeSceneFromOpenSfMModel
 
 target_link_libraries(MakeSceneFromOpenSfMModel PRIVATE nlohmann_json::nlohmann_json)
 
-
 add_executable(demo_stereo
                demo_stereo_main.cpp)
 target_link_libraries(demo_stereo
+			${REQUIRED_LIBRARIES}
+			scene_retrieve)
+add_executable(demo_mono
+               demo_mono_main.cpp)
+target_link_libraries(demo_mono
 			${REQUIRED_LIBRARIES}
 			scene_retrieve)
