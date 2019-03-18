@@ -23,6 +23,7 @@ def get_range_from_bbox(imgl,imgr,img_l_bbox):
     #step1.generate grid and sample gftt.
     #step2.calc disparity via OptFlow.
     #step3.estimate depth.
+    pass
 
 
 def image_callback(img_msg):

@@ -68,12 +68,12 @@ public:
         this->vec_p2d.push_back(vector<cv::KeyPoint>(points2d_in));
         this->vec_p3d.push_back(vector<cv::Point3d>(points3d_in));
         this->point_desps.push_back(cv::Mat(point_desp_in));
+        this->mIndex++;
     }
     
     inline void addFrame(const SceneFrame& frame)
     {
         this->addFrame(std::get<0>(frame),std::get<1>(frame),std::get<2>(frame));
-        this->mIndex++;
     }
     
     inline void setHasScale(bool hasScale_in)
