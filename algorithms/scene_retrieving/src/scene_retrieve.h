@@ -35,6 +35,7 @@ class Scene  // a scene is divided into multi images with depth.the point3d repr
 {
 public:
     Scene();
+
     void fromCVMat(std::vector<std::vector<cv::KeyPoint>> points_2d,const std::vector<std::vector<cv::Point3d>>& points_3d,const std::vector<Mat>& point_desps);
     
     void RotateAndTranslate(const Mat &RT)
@@ -72,6 +73,7 @@ public:
     inline void addFrame(const SceneFrame& frame)
     {
         this->addFrame(std::get<0>(frame),std::get<1>(frame),std::get<2>(frame));
+        this->mIndex++;
     }
     
     inline void setHasScale(bool hasScale_in)
@@ -79,7 +81,8 @@ public:
         this->hasScale = hasScale_in;
     }
     
-    
+
+
     void saveFile(const std::string &filename)
     {
         
@@ -90,33 +93,40 @@ public:
             oa << *this;
         }
     }
-    
-    void loadFile(const std::string &filename)
+
+
+    Scene loadFile(const std::string &filename)
     {
 
         std::ifstream ifs(filename);
+        Scene RecovedredScene;
+
+        {
+            boost::archive::text_iarchive ia(ifs);
+            ia >> RecovedredScene;
+            cout << "Deserialization finished" << endl;
+        }
+
+        return RecovedredScene;
     }
     
     
-    // serialization
+    /////////////////////////////////// serialization////////////////////////////////////
     BOOST_SERIALIZATION_SPLIT_MEMBER()
+
     template <class Archive>
     void save (Archive & ar, const unsigned int version) const
     {
         cout << "scene saving started!" << endl;
 
+        ar & mIndex;
         ar & hasScale;
-
         ar & vec_p2d;
-        
         ar & vec_p3d;
-        
         ar & point_desps;
-        
-//         ar & point_cloud_of_scene;
-        
         ar & m_RT_Scene_Fix;
 
+        //ar & point_cloud_of_scene;
         cout << "scene saving finished!" << endl;
     }
 
@@ -124,40 +134,35 @@ public:
     void load (Archive & ar, const unsigned int version)
     {
         cout << "scene loading started!" << endl;
-        
-        bool hasScale = false;
-        std::vector<std::vector<cv::KeyPoint>> vec_p2d;
-        std::vector<std::vector <cv::Point3d>> vec_p3d;
-        std::vector <cv::Mat> point_desps;
-        pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud_of_scene;
-        cv::Mat m_RT_Scene_Fix = cv::Mat::eye(4,4,CV_32F);
-    
-        ar & hasScale;
 
+        ar & mIndex;
+        ar & hasScale;
         ar & vec_p2d;
-        
         ar & vec_p3d;
-        
         ar & point_desps;
-        
-//         ar & point_cloud_of_scene;
-        
         ar & m_RT_Scene_Fix;
-        
+
+        //ar & point_cloud_of_scene;
+
         cout << "scene loading finished!" << endl;
     }
-    
-    
-  
+    /////////////////////////////////// serialization////////////////////////////////////
+
+
     bool hasScale = false;
+
+
 private:
+
+    size_t mIndex = 0;
     std::vector<std::vector<cv::KeyPoint>> vec_p2d;
     std::vector<std::vector <cv::Point3d>> vec_p3d;
     std::vector <cv::Mat> point_desps;
-    pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud_of_scene;//Take care:this cloud is not required, so do not use it in any algorithm.
     cv::Mat m_RT_Scene_Fix = cv::Mat::eye(4,4,CV_32F);//fix 3d pose of scene.
-    
+
+    //pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud_of_scene; //Take care:this cloud is not required, so do not use it in any algorithm.
 };
+
 
 SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,const cv::Mat& RotationMat,const cv::Mat& TranslationMat,const cv::Mat& Q_mat)
 {
@@ -254,6 +259,9 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl,cv::Mat &imgr,c
 class SceneRetriever
 {
 public:
+
+    SceneRetriever();
+
     SceneRetriever(const string& voc);
     //SceneRetriever(Scene& original_scene_input);
     SceneRetriever(const string&voc,const std::string& scene_file);

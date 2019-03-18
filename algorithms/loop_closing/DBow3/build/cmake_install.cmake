@@ -1,4 +1,4 @@
-# Install script for directory: /home/gi/GAAS/algorithms/loop_closing/DBow3
+# Install script for directory: /home/gishr/software/GAAS/algorithms/loop_closing/DBow3
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -33,16 +33,16 @@ if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake" TYPE FILE FILES "/home/gi/GAAS/algorithms/loop_closing/DBow3/build/FindDBoW3.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake" TYPE FILE FILES "/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/FindDBoW3.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/DBoW3" TYPE FILE FILES "/home/gi/GAAS/algorithms/loop_closing/DBow3/build/DBoW3Config.cmake")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/DBoW3" TYPE FILE FILES "/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/DBoW3Config.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/gi/GAAS/algorithms/loop_closing/DBow3/build/src/cmake_install.cmake")
+  include("/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src/cmake_install.cmake")
 
 endif()
 
@@ -54,5 +54,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/gi/GAAS/algorithms/loop_closing/DBow3/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

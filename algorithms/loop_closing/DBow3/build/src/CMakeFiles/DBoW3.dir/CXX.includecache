@@ -6,17 +6,17 @@
 
 #IncludeRegexTransform: 
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.cpp
 BRIEF.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.h
 ../src/DUtils.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DUtils.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DUtils.h
 boost/dynamic_bitset.hpp
 -
 vector
 -
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.h
 opencv2/opencv.hpp
 -
 vector
@@ -24,7 +24,7 @@ vector
 boost/dynamic_bitset.hpp
 -
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.cpp
 iostream
 -
 fstream
@@ -36,49 +36,49 @@ algorithm
 cmath
 -
 ../src/BowVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
 map
 -
 vector
 -
 ../src/exports.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/exports.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/exports.h
 cstdint
 -
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DBoW3.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DBoW3.h
 ../src/Vocabulary.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
 ../src/Database.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Database.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Database.h
 ../src/BowVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
 ../src/FeatureVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
 ../src/QueryResults.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DException.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DException.h
 stdexcept
 -
 string
 -
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DUtils.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DUtils.h
 DException.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DException.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DException.h
 Timestamp.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.h
 Random.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Random.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Random.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Database.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Database.cpp
 ../src/Database.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Database.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Database.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Database.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Database.h
 vector
 -
 numeric
@@ -92,19 +92,19 @@ list
 set
 -
 ../src/Vocabulary.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
 ../src/QueryResults.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.h
 ../src/ScoringObject.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.h
 ../src/BowVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
 ../src/FeatureVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
 ../src/exports.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/exports.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/exports.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DescManip.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DescManip.cpp
 vector
 -
 string
@@ -118,9 +118,9 @@ stdint.h
 limits.h
 -
 ../src/DescManip.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DescManip.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DescManip.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DescManip.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DescManip.h
 opencv2/core/core.hpp
 -
 vector
@@ -128,11 +128,11 @@ vector
 string
 -
 ../src/exports.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/exports.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/exports.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.cpp
 ../src/FeatureVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
 map
 -
 vector
@@ -140,27 +140,27 @@ vector
 iostream
 -
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
 ../src/BowVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
 map
 -
 vector
 -
 ../src/exports.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/exports.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/exports.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp
 ../src/LoopClosingManager.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.h
 iostream
 -
 vector
 -
 ../src/DBoW3.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DBoW3.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DBoW3.h
 opencv2/core.hpp
 -
 opencv2/highgui.hpp
@@ -172,55 +172,55 @@ opencv2/xfeatures2d.hpp
 opencv2/features2d/features2d.hpp
 -
 opencv2/calib3d.hpp
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/opencv2/calib3d.hpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/opencv2/calib3d.hpp
 memory
 -
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.cpp
 iostream
 -
 fstream
 -
 ../src/QueryResults.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.h
 vector
 -
 ../src/exports.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/exports.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/exports.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Random.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Random.cpp
 Random.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Random.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Random.h
 Timestamp.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.h
 cstdlib
 -
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Random.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Random.h
 cstdlib
 -
 vector
 -
 config.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/config.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/config.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.cpp
 cfloat
 -
 ../src/Vocabulary.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
 ../src/BowVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.h
 ../src/BowVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
 ../src/exports.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/exports.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/exports.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.cpp
 cstdio
 -
 cstdlib
@@ -238,27 +238,27 @@ sys/timeb.h
 sys/time.h
 -
 Timestamp.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.h
 iostream
 -
 config.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/config.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/config.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.cpp
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.cpp
 ../src/Vocabulary.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
 ../src/DescManip.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/DescManip.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DescManip.h
 ../src/quicklz.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/quicklz.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/quicklz.h
 sstream
 -
 timers.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/timers.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/timers.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h
 cassert
 -
 vector
@@ -276,25 +276,25 @@ algorithm
 opencv2/core/core.hpp
 -
 ../src/exports.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/exports.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/exports.h
 ../src/FeatureVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h
 ../src/BowVector.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h
 ../src/ScoringObject.h
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.h
 limits
 -
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/config.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/config.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/exports.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/exports.h
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/quicklz.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/quicklz.h
 string.h
 -
 
-/home/gi/GAAS/algorithms/loop_closing/DBow3/src/timers.h
+/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/timers.h
 chrono
 -
 string

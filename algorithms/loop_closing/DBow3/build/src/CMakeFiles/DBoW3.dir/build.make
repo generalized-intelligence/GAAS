@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/gi/GAAS/algorithms/loop_closing/DBow3
+CMAKE_SOURCE_DIR = /home/gishr/software/GAAS/algorithms/loop_closing/DBow3
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/gi/GAAS/algorithms/loop_closing/DBow3/build
+CMAKE_BINARY_DIR = /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build
 
 # Include any dependencies generated for this target.
 include src/CMakeFiles/DBoW3.dir/depend.make
@@ -59,16 +59,16 @@ include src/CMakeFiles/DBoW3.dir/flags.make
 
 src/CMakeFiles/DBoW3.dir/Database.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
 src/CMakeFiles/DBoW3.dir/Database.cpp.o: ../src/Database.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/CMakeFiles/DBoW3.dir/Database.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/Database.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Database.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/CMakeFiles/DBoW3.dir/Database.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/Database.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Database.cpp
 
 src/CMakeFiles/DBoW3.dir/Database.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/Database.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Database.cpp > CMakeFiles/DBoW3.dir/Database.cpp.i
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Database.cpp > CMakeFiles/DBoW3.dir/Database.cpp.i
 
 src/CMakeFiles/DBoW3.dir/Database.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/Database.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Database.cpp -o CMakeFiles/DBoW3.dir/Database.cpp.s
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Database.cpp -o CMakeFiles/DBoW3.dir/Database.cpp.s
 
 src/CMakeFiles/DBoW3.dir/Database.cpp.o.requires:
 
@@ -83,16 +83,16 @@ src/CMakeFiles/DBoW3.dir/Database.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir
 
 src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
 src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o: ../src/BRIEF.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/BRIEF.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/BRIEF.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.cpp
 
 src/CMakeFiles/DBoW3.dir/BRIEF.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/BRIEF.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.cpp > CMakeFiles/DBoW3.dir/BRIEF.cpp.i
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.cpp > CMakeFiles/DBoW3.dir/BRIEF.cpp.i
 
 src/CMakeFiles/DBoW3.dir/BRIEF.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/BRIEF.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.cpp -o CMakeFiles/DBoW3.dir/BRIEF.cpp.s
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.cpp -o CMakeFiles/DBoW3.dir/BRIEF.cpp.s
 
 src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o.requires:
 
@@ -105,66 +105,90 @@ src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o.provides: src/CMakeFiles/DBoW3.dir/BRIEF.cp
 src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o
 
 
-src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
-src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o: ../src/LoopClosingManager.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp
+src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
+src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o: ../src/FeatureVector.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/FeatureVector.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.cpp
 
-src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp > CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.i
+src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/FeatureVector.cpp.i"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.cpp > CMakeFiles/DBoW3.dir/FeatureVector.cpp.i
 
-src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp -o CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.s
+src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/FeatureVector.cpp.s"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.cpp -o CMakeFiles/DBoW3.dir/FeatureVector.cpp.s
 
-src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.requires:
+src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.requires:
 
-.PHONY : src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.requires
+.PHONY : src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.requires
 
-src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.provides: src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.requires
-	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.provides.build
-.PHONY : src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.provides
+src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.provides: src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.requires
+	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.provides.build
+.PHONY : src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.provides
 
-src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o
+src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o
 
 
-src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
-src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o: ../src/Vocabulary.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/Vocabulary.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.cpp
+src/CMakeFiles/DBoW3.dir/BowVector.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
+src/CMakeFiles/DBoW3.dir/BowVector.cpp.o: ../src/BowVector.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object src/CMakeFiles/DBoW3.dir/BowVector.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/BowVector.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.cpp
 
-src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/Vocabulary.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.cpp > CMakeFiles/DBoW3.dir/Vocabulary.cpp.i
+src/CMakeFiles/DBoW3.dir/BowVector.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/BowVector.cpp.i"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.cpp > CMakeFiles/DBoW3.dir/BowVector.cpp.i
 
-src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/Vocabulary.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.cpp -o CMakeFiles/DBoW3.dir/Vocabulary.cpp.s
+src/CMakeFiles/DBoW3.dir/BowVector.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/BowVector.cpp.s"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/BowVector.cpp -o CMakeFiles/DBoW3.dir/BowVector.cpp.s
 
-src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.requires:
+src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.requires:
 
-.PHONY : src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.requires
+.PHONY : src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.requires
 
-src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.provides: src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.requires
-	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.provides.build
-.PHONY : src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.provides
+src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.provides: src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.requires
+	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.provides.build
+.PHONY : src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.provides
 
-src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o
+src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/BowVector.cpp.o
+
+
+src/CMakeFiles/DBoW3.dir/Random.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
+src/CMakeFiles/DBoW3.dir/Random.cpp.o: ../src/Random.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object src/CMakeFiles/DBoW3.dir/Random.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/Random.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Random.cpp
+
+src/CMakeFiles/DBoW3.dir/Random.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/Random.cpp.i"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Random.cpp > CMakeFiles/DBoW3.dir/Random.cpp.i
+
+src/CMakeFiles/DBoW3.dir/Random.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/Random.cpp.s"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Random.cpp -o CMakeFiles/DBoW3.dir/Random.cpp.s
+
+src/CMakeFiles/DBoW3.dir/Random.cpp.o.requires:
+
+.PHONY : src/CMakeFiles/DBoW3.dir/Random.cpp.o.requires
+
+src/CMakeFiles/DBoW3.dir/Random.cpp.o.provides: src/CMakeFiles/DBoW3.dir/Random.cpp.o.requires
+	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/Random.cpp.o.provides.build
+.PHONY : src/CMakeFiles/DBoW3.dir/Random.cpp.o.provides
+
+src/CMakeFiles/DBoW3.dir/Random.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/Random.cpp.o
 
 
 src/CMakeFiles/DBoW3.dir/QueryResults.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
 src/CMakeFiles/DBoW3.dir/QueryResults.cpp.o: ../src/QueryResults.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object src/CMakeFiles/DBoW3.dir/QueryResults.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/QueryResults.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object src/CMakeFiles/DBoW3.dir/QueryResults.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/QueryResults.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.cpp
 
 src/CMakeFiles/DBoW3.dir/QueryResults.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/QueryResults.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.cpp > CMakeFiles/DBoW3.dir/QueryResults.cpp.i
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.cpp > CMakeFiles/DBoW3.dir/QueryResults.cpp.i
 
 src/CMakeFiles/DBoW3.dir/QueryResults.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/QueryResults.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.cpp -o CMakeFiles/DBoW3.dir/QueryResults.cpp.s
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.cpp -o CMakeFiles/DBoW3.dir/QueryResults.cpp.s
 
 src/CMakeFiles/DBoW3.dir/QueryResults.cpp.o.requires:
 
@@ -179,16 +203,16 @@ src/CMakeFiles/DBoW3.dir/QueryResults.cpp.o.provides.build: src/CMakeFiles/DBoW3
 
 src/CMakeFiles/DBoW3.dir/DescManip.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
 src/CMakeFiles/DBoW3.dir/DescManip.cpp.o: ../src/DescManip.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object src/CMakeFiles/DBoW3.dir/DescManip.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/DescManip.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/DescManip.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object src/CMakeFiles/DBoW3.dir/DescManip.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/DescManip.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DescManip.cpp
 
 src/CMakeFiles/DBoW3.dir/DescManip.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/DescManip.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/DescManip.cpp > CMakeFiles/DBoW3.dir/DescManip.cpp.i
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DescManip.cpp > CMakeFiles/DBoW3.dir/DescManip.cpp.i
 
 src/CMakeFiles/DBoW3.dir/DescManip.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/DescManip.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/DescManip.cpp -o CMakeFiles/DBoW3.dir/DescManip.cpp.s
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/DescManip.cpp -o CMakeFiles/DBoW3.dir/DescManip.cpp.s
 
 src/CMakeFiles/DBoW3.dir/DescManip.cpp.o.requires:
 
@@ -201,66 +225,42 @@ src/CMakeFiles/DBoW3.dir/DescManip.cpp.o.provides: src/CMakeFiles/DBoW3.dir/Desc
 src/CMakeFiles/DBoW3.dir/DescManip.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/DescManip.cpp.o
 
 
-src/CMakeFiles/DBoW3.dir/BowVector.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
-src/CMakeFiles/DBoW3.dir/BowVector.cpp.o: ../src/BowVector.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object src/CMakeFiles/DBoW3.dir/BowVector.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/BowVector.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.cpp
+src/CMakeFiles/DBoW3.dir/quicklz.c.o: src/CMakeFiles/DBoW3.dir/flags.make
+src/CMakeFiles/DBoW3.dir/quicklz.c.o: ../src/quicklz.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object src/CMakeFiles/DBoW3.dir/quicklz.c.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/cc  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/DBoW3.dir/quicklz.c.o   -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/quicklz.c
 
-src/CMakeFiles/DBoW3.dir/BowVector.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/BowVector.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.cpp > CMakeFiles/DBoW3.dir/BowVector.cpp.i
+src/CMakeFiles/DBoW3.dir/quicklz.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/DBoW3.dir/quicklz.c.i"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/cc  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/quicklz.c > CMakeFiles/DBoW3.dir/quicklz.c.i
 
-src/CMakeFiles/DBoW3.dir/BowVector.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/BowVector.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/BowVector.cpp -o CMakeFiles/DBoW3.dir/BowVector.cpp.s
+src/CMakeFiles/DBoW3.dir/quicklz.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/DBoW3.dir/quicklz.c.s"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/cc  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/quicklz.c -o CMakeFiles/DBoW3.dir/quicklz.c.s
 
-src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.requires:
+src/CMakeFiles/DBoW3.dir/quicklz.c.o.requires:
 
-.PHONY : src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.requires
+.PHONY : src/CMakeFiles/DBoW3.dir/quicklz.c.o.requires
 
-src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.provides: src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.requires
-	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.provides.build
-.PHONY : src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.provides
+src/CMakeFiles/DBoW3.dir/quicklz.c.o.provides: src/CMakeFiles/DBoW3.dir/quicklz.c.o.requires
+	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/quicklz.c.o.provides.build
+.PHONY : src/CMakeFiles/DBoW3.dir/quicklz.c.o.provides
 
-src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/BowVector.cpp.o
-
-
-src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
-src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o: ../src/FeatureVector.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/FeatureVector.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.cpp
-
-src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/FeatureVector.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.cpp > CMakeFiles/DBoW3.dir/FeatureVector.cpp.i
-
-src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/FeatureVector.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.cpp -o CMakeFiles/DBoW3.dir/FeatureVector.cpp.s
-
-src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.requires:
-
-.PHONY : src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.requires
-
-src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.provides: src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.requires
-	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.provides.build
-.PHONY : src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.provides
-
-src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o
+src/CMakeFiles/DBoW3.dir/quicklz.c.o.provides.build: src/CMakeFiles/DBoW3.dir/quicklz.c.o
 
 
 src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
 src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.o: ../src/ScoringObject.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/ScoringObject.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/ScoringObject.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.cpp
 
 src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/ScoringObject.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.cpp > CMakeFiles/DBoW3.dir/ScoringObject.cpp.i
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.cpp > CMakeFiles/DBoW3.dir/ScoringObject.cpp.i
 
 src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/ScoringObject.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.cpp -o CMakeFiles/DBoW3.dir/ScoringObject.cpp.s
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.cpp -o CMakeFiles/DBoW3.dir/ScoringObject.cpp.s
 
 src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.o.requires:
 
@@ -275,16 +275,16 @@ src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.o.provides.build: src/CMakeFiles/DBoW
 
 src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
 src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o: ../src/Timestamp.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/Timestamp.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/Timestamp.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.cpp
 
 src/CMakeFiles/DBoW3.dir/Timestamp.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/Timestamp.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.cpp > CMakeFiles/DBoW3.dir/Timestamp.cpp.i
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.cpp > CMakeFiles/DBoW3.dir/Timestamp.cpp.i
 
 src/CMakeFiles/DBoW3.dir/Timestamp.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/Timestamp.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.cpp -o CMakeFiles/DBoW3.dir/Timestamp.cpp.s
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.cpp -o CMakeFiles/DBoW3.dir/Timestamp.cpp.s
 
 src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o.requires:
 
@@ -297,84 +297,84 @@ src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o.provides: src/CMakeFiles/DBoW3.dir/Time
 src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o
 
 
-src/CMakeFiles/DBoW3.dir/Random.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
-src/CMakeFiles/DBoW3.dir/Random.cpp.o: ../src/Random.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object src/CMakeFiles/DBoW3.dir/Random.cpp.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/Random.cpp.o -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Random.cpp
+src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
+src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o: ../src/Vocabulary.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/Vocabulary.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.cpp
 
-src/CMakeFiles/DBoW3.dir/Random.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/Random.cpp.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Random.cpp > CMakeFiles/DBoW3.dir/Random.cpp.i
+src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/Vocabulary.cpp.i"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.cpp > CMakeFiles/DBoW3.dir/Vocabulary.cpp.i
 
-src/CMakeFiles/DBoW3.dir/Random.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/Random.cpp.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/Random.cpp -o CMakeFiles/DBoW3.dir/Random.cpp.s
+src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/Vocabulary.cpp.s"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.cpp -o CMakeFiles/DBoW3.dir/Vocabulary.cpp.s
 
-src/CMakeFiles/DBoW3.dir/Random.cpp.o.requires:
+src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.requires:
 
-.PHONY : src/CMakeFiles/DBoW3.dir/Random.cpp.o.requires
+.PHONY : src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.requires
 
-src/CMakeFiles/DBoW3.dir/Random.cpp.o.provides: src/CMakeFiles/DBoW3.dir/Random.cpp.o.requires
-	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/Random.cpp.o.provides.build
-.PHONY : src/CMakeFiles/DBoW3.dir/Random.cpp.o.provides
+src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.provides: src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.requires
+	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.provides.build
+.PHONY : src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.provides
 
-src/CMakeFiles/DBoW3.dir/Random.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/Random.cpp.o
+src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o
 
 
-src/CMakeFiles/DBoW3.dir/quicklz.c.o: src/CMakeFiles/DBoW3.dir/flags.make
-src/CMakeFiles/DBoW3.dir/quicklz.c.o: ../src/quicklz.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building C object src/CMakeFiles/DBoW3.dir/quicklz.c.o"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/cc  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/DBoW3.dir/quicklz.c.o   -c /home/gi/GAAS/algorithms/loop_closing/DBow3/src/quicklz.c
+src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o: src/CMakeFiles/DBoW3.dir/flags.make
+src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o: ../src/LoopClosingManager.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o -c /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp
 
-src/CMakeFiles/DBoW3.dir/quicklz.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/DBoW3.dir/quicklz.c.i"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/cc  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/gi/GAAS/algorithms/loop_closing/DBow3/src/quicklz.c > CMakeFiles/DBoW3.dir/quicklz.c.i
+src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.i"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp > CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.i
 
-src/CMakeFiles/DBoW3.dir/quicklz.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/DBoW3.dir/quicklz.c.s"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/cc  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/gi/GAAS/algorithms/loop_closing/DBow3/src/quicklz.c -o CMakeFiles/DBoW3.dir/quicklz.c.s
+src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.s"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && /usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp -o CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.s
 
-src/CMakeFiles/DBoW3.dir/quicklz.c.o.requires:
+src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.requires:
 
-.PHONY : src/CMakeFiles/DBoW3.dir/quicklz.c.o.requires
+.PHONY : src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.requires
 
-src/CMakeFiles/DBoW3.dir/quicklz.c.o.provides: src/CMakeFiles/DBoW3.dir/quicklz.c.o.requires
-	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/quicklz.c.o.provides.build
-.PHONY : src/CMakeFiles/DBoW3.dir/quicklz.c.o.provides
+src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.provides: src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.requires
+	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.provides.build
+.PHONY : src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.provides
 
-src/CMakeFiles/DBoW3.dir/quicklz.c.o.provides.build: src/CMakeFiles/DBoW3.dir/quicklz.c.o
+src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.provides.build: src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o
 
 
 # Object files for target DBoW3
 DBoW3_OBJECTS = \
 "CMakeFiles/DBoW3.dir/Database.cpp.o" \
 "CMakeFiles/DBoW3.dir/BRIEF.cpp.o" \
-"CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o" \
-"CMakeFiles/DBoW3.dir/Vocabulary.cpp.o" \
+"CMakeFiles/DBoW3.dir/FeatureVector.cpp.o" \
+"CMakeFiles/DBoW3.dir/BowVector.cpp.o" \
+"CMakeFiles/DBoW3.dir/Random.cpp.o" \
 "CMakeFiles/DBoW3.dir/QueryResults.cpp.o" \
 "CMakeFiles/DBoW3.dir/DescManip.cpp.o" \
-"CMakeFiles/DBoW3.dir/BowVector.cpp.o" \
-"CMakeFiles/DBoW3.dir/FeatureVector.cpp.o" \
+"CMakeFiles/DBoW3.dir/quicklz.c.o" \
 "CMakeFiles/DBoW3.dir/ScoringObject.cpp.o" \
 "CMakeFiles/DBoW3.dir/Timestamp.cpp.o" \
-"CMakeFiles/DBoW3.dir/Random.cpp.o" \
-"CMakeFiles/DBoW3.dir/quicklz.c.o"
+"CMakeFiles/DBoW3.dir/Vocabulary.cpp.o" \
+"CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o"
 
 # External object files for target DBoW3
 DBoW3_EXTERNAL_OBJECTS =
 
 src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/Database.cpp.o
 src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o
-src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o
-src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o
+src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o
+src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/BowVector.cpp.o
+src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/Random.cpp.o
 src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/QueryResults.cpp.o
 src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/DescManip.cpp.o
-src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/BowVector.cpp.o
-src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o
+src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/quicklz.c.o
 src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.o
 src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o
-src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/Random.cpp.o
-src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/quicklz.c.o
+src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o
+src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o
 src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/build.make
 src/libDBoW3.so.0.0.1: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_stitching3.so.3.3.1
 src/libDBoW3.so.0.0.1: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_superres3.so.3.3.1
@@ -422,9 +422,9 @@ src/libDBoW3.so.0.0.1: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_objdetect
 src/libDBoW3.so.0.0.1: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_imgproc3.so.3.3.1
 src/libDBoW3.so.0.0.1: /opt/ros/kinetic/lib/x86_64-linux-gnu/libopencv_core3.so.3.3.1
 src/libDBoW3.so.0.0.1: src/CMakeFiles/DBoW3.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Linking CXX shared library libDBoW3.so"
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/DBoW3.dir/link.txt --verbose=$(VERBOSE)
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && $(CMAKE_COMMAND) -E cmake_symlink_library libDBoW3.so.0.0.1 libDBoW3.so.0.0 libDBoW3.so
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Linking CXX shared library libDBoW3.so"
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/DBoW3.dir/link.txt --verbose=$(VERBOSE)
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && $(CMAKE_COMMAND) -E cmake_symlink_library libDBoW3.so.0.0.1 libDBoW3.so.0.0 libDBoW3.so
 
 src/libDBoW3.so.0.0: src/libDBoW3.so.0.0.1
 	@$(CMAKE_COMMAND) -E touch_nocreate src/libDBoW3.so.0.0
@@ -439,24 +439,24 @@ src/CMakeFiles/DBoW3.dir/build: src/libDBoW3.so
 
 src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/Database.cpp.o.requires
 src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/BRIEF.cpp.o.requires
-src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.requires
-src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.requires
+src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.requires
+src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.requires
+src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/Random.cpp.o.requires
 src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/QueryResults.cpp.o.requires
 src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/DescManip.cpp.o.requires
-src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/BowVector.cpp.o.requires
-src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/FeatureVector.cpp.o.requires
+src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/quicklz.c.o.requires
 src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/ScoringObject.cpp.o.requires
 src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/Timestamp.cpp.o.requires
-src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/Random.cpp.o.requires
-src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/quicklz.c.o.requires
+src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/Vocabulary.cpp.o.requires
+src/CMakeFiles/DBoW3.dir/requires: src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o.requires
 
 .PHONY : src/CMakeFiles/DBoW3.dir/requires
 
 src/CMakeFiles/DBoW3.dir/clean:
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src && $(CMAKE_COMMAND) -P CMakeFiles/DBoW3.dir/cmake_clean.cmake
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src && $(CMAKE_COMMAND) -P CMakeFiles/DBoW3.dir/cmake_clean.cmake
 .PHONY : src/CMakeFiles/DBoW3.dir/clean
 
 src/CMakeFiles/DBoW3.dir/depend:
-	cd /home/gi/GAAS/algorithms/loop_closing/DBow3/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/gi/GAAS/algorithms/loop_closing/DBow3 /home/gi/GAAS/algorithms/loop_closing/DBow3/src /home/gi/GAAS/algorithms/loop_closing/DBow3/build /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src /home/gi/GAAS/algorithms/loop_closing/DBow3/build/src/CMakeFiles/DBoW3.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/gishr/software/GAAS/algorithms/loop_closing/DBow3 /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/src /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/src/CMakeFiles/DBoW3.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : src/CMakeFiles/DBoW3.dir/depend
 

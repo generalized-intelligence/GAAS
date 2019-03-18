@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/gi/GAAS/algorithms/loop_closing/DBow3
+CMAKE_SOURCE_DIR = /home/gishr/software/GAAS/algorithms/loop_closing/DBow3
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/gi/GAAS/algorithms/loop_closing/DBow3/build
+CMAKE_BINARY_DIR = /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build
 
 #=============================================================================
 # Target rules for target CMakeFiles/uninstall.dir
@@ -66,14 +66,14 @@ CMAKE_BINARY_DIR = /home/gi/GAAS/algorithms/loop_closing/DBow3/build
 CMakeFiles/uninstall.dir/all:
 	$(MAKE) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/depend
 	$(MAKE) -f CMakeFiles/uninstall.dir/build.make CMakeFiles/uninstall.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num= "Built target uninstall"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num= "Built target uninstall"
 .PHONY : CMakeFiles/uninstall.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/uninstall.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 0
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/uninstall.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 0
 .PHONY : CMakeFiles/uninstall.dir/rule
 
 # Convenience name for target.
@@ -98,7 +98,7 @@ clean: CMakeFiles/uninstall.dir/clean
 CMakeFiles/loopclosingmanager.dir/all: src/CMakeFiles/DBoW3.dir/all
 	$(MAKE) -f CMakeFiles/loopclosingmanager.dir/build.make CMakeFiles/loopclosingmanager.dir/depend
 	$(MAKE) -f CMakeFiles/loopclosingmanager.dir/build.make CMakeFiles/loopclosingmanager.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=14,15 "Built target loopclosingmanager"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=14,15 "Built target loopclosingmanager"
 .PHONY : CMakeFiles/loopclosingmanager.dir/all
 
 # Include target in all.
@@ -108,9 +108,9 @@ all: CMakeFiles/loopclosingmanager.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/loopclosingmanager.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 15
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 15
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/loopclosingmanager.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 0
 .PHONY : CMakeFiles/loopclosingmanager.dir/rule
 
 # Convenience name for target.
@@ -153,7 +153,7 @@ src/preinstall:
 src/CMakeFiles/DBoW3.dir/all:
 	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/depend
 	$(MAKE) -f src/CMakeFiles/DBoW3.dir/build.make src/CMakeFiles/DBoW3.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13 "Built target DBoW3"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12,13 "Built target DBoW3"
 .PHONY : src/CMakeFiles/DBoW3.dir/all
 
 # Include target in all.
@@ -163,9 +163,9 @@ all: src/CMakeFiles/DBoW3.dir/all
 
 # Build rule for subdir invocation for target.
 src/CMakeFiles/DBoW3.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 13
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 13
 	$(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/DBoW3.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/gi/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/gishr/software/GAAS/algorithms/loop_closing/DBow3/build/CMakeFiles 0
 .PHONY : src/CMakeFiles/DBoW3.dir/rule
 
 # Convenience name for target.

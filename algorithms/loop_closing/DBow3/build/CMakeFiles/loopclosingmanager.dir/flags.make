@@ -6,5 +6,5 @@ CXX_FLAGS =   -fomit-frame-pointer -O3 -mmmx -msse -msse2 -msse3 -DNDEBUG    -st
 
 CXX_DEFINES = -DOPENCV_VERSION_3 -Dloopclosingmanager_EXPORTS
 
-CXX_INCLUDES = -isystem /opt/ros/kinetic/include/opencv-3.3.1-dev -isystem /opt/ros/kinetic/include/opencv-3.3.1-dev/opencv -I/home/gi/GAAS/algorithms/loop_closing/DBow3 
+CXX_INCLUDES = -isystem /opt/ros/kinetic/include/opencv-3.3.1-dev -isystem /opt/ros/kinetic/include/opencv-3.3.1-dev/opencv -I/home/gishr/software/GAAS/algorithms/loop_closing/DBow3 
 

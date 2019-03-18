@@ -10,12 +10,17 @@ Scene::Scene()
 {
     return;//TODO:fill in init functions.
 }
+
 int Scene::getImageCount()
 {
     return this->vec_p2d.size();
 }
 
 
+SceneRetriever::SceneRetriever()
+{
+
+}
 
 SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
 {
@@ -23,15 +28,17 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
     this->ploop_closing_manager_of_scene = new LoopClosingManager(voc);
     this->_init_retriever();
 }
+
 void SceneRetriever::_init_retriever()
 {
     auto p2d = this->original_scene.getP2D();
     auto p3d = this->original_scene.getP3D();
+
     for(int frame_index = 0;frame_index<original_scene.getImageCount();frame_index++)
     {
         struct FrameInfo* pfr = new struct FrameInfo;
-	pfr->keypoints=p2d[frame_index];
-	pfr->descriptors = this->original_scene.getDespByIndex(frame_index);
+	    pfr->keypoints=p2d[frame_index];
+	    pfr->descriptors = this->original_scene.getDespByIndex(frame_index);
         ptr_frameinfo frame_info(pfr);
         this->ploop_closing_manager_of_scene->addKeyFrame(frame_info);
     }
@@ -61,7 +68,7 @@ int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
     //<1>-(1) match left image with scene.
     std::vector<DMatch> good_matches_output;
     ptr_frameinfo frameinfo_left = LoopClosingManager::extractFeature(image_left_rect);
-    int loop_index= this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(frameinfo_left,good_matches_output,false);
+    int loop_index= this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(frameinfo_left, good_matches_output, false);
     if(loop_index<0)
     {
         //frame match failed.
@@ -101,10 +108,6 @@ int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
     std::vector<Point3f> points_3d;
     cv::reprojectImageTo3D(disparity_of_points,points_3d,Q_mat);
 
-    
-    
-    
-    
     
     //step<2> match 2 clouds.
       //method<1>
