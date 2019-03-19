@@ -114,7 +114,7 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
         img2Kp2Ds[img_filename] = kps_;
 	
         img2Kp3ds[img_filename] = vector<cv::Point3d>();
-        img2Kp3ds[img_filename].resize(img2Kp2Ds.size());
+        img2Kp3ds[img_filename].resize(img2Kp2Ds[img_filename].size());
     }
     //step<3>.Get 3d position of these points,and make a frame of scene.
     //open undistorted_tracks.csv. actually it's a tsv file.
@@ -132,6 +132,7 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
         }
     }
     std::map<string,std::vector<int> > map_index_with_3d_pos;
+    const auto &points_obj = reconstruction_j[0]["points"];
     for(int line_index=0;line_index<fields.size();line_index++) // traverse all tracks to find point 3d coordinate.
     {
         vector<string>& curr_line = fields[line_index];
@@ -143,27 +144,44 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
         track_id = std::stoi(track_id_str);
         feature_id = std::stoi(feature_id_str);
 	//string px,py,pz;
+	cout<<endl;
 	cout<<"curr_line[0]:"<<curr_line[0]<<endl;
-        cout<<"at line_index:"<<line_index<<"track_id:"<<track_id_str<<"feature_id:"<<feature_id_str;
+        cout<<"at line_index:"<<line_index<<endl;
+	cout<<"track_id:"<<track_id_str<<endl;
+	cout<<"feature_id:"<<feature_id_str<<endl;
 	//auto z = reconstruction_j[0];
 	//auto a = reconstruction_j[0]["points"];
-	cout <<"bb";
+	cout <<"bb"<<endl;
 	//auto b = reconstruction_j[0]["points"][track_id_str];
-	cout <<"cc";
+	cout <<"cc"<<endl;
 	//auto c = reconstruction_j[0]["points"][track_id_str]["coordinates"];
-        cout <<"  0";
-	if(reconstruction_j[0]["points"].find(track_id_str)==reconstruction_j[0]["points"].end() )
+        cout <<"0"<<endl;
+
+	if(points_obj.find(track_id_str)==points_obj.end() )
 	{
 	  //is a outlier.
+	  cout <<"is a outlier"<<endl;
 	  continue;
 	}
+	else
+	{
+	  cout<<"is a inlier!"<<endl;
+	}
 	double px = reconstruction_j[0]["points"][track_id_str]["coordinates"][0].get<double>();
-	cout<<"1";
+	cout<<"1"<<endl;
 	double py = reconstruction_j[0]["points"][track_id_str]["coordinates"][1].get<double>();
-	cout<<"2";
+	cout<<"2"<<endl;
 	double pz = reconstruction_j[0]["points"][track_id_str]["coordinates"][2].get<double>();
 	cout<<"3"<<endl;
+	cout <<"img2Kp3ds[img_filename].size:"<<img2Kp3ds[img_filename].size()<<"\timg2Kp2Ds[img_filename].size():"<<img2Kp2Ds[img_filename].size()<<endl;
+	if(img2Kp2Ds[img_filename].size() == 0)
+	{
+	  cout <<"this image is not inside of reconstruction[0],ignored!"<<endl;
+	  continue;
+	}
         img2Kp3ds[img_filename][feature_id] = Point3d(px,py,pz);
+	
+	cout<<"point added!"<<endl;
 	//map_index_with_3d_pos[img_filename].push_back(feature_id);//Unused now.
     }
     cout<<"3d points loaded."<<endl;
