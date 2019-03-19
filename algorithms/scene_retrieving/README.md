@@ -8,26 +8,33 @@ Once similar 2d images has been retrieved,a 3d point mapping and scale solving t
 Required External Modules:
 
 1.OpenSfM.(a little change has been introduced for feature file output.) located under /algorithms/sfm
+
     To get ready for usage:
         pip install -r requirements.txt
         python setup.py install
 
 2.nlohmann json.
+    
     No need for configuring.
 
 3.Loop Closing. located under /algorithms/loop\_closing.
+    
     mkdir build && cd build&&cmake ..&&make -j4
 
 依赖外部模块:
+
 1.OpenSfM(特征文件输出方式稍有更改.) 在 /algorithms/sfm目录下.
+   
     配置方法为在该目录下依次执行:
         pip install -r requirements.txt
         python setup.py install
 
 2.nlohmann json.
+    
     直接编译scene_retreving模块即可.
 
 3.Loop Closing. 在algorithms/loop\_closing目录.
+    
     mkdir build && cd build&&cmake ..&&make -j4
 
 
