@@ -1,10 +1,6 @@
 Retrieving a scene means to find a similar scene from a 3d model or map by loop closing algorithm.
 Once similar 2d images has been retrieved,a 3d point mapping and scale solving task shall be done; finally the pos and attitude of camera can be resolved.
 
-
-"场景重定位"功能可以支持通过视觉特征,重新在已知场景中通过回环检测等方法定位摄像机的位置.
-相似的图像被检索到之后,将会启动一次三维匹配.最终相机的姿态和位置将会被求解.
-
 Required External Modules:
 
 1.OpenSfM.(a little change has been introduced for feature file output.) located under /algorithms/sfm
@@ -21,6 +17,10 @@ Required External Modules:
     
     mkdir build && cd build&&cmake ..&&make -j4
 
+
+
+"场景重定位"功能可以支持通过视觉特征,重新在已知场景中通过回环检测等方法定位摄像机的位置.
+相似的图像被检索到之后,将会启动一次三维匹配.最终相机的姿态和位置将会被求解.
 依赖外部模块:
 
 1.OpenSfM(特征文件输出方式稍有更改.) 在 /algorithms/sfm目录下.
