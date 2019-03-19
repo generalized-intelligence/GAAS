@@ -6,6 +6,7 @@ Once similar 2d images has been retrieved,a 3d point mapping and scale solving t
 相似的图像被检索到之后,将会启动一次三维匹配.最终相机的姿态和位置将会被求解.
 
 Required External Modules:
+
 1.OpenSfM.(a little change has been introduced for feature file output.) located under /algorithms/sfm
     To get ready for usage:
         pip install -r requirements.txt
