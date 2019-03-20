@@ -71,10 +71,12 @@ public:
         this->mIndex++;
     }
     
+    
     inline void addFrame(const SceneFrame& frame)
     {
         this->addFrame(std::get<0>(frame),std::get<1>(frame),std::get<2>(frame));
     }
+    
     
     inline void setHasScale(bool hasScale_in)
     {
@@ -83,31 +85,13 @@ public:
     
 
 
-    void saveFile(const std::string &filename)
-    {
-        
-        std::ofstream ofs(filename);
+    void saveFile(const std::string &filename);
 
-        {
-            boost::archive::text_oarchive oa(ofs);
-            oa << *this;
-        }
-    }
-
-
-    Scene loadFile(const std::string &filename)
-    {
-
-        std::ifstream ifs(filename);
-
-        {
-            boost::archive::text_iarchive ia(ifs);
-            ia >> *this;
-            cout << "Deserialization finished" << endl;
-        }
-
-        return RecovedredScene;
-    }
+    
+    void loadFile(const std::string &filename);
+    
+    
+    void test();
     
     
     /////////////////////////////////// serialization////////////////////////////////////
@@ -123,8 +107,8 @@ public:
         ar & vec_p2d;
         ar & vec_p3d;
         ar & point_desps;
-        ar & m_RT_Scene_Fix;
-
+        
+        //ar & m_RT_Scene_Fix;
         //ar & point_cloud_of_scene;
         cout << "scene saving finished!" << endl;
     }
@@ -133,14 +117,14 @@ public:
     void load (Archive & ar, const unsigned int version)
     {
         cout << "scene loading started!" << endl;
-
+        
         ar & mIndex;
         ar & hasScale;
         ar & vec_p2d;
         ar & vec_p3d;
         ar & point_desps;
-        ar & m_RT_Scene_Fix;
-
+        
+        //ar & m_RT_Scene_Fix;
         //ar & point_cloud_of_scene;
 
         cout << "scene loading finished!" << endl;

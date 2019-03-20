@@ -10,6 +10,14 @@ using namespace std;
 
 int main(int argc,char** argv)
 {
+    
+    //NOTE simple test, for fast serialization test
+    std::shared_ptr<Scene> pScene(new Scene());
+    string scene_path = "./scene.scene";
+    pScene->loadFile(scene_path);
+    pScene->test();
+    
+    
     if (argc!=4)
     {
         cout<<"Usage: demo [scene_file_path] [l_image_path] [r_image_path] [Q_mat_file_path]"<<endl;
@@ -21,7 +29,9 @@ int main(int argc,char** argv)
     fsSettings["Q_mat"] >> Q_mat;
 
     std::shared_ptr<Scene> pScene(new Scene());
+    string scene_path = "./scene.scene";
     pScene->loadFile(scene_path);
+    pScene->test();
 
     cv::Mat RT_mat;
     bool match_success;

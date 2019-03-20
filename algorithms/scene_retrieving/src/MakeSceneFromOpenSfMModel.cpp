@@ -211,22 +211,23 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
     {
         //cv::Mat rotation_mat,translation_mat;
         string img_filename = it.key();
-	cv::Mat temp_desp_mat(img2kpDesps[img_filename].size(),//rows
-			      32,//cols
-		              0
-	);
-	cout<<"temp_desp_mat:"<<temp_desp_mat.cols<<"|"<<temp_desp_mat.rows<<endl;
-	cout<<"Image:"<<img_filename<<img2kpDesps[img_filename].size()<<";"<<img2kpDesps[img_filename][0].rows<<","<<img2kpDesps[img_filename][0].cols<<endl;
-	
-	for(int index = 0;index< img2kpDesps[img_filename].size();index++)
-	{
-	    cout<<"index:"<<index<<endl;
-	    cv::Mat& temp = img2kpDesps[img_filename][index];
-	    cout<<temp.cols<<"|"<<temp.rows<<endl;
-	    //temp_desp_mat.rowRange(index,index+1) = img2kpDesps[img_filename][index].row(0);//img2kpDesps[img_filename][index].rowRange(0,1);//.clone();
-	    temp_desp_mat.row(index) = img2kpDesps[img_filename][index].row(0);//img2kpDesps[img_filename][index].rowRange(0,1);//.clone();
-	}
-        pScene->addFrame(img2Kp2Ds[img_filename],img2Kp3ds[img_filename],temp_desp_mat.clone());
+        cv::Mat temp_desp_mat(img2kpDesps[img_filename].size(),//rows
+                    32,//cols
+                        0
+        );
+        cout<<"temp_desp_mat:"<<temp_desp_mat.cols<<"|"<<temp_desp_mat.rows<<endl;
+        cout<<"Image:"<<img_filename<<img2kpDesps[img_filename].size()<<";"<<img2kpDesps[img_filename][0].rows<<","<<img2kpDesps[img_filename][0].cols<<endl;
+        
+        for(int index = 0;index< img2kpDesps[img_filename].size();index++)
+        {
+            cout<<"index:"<<index<<endl;
+            cv::Mat& temp = img2kpDesps[img_filename][index];
+            cout<<temp.cols<<"|"<<temp.rows<<endl;
+            //temp_desp_mat.rowRange(index,index+1) = img2kpDesps[img_filename][index].row(0);//img2kpDesps[img_filename][index].rowRange(0,1);//.clone();
+            temp_desp_mat.row(index) = img2kpDesps[img_filename][index].row(0);//img2kpDesps[img_filename][index].rowRange(0,1);//.clone();
+        }
+    
+        pScene->addFrame(img2Kp2Ds[img_filename], img2Kp3ds[img_filename], temp_desp_mat.clone());
     }
     //step<4>.See if this scene has scale factor.
     

@@ -11,9 +11,46 @@ Scene::Scene()
     return;//TODO:fill in init functions.
 }
 
+
 int Scene::getImageCount()
 {
     return this->vec_p2d.size();
+}
+
+
+void Scene::saveFile(const std::string &filename)
+{
+    
+    std::ofstream ofs(filename);
+
+    {
+        boost::archive::text_oarchive oa(ofs);
+        oa << *this;
+    }
+}
+
+
+void Scene::loadFile(const std::string &filename)
+{
+
+    std::ifstream ifs(filename);
+
+    {
+        boost::archive::text_iarchive ia(ifs);
+        ia >> *this;
+        cout << "Deserialization finished" << endl;
+    }
+}
+
+void Scene::test()
+{
+    cout<<"---------------Current scene info---------------"<<endl;
+    cout<<"mIndex: "<<mIndex<<endl;
+    cout<<"hasScale: "<<hasScale<<endl;
+    cout<<"vec_p2d size: "<<vec_p2d.size()<<endl;
+    cout<<"vec_p3d size: "<<vec_p3d.size()<<endl;
+    cout<<"point_desps size: "<<point_desps.size()<<endl;
+    cout<<"---------------Current scene info---------------"<<endl;
 }
 
 

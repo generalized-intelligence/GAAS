@@ -8,6 +8,14 @@
 using namespace std;
 int main(int argc,char** argv)
 {
+    
+    //NOTE simple test, for fast serialization test
+    std::shared_ptr<Scene> pScene(new Scene());
+    string scene_path = "./scene.scene";
+    pScene->loadFile(scene_path);
+    pScene->test();
+    
+    
     if (argc!=3)
     {
         cout<<"Usage: demo [scene_file_path] [image_path] [camera_mat_file_path]"<<endl;
@@ -19,9 +27,10 @@ int main(int argc,char** argv)
     cv::Mat Q_mat;
     fsSettings["Q_mat"] >> Q_mat;
 
-
     std::shared_ptr<Scene> pScene(new Scene());
     pScene->loadFile(scene_path);
+    pScene->test();
+    
     if(pScene->hasScale == false)
     {
         cout <<"Scene has no scale info.Can not do matching."<<endl;
