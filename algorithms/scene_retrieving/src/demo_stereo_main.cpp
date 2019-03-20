@@ -12,10 +12,10 @@ int main(int argc,char** argv)
 {
     
     //NOTE simple test, for fast serialization test
-    std::shared_ptr<Scene> pScene(new Scene());
-    string scene_path = "./scene.scene";
-    pScene->loadFile(scene_path);
-    pScene->test();
+    std::shared_ptr<Scene> pSceneTest(new Scene());
+    string test_scene_path = "../../test.scene";
+    pSceneTest->loadFile(test_scene_path);
+    pSceneTest->test();
     
     
     if (argc!=4)
@@ -29,7 +29,6 @@ int main(int argc,char** argv)
     fsSettings["Q_mat"] >> Q_mat;
 
     std::shared_ptr<Scene> pScene(new Scene());
-    string scene_path = "./scene.scene";
     pScene->loadFile(scene_path);
     pScene->test();
 
