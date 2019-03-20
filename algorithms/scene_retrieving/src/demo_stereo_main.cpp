@@ -21,7 +21,6 @@ int main(int argc,char** argv)
     fsSettings["Q_mat"] >> Q_mat;
 
     std::shared_ptr<Scene> pScene(new Scene());
-    pScene->saveFile(scene_path);
     pScene->loadFile(scene_path);
 
     cv::Mat RT_mat;

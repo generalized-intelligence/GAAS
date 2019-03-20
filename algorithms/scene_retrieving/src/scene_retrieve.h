@@ -99,11 +99,10 @@ public:
     {
 
         std::ifstream ifs(filename);
-        Scene RecovedredScene;
 
         {
             boost::archive::text_iarchive ia(ifs);
-            ia >> RecovedredScene;
+            ia >> *this;
             cout << "Deserialization finished" << endl;
         }
 

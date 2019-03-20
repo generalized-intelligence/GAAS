@@ -44,12 +44,31 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
     LoopClosingManager lcm();
     //step<1> parse json.
     string jsonpath(path.c_str());
-    jsonpath+="reconstruction.json";
-    std::ifstream ifstr_json( jsonpath.c_str() );
+    jsonpath += "/reconstruction.json";
+
+    
+    cout<<"Using json path: "<<jsonpath<<endl;
+    
+    std::ifstream ifstr_json( jsonpath);
+    
+    cout<<"??? 1"<<endl;
+    
+//     std::ifstream ifstr_json( jsonpath.c_str() );
+    
     json reconstruction_j;
+    
+    cout<<"??? 2"<<endl;
+    
     ifstr_json >> reconstruction_j;
+    
+     cout<<"??? 3"<<endl;
+    
     auto shots = reconstruction_j[0]["shots"];
-    auto img2Rotation = new map<string,Mat>;    auto img2Translation = new map<string ,Mat>;
+    cout<<"??? 4"<<endl;
+    auto img2Rotation = new map<string,Mat>;
+    auto img2Translation = new map<string ,Mat>;
+    
+    cout<<"??? 5"<<endl;
     for (json::iterator it = shots.begin(); it != shots.end(); ++it) 
     {
         cv::Mat rotation_mat,translation_mat;
@@ -67,6 +86,9 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
         (*img2Translation)[img_filename] = translation_mat;
         //std::cout << it.key() << " : " << it.value() << "\n";
     }
+    
+    cout<<"??? 6"<<endl;
+    
     //step<2> build graph,do triangulate via these features.Load "features/xxxnpz and get keypoints info."
     map<string, vector<cv::Mat> >* pMapdesp = new map<string, vector<cv::Mat> >;
     map<string, vector<cv::Mat> >& img2kpDesps = *pMapdesp;
