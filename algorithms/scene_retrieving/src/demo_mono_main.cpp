@@ -11,7 +11,7 @@ int main(int argc,char** argv)
     
     //NOTE simple test, for fast serialization test
     std::shared_ptr<Scene> pSceneTest(new Scene());
-    string test_scene_path = "../../scene.scene";
+    string test_scene_path = "../../test.scene";
     pSceneTest->loadFile(test_scene_path);
     pSceneTest->test();
     
