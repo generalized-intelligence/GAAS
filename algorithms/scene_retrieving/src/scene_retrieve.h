@@ -1,3 +1,6 @@
+#ifndef SCENE_RETRIEVE_H
+#define SCENE_RETRIEVE_H
+
 #include <iostream>
 #include <vector>
 
@@ -21,7 +24,7 @@
 #include<pcl/conversions.h>
 #include <pcl/PCLPointCloud2.h>
 #include "LoopClosingManager.h"
-
+#include "scene_frame_properties.h"
 
 #include "serialization.h"
 
@@ -62,7 +65,7 @@ public:
       return this->vec_p3d;
     }
     
-    inline void addFrame(const std::vector<cv::KeyPoint>& points2d_in,const std::vector<cv::Point3d>points3d_in,const cv::Mat& point_desp_in)
+    inline void addFrame(const std::vector<cv::KeyPoint>& points2d_in,const std::vector<cv::Point3d>points3d_in,const cv::Mat& point_desp_in,const Scene_Properties)
     {
         
         this->vec_p2d.push_back(vector<cv::KeyPoint>(points2d_in));
@@ -141,6 +144,9 @@ private:
     std::vector<std::vector<cv::KeyPoint>> vec_p2d;
     std::vector<std::vector <cv::Point3d>> vec_p3d;
     std::vector <cv::Mat> point_desps;
+
+    std::vector<SceneFrame_Properties> vec_properties;
+
     cv::Mat m_RT_Scene_Fix = cv::Mat::eye(4,4,CV_32F);//fix 3d pose of scene.
 
     //pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud_of_scene; //Take care:this cloud is not required, so do not use it in any algorithm.
@@ -269,3 +275,4 @@ private:
     Scene original_scene;
     LoopClosingManager* ploop_closing_manager_of_scene;
 };
+#endif
