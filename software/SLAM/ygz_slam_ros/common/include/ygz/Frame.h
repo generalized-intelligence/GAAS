@@ -371,8 +371,20 @@ namespace ygz {
 
         const IMUPreIntegration &GetIMUPreInt() { return mIMUPreInt; }
         
-        
+//         
         // loopclosure related!-----------------------------------------------
+        vector<shared_ptr<MapPoint>> fetchMapPoints();
+        
+        vector<cv::Point3f> fetchMapPointsCV();
+        vector<cv::Point2f> fetchFeaturesCV();
+        void fetchKeyPointAndMapPoint(vector<cv::KeyPoint> CurrentKPs, vector<cv::Point3d> CurrentMPs);
+        std::tuple<vector<cv::KeyPoint>, vector<cv::Point3d> > fetchKeyPointAndMapPoint();
+        
+        vector<cv::Point3f> toCvPoint3f(vector<shared_ptr<MapPoint> >);
+        
+        void updateFeatureAndMapPoints();
+        
+        
         void PnPRANSAC(const vector<cv::Point2f> &matched_2d_old_norm,
                        const std::vector<cv::Point3f> &matched_3d,
                        std::vector<uchar> &status,

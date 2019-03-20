@@ -8,6 +8,8 @@
 #include "ygz/Frame.h"
 #include "ygz/ORBMatcher.h"
 #include "ygz/LoopClosing.h"
+#include "ygz/serialization.h"
+#include "ygz/MapSerialization.h"
 
 /*
 #include <pcl_conversions/pcl_conversions.h>
@@ -64,6 +66,8 @@ namespace ygz {
     class Viewer;
     
     class LoopClosing;
+    
+    class MapSerialization;
     
     class Tracker {
     public:
@@ -231,7 +235,10 @@ namespace ygz {
         // loopclosing
         shared_ptr<LoopClosing> mpLoopClosing = nullptr;
         
-
+        // MapSerialization
+        shared_ptr<MapSerialization> mpMapSerialization = nullptr;
+        
+        
         int mTrackInliersCnt = 0;
         double mGPSx;
         double mGPSy;

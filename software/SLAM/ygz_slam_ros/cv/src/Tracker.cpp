@@ -102,7 +102,7 @@ namespace ygz {
         Track();
         LOG(INFO) << "Tracker returns, pose = \n" << mpCurrentFrame->GetPose().matrix() << "\n\n" << endl;
         LOG(INFO)<<"Tracker position = "<<mpCurrentFrame->GetPose().translation()<<"\n\n"<<endl;
-
+        
         return mpCurrentFrame->GetPose();
     }
 

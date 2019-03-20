@@ -5,6 +5,7 @@ add_library(ygz-cv
         src/Align.cpp
         src/LKFlow.cpp
         src/TrackerLK.cpp
+	src/MapSerialization.cpp
         )
 
 target_link_libraries(ygz-cv ygz-common ${THIRD_PARTY_LIBS})

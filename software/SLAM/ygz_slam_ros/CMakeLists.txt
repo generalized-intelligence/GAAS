@@ -132,6 +132,7 @@ include_directories(
         common/include
         backend/include
         system/include
+	serialization/include
 )
 
 add_subdirectory(util)

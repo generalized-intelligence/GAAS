@@ -3,6 +3,7 @@
 
 using namespace cv;
 
+
 namespace ygz {
 
     // static variables
@@ -349,7 +350,8 @@ namespace ygz {
         mPyramidLeft.resize(setting::numPyramid);
         mPyramidRight.resize(setting::numPyramid);
 
-        for (size_t level = 0; level < setting::numPyramid; ++level) {
+        for (size_t level = 0; level < setting::numPyramid; ++level)
+        {
             float scale = setting::invScaleFactors[level];
             Size sz(cvRound((float) mImLeft.cols * scale), cvRound((float) mImLeft.rows * scale));
             Size wholeSize(sz.width + setting::EDGE_THRESHOLD * 2, sz.height + setting::EDGE_THRESHOLD * 2);
@@ -380,8 +382,8 @@ namespace ygz {
                 copyMakeBorder(mImRight, tempR, setting::EDGE_THRESHOLD, setting::EDGE_THRESHOLD,
                                setting::EDGE_THRESHOLD, setting::EDGE_THRESHOLD, BORDER_REFLECT_101);
             }
-
         }
+        
     }
 
     bool Frame::PosInGrid(const shared_ptr<Feature> feature, int &posX, int &posY) {
@@ -569,6 +571,185 @@ namespace ygz {
             if (status[i])
                 v[j++] = v[i];
         v.resize(j);
+    }
+    
+    
+    vector<shared_ptr<MapPoint>> Frame::fetchMapPoints()
+    {
+        
+        int featureVecSize = this->mFeaturesLeft.size();
+
+        vector<shared_ptr<MapPoint>> tempVec;
+        
+        for(int i=0; i<featureVecSize; i++)
+        {   
+            
+            shared_ptr<Feature>& feature = this->mFeaturesLeft[i];
+
+            if(feature==nullptr || (feature->mpPoint)==nullptr || (feature->mpPoint)->isBad())
+                continue;
+
+            tempVec.push_back(feature->mpPoint);
+        }
+        
+//         cout<<"Fetched MapPoint size before and after: "<<featureVecSize<<", "<<tempVec.size()<<endl;
+        
+        return tempVec;
+    }
+    
+    vector<cv::Point3f> Frame::fetchMapPointsCV()
+    {
+        vector<shared_ptr<MapPoint> > fetchedMapPoints = fetchMapPoints();
+                    
+        vector<cv::Point3f> cvMapPoints = toCvPoint3f(fetchedMapPoints);
+        
+        return cvMapPoints;
+    }
+    
+    
+    vector<cv::Point2f> Frame::fetchFeaturesCV()
+    {
+        int featureVecSize = this->mFeaturesLeft.size();
+        vector<cv::Point2f> tempKeyPointVec;
+        vector<cv::Point3f> tempMapPointVec;
+        
+        cv::Point2f kp;
+        cv::Point3f mp;
+        
+        for(int i=0; i<featureVecSize; i++)
+        {
+            shared_ptr<Feature>& feature = this->mFeaturesLeft[i];
+            
+            if(feature==nullptr || (feature->mpPoint)==nullptr || (feature->mpPoint)->isBad())
+            {
+                continue;
+            }
+
+            kp.x = feature->mPixel[0];
+            kp.y = feature->mPixel[1];
+            
+            mp.x = (feature->mpPoint)->GetWorldPos()[0];
+            mp.y = (feature->mpPoint)->GetWorldPos()[1];
+            mp.z = (feature->mpPoint)->GetWorldPos()[2];
+            
+            tempMapPointVec.push_back(mp);
+            tempKeyPointVec.push_back(kp);
+            
+        }
+        
+        return tempKeyPointVec;
+    }
+    
+    
+    void Frame::fetchKeyPointAndMapPoint(vector<cv::KeyPoint> CurrentKPs, vector<cv::Point3d> CurrentMPs)
+    {
+        
+        cv::KeyPoint kp;
+        cv::Point3d mp;
+        
+        int featureVecSize = this->mFeaturesLeft.size();
+        
+        for(int i=0; i<featureVecSize; i++)
+        {
+            shared_ptr<Feature>& feature = this->mFeaturesLeft[i];
+            
+            if(feature==nullptr || (feature->mpPoint)==nullptr || (feature->mpPoint)->isBad())
+            {
+                continue;
+            }
+
+            kp.pt.x = feature->mPixel[0];
+            kp.pt.y = feature->mPixel[1];
+            
+            mp.x = (feature->mpPoint)->GetWorldPos()[0];
+            mp.y = (feature->mpPoint)->GetWorldPos()[1];
+            mp.z = (feature->mpPoint)->GetWorldPos()[2];
+            
+            CurrentKPs.push_back(kp);
+            CurrentMPs.push_back(mp);
+        }
+        
+        cout<<"fetchKeyPointAndMapPoint 222"<<CurrentKPs.size()<<", "<<CurrentMPs.size()<<endl;
+        
+    }
+    
+    
+    std::tuple<vector<cv::KeyPoint>, vector<cv::Point3d> > Frame::fetchKeyPointAndMapPoint()
+    {
+        
+        vector<cv::KeyPoint> CurrentKPs;
+        vector<cv::Point3d> CurrentMPs;
+        cv::KeyPoint kp;
+        cv::Point3d mp;
+        
+        int featureVecSize = this->mFeaturesLeft.size();
+        
+        for(int i=0; i<featureVecSize; i++)
+        {
+            shared_ptr<Feature>& feature = this->mFeaturesLeft[i];
+            
+            if(feature==nullptr || (feature->mpPoint)==nullptr || (feature->mpPoint)->isBad())
+            {
+                continue;
+            }
+
+            kp.pt.x = feature->mPixel[0];
+            kp.pt.y = feature->mPixel[1];
+            
+            mp.x = (feature->mpPoint)->GetWorldPos()[0];
+            mp.y = (feature->mpPoint)->GetWorldPos()[1];
+            mp.z = (feature->mpPoint)->GetWorldPos()[2];
+            
+            CurrentKPs.push_back(kp);
+            CurrentMPs.push_back(mp);
+        }
+        
+        std::tuple<vector<cv::KeyPoint>, vector<cv::Point3d> > result = std::make_tuple(CurrentKPs, CurrentMPs);
+        cout<<"fetchKeyPointAndMapPoint 3 "<<CurrentKPs.size()<<", "<<CurrentMPs.size()<<endl;
+        
+        return result;
+    }
+    
+    
+    vector<cv::Point3f> Frame::toCvPoint3f(vector<shared_ptr<MapPoint>> mMapPoint)
+    {
+        
+        vector<cv::Point3f> tempMapPoint;
+        int size = mMapPoint.size();
+        cv::Point3f cvPoint;
+        for(int i=0; i<size; i++)
+        {
+            cvPoint.x = mMapPoint[i]->GetWorldPos()[0];
+            cvPoint.y = mMapPoint[i]->GetWorldPos()[1];
+            cvPoint.z = mMapPoint[i]->GetWorldPos()[2];
+            
+            tempMapPoint.push_back(cvPoint);
+        }
+        
+        return tempMapPoint;
+    }
+    
+    
+    void Frame::updateFeatureAndMapPoints()
+    {
+        cout<<"this->mFeaturesLeft.size() size before: "<<this->mFeaturesLeft.size()<<endl;
+        
+        int featureVecSize = this->mFeaturesLeft.size();
+
+        for(int i=0; i<featureVecSize; i++)
+        {
+            shared_ptr<Feature>& feature = this->mFeaturesLeft[i];
+            vector<shared_ptr<Feature> >::iterator iter;
+            
+            for(iter=this->mFeaturesLeft.begin(); iter!=this->mFeaturesLeft.end(); iter ++)
+            {
+                if(*iter==nullptr || ((*iter)->mpPoint)==nullptr || ((*iter)->mpPoint)->isBad())
+                    this->mFeaturesLeft.erase(iter);
+            }
+        }
+        
+        cout<<"this->mFeaturesLeft.size() size after: "<<this->mFeaturesLeft.size()<<endl;
+        
     }
     
     

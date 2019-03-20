@@ -38,8 +38,11 @@ namespace ygz {
         mpExtractor = shared_ptr<ORBExtractor>(new ORBExtractor(ORBExtractor::FAST_SINGLE_LEVEL));
         //mpExtractor = shared_ptr<ORBExtractor>(new ORBExtractor(ORBExtractor::ORB_SLAM2));
         mpMatcher = shared_ptr<ORBMatcher>(new ORBMatcher);
+        
+        mpMapSerialization = shared_ptr<MapSerialization>(new MapSerialization());
+        
         mState = NO_IMAGES_YET;
-   
+        
         //this->mBuildObstacleMap -> false
         if(false)
         {
@@ -104,6 +107,21 @@ namespace ygz {
         this->use_mHeight = use_height;
         
         Track();
+        
+        
+        //NOTE for serialization
+        if (mpCurrentFrame->IsKeyFrame() && mpMapSerialization!=nullptr)
+        {
+            mpMapSerialization->addFrame(mpCurrentFrame);
+        
+            if(mpMapSerialization->getSize()>200)
+            {
+                string path = "./MapSerialization.bin";
+                mpMapSerialization->serialize(path);
+                mpMapSerialization->test();
+            }
+        }
+        
         
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
         double timeCost = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
