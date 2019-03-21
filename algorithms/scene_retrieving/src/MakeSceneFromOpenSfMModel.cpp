@@ -227,7 +227,22 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
             temp_desp_mat.row(index) = img2kpDesps[img_filename][index].row(0);//img2kpDesps[img_filename][index].rowRange(0,1);//.clone();
         }
     
-        pScene->addFrame(img2Kp2Ds[img_filename], img2Kp3ds[img_filename], temp_desp_mat.clone());
+        //NOTE method 1, this will serialize kps, mps and desp;
+        //pScene->addFrame(img2Kp2Ds[img_filename], img2Kp3ds[img_filename], temp_desp_mat.clone());
+        
+        //NOTE method 2, this will serialize kps, mps, desps, R and t
+        cv::Mat R, T;
+        float r[9] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
+        R = cv::Mat(3, 3, CV_32F, r);
+        
+        float t[3] = { 1.0, 2.0, 3.0};
+        T = cv::Mat(1, 3, CV_32F, t);
+        
+        cout<<"Current R and T are: "<<endl<<R<<endl<<T<<endl;
+        
+        pScene->addFrame(img2Kp2Ds[img_filename], img2Kp3ds[img_filename], temp_desp_mat.clone(), R, T);
+        
+        
     }
     //step<4>.See if this scene has scale factor.
     

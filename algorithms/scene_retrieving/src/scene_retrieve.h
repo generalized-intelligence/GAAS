@@ -65,20 +65,26 @@ public:
       return this->vec_p3d;
     }
     
-    inline void addFrame(const std::vector<cv::KeyPoint>& points2d_in,const std::vector<cv::Point3d>points3d_in,const cv::Mat& point_desp_in,const Scene_Properties)
+    inline void addFrame(const std::vector<cv::KeyPoint>& points2d_in,const std::vector<cv::Point3d>points3d_in,const cv::Mat& point_desp_in, const cv::Mat R, const cv::Mat t)
     {
         
         this->vec_p2d.push_back(vector<cv::KeyPoint>(points2d_in));
         this->vec_p3d.push_back(vector<cv::Point3d>(points3d_in));
         this->point_desps.push_back(cv::Mat(point_desp_in));
+        
+        cout<<"Adding frame: "<<endl<<R<<endl<<t<<endl;
+        
+        this->mVecR.push_back(R);
+        this->mVecT.push_back(t);
+        
         this->mIndex++;
     }
     
     
-    inline void addFrame(const SceneFrame& frame)
-    {
-        this->addFrame(std::get<0>(frame),std::get<1>(frame),std::get<2>(frame));
-    }
+//     inline void addFrame(const SceneFrame& frame)
+//     {
+//         this->addFrame(std::get<0>(frame),std::get<1>(frame),std::get<2>(frame));
+//     }
     
     
     inline void setHasScale(bool hasScale_in)
@@ -110,6 +116,8 @@ public:
         ar & vec_p2d;
         ar & vec_p3d;
         ar & point_desps;
+        ar & mVecR;
+        ar & mVecT;
         
         //ar & m_RT_Scene_Fix;
         //ar & point_cloud_of_scene;
@@ -126,6 +134,8 @@ public:
         ar & vec_p2d;
         ar & vec_p3d;
         ar & point_desps;
+        ar & mVecR;
+        ar & mVecT;
         
         //ar & m_RT_Scene_Fix;
         //ar & point_cloud_of_scene;
@@ -144,9 +154,12 @@ private:
     std::vector<std::vector<cv::KeyPoint>> vec_p2d;
     std::vector<std::vector <cv::Point3d>> vec_p3d;
     std::vector <cv::Mat> point_desps;
-
+    
+    vector<cv::Mat> mVecR;
+    vector<cv::Mat> mVecT;
+    
     std::vector<SceneFrame_Properties> vec_properties;
-
+    
     cv::Mat m_RT_Scene_Fix = cv::Mat::eye(4,4,CV_32F);//fix 3d pose of scene.
 
     //pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud_of_scene; //Take care:this cloud is not required, so do not use it in any algorithm.

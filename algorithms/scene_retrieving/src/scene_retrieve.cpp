@@ -50,6 +50,18 @@ void Scene::test()
     cout<<"vec_p2d size: "<<vec_p2d.size()<<endl;
     cout<<"vec_p3d size: "<<vec_p3d.size()<<endl;
     cout<<"point_desps size: "<<point_desps.size()<<endl;
+    
+    
+    for(auto& m: this->mVecR)
+    {
+        cout<<"VecR is :"<<endl<<m<<endl;
+    }
+    
+    for(auto& m: this->mVecT)
+    {
+        cout<<"VecT is :"<<endl<<m<<endl;
+    }
+    
     cout<<"---------------Current scene info---------------"<<endl;
 }
 

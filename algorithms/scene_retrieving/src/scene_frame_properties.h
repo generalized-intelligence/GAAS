@@ -15,6 +15,7 @@ private:
     double latitude_approximate;
     bool property_magnet_heading_valid;
     double magnet_heading;
+    
 };
 SceneFrame_Properties::SceneFrame_Properties()
 {
@@ -44,13 +45,13 @@ bool SceneFrame_Properties::queryHeading(double &heading)
     }
     return false;
 }
-void initGPS(double longi,double lati)//just a approximate estimation of gps,so using gps info inside exif will be ok.
+void SceneFrame_Properties::initGPS(double longi,double lati)//just a approximate estimation of gps,so using gps info inside exif will be ok.
 {
     this->property_gps_info_valid = true;
     this->longitude_approximate = longi;
     this->latitude_approximate = lati;
 }
-void initHeading(double heading)
+void SceneFrame_Properties::initHeading(double heading)
 {
     this->property_magnet_heading_valid = true;
     this->magnet_heading = heading;
