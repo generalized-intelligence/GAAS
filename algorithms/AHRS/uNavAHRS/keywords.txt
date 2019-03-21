@@ -1,0 +1,10 @@
+uNavAHRS	KEYWORD1
+setInitializationDuration	KEYWORD2
+update	KEYWORD2
+getPitch_rad	KEYWORD2
+getRoll_rad	KEYWORD2
+getYaw_rad	KEYWORD2
+getHeading_rad	KEYWORD2
+getGyroBiasX_rads	KEYWORD2
+getGyroBiasY_rads	KEYWORD2
+getGyroBiasZ_rads	KEYWORD2
