@@ -72,7 +72,7 @@ public:
         this->vec_p3d.push_back(vector<cv::Point3d>(points3d_in));
         this->point_desps.push_back(cv::Mat(point_desp_in));
         
-        cout<<"Adding frame: "<<endl<<R<<endl<<t<<endl;
+        cout<<"Adding frame: "<<R<<t<<endl;
         
         this->mVecR.push_back(R);
         this->mVecT.push_back(t);
@@ -116,6 +116,7 @@ public:
         ar & vec_p2d;
         ar & vec_p3d;
         ar & point_desps;
+        
         ar & mVecR;
         ar & mVecT;
         
@@ -134,6 +135,7 @@ public:
         ar & vec_p2d;
         ar & vec_p3d;
         ar & point_desps;
+        
         ar & mVecR;
         ar & mVecT;
         
