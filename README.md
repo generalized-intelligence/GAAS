@@ -12,13 +12,14 @@
 
 ![future](https://img.shields.io/badge/Let's%20go%20back%20to-the%20Future!-blue.svg)
 
-![wechat_group](https://s2.ax1x.com/2019/03/22/A3OcIU.jpg)
-
 You Can Chat and Find Support at: [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Or watch the step-by-step [tutorial](https://github.com/generalized-intelligence/GAAS/blob/master/demo/tutorial_1/README.MD)
 
 Or follow the lastest news about the project at our [Medium Publication](https://medium.com/generalized-intelligence)
+
+<img width="250" height="300" src="https://s2.ax1x.com/2019/03/22/A3OcIU.jpg"/>
+
 # GAAS
 
 <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
