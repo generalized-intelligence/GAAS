@@ -225,19 +225,8 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
         //pScene->addFrame(img2Kp2Ds[img_filename], img2Kp3ds[img_filename], temp_desp_mat.clone());
         
         //NOTE method 2, this will serialize kps, mps, desps, R and t
-//         cv::Mat R, T;
-//         float r[9] = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 };
-//         R = cv::Mat(3, 3, CV_32F, r);
-//         
-//         float t[3] = { 1.0, 2.0, 3.0};
-//         T = cv::Mat(1, 3, CV_32F, t);
-        
-        
         Mat R = (Mat_<double>(3,3) << 0, -1.1, 0, -1.2, 5.3, -1.4, 0, -1.5, 0);
-        
         Mat T = (Mat_<double>(1,3) << 0, -1.5, 0);
-        
-        
         cout<<"Current R and T are: "<<endl<<R<<endl<<T<<endl;
         
         pScene->addFrame(img2Kp2Ds[img_filename], img2Kp3ds[img_filename], temp_desp_mat.clone(), R, T);
