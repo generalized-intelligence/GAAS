@@ -45,12 +45,9 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
     //step<1> parse json.
     string jsonpath(path.c_str());
     jsonpath += "/reconstruction.json";
-
-    
     cout<<"Using json path: "<<jsonpath<<endl;
     
     std::ifstream ifstr_json( jsonpath);
-
     
 //     std::ifstream ifstr_json( jsonpath.c_str() );
     
