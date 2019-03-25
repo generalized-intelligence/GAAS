@@ -24,10 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #ifndef UNAVAHRS_h
 #define UNAVAHRS_h
 
-#include "Arduino.h"
-#include "Eigen.h"
+//#include "Arduino.h"
+//#include "Eigen.h"//just for arduino.not needed when using x86 or arm.
 #include <Eigen/Dense>
-
+const double PI = 3.1415926535;
 class uNavAHRS {
 	public:
     void setInitializationDuration(uint32_t duration);
