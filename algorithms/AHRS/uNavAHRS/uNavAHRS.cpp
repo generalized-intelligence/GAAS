@@ -21,8 +21,24 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "Arduino.h"
+//#define ARDUINO_ENV
+#ifdef ARDUINO_ENV
+  #include "Arduino.h"
+#endif
+
 #include "uNavAHRS.h"
+
+
+#ifndef ARDUINO_ENV
+    #include <sys/time.h>
+    unsigned long micros()//instead of micros in Arduino.h
+    {
+        unsigned long result;
+        result = time(NULL);
+        return result;
+    }
+#endif
+
 
 /* sets the duration for gathering IMU statistics, us */
 void uNavAHRS::setInitializationDuration(uint32_t duration) {
