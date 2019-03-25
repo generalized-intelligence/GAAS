@@ -16,14 +16,19 @@ int main(int argc,char** argv)
     pSceneTest->test();
     
     
-    if (argc!=3)
+    if (argc!=4)
     {
-        cout<<"Usage: demo [scene_file_path] [image_path] [camera_mat_file_path]"<<endl;
+        cout<<"Usage: demo [scene_file_path] [voc_path] [image_path] [camera_mat_file_path]"<<endl;
     }
 
-    std::string scene_path(argv[1]),img_path(argv[2]),Q_mat_path(argv[3]);
+    std::string scene_path(argv[1]), voc_file_path([argv[2]]), img_path(argv[3]),Q_mat_path(argv[4]);
     cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
-
+    
+    cout<<"scene path: "<<scene_path<<endl;
+    cout<<"voc_file_path: "<<voc_file_path<<endl;
+    cout<<"img_path: "<<img_path<<endl;
+    cout<<"Q_mat_path: "<<Q_mat_path<<endl;
+    
     cv::Mat Q_mat;
     fsSettings["Q_mat"] >> Q_mat;
 
