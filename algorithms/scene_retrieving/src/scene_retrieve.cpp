@@ -83,10 +83,10 @@ void SceneRetriever::_init_retriever()
     auto p2d = this->original_scene.getP2D();
     auto p3d = this->original_scene.getP3D();
 
-    for(int frame_index = 0;frame_index<original_scene.getImageCount();frame_index++)
+    for(int frame_index = 0; frame_index<original_scene.getImageCount(); frame_index++)
     {
         struct FrameInfo* pfr = new struct FrameInfo;
-	    pfr->keypoints=p2d[frame_index];
+	    pfr->keypoints = p2d[frame_index];
 	    pfr->descriptors = this->original_scene.getDespByIndex(frame_index);
         ptr_frameinfo frame_info(pfr);
         this->ploop_closing_manager_of_scene->addKeyFrame(frame_info);
@@ -121,20 +121,21 @@ int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
     if(loop_index<0)
     {
         //frame match failed.
+        cout<<"frame match failed!"<<endl;
         return -1;
     }
+    
     //<1>-(2) calc left image point 3d position.LoopClosingManager
     //ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
     std::vector<Point2f> InputKeypoints;
     std::vector<Point2f> PyrLKmatched_points;
-    
-    
     //for(int index = 0;index<frameinfo_left->keypoints.size();index++)
     for(int index = 0;index<good_matches_output.size();index++)// iterate matches.
     {
         int kp_index = good_matches_output[index].queryIdx;
         InputKeypoints.push_back(frameinfo_left->keypoints[kp_index].pt);//only reserve matched points.
     }
+    
     std::vector<unsigned char> PyrLKResults;
     std::vector<float> err;
     cv::calcOpticalFlowPyrLK( image_left_rect,
@@ -144,18 +145,19 @@ int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
 		PyrLKResults,
 		err
 	);
+    
     std::vector<Point2f> matched_points;
     std::vector<float> disparity_of_points;
-    for(int index = 0;index<frameinfo_left->keypoints.size();index++)
+    for(int index = 0; index<frameinfo_left->keypoints.size(); index++)
     {
         if(PyrLKResults[index] == 1)
-	{
-	  matched_points.push_back(InputKeypoints[index]);
-	  disparity_of_points.push_back(PyrLKmatched_points[index].x-InputKeypoints[index].x);
-	}
+        {
+            matched_points.push_back(InputKeypoints[index]);
+            disparity_of_points.push_back(PyrLKmatched_points[index].x-InputKeypoints[index].x);
+        }
     }
     std::vector<Point3f> points_3d;
-    cv::reprojectImageTo3D(disparity_of_points,points_3d,Q_mat);
+    cv::reprojectImageTo3D(disparity_of_points, points_3d, Q_mat);
 
     
     //step<2> match 2 clouds.
