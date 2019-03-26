@@ -97,4 +97,17 @@ Gazebo 窗口会弹出， 并且你会看到无人机在世界坐标系中心，
     rostopic echo /mavros/state
 
 来判断 mavros 以及 PX4 的连接状态， 请确保显示结果为 "connected"。
+
+### 其他
+
+如果你遇到了：
+
+  The authenticity of host 'github.com (13.229.188.59)' can't be established.
+  
+这个问题，可以在此查看解决方案：
+
+https://ailearning.blog.csdn.net/article/details/88821014
+
+感谢达摩克利斯s
+  
  
