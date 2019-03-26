@@ -31,7 +31,7 @@ const double PI = 3.1415926535;
 class uNavAHRS {
 	public:
     void setInitializationDuration(uint32_t duration);
-    bool update(float gx,float gy,float gz,float ax,float ay,float az,float hx, float hy, float hz);
+    bool update(float gx,float gy,float gz,float ax,float ay,float az,float hx, float hy, float hz,float dt_input = -1);
     float getRoll_rad();
     float getPitch_rad();
     float getYaw_rad();

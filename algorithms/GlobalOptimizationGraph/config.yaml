@@ -1,0 +1,8 @@
+AHRS_loss_thres : 10.0
+GPS_loss_thres : 5.0
+VISION_loss_thres : 0.5
+SCENE_RETREVE_loss_thres : 0.3
+
+
+
+...

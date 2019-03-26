@@ -15,6 +15,7 @@
 using namespace std;
 
 int marker_id = 0;
+double last_info_time = -1.0;
 uNavAHRS* pAHRS;
 ros::Publisher* pvis_attitude_pub;
 shared_ptr<visualization_msgs::Marker> make_marker_from_quaternion(double x,double y,double z,double w)
@@ -39,14 +40,30 @@ shared_ptr<visualization_msgs::Marker> make_marker_from_quaternion(double x,doub
 
 void onReceivedIMUandMagnetMessage(const sensor_msgs::Imu& imu_msg,const sensor_msgs::MagneticField& mag_msg)
 {
+//Here pay attention:
+//We do assert that 
+//	1:the timestamp is more accurate than unix time,and the accuracy of imu is far more important than magnetic values;so here we use the timestamp of imu msg.
+//	2:And while initializing,we do not care about the accuracy of time,just use micros().
+
+    double current_time = imu_msg.header.toSec();
+    float dt = -1;
+    if(last_info_time>0)
+    {
+        dt = (float) current_time-last_info_time;
+    }
+    else
+    {
+        return;
+    }
     pAHRS->update(imu_msg.angular_velocity.x,imu_msg.angular_velocity.y,imu_msg.angular_velocity.z,
 		imu_msg.linear_acceleration.x,imu_msg.linear_acceleration.y,imu_msg.linear_acceleration.z,
-		mag_msg.magnetic_field.x,mag_msg.magnetic_field.y,mag_msg.magnetic_field.z);
+		mag_msg.magnetic_field.x,mag_msg.magnetic_field.y,mag_msg.magnetic_field.z,dt);
     float x,y,z,w;
     pAHRS->getQuaternion(&x,&y,&z,&w);
     shared_ptr<visualization_msgs::Marker> mark(make_marker_from_quaternion(x,y,z,w));
     //publish.
     pvis_attitude_pub->publish(*mark);
+    last_info_time = current_time;
 }
 int main(int argc,char** argv)
 {
