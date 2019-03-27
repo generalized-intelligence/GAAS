@@ -5,6 +5,7 @@ add_library(ygz-common
         src/MapPoint.cpp
         src/G2OTypes.cpp
         src/utility.cpp
+	src/scene_retrieve.cpp
         )
 
 target_link_libraries(ygz-common

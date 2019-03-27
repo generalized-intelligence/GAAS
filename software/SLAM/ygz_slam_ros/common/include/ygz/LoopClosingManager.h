@@ -1,3 +1,7 @@
+#ifndef LOOPCLOSINGMANAGER_H
+#define LOOPCLOSINGMANAGER_H
+
+
 #include <iostream>
 #include <vector>
 
@@ -11,7 +15,7 @@
 #include <opencv2/xfeatures2d.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include "opencv2/calib3d.hpp"
-#include<boost/smart_ptr.hpp>
+#include <boost/smart_ptr.hpp>
 //#include "opencv2/xfeatures2d.hpp"
 
 using namespace DBoW3;
@@ -62,7 +66,7 @@ struct FrameInfo
     //IMU_INFO
 };
 
-typedef shared_ptr<FrameInfo> ptr_frameinfo;
+typedef std::shared_ptr<FrameInfo> ptr_frameinfo;
 
 class LoopClosingManager
 {
@@ -70,14 +74,22 @@ public:
     LoopClosingManager(const std::string &voc_path);
     LoopClosingManager(const std::string &voc_path,const std::string & frame_db_path);
     void addKeyFrame(const cv::Mat& image);
+    void addKeyFrame(ptr_frameinfo info);
     QueryResults queryKeyFrames(ptr_frameinfo info);
-    int detectLoopByKeyFrame(ptr_frameinfo info);
+    int detectLoopByKeyFrame(ptr_frameinfo info,std::vector<DMatch>& good_matches_output,bool current_frame_has_index);
     int loadVoc(const std::string& voc_path);
     int saveDB();
     void loadFromDB();
+    
+    static ptr_frameinfo extractFeature(const cv::Mat& image);
+    
+    inline ptr_frameinfo& getFrameInfoById(int i)
+    {
+      return frameinfo_list[i];
+    }
+    
 private:
-    cv::Ptr<cv::ORB> orb;
-    ptr_frameinfo extractFeature(const cv::Mat& image);
+    
     Vocabulary voc;
     
 private:
@@ -87,4 +99,4 @@ private:
     int loop_id;//just for visualize.
 };
 
-
+#endif

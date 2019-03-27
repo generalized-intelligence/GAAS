@@ -1,6 +1,6 @@
-#include <LoopClosingManager.h>
+#include <ygz/LoopClosingManager.h>
 
-bool match_2_images_flann(int index1,int index2,int &save_index,double score,const std::vector<ptr_frameinfo>& frameinfo_list);
+bool match_2_images_flann(ptr_frameinfo current_frame,int index2,int &save_index,double score,const std::vector<ptr_frameinfo>& frameinfo_list,std::vector<DMatch>& good_matches_output);
 void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_matches,double score, const std::vector<ptr_frameinfo> frameinfo_list);
 
 
@@ -8,7 +8,7 @@ LoopClosingManager::LoopClosingManager(const std::string &voc_path)
 {
     this->frame_index = 0;
     this->loop_id = 0;
-    this->orb = cv::ORB::create();
+    //this->orb = cv::ORB::create();
     this->loadVoc(voc_path);
     this->frame_db = Database(this->voc,false,0);
 }
@@ -16,38 +16,51 @@ LoopClosingManager::LoopClosingManager(const std::string &voc_path,const std::st
 {
     this->frame_index = 0;
     this->loop_id = 0;
-    this->orb = cv::ORB::create();
+    //this->orb = cv::ORB::create();
     this->loadVoc(voc_path);
     this->frame_db = Database(frame_db_path.c_str());
 }
 
+void LoopClosingManager::addKeyFrame(ptr_frameinfo info)
+{
+    frame_db.add(info->descriptors);
+    frameinfo_list.push_back(info);
+    this->frame_index++;
+}
 
 void LoopClosingManager::addKeyFrame(const cv::Mat& image)
 {
     ptr_frameinfo info = extractFeature(image);
-    frame_db.add(info->descriptors);
-    frameinfo_list.push_back(info);
-    this->frame_index ++;
+    this->addKeyFrame(info);
 }
+
 QueryResults LoopClosingManager::queryKeyFrames(ptr_frameinfo info)
 {
     QueryResults results;
     this->frame_db.query(info->descriptors,results,RET_QUERY_LEN,this->frame_index - TOO_CLOSE_THRES);
     return results;
 }
-int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info)
+int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info,std::vector<DMatch>& good_matches_output,bool current_frame_has_index = true)
 {
+    int ret_index = -1;// Not found!
     QueryResults results= this->queryKeyFrames(info);
     for(int wind_index =0;wind_index<results.size();wind_index++)
     {
         if (results[wind_index].Score>DB_QUERY_SCORE_THRES)
         {
-          if (results[wind_index].Id<this->frame_index-TOO_CLOSE_THRES)
+	  if (current_frame_has_index)
+	  
+          if ((current_frame_has_index && results[wind_index].Id<this->frame_index-TOO_CLOSE_THRES) || (!current_frame_has_index))
           {
             // check if this loop candidate satisfies Epipolar Geometry constrain.
-            if (match_2_images_flann(this->frame_index,results[wind_index].Id,this->loop_id,results[wind_index].Score,this->frameinfo_list))
+	    std::vector<DMatch> matches_out;
+            if (match_2_images_flann(info,results[wind_index].Id,this->loop_id,results[wind_index].Score,this->frameinfo_list,matches_out))
             {
-              cout<<"Loop between ["<<this->frame_index<<"\t"<<results[wind_index].Id<<"]"<<endl;
+	      if (current_frame_has_index)
+	      {
+                  cout<<"Loop between ["<<this->frame_index<<"\t"<<results[wind_index].Id<<"]"<<endl;
+	      }
+	      ret_index = results[wind_index].Id;
               break; // match one frame only once.
             }
           }
@@ -57,6 +70,7 @@ int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info)
           break;
         }
     }
+    return ret_index;
 }
 
 int LoopClosingManager::saveDB()
@@ -72,15 +86,20 @@ void LoopClosingManager::loadFromDB()
     
 }
 
+int LoopClosingManager::loadVoc(const std::string &voc_path)
+{
+
+}
 
 ptr_frameinfo LoopClosingManager::extractFeature(const cv::Mat& image)
 {
     cv::Mat mask;
-    auto ptr_frameinfo = shared_ptr<FrameInfo>(new FrameInfo);
+    auto pframeinfo = shared_ptr<FrameInfo>(new FrameInfo);
     //ptr_frameinfo->keypoints
     //vector<cv::KeyPoint> keypoints;
-
-    this->orb->detectAndCompute(image, mask, ptr_frameinfo->keypoints,ptr_frameinfo->descriptors);
+    cv::Ptr<cv::ORB> orb;
+    orb = cv::ORB::create();
+    orb->detectAndCompute(image, mask, pframeinfo->keypoints,pframeinfo->descriptors);
     //orb->detect(image,keypoints);
     //brief->compute(image,keypoints,descriptors);
     //surf->detectAndCompute(image,mask,keypoints,descriptors);
@@ -88,7 +107,7 @@ ptr_frameinfo LoopClosingManager::extractFeature(const cv::Mat& image)
     //kaze->detectAndCompute(image,mask,keypoints,descriptors);
 
     //features.push_back(vector<cv::Mat >());
-    return ptr_frameinfo;
+    return pframeinfo;
 }
 void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_matches,double score, const std::vector<ptr_frameinfo> frameinfo_list)
 {
@@ -108,14 +127,14 @@ void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_mat
     cv::imwrite(output_ss.str(),merged_img);
     save_index++;
 }
-bool match_2_images_flann(int index1,int index2,int &save_index,double score,const std::vector<ptr_frameinfo>& frameinfo_list)
+bool match_2_images_flann(ptr_frameinfo current_frame,int index2,int &save_index,double score,const std::vector<ptr_frameinfo>& frameinfo_list,std::vector<DMatch>& good_matches_output)
 {
     //TODO:refer VINS KeyFrame::findConnection().
     FlannBasedMatcher matcher = FlannBasedMatcher(makePtr<flann::LshIndexParams>(12,20,2));
     //FlannBasedMatcher matcher = FlannBasedMatcher();
     std::vector< DMatch > matches;
     //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
-    matcher.match(frameinfo_list[index1]->descriptors, frameinfo_list[index2]->descriptors, matches);
+    matcher.match(current_frame->descriptors, frameinfo_list[index2]->descriptors, matches);
     double max_dist = 0; double min_dist = 100;
     for( int i = 0; i < matches.size(); i++ )
     {
@@ -145,7 +164,7 @@ bool match_2_images_flann(int index1,int index2,int &save_index,double score,con
     for( size_t i = 0; i < good_matches.size(); i++ )
     {
         //kp_list[index1][ good_matches[i].queryIdx ].pt );
-        match_points1.push_back( frameinfo_list[index1]->keypoints[good_matches[i].queryIdx].pt);
+        match_points1.push_back( current_frame->keypoints[good_matches[i].queryIdx].pt);
         //kp_list[index2][ good_matches[i].trainIdx ].pt );
         match_points2.push_back( frameinfo_list[index2]->keypoints[good_matches[i].trainIdx].pt);
     }
@@ -163,11 +182,13 @@ bool match_2_images_flann(int index1,int index2,int &save_index,double score,con
     }
     if(final_good_matches_count>STEP2_KP_NUM)
     {
-        saveImagePair(index1,index2,save_index,final_good_matches,score, frameinfo_list);
+        //saveImagePair(index1,index2,save_index,final_good_matches,score, frameinfo_list);  //for debug only.
         cout<<"MATCH SUCCESS."<<endl;
+	good_matches_output = final_good_matches;
         return true;
     }
+    final_good_matches.clear();
+    good_matches_output = final_good_matches;
     return false;
 }
-
 

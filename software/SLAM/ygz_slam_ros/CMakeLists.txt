@@ -55,7 +55,7 @@ MESSAGE("OPENCV PATH: ${OpenCV_INCLUDE_DIRS}")
 
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
-find_package( Glog REQUIRED )
+find_package(Glog REQUIRED )
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
 
 find_package(PCL REQUIRED)
@@ -86,10 +86,8 @@ ${PROJECT_SOURCE_DIR}/include
 ${PROJECT_SOURCE_DIR}/src
 ${PROJECT_SOURCE_DIR}/Thirdparty/fast/include
 #${PROJECT_SOURCE_DIR}/Thirdparty/DBow2/DBoW2
-
 ${DBoW3_DIRS}
 ${OpenCV_INCLUDE_DIRS}
-
 ${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/src
 #${PROJECT_SOURCE_DIR}/Thirdparty/DVision/
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/
@@ -145,7 +143,7 @@ add_subdirectory(backend)
 
 add_subdirectory(system)
 
-set(YGZ_LIBS ygz-common ygz-cv ygz-util ygz-backend ygz-system)
+set(YGZ_LIBS ygz-common ygz-cv ygz-util ygz-backend ygz-system )
 
 # build examples
 add_subdirectory( examples )

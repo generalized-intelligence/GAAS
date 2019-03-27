@@ -20,3 +20,10 @@ target_link_libraries(EurocStereoVIO_ros
         ${YGZ_LIBS}
         ${THIRD_PARTY_LIBS}
         )
+
+
+add_executable(MakeSceneEurocStereoVIO_ros MakeSceneEurocStereoVIO_ros.cpp)
+target_link_libraries(MakeSceneEurocStereoVIO_ros
+        ${YGZ_LIBS}
+        ${THIRD_PARTY_LIBS}
+        )

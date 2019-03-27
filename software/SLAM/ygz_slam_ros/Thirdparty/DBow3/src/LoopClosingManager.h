@@ -77,13 +77,17 @@ public:
     void addKeyFrame(const cv::Mat& image);
     void addKeyFrame(ptr_frameinfo info);
     QueryResults queryKeyFrames(ptr_frameinfo info);
-    int detectLoopByKeyFrame(ptr_frameinfo info);
+    int detectLoopByKeyFrame(ptr_frameinfo info,std::vector<DMatch>& good_matches_output,bool current_frame_has_index);
     int loadVoc(const std::string& voc_path);
     int saveDB();
     void loadFromDB();
+    static ptr_frameinfo extractFeature(const cv::Mat& image);
+    inline ptr_frameinfo& getFrameInfoById(int i)
+    {
+      return frameinfo_list[i];
+    }
 private:
-    cv::Ptr<cv::ORB> orb;
-    ptr_frameinfo extractFeature(const cv::Mat& image);
+    
     Vocabulary voc;
     
 private:
