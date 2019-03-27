@@ -1,4 +1,4 @@
-#include "ygz/G2OTypes.h"
+#include "G2OTypes.h"
 #include "ygz/Camera.h"
 #include "ygz/Frame.h"
 
