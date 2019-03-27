@@ -59,11 +59,11 @@ class fly_circle:
             x, y, triangle_rad= self.projected_x_y(idx)
 
             com.move(x, y, self.height, BODY_OFFSET_ENU=False)
-            time.sleep(2)
+            time.sleep(3.5)
 
             # commander.turn() requires angle in Degree
             com.turn(triangle_rad * 180.0 /math.pi)
-            time.sleep(1)
+            time.sleep(2)
 
         print("Target Reached!")
 
@@ -73,12 +73,12 @@ if __name__ == '__main__':
     com = Commander()
     
     # 1st circle
-    circle = fly_circle(com, height=2, building_radius=10, n=20)
+    circle = fly_circle(com, height=3, building_radius=17, n=20)
     circle.fly()
     
     # 2nd circle 
-    circle = fly_circle(com, height=5, building_radius=10, n=20)
-    circle.fly()
+    #circle = fly_circle(com, height=5, building_radius=17, n=20)
+    #circle.fly()
     
     #circle.visualize_path()
 
