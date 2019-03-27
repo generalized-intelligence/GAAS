@@ -80,6 +80,9 @@ int LoopClosingManager::saveDB()
     // Database frame_db;
     // int frame_index;
     // std::vector<ptr_frameinfo> frameinfo_list;
+
+    this->frame_db->save("db.yml.gz");
+
 }
 void LoopClosingManager::loadFromDB()
 {
