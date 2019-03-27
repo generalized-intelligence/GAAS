@@ -49,7 +49,7 @@ void uNavAHRS::setInitializationDuration(uint32_t duration) {
 // gx, gy, gz input in rad/s
 // ax, ay, az input in consistant units
 // hx, hy, hz input in consistant units
-bool uNavAHRS::update(float gx,float gy,float gz,float ax,float ay,float az,float hx, float hy, float hz) {
+bool uNavAHRS::update(float gx,float gy,float gz,float ax,float ay,float az,float hx, float hy, float hz,float dt_input) {
 
   // checking if gyro data updated
   if ((gx!=gx_)||(gy!=gy_)||(gz!=gz_)) {
@@ -246,7 +246,11 @@ bool uNavAHRS::update(float gx,float gy,float gz,float ax,float ay,float az,floa
     if (gyroUpdated_) {
       // get the change in time
       _tnow = (float) micros()/1000000.0;
-      _dt = _tnow - _tprev;
+      //_dt = _tnow - _tprev;
+      if(dt_input>0)
+      {
+          _dt = dt_input;
+      }
       _tprev = _tnow;
       // state transition matrix
       F_(0,0) = 1.0;                   F_(0,1) = -0.5*_dt*(gx-x_(4,0)); F_(0,2) = -0.5*_dt*(gy-x_(5,0)); F_(0,3) = -0.5*_dt*(gz-x_(6,0));  
