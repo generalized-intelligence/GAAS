@@ -1,3 +1,10 @@
+ENABLE_GPS : true
+
+GPS_topic_name : "/mavros/global_position/global"
+AHRS_topic_name : "/GAAS/AHRS/attitude"
+
+
+
 AHRS_loss_thres : 10.0
 GPS_loss_thres : 5.0
 VISION_loss_thres : 0.5
