@@ -46,7 +46,7 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
 
 const int RET_QUERY_LEN = 4;
 //const int TOO_CLOSE_THRES = 15;
-const int TOO_CLOSE_THRES = 400;
+const int TOO_CLOSE_THRES = 50;
 
 
 //const float DB_QUERY_SCORE_THRES = 0.4;//0.5;//0.65;
@@ -69,30 +69,57 @@ struct FrameInfo
 
 typedef std::shared_ptr<FrameInfo> ptr_frameinfo;
 
+
+
+vector<cv::Mat> changeStructure(const cv::Mat &plain)
+{
+    
+    vector<cv::Mat> out;
+    
+    out.resize(plain.rows);
+
+    for(int i = 0; i < plain.rows; ++i)
+    {
+        out[i] = plain.row(i);
+    }
+    
+    return out;
+}
+
 class LoopClosingManager
 {
 public:
     LoopClosingManager(const std::string &voc_path);
     LoopClosingManager(const std::string &voc_path,const std::string & frame_db_path);
+    
     void addKeyFrame(const cv::Mat& image);
     void addKeyFrame(ptr_frameinfo info);
+    
     QueryResults queryKeyFrames(ptr_frameinfo info);
     int detectLoopByKeyFrame(ptr_frameinfo info,std::vector<DMatch>& good_matches_output,bool current_frame_has_index);
+    
     int loadVoc(const std::string& voc_path);
+    
     int saveDB();
     void loadFromDB();
+    
     static ptr_frameinfo extractFeature(const cv::Mat& image);
     inline ptr_frameinfo& getFrameInfoById(int i)
     {
       return frameinfo_list[i];
     }
+    
+    Database frame_db;
+    
 private:
     
     Vocabulary voc;
     
 private:
-    Database frame_db;
+
     int frame_index;
+    size_t curFrameIndex = 0;
+    
     std::vector<ptr_frameinfo> frameinfo_list;
     int loop_id;//just for visualize.
 };

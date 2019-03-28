@@ -410,7 +410,7 @@ int main()
   vector<cv::Mat> kdesp_list;
   loadFeatures(features,kp_list,kdesp_list);  //image to features.
 
-  //testVocCreation(features); //Do not create any voc.Use a pretrained one.
+  //testVocCreation(features); //Do not create any voc. Use a pretrained one.
 
   //wait();
 

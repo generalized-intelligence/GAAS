@@ -8,6 +8,7 @@ add_library(scene_retrieve scene_retrieve.cpp)
 
 
 link_libraries("${PROJECT_SOURCE_DIR}/../loop_closing/DBow3/build/libloopclosingmanager.so")
+
 target_link_libraries(scene_retrieve
 			${REQUIRED_LIBRARIES}
 			#../../loop_closing/DBow3/build/

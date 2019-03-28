@@ -30,6 +30,60 @@ void Scene::saveFile(const std::string &filename)
 }
 
 
+
+void Scene::saveVoc()
+{
+    vector<cv::Mat> features = point_desps;
+    
+    // branching factor and depth levels 
+    const int k = 10;
+    const int L = 3;
+    const WeightingType weight = TF_IDF;
+    const ScoringType score = L1_NORM;
+
+    //OrbVocabulary voc(k, L, weight, score);
+    Vocabulary voc(k, L, weight, score);
+    //BriefVocabulary voc(k,L,weight,score);
+
+    cout << "Creating a small " << k << "^" << L << " vocabulary..." << endl;
+    voc.create(features);
+    cout << "... done!" << endl;
+
+    cout << "Vocabulary information: " << endl
+    << voc << endl << endl;
+
+//     // lets do something with this vocabulary
+//     cout << "Matching images against themselves (0 low, 1 high): " << endl;
+//     BowVector v1, v2;
+//     for(int i = 0; i < NIMAGES; i++)
+//     {
+//     voc.transform(features[i], v1);
+//     for(int j = i-4; j < i+4; j++)
+//     {
+//     if(j<0)
+//     {
+//         continue;
+//     }
+//     if(j>=NIMAGES)
+//     {
+//         continue;
+// 
+//     }
+//     voc.transform(features[i], v2);
+// 
+//     double score = voc.score(v1, v2);
+//     cout << "Image " << i << " vs Image " << j << ": " << score << endl;
+//     }
+//     }
+
+    // save the vocabulary to disk
+    cout << endl << "Saving vocabulary..." << endl;
+    voc.save("small_voc.yml.gz");
+    cout << "Done" << endl;
+    
+}
+
+
 void Scene::loadFile(const std::string &filename)
 {
 

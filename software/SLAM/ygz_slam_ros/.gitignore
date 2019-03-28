@@ -1,0 +1,8 @@
+*.gz
+*.yml.gz
+*.zip
+./kdev4
+database.bin
+*.scn
+./image
+

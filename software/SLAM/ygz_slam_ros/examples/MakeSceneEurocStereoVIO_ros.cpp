@@ -42,27 +42,19 @@
 #include "ygz/scene_retrieve.h"
 #include "ygz/LoopClosingManager.h"
 
+#include <signal.h>
 #include <csignal>
 
+
+#include <DBoW3/DBoW3.h>
+
+
+using namespace DBoW3;
 using namespace std;
 using namespace ygz;
 //Scene Pointer
 Scene* pScene = NULL;
 
-void signalHandler( int signum ) {
-   
-    {
-            pScene->saveFile("scene.scn");
-    }
-    
-    cout << "Interrupt signal (" << signum << ") received.\n";
-    cout << "Scene saving."<<endl;
-
-    cout << "Scene saved! Quit now."<<endl;
-    // cleanup and close up stuff here  
-    // terminate program  
-    exit(signum);  
-}
 
 //NOTE do we want to publish vision estimated quaternion
 bool publishVisionQuaternion = true;
@@ -131,6 +123,37 @@ mavros_msgs::State current_state;
 size_t frame_index = 0;
 
 std::ofstream SlamPoseHistory, px4PoseHistory;
+
+vector<cv::Mat> VecLeftImage, VecRightImage;
+
+DBoW3::Database cur_frame_db;
+
+void mySigintHandler(int sig)
+{
+
+    {
+        pScene->saveFile("scene.scn");
+        pScene->saveVoc();
+        
+        cout<<"Saving Scene.cn and Voc finished!"<<endl;
+        
+        
+        cur_frame_db.save("database.bin");
+        
+//         for(int i; i<VecLeftImage.size(); i++)
+//         {   
+//             cout<<"Saving image: "<<i<<endl;
+//             cv::imwrite("./image/left/"+to_string(i)+".png", VecLeftImage[i]);
+//             cv::imwrite("./image/right/"+to_string(i)+".png", VecRightImage[i]);
+//         }
+       
+    }
+    
+    
+    cout << "All done"<<endl;
+    
+    ros::shutdown();
+}
 
 
 void state_cb(const mavros_msgs::State::ConstPtr& msg){
@@ -274,6 +297,7 @@ void set_attitude_by_msg_dji(const geometry_msgs::QuaternionStamped& msg,Vehicle
     //LOG(WARNING)<<atti.q.toRotationMatrix()<<endl;
     atti.time_ms = msg.header.stamp.toNSec();
 }
+
 void set_attitude_by_msg_px4(const nav_msgs::Odometry& msg,VehicleAttitude& atti,bool do_reform = false)
 {
     atti.q.x() = msg.pose.pose.orientation.x;
@@ -460,6 +484,7 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
                                          0, 0, 0, 1);
     
     
+    
     if(!rotationmat.empty() && !translationmat.empty())
     {
         cout<<"r, t, q are: "<<rotationmat<<endl<<translationmat<<endl;
@@ -471,25 +496,25 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
         
         pScene->addFrame(scene_frame);
         
-        pScene->saveFile("scene.scn");
+        cur_frame_db.add(get<2>(scene_frame));
         
-        cv::imwrite("./image/left/"+to_string(frame_index) + ".png", imLeftRect);
-        cv::imwrite("./image/right/"+to_string(frame_index) + ".png", imRightRect);
+        cout<<"cur_frame_db info: "<<cur_frame_db<<endl;
+        
+        cv::imwrite("./image/left/"+to_string(frame_index)+".png", imLeftRect);
+        cv::imwrite("./image/right/"+to_string(frame_index)+".png", imRightRect);
+        
+//         VecLeftImage.push_back(imLeftRect);
+//         VecRightImage.push_back(imRightRect);
+    
     }
 
-
-    
     frame_index++;
     temp_vimu.clear();
+    
 }
 
 
 int main(int argc, char **argv) {
-    
-    
-    // register signal SIGINT and signal handler  
-    signal(SIGINT, signalHandler);  
-
     
     pScene = new Scene();
     pScene->setHasScale(true);
@@ -521,7 +546,10 @@ int main(int argc, char **argv) {
 
     string left_topic = string(fsSettings["Left"]);
     string right_topic = string(fsSettings["Right"]);
-
+    
+    string cur_voc_path = string(fsSettings["VocPath"]);
+    cur_frame_db = DBoW3::Database("/home/gishr/software/GAAS_backup/software/SLAM/ygz_slam_ros/image/small_voc.yml.gz", false, 0);
+    
     // rectification parameters
     cv::Mat K_l, K_r, P_l, P_r, R_l, R_r, D_l, D_r;
     fsSettings["LEFT.K"] >> K_l;
@@ -570,9 +598,11 @@ int main(int argc, char **argv) {
         setting::TBC = SE3d(Rbc_, tbc_);
     }    
     
-    //shabi..................................
-    ros::init(argc, argv, "ygz_with_gps");
+
+    ros::init(argc, argv, "ygz_with_gps", ros::init_options::NoSigintHandler);
     ros::NodeHandle nh;
+    
+    signal(SIGINT, mySigintHandler);
     
 
     message_filters::Subscriber<sensor_msgs::Image> left_sub(nh, left_topic, 10);
@@ -594,13 +624,11 @@ int main(int argc, char **argv) {
     //typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_pol;
 
 
-
     //message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub);
     //sync.setMaxIntervalDuration(ros::Duration(0.01));
     
     //sync.registerCallback(boost::bind(FetchImageCallback, _1, _2));
-
-
+    
 
     //new version with attitude by pixhawk mavlink msg.
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image,geometry_msgs::PoseStamped> sync_pol;
@@ -633,9 +661,10 @@ int main(int argc, char **argv) {
     
     //NOTE drone onboard imu data
     ros::Subscriber pixhawk_imu_sub = nh.subscribe("/mavros/imu/data", 5, pixhawkIMU_sub);
-
-
-    ros::spin();
     
+    
+    ros::spin();
+
     return 0;
+    
 }
