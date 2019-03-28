@@ -71,12 +71,11 @@ public:
     
     inline void addFrame(const std::vector<cv::KeyPoint>& points2d_in, const std::vector<cv::Point3d>points3d_in, const cv::Mat& point_desp_in, const cv::Mat R, const cv::Mat t)
     {
-        
-        this->vec_p2d.push_back(vector<cv::KeyPoint>(points2d_in));
-        this->vec_p3d.push_back(vector<cv::Point3d>(points3d_in));
-        this->point_desps.push_back(cv::Mat(point_desp_in));
-        
         cout<<"Adding frame: "<<R<<t<<endl;
+        
+        this->vec_p2d.push_back(points2d_in);
+        this->vec_p3d.push_back(points3d_in);
+        this->point_desps.push_back(point_desp_in);
         
         this->mVecR.push_back(R);
         this->mVecT.push_back(t);
@@ -96,6 +95,8 @@ public:
         this->hasScale = hasScale_in;
     }
     
+
+    void saveVoc();
 
 
     void saveFile(const std::string &filename);

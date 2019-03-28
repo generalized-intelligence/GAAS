@@ -11,11 +11,12 @@
 Left: /mynteye/left/image_rect
 Right: /mynteye/right/image_rect
 
+#Left: /cam0/image_raw
+#Right: /cam1/image_raw
 
 # not used for now
 Imu: /mynteye/imu/data_raw
-
-
+#Imu: /imu0
 
 # Camera calibration and distortion parameters (OpenCV) 
 # if running in pure stereo vision mode
@@ -58,6 +59,7 @@ ThDepth: 35
 
 # Vocabulary path
 VocPath: voc/brief_k10L6.bin
+
 #--------------------------------------------------------------------------------------------
 # Stereo Rectification. Only if you need to pre-rectify the images.
 # Camera.fx, .fy, etc must be the same as in LEFT.P
