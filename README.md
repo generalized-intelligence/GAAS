@@ -20,7 +20,7 @@ Or follow the lastest news about the project at our [Medium Publication](https:/
 
 Or join our Wechat group at:
 
-<img width="250" height="300" src="https://s2.ax1x.com/2019/03/22/A3OcIU.jpg"/>
+<img width="250" height="300" src="https://s2.ax1x.com/2019/03/29/ABiekq.jpg"/>
 
 # GAAS
 
