@@ -37,7 +37,7 @@
 
 
 //add scene retrieving.
-#include "scene_retrieve.h"
+#include "../../algorithms/scene_retrieving/src/scene_retrieve.h"
 #include "LoopClosingManager.h"
 
 #include <csignal>
@@ -51,7 +51,7 @@ void signalHandler( int signum ) {
    cout << "Interrupt signal (" << signum << ") received.\n";
    cout << "Scene saving."<<endl;
    pScene->saveFile("scene.scn");
-   cout << "Scene saved!Quit now."<<endl;
+   cout << "Scene saved! Quit now."<<endl;
    // cleanup and close up stuff here  
    // terminate program  
    exit(signum);  
@@ -420,11 +420,9 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
                                            0,0,0,false,atti,true,0,false);
     
-    
     Vector3d pos = pos_and_atti.translation();
     Matrix3d mat = pos_and_atti.rotationMatrix();
     Quaterniond quat(mat);
-    
     
     SlamPoseHistory << to_string(pos[0]) + "," + to_string(pos[1]) + "," + to_string(pos[2]) + "\n";
     //px4PoseHistory << to_string(posemsg.pose.position.x) + "," + to_string(posemsg.pose.position.y) + "," + to_string(posemsg.pose.position.z) + "\n";
@@ -445,7 +443,7 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     cv::Mat rotationmat,translationmat;
     cv2eigen(mat,rotationmat); // inverse operation:eigen2cv.
     cv2eigen(pos,translationmat);
-    SceneFrame scene_frame = generateSceneFrameFromStereoImage(imLeftRect,imRightRect,rotationmat,translationmat);
+    SceneFrame scene_frame = generateSceneFrameFromStereoImage(imLeftRect, imRightRect, rotationmat, translationmat);
     pScene->addFrame(scene_frame);
     
     
@@ -454,6 +452,12 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
 
 
 int main(int argc, char **argv) {
+    
+    
+    // register signal SIGINT and signal handler  
+    signal(SIGINT, signalHandler);  
+
+    
     pScene = new Scene();
     pScene->setHasScale();
     gps_list.clear();
@@ -553,7 +557,7 @@ int main(int argc, char **argv) {
     //for PX4 device:
     ros::Subscriber atti_sub_px4 = nh.subscribe("/mavros/global_position/local",100,FetchAttitudeCallback_px4);
 
-//old version
+    //old version
     //typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_pol;
 
 
@@ -565,7 +569,7 @@ int main(int argc, char **argv) {
 
 
 
-//new version with attitude by pixhawk mavlink msg.
+    //new version with attitude by pixhawk mavlink msg.
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image,geometry_msgs::PoseStamped> sync_pol;
     message_filters::Subscriber<geometry_msgs::PoseStamped> px4_attitude_sub(nh, "/mavros/local_position/pose", 10);
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub,px4_attitude_sub);

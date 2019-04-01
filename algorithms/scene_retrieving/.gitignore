@@ -11,3 +11,4 @@
 *.bag
 */*/build/*
 *.kdev*
+./image

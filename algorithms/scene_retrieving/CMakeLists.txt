@@ -5,10 +5,16 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT(scene_retrieving)
 
+
+#------------------------------------------------------
+# Compiler 
+#------------------------------------------------------
+add_definitions(-std=c++14)
+
+
 #------------------------------------------------------
 # Build type
 #------------------------------------------------------
-
 IF(NOT CMAKE_BUILD_TYPE )
    SET( CMAKE_BUILD_TYPE "Release" )
 ENDIF()
@@ -25,7 +31,7 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 #   Find Dependencies
 # ----------------------------------------------------------------------------
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
-find_package(OpenCV 3.3.1 REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
 #find_package(catkin REQUIRED COMPONENTS
 #                                cv_bridge
@@ -41,7 +47,7 @@ find_package(Eigen3 3.1.0 REQUIRED)
 #                               tf)
 
 #find_package(PCL REQUIRED PATH ../../software/SLAM/ygz_slam_ros/Thirdparty/PCL)
-find_package(PCL REQUIRED)
+find_package(PCL 1.9 REQUIRED)
 
 
 find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
@@ -247,4 +253,6 @@ MESSAGE( STATUS "USE_CONTRIB= ${USE_CONTRIB}" )
 
 MESSAGE( STATUS "OpenCV_LIB_DIR=${OpenCV_LIB_DIR}")
 MESSAGE( STATUS "CMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}")
+
+
 
