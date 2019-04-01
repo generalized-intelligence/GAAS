@@ -46,7 +46,6 @@ Or join our Wechat group at:
 
 An example of the hardware
 
-
 ## Setup
 
 NOTE: Tested in ubuntu 16.04 and ros-kinetic
@@ -149,6 +148,30 @@ Please follow [CONTRIBUTING.md](https://github.com/generalized-intelligence/GAAS
 Il Vole
 
 ---
+
+## 项目总览
+
+当前无人机可以实现自动启飞，降落，无GPS环境下自主飞行，基于双目视觉的避障以及路径规划，场景重识别，3D 建模， 物体跟踪，物体检测, 语义分割等功能，同时还提供了一系列基于python的无人机控制API以及中英文教程。
+
+1. 其中自动启飞，降落等功能实现在 software/px4_mavros_scripts;
+2. 无GPS环境下自主飞行功能的实现在 software/SLAM/ygz_slam_ros, 目前使用的是基于双目光流的SLAM;
+3. 基于双目视觉的避障的实现在 software/Obstacle_Map;
+4. 路径规划的实现在 software/Navigator;
+5. 场景重识别，即给定一张图片，恢复出当前图片在给定环境中的位置，具体实现在 algorithms/scene_retrieving;
+6. 3D 建模，具体实现在 algorithms/sfm;
+
+<img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
+
+7. 物体跟踪，具体实现在 algorithms/object_trace_tracking；
+
+[![Object Following](https://s2.ax1x.com/2019/04/01/AsvuCT.png)](https://youtu.be/C6902HKUVR8)
+
+8. 物体检测，具体实现在 algorithms/image_detection;
+
+<img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/AsOyV0.jpg"/>
+
+9. 语义分割， 具体实现在 algorithms/image_segmentation;
+10. 无人机控制API及中英文教程，具体在 demo 文件夹。
 
 ## Setup
 
