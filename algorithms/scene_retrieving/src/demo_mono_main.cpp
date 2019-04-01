@@ -11,7 +11,7 @@ int main(int argc,char** argv)
     
     //NOTE simple test, for fast serialization test
     std::shared_ptr<Scene> pSceneTest(new Scene());
-    string test_scene_path = "../../test.scene";
+    string test_scene_path = "../../scene.scn";
     pSceneTest->loadFile(test_scene_path);
     pSceneTest->test();
     
@@ -21,7 +21,7 @@ int main(int argc,char** argv)
         cout<<"Usage: demo [scene_file_path] [voc_path] [image_path] [camera_mat_file_path]"<<endl;
     }
 
-    std::string scene_path(argv[1]), voc_file_path([argv[2]]), img_path(argv[3]),Q_mat_path(argv[4]);
+    std::string scene_path(argv[1]), voc_file_path(argv[2]), img_path(argv[3]), Q_mat_path(argv[4]);
     cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
     
     cout<<"scene path: "<<scene_path<<endl;

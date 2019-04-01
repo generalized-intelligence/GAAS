@@ -12,10 +12,10 @@ int main(int argc,char** argv)
 {
     
     //NOTE simple test, for fast serialization test
-    std::shared_ptr<Scene> pSceneTest(new Scene());
-    string test_scene_path = "../../test.scene";
-    pSceneTest->loadFile(test_scene_path);
-    pSceneTest->test();
+//     std::shared_ptr<Scene> pSceneTest(new Scene());
+//     string test_scene_path = "../../scene.scn";
+//     pSceneTest->loadFile(test_scene_path);
+//     pSceneTest->test();
     
     if (argc!=5)
     {
@@ -33,29 +33,48 @@ int main(int argc,char** argv)
     cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
     cv::Mat Q_mat;
     fsSettings["Q_mat"] >> Q_mat;
+        
+    if (Q_mat.empty())
+    {
+        cout<<"Q mat empty, exit."<<endl;
+        return -1;
+    }
     
-    std::shared_ptr<Scene> pScene(new Scene());
-    pScene->loadFile(scene_path);
-    pScene->test();
 
-    cv::Mat RT_mat;
+    cout<<"Q_mat: "<<endl<<Q_mat<<endl;
+    
+    cv::Mat RT_mat = (cv::Mat_<float >(4,4) << 1, 0, 0, 0,
+                                           0, 1, 0, 1,
+                                           0, 0, 1, 0,
+                                           0, 0, 0, 1);
+
     bool match_success;
 
     std::shared_ptr<SceneRetriever> pSceneRetriever(new SceneRetriever(voc_file_path, scene_path));
-
-    pSceneRetriever->retrieveSceneFromStereoImage(cv::imread(l_img_path), cv::imread(r_img_path), Q_mat, RT_mat, match_success);
     
-    if(match_success)
+    vector<string> left_image_path, right_image_path;
+    for (int i=0; i<685; i++)
     {
-        cout<<"Match success!\tRT mat:"<<RT_mat<<endl;
+        string left_path = "./image/left/" + to_string(i) + ".png";
+        left_image_path.push_back(left_path);
+        
+        string right_path = "./image/right/" + to_string(i) + ".png";
+        right_image_path.push_back(right_path);
     }
-    else
+    
+    
+    for (int i=0; i<685; i++)
     {
-        cout<<"Match failed!"<<endl;
+        pSceneRetriever->retrieveSceneFromStereoImage(cv::imread(left_image_path[i]), cv::imread(right_image_path[i]), Q_mat, RT_mat, match_success);
+        
+        if(match_success)
+        {
+            cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
+        }
+    
     }
-
+    
     return 0;
-
 }
 
 

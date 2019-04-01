@@ -12,7 +12,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/features2d.hpp>
-#include <opencv2/xfeatures2d.hpp>
+//#include <opencv2/xfeatures2d.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include "opencv2/calib3d.hpp"
 #include <memory>
@@ -21,7 +21,7 @@
 
 using namespace DBoW3;
 using namespace std;
-using namespace cv;
+
 //using namespace boost;
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -96,7 +96,7 @@ public:
     void addKeyFrame(ptr_frameinfo info);
     
     QueryResults queryKeyFrames(ptr_frameinfo info);
-    int detectLoopByKeyFrame(ptr_frameinfo info,std::vector<DMatch>& good_matches_output,bool current_frame_has_index);
+    int detectLoopByKeyFrame(ptr_frameinfo info,std::vector<cv::DMatch>& good_matches_output,bool current_frame_has_index);
     
     int loadVoc(const std::string& voc_path);
     

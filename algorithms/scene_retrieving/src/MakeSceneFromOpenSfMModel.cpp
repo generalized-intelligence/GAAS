@@ -22,7 +22,7 @@ using namespace nlohmann;
 //Scene* pScene = NULL;
 
 cv::Ptr<cv::ORB> orb;
-void ExtractFeaturesFromCertainKeyPoints(const cv::Mat& img_in,const vector<Point2f> kps_in,vector<cv::Mat>& desp_output)
+void ExtractFeaturesFromCertainKeyPoints(const cv::Mat& img_in,const vector<cv::Point2f> kps_in,vector<cv::Mat>& desp_output)
 {
     //reference loop closing manager,extract orb feature of these points.
     cv::Mat gray;
@@ -59,8 +59,8 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
     
     auto shots = reconstruction_j[0]["shots"];
 
-    auto img2Rotation = new map<string,Mat>;
-    auto img2Translation = new map<string ,Mat>;
+    auto img2Rotation = new map<string, cv::Mat>;
+    auto img2Translation = new map<string, cv::Mat>;
     
 
     for (json::iterator it = shots.begin(); it != shots.end(); ++it) 
@@ -116,9 +116,9 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
 	    kpx = std::stof(keypoint_x_str);
 	    kpy = std::stof(keypoint_y_str);
 	    //cout<<"kpx,kpy:"<<kpx<<" "<<kpy<<endl;
-            kps.push_back(Point2f(kpx,kpy));
+            kps.push_back(cv::Point2f(kpx,kpy));
         }
-        Mat curr_img = imread(path+"/images/"+img_filename);
+        cv::Mat curr_img = cv::imread(path+"/images/"+img_filename);
         ExtractFeaturesFromCertainKeyPoints(curr_img,kps,current_img_desps);
         img2kpDesps[img_filename] = current_img_desps;
 	/*
@@ -195,7 +195,7 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
 	  cout <<"this image is not inside of reconstruction[0],ignored!"<<endl;
 	  continue;
 	}
-        img2Kp3ds[img_filename][feature_id] = Point3d(px,py,pz);
+        img2Kp3ds[img_filename][feature_id] = cv::Point3d(px,py,pz);
 	
 	cout<<"point added!"<<endl;
 	//map_index_with_3d_pos[img_filename].push_back(feature_id);//Unused now.
@@ -225,8 +225,8 @@ std::shared_ptr<Scene> MakeSceneFromPath(const string& path)
         //pScene->addFrame(img2Kp2Ds[img_filename], img2Kp3ds[img_filename], temp_desp_mat.clone());
         
         //NOTE method 2, this will serialize kps, mps, desps, R and t
-        Mat R = (Mat_<double>(3,3) << 0, -1.1, 0, -1.2, 5.3, -1.4, 0, -1.5, 0);
-        Mat T = (Mat_<double>(1,3) << 0, -1.5, 0);
+        cv::Mat R = (cv::Mat_<double>(3,3) << 0, -1.1, 0, -1.2, 5.3, -1.4, 0, -1.5, 0);
+        cv::Mat T = (cv::Mat_<double>(1,3) << 0, -1.5, 0);
         cout<<"Current R and T are: "<<endl<<R<<endl<<T<<endl;
         
         pScene->addFrame(img2Kp2Ds[img_filename], img2Kp3ds[img_filename], temp_desp_mat.clone(), R, T);
