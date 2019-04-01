@@ -1,7 +1,7 @@
 #include "../src/LoopClosingManager.h"
 
-bool match_2_images_flann(ptr_frameinfo current_frame,int index2,int &save_index,double score,const std::vector<ptr_frameinfo>& frameinfo_list,std::vector<DMatch>& good_matches_output);
-void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_matches,double score, const std::vector<ptr_frameinfo> frameinfo_list);
+bool match_2_images_flann(ptr_frameinfo current_frame,int index2,int &save_index,double score,const std::vector<ptr_frameinfo>& frameinfo_list,std::vector<cv::DMatch>& good_matches_output);
+void saveImagePair(int id1,int id2,int &save_index,std::vector<cv::DMatch>& good_matches,double score, const std::vector<ptr_frameinfo> frameinfo_list);
 
 
 LoopClosingManager::LoopClosingManager(const std::string &voc_path)
@@ -53,11 +53,11 @@ QueryResults LoopClosingManager::queryKeyFrames(ptr_frameinfo info)
     return results;
 }
 
-int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<DMatch>& good_matches_output, bool current_frame_has_index = true)
+int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv::DMatch>& good_matches_output, bool current_frame_has_index = true)
 {
     int ret_index = -1;// Not found!
     QueryResults results= this->queryKeyFrames(info);
-    std::vector<DMatch> matches_out;
+    std::vector<cv::DMatch> matches_out;
     
 //     cout<<"results.size(): "<<results.size()<<endl;
     
@@ -143,7 +143,7 @@ ptr_frameinfo LoopClosingManager::extractFeature(const cv::Mat& image)
     return pframeinfo;
 }
 
-void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_matches,double score, const std::vector<ptr_frameinfo> frameinfo_list)
+void saveImagePair(int id1,int id2,int &save_index,std::vector<cv::DMatch>& good_matches,double score, const std::vector<ptr_frameinfo> frameinfo_list)
 {
     stringstream ss;
     ss << "images/image" << id1 << ".png"; 
@@ -162,12 +162,16 @@ void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_mat
     save_index++;
 }
 
-bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_index, double score, const std::vector<ptr_frameinfo>& frameinfo_list, std::vector<DMatch>& good_matches_output)
+bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_index, double score, const std::vector<ptr_frameinfo>& frameinfo_list, std::vector<cv::DMatch>& good_matches_output)
 {
+
     //TODO:refer VINS KeyFrame::findConnection().
-    FlannBasedMatcher matcher = FlannBasedMatcher(makePtr<flann::LshIndexParams>(12,20,2));
-    //FlannBasedMatcher matcher = FlannBasedMatcher();
-    std::vector< DMatch > matches;
+
+    //cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12,20,2));
+    //cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::IndexParams>(12,20,2));
+    cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher();
+
+    std::vector< cv::DMatch > matches;
     //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
 
     matcher.match(current_frame->descriptors, frameinfo_list[index2]->descriptors, matches);
@@ -181,7 +185,7 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     }
     
     cout<<"min_dist:"<<min_dist<<endl;
-    std::vector< DMatch > good_matches;
+    std::vector< cv::DMatch > good_matches;
 
     for( int i = 0; i < matches.size(); i++ )
     {
@@ -208,11 +212,11 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
         //kp_list[index2][ good_matches[i].trainIdx ].pt );
         match_points2.push_back( frameinfo_list[index2]->keypoints[good_matches[i].trainIdx].pt);
     }
-    
-    Mat isOutlierMask;
-    Mat fundamental_matrix = findFundamentalMat(match_points1, match_points2, FM_RANSAC, 3, 0.99, isOutlierMask);
+
+    cv::Mat isOutlierMask;
+    cv::Mat fundamental_matrix = findFundamentalMat(match_points1, match_points2, cv::FM_RANSAC, 3, 0.99, isOutlierMask);
     int final_good_matches_count = 0;
-    std::vector<DMatch> final_good_matches;
+    std::vector<cv::DMatch> final_good_matches;
     for(int i = 0;i<good_matches.size();i++)
     {
         if (isOutlierMask.at<int>(i)!=0)
