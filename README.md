@@ -46,6 +46,33 @@ Or join our Wechat group at:
 
 An example of the hardware
 
+
+## Project Overview
+
+Currently the project provides the following funcitons: automatic taking off and landing, navigation in GPS denied environment, obstacle avoidance and path planning based on stereo vision, scene recoginition, 3D model generation, object following, object detection, instance segmentation, and a number of python based API as well as a series of tutorials.
+
+1. details about automatic taking off and landing can be found in: software/px4_mavros_scripts;
+2. navigation in GPS denied environment can be found in: software/SLAM/ygz_slam_ros, currently we are using stereo optical flow;
+3. obstacle avoidance based on stereo vision can be found in: software/Obstacle_Map;
+4. path planning can be found in software/Navigator;
+5. scene recoginition, given an image, recover its position in terms of given environment, details can be found in algorithms/scene_retrieving;
+6. 3D modeling, details can be found in algorithms/sfm;
+
+<img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
+
+7. object following, details can be found in algorithms/object_trace_tracking;
+
+[![Object Following](https://s2.ax1x.com/2019/04/01/AsvuCT.png)](https://youtu.be/C6902HKUVR8)
+
+8. object detection, details can be found in algorithms/image_detection;
+
+<img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/AsOyV0.jpg"/>
+
+9. instance segmentation, details can be found in algorithms/image_detection;
+
+10. a list of control API based on MAVROS, and a series of tutorials can be found in GAAS/demo.
+
+
 ## Setup
 
 NOTE: Tested in ubuntu 16.04 and ros-kinetic
