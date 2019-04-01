@@ -30,7 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 const double PI = 3.1415926535;
 class uNavAHRS {
 	public:
-    void setInitializationDuration(uint32_t duration);
+    void setInitializationDuration(unsigned long duration);
     bool update(float gx,float gy,float gz,float ax,float ay,float az,float hx, float hy, float hz,float dt_input = -1);
     float getRoll_rad();
     float getPitch_rad();
@@ -53,8 +53,8 @@ class uNavAHRS {
     /* sensor statistics */
     // latch the starting time
     bool _timeLatch = false;
-    uint32_t _startingTime;
-    uint32_t _duration = 120*1000*1000;
+    unsigned long _startingTime;
+    unsigned long _duration = 120*1000*1000;
     uint32_t _gyroCount, _accelCount, _magCount, _quatCount;
     Eigen::Matrix<float,3,1> _gyroBias;
     Eigen::Matrix<float,3,1> _gyroVariance;

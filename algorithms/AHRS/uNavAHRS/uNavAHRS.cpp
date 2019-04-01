@@ -28,20 +28,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "uNavAHRS.h"
 
-
 #ifndef ARDUINO_ENV
     #include <sys/time.h>
+    #include <iostream>
     unsigned long micros()//instead of micros in Arduino.h
     {
-        unsigned long result;
-        result = time(NULL);
+        //unsigned long result;
+        //result = time(NULL);
+
+        struct timeval tp;
+        gettimeofday(&tp, NULL);
+        unsigned long result = (unsigned long)(tp.tv_sec * 1000000 + tp.tv_usec);
+        //std::cout<<"result:"<<result<<std::endl;
         return result;
+
     }
 #endif
 
 
 /* sets the duration for gathering IMU statistics, us */
-void uNavAHRS::setInitializationDuration(uint32_t duration) {
+void uNavAHRS::setInitializationDuration(unsigned long duration) {
   _duration = duration;
 }
 
@@ -80,7 +86,7 @@ bool uNavAHRS::update(float gx,float gy,float gz,float ax,float ay,float az,floa
   } else {
     magUpdated_ = false;
   }
-
+  //std::cout<<"starting time:"<<_startingTime<<"current time:"<<micros()<<std::endl;
   if (!_initialized) {
     /* gather sensor statistics */
     if (!_timeLatch) {
@@ -89,6 +95,7 @@ bool uNavAHRS::update(float gx,float gy,float gz,float ax,float ay,float az,floa
     }
     if ((micros() - _startingTime) < _duration) {
       // Welfords algorithm for mean and variance
+      std::cout<<"initializing!"<<std::endl;
 
       if (gyroUpdated_) {
         _gyroCount++;
@@ -246,11 +253,13 @@ bool uNavAHRS::update(float gx,float gy,float gz,float ax,float ay,float az,floa
     if (gyroUpdated_) {
       // get the change in time
       _tnow = (float) micros()/1000000.0;
-      //_dt = _tnow - _tprev;
-      if(dt_input>0)
-      {
-          _dt = dt_input;
-      }
+      //method<1>
+      _dt = _tnow - _tprev;
+      //method<2>
+      //if(dt_input>0)
+      //{
+      //    _dt = dt_input;
+      //}
       _tprev = _tnow;
       // state transition matrix
       F_(0,0) = 1.0;                   F_(0,1) = -0.5*_dt*(gx-x_(4,0)); F_(0,2) = -0.5*_dt*(gy-x_(5,0)); F_(0,3) = -0.5*_dt*(gz-x_(6,0));  

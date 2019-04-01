@@ -99,6 +99,42 @@ bool GlobalOptimizationGraph::inputGPS(const sensor_msgs::NavSatFix& gps)
 		return retval;
     }
 }
+void GlobalOptimizationGraph::addBlockAHRS()
+{
+    EdgeAttitude* pEdgeAttitude = new EdgeAttitude();
+    pEdgeAttitude->setMeasurement();
+    pEdgeAttitude->setInformation();
+    pEdgeAttitude->setLevel(!checkAHRSValid());//enable AHRS?
+    pEdgeAttitude->setVertex();
+    
+    this->optimizer.addEdge(pEdgeAttitude);
+}
+void GlobalOptimizationGraph::addGPS()
+{
+  if(this->allow_gps_usage == false)
+  {
+    cout<<"[WARNING] Unable to add GPS edge.GPS usage is forbidden in config file."<<endl;
+    return;
+  }
+  if(!(this->status&this->STATUS_WITH_GPS_NO_SCENE))
+  {
+    //match with new coordinate
+    this->GPS_coord.init_at(xxx_msg);
+  }
+  EdgePRGPS* pEdgePRGPS = new EdgePRGPS();
+  pEdgePRGPS->setMeasurement(xxx_msg-this->GPS_coord.xxx);
+  pEdgePRGPS->setInformation();
+  pEdgePRGPS->setLevel(!checkGPSValid());
+  this->optimizer.addEdge(pEdgePRGPS);
+}
+
+bool GlobalOptimizationGraph::estimateCurrentSpeed()
+{
+  //step<1> check status change log;
+  //step<2> if status not changed;calc current speed.
+  //step<3> set into vector.
+}
+
 /*
 GlobalOptimizationGraph::addBlockSLAM()
 {
