@@ -140,9 +140,11 @@ Distributed under the BSD 3-Clause license. See ``LICENSE`` for more information
 
 It is worth mentioning that we did not build everything from scratch, but on top of the solid foundations built by pioneers in the field. We would like to thank communities such as [PX4](https://px4.io) and [Dronecode](https://www.dronecode.org) for constantly pushing the industry foward. What they have built are what allowed us to build GAAS!
 
+We are also very grateful for our contributors. You may be able to find them at [AUTHORS.md]('https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md').
+
 ## Contribute
 
-Please follow CONTRIBUTING.md
+Please follow [CONTRIBUTING.md]('https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md')
 
 Il Vole
 
@@ -241,9 +243,10 @@ Setup 部分中所有想要更改的组件源码安装。
 ## Special Thanks
 
 我们的项目并不是从零开始，而是站在了过去十余年无人机行业先驱的肩膀上。非常感谢 PX4 与 Dronecode 等组织对无人机行业发展的推动，让我们今天得以有机会制作 GAAS!
+同时我们也十分感谢本项目的贡献者，你们可以在 [AUTHORS.md]('https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md')中认识他们。
 
 ## Contribute
 
-请参阅 CONTRIBUTING.md
+请参阅 [CONTRIBUTING.md]('https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md')
 
 Il Vole
