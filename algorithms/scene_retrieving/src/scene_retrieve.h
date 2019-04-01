@@ -108,9 +108,12 @@ public:
     
     void saveDeserializedPoseToCSV();
     
-    void test(bool savePosition=true);
-    
-    
+    void test(bool savePosition=false);
+
+    std::vector <cv::Point3d> fetchFrameMapPoints(size_t frame_index);
+
+    void removeEmptyElement();
+
     /////////////////////////////////// serialization////////////////////////////////////
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 

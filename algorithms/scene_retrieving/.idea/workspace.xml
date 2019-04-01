@@ -2,39 +2,39 @@
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
     <generated>
-      <config projectName="scene_retrieving" targetName="ContinuousConfigure" />
-      <config projectName="scene_retrieving" targetName="ExperimentalUpdate" />
-      <config projectName="scene_retrieving" targetName="demo_mono" />
-      <config projectName="scene_retrieving" targetName="ContinuousBuild" />
-      <config projectName="scene_retrieving" targetName="ExperimentalSubmit" />
-      <config projectName="scene_retrieving" targetName="ExperimentalMemCheck" />
-      <config projectName="scene_retrieving" targetName="Nightly" />
-      <config projectName="scene_retrieving" targetName="NightlySubmit" />
-      <config projectName="scene_retrieving" targetName="Continuous" />
-      <config projectName="scene_retrieving" targetName="ContinuousStart" />
-      <config projectName="scene_retrieving" targetName="NightlyConfigure" />
-      <config projectName="scene_retrieving" targetName="MakeSceneFromOpenSfMModel" />
-      <config projectName="scene_retrieving" targetName="Experimental" />
       <config projectName="scene_retrieving" targetName="NightlyCoverage" />
-      <config projectName="scene_retrieving" targetName="demo_stereo" />
-      <config projectName="scene_retrieving" targetName="NightlyMemCheck" />
-      <config projectName="scene_retrieving" targetName="scene_retrieve" />
+      <config projectName="scene_retrieving" targetName="Continuous" />
       <config projectName="scene_retrieving" targetName="ExperimentalStart" />
-      <config projectName="scene_retrieving" targetName="NightlyBuild" />
-      <config projectName="scene_retrieving" targetName="ContinuousUpdate" />
-      <config projectName="scene_retrieving" targetName="ExperimentalTest" />
-      <config projectName="scene_retrieving" targetName="NightlyStart" />
-      <config projectName="scene_retrieving" targetName="ContinuousMemCheck" />
-      <config projectName="scene_retrieving" targetName="ContinuousCoverage" />
-      <config projectName="scene_retrieving" targetName="ContinuousTest" />
-      <config projectName="scene_retrieving" targetName="NightlyMemoryCheck" />
-      <config projectName="scene_retrieving" targetName="uninstall" />
-      <config projectName="scene_retrieving" targetName="ContinuousSubmit" />
-      <config projectName="scene_retrieving" targetName="NightlyTest" />
-      <config projectName="scene_retrieving" targetName="ExperimentalBuild" />
       <config projectName="scene_retrieving" targetName="ExperimentalConfigure" />
-      <config projectName="scene_retrieving" targetName="ExperimentalCoverage" />
+      <config projectName="scene_retrieving" targetName="NightlyBuild" />
+      <config projectName="scene_retrieving" targetName="ContinuousBuild" />
+      <config projectName="scene_retrieving" targetName="ContinuousCoverage" />
+      <config projectName="scene_retrieving" targetName="ContinuousSubmit" />
+      <config projectName="scene_retrieving" targetName="ExperimentalMemCheck" />
+      <config projectName="scene_retrieving" targetName="NightlyTest" />
       <config projectName="scene_retrieving" targetName="NightlyUpdate" />
+      <config projectName="scene_retrieving" targetName="ContinuousMemCheck" />
+      <config projectName="scene_retrieving" targetName="ExperimentalCoverage" />
+      <config projectName="scene_retrieving" targetName="NightlyMemoryCheck" />
+      <config projectName="scene_retrieving" targetName="NightlyStart" />
+      <config projectName="scene_retrieving" targetName="ContinuousConfigure" />
+      <config projectName="scene_retrieving" targetName="ExperimentalBuild" />
+      <config projectName="scene_retrieving" targetName="NightlyConfigure" />
+      <config projectName="scene_retrieving" targetName="uninstall" />
+      <config projectName="scene_retrieving" targetName="ContinuousStart" />
+      <config projectName="scene_retrieving" targetName="NightlyMemCheck" />
+      <config projectName="scene_retrieving" targetName="ExperimentalUpdate" />
+      <config projectName="scene_retrieving" targetName="scene_retrieve" />
+      <config projectName="scene_retrieving" targetName="MakeSceneFromOpenSfMModel" />
+      <config projectName="scene_retrieving" targetName="Nightly" />
+      <config projectName="scene_retrieving" targetName="Experimental" />
+      <config projectName="scene_retrieving" targetName="ContinuousTest" />
+      <config projectName="scene_retrieving" targetName="demo_stereo" />
+      <config projectName="scene_retrieving" targetName="ExperimentalTest" />
+      <config projectName="scene_retrieving" targetName="NightlySubmit" />
+      <config projectName="scene_retrieving" targetName="ContinuousUpdate" />
+      <config projectName="scene_retrieving" targetName="ExperimentalSubmit" />
+      <config projectName="scene_retrieving" targetName="demo_mono" />
     </generated>
   </component>
   <component name="CMakeSettings">
@@ -44,7 +44,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4dcb950e-8026-46a0-854e-9fd2e7f1bc02" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AHRS/uNavAHRS/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../AHRS/uNavAHRS/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AHRS/uNavAHRS/ros_api_main.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AHRS/uNavAHRS/uNavAHRS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../AHRS/uNavAHRS/uNavAHRS.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../AHRS/uNavAHRS/uNavAHRS.h" beforeDir="false" afterPath="$PROJECT_DIR$/../AHRS/uNavAHRS/uNavAHRS.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GlobalOptimizationGraph/GlobalOptimizationGraph.h" beforeDir="false" afterPath="$PROJECT_DIR$/../GlobalOptimizationGraph/GlobalOptimizationGraph.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../GlobalOptimizationGraph/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../GlobalOptimizationGraph/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/demo/demo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/demo/demo.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" afterDir="false" />
@@ -52,17 +58,9 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeDirectoryInformation.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeRuleHashes.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/CMakeRuleHashes.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/Makefile2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/TargetDirectories.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/uninstall.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/uninstall.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/cmake_install.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/scene_retrieving.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/scene_retrieving.cbp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/CMakeDirectoryInformation.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/CMakeDirectoryInformation.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/DependInfo.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/build.make" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/flags.make" afterDir="false" />
@@ -79,43 +77,7 @@
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/build.make" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/flags.make" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/cmake_install.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/cmake_install.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/CMakeDirectoryInformation.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/CMakeDirectoryInformation.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/Continuous.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/Continuous.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousBuild.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousBuild.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousConfigure.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousConfigure.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousCoverage.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousCoverage.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousMemCheck.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousMemCheck.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousStart.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousStart.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousSubmit.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousSubmit.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousTest.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousTest.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousUpdate.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ContinuousUpdate.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/Experimental.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/Experimental.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalBuild.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalBuild.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalConfigure.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalConfigure.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalCoverage.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalCoverage.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalMemCheck.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalMemCheck.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalStart.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalStart.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalSubmit.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalSubmit.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalTest.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalTest.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalUpdate.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/ExperimentalUpdate.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/Nightly.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/Nightly.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyBuild.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyBuild.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyConfigure.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyConfigure.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyCoverage.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyCoverage.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyMemCheck.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyMemCheck.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyMemoryCheck.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyMemoryCheck.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyStart.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyStart.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlySubmit.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlySubmit.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyTest.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyTest.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyUpdate.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CMakeFiles/NightlyUpdate.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CTestTestfile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/CTestTestfile.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/DartConfiguration.tcl" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/DartConfiguration.tcl" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/cmake_install.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/cmake_install.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/nlohmann_json.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/nlohmann_json.cbp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/nlohmann_jsonTargets.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/src/nlohmann_json/nlohmann_jsonTargets.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MakeSceneEurocStereoVIO_ros.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/MakeSceneEurocStereoVIO_ros.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp" afterDir="false" />
@@ -154,11 +116,11 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="180">
-              <caret line="46" column="54" selection-start-line="46" selection-start-column="54" selection-end-line="46" selection-end-column="54" />
+            <state relative-caret-position="558">
+              <caret line="67" column="53" selection-start-line="67" selection-start-column="25" selection-end-line="67" selection-end-column="53" />
               <folding>
                 <element signature="e#73#90#0" expanded="true" />
               </folding>
@@ -167,10 +129,22 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="677">
+              <caret line="75" column="41" selection-start-line="75" selection-start-column="41" selection-end-line="75" selection-end-column="41" />
+              <folding>
+                <element signature="e#196#224#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4104">
-              <caret line="228" column="25" selection-start-line="228" selection-start-column="25" selection-end-line="228" selection-end-column="25" />
+            <state relative-caret-position="245">
+              <caret line="153" column="55" selection-start-line="153" selection-start-column="55" selection-end-line="153" selection-end-column="55" />
               <folding>
                 <element signature="e#40#57#0" expanded="true" />
                 <element signature="e#190#217#0" expanded="true" />
@@ -180,36 +154,32 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="486">
-              <caret line="27" column="40" selection-start-line="27" selection-start-column="40" selection-end-line="27" selection-end-column="40" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="221">
-              <caret line="217" column="4" selection-start-line="217" selection-start-column="4" selection-end-line="217" selection-end-column="4" />
+            <state relative-caret-position="345">
+              <caret line="177" column="64" selection-start-line="177" selection-start-column="64" selection-end-line="177" selection-end-column="64" />
               <folding>
                 <element signature="e#172#199#0" expanded="true" />
                 <element signature="e#302#346#0" expanded="true" />
-                <element signature="e#3040#3055#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
+        <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2340">
-              <caret line="130" column="5" selection-start-line="130" selection-start-column="5" selection-end-line="130" selection-end-column="5" />
-              <folding>
-                <element signature="e#196#224#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="381">
+              <caret line="262" column="68" lean-forward="true" selection-start-line="262" selection-start-column="68" selection-end-line="262" selection-end-column="68" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="282">
+              <caret line="176" column="92" lean-forward="true" selection-start-line="176" selection-start-column="92" selection-end-line="176" selection-end-column="92" />
             </state>
           </provider>
         </entry>
@@ -220,8 +190,12 @@
     <findStrings>
       <find>save</find>
       <find>retrieveSceneWithScaleFromMonoImage</find>
-      <find>retrieveSceneFromStereoImage</find>
       <find>matcher</find>
+      <find>test</find>
+      <find>target_cloud</find>
+      <find>frame_index</find>
+      <find>retrieveSceneFromStereoImage</find>
+      <find>good_matches_output</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -231,16 +205,17 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/src/demo_mono_main.cpp" />
-        <option value="$PROJECT_DIR$/include/cv_helper.h" />
-        <option value="$PROJECT_DIR$/src/scene_retrieve.cpp" />
-        <option value="$PROJECT_DIR$/src/scene_retrieve.h" />
         <option value="$PROJECT_DIR$/src/demo_stereo_main.cpp" />
         <option value="$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp" />
+        <option value="$PROJECT_DIR$/src/scene_retrieve.h" />
+        <option value="$PROJECT_DIR$/include/cv_helper.h" />
+        <option value="$PROJECT_DIR$/src/scene_retrieve.cpp" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="x" value="65" />
+  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="1985" />
     <option name="y" value="-4" />
     <option name="width" value="1855" />
     <option name="height" value="1084" />
@@ -282,7 +257,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../loop_closing/DBow3/src" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
   </component>
@@ -513,17 +488,19 @@
       <workItem from="1552872469172" duration="3636000" />
       <workItem from="1553832442367" duration="17791000" />
       <workItem from="1554083097924" duration="1763000" />
+      <workItem from="1554086659863" duration="611000" />
+      <workItem from="1554098291962" duration="3052000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="23190000" />
+    <option name="totallyTimeSpent" value="26853000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1855" height="1084" extended-state="7" />
+    <frame x="1985" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1641791" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.049751244" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -537,7 +514,7 @@
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="10" />
-      <window_info anchor="bottom" id="CMake" order="11" visible="true" weight="0.031347964" />
+      <window_info anchor="bottom" id="CMake" order="11" weight="0.07628004" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -586,39 +563,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2340">
-          <caret line="130" column="5" selection-start-line="130" selection-start-column="5" selection-end-line="130" selection-end-column="5" />
-          <folding>
-            <element signature="e#196#224#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="27" column="40" selection-start-line="27" selection-start-column="40" selection-end-line="27" selection-end-column="40" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="217" column="4" selection-start-line="217" selection-start-column="4" selection-end-line="217" selection-end-column="4" />
-          <folding>
-            <element signature="e#172#199#0" expanded="true" />
-            <element signature="e#302#346#0" expanded="true" />
-            <element signature="e#3040#3055#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4104">
-          <caret line="228" column="25" selection-start-line="228" selection-start-column="25" selection-end-line="228" selection-end-column="25" />
+        <state relative-caret-position="245">
+          <caret line="153" column="55" selection-start-line="153" selection-start-column="55" selection-end-line="153" selection-end-column="55" />
           <folding>
             <element signature="e#40#57#0" expanded="true" />
             <element signature="e#190#217#0" expanded="true" />
@@ -626,13 +574,48 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="677">
+          <caret line="75" column="41" selection-start-line="75" selection-start-column="41" selection-end-line="75" selection-end-column="41" />
+          <folding>
+            <element signature="e#196#224#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="180">
-          <caret line="46" column="54" selection-start-line="46" selection-start-column="54" selection-end-line="46" selection-end-column="54" />
+        <state relative-caret-position="558">
+          <caret line="67" column="53" selection-start-line="67" selection-start-column="25" selection-end-line="67" selection-end-column="53" />
           <folding>
             <element signature="e#73#90#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="345">
+          <caret line="177" column="64" selection-start-line="177" selection-start-column="64" selection-end-line="177" selection-end-column="64" />
+          <folding>
+            <element signature="e#172#199#0" expanded="true" />
+            <element signature="e#302#346#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="381">
+          <caret line="262" column="68" lean-forward="true" selection-start-line="262" selection-start-column="68" selection-end-line="262" selection-end-column="68" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="282">
+          <caret line="176" column="92" lean-forward="true" selection-start-line="176" selection-start-column="92" selection-end-line="176" selection-end-column="92" />
         </state>
       </provider>
     </entry>

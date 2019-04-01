@@ -67,6 +67,12 @@ void Scene::loadFile(const std::string &filename)
         ia >> *this;
         cout << "Deserialization finished" << endl;
     }
+
+    test();
+
+    removeEmptyElement();
+
+    test();
 }
 
 void Scene::saveDeserializedPoseToCSV()
@@ -88,15 +94,15 @@ void Scene::test(bool savePosition)
 {
     cout<<"---------------Current scene info---------------"<<endl;
     
-    for(auto& m: this->mVecR)
-    {
-        cout<<"VecR is :"<<endl<<m<<endl;
-    }
-    
-    for(auto& m: this->mVecT)
-    {
-        cout<<"VecT is :"<<endl<<m<<endl;
-    }
+//    for(auto& m: this->mVecR)
+//    {
+//        cout<<"VecR is :"<<endl<<m<<endl;
+//    }
+//
+//    for(auto& m: this->mVecT)
+//    {
+//        cout<<"VecT is :"<<endl<<m<<endl;
+//    }
     
     cout<<"mIndex: "<<mIndex<<endl;
     cout<<"hasScale: "<<hasScale<<endl;
@@ -115,7 +121,69 @@ void Scene::test(bool savePosition)
 
 }
 
+std::vector <cv::Point3d> Scene::fetchFrameMapPoints(size_t frame_index)
+{
+    assert(frame_index > 0 && frame_index < this->vec_p3d.size());
 
+    return this->vec_p3d[frame_index];
+}
+
+void Scene::removeEmptyElement()
+{
+    int sum_a=0, sum_b=0, sum_c=0, sum_d=0, sum_e=0;
+    for(int i = 0; i<this->vec_p2d.size(); i++)
+    {
+        if(this->vec_p2d[i].empty())
+        {
+            this->vec_p2d.erase(this->vec_p2d.begin() + i);
+            sum_a ++;
+        }
+    }
+
+    for(int i = 0; i<this->vec_p3d.size(); i++)
+    {
+        if(this->vec_p3d[i].empty())
+        {
+            this->vec_p3d.erase(this->vec_p3d.begin() + i);
+            sum_b ++;
+        }
+    }
+
+    for(int i = 0; i<this->mVecR.size(); i++)
+    {
+        if(this->mVecR[i].empty())
+        {
+            this->mVecR.erase(this->mVecR.begin() + i);
+            sum_c ++;
+        }
+    }
+
+    for(int i = 0; i<this->mVecT.size(); i++)
+    {
+        if(this->mVecT[i].empty())
+        {
+            this->mVecT.erase(this->mVecT.begin() + i);
+            sum_d ++;
+        }
+    }
+
+    for(int i = 0; i<this->point_desps.size(); i++)
+    {
+        if(this->point_desps[i].empty())
+        {
+            this->point_desps.erase(this->point_desps.begin() + i);
+            sum_e ++;
+        }
+    }
+
+
+    cout <<"Removed Features: "<<sum_a <<endl;
+    cout <<"Removed MapPoints: "<<sum_b <<endl;
+    cout <<"Removed R: "<<sum_c <<endl;
+    cout <<"Removed t: "<<sum_d <<endl;
+    cout <<"Removed point_desps: "<<sum_e <<endl;
+
+}
 
 //---------------------------------------class SceneRetriever------------------------------------
 
@@ -125,8 +193,8 @@ SceneRetriever::SceneRetriever(){};
 SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
 {
     this->original_scene.loadFile(scene_file);
-    this->original_scene.test(true);
-    
+//    this->original_scene.test(true);
+
     this->ploop_closing_manager_of_scene = new LoopClosingManager(voc);
     
     this->_init_retriever();
@@ -270,22 +338,19 @@ int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
     //https://github.com/PointCloudLibrary/pcl/blob/master/test/registration/test_registration.cpp
     //for more information about the usage
 
-    //step<2> match 2 clouds.
-      //method<1>
-      /*
-        GICP = pcl::GeneralizedIterativeClosestPoint< PointSource, PointTarget >::estimateRigidTransformationBFGS 	( 	const PointCloudSource &  	cloud_src, //3d to 3d.
-		const std::vector< int > &  	indices_src,
-		const PointCloudTarget &  	cloud_tgt,
-		const std::vector< int > &  	indices_tgt,
-		Eigen::Matrix4f &  	transformation_matrix
-	) 	*/
+    vector<cv::Point3f> frameOldMapPoints = mpCv_helper->Points3d2Points3f( (this->original_scene).fetchFrameMapPoints(loop_index) );
 
-
-      //Matrix4f GeneralICP(vector<Point3f> input_cloud, vector<Point3f> target_cloud, int num_iter = 50, double transformationEpsilon = 1e-8)
-    Matrix4f transformation = mpCv_helper->GeneralICP(CamPoints, CamPoints);
-
-
-
+    if(CamPoints.size()>20 && frameOldMapPoints.size()>20)
+    {
+        cout<<"Start general ICP!"<<endl;
+        Matrix4f transformation = mpCv_helper->GeneralICP(CamPoints, frameOldMapPoints);
+        cout<<"General ICP result is: \n"<<transformation<<endl;
+    }
+    else
+    {
+        cout<<"GeneralICP requires at least 20 pairs of points, quit."<<endl;
+        cout<<"Current size is: "<<CamPoints.size()<<", "<<frameOldMapPoints.size()<<endl;
+    }
 
 
 

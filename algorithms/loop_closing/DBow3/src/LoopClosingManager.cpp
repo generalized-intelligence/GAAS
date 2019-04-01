@@ -167,9 +167,9 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
 
     //TODO:refer VINS KeyFrame::findConnection().
 
-    //cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12,20,2));
+    cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12,20,2));
     //cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::IndexParams>(12,20,2));
-    cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher();
+    //cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher();
 
     std::vector< cv::DMatch > matches;
     //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );

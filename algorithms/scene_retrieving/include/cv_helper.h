@@ -130,10 +130,31 @@ public:
         return cloud;
     }
 
+
+    vector<cv::Point3f> Points3d2Points3f(vector<cv::Point3d> input_points)
+    {
+        vector<cv::Point3f> output_points;
+
+        cv::Point3f temp_p;
+        for(auto& p : input_points)
+        {
+            temp_p.x = p.x;
+            temp_p.y = p.y;
+            temp_p.z = p.z;
+
+            output_points.push_back(temp_p);
+        }
+
+        return output_points;
+    }
+
+
     // a wrapper for pcl::GeneralizedIterativeClosestPoint to return the transformation matrix between a input point cloud and a
     // target point cloud
     Eigen::Matrix4f GeneralICP(vector<cv::Point3f> input_cloud, vector<cv::Point3f> target_cloud, int num_iter = 50, double transformationEpsilon = 1e-8)
     {
+
+        cout<<"cv helper::GeneralICP points size: "<<input_cloud.size()<<", "<<target_cloud.size()<<endl;
 
         typedef pcl::PointXYZ PointT;
 
@@ -144,7 +165,7 @@ public:
 
         // define target point cloud
         pcl::PointCloud<PointT>::Ptr tgt (new pcl::PointCloud<PointT>);
-        pcl::PointCloud<PointT> tgt_cloud = PtsVec2PointCloud(input_cloud);
+        pcl::PointCloud<PointT> tgt_cloud = PtsVec2PointCloud(target_cloud);
         *tgt = tgt_cloud;
 
         // define output point cloud
