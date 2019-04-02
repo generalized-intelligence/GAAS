@@ -51,11 +51,11 @@ An example of the hardware
 
 Currently the project provides the following funcitons: automatic taking off and landing, navigation in GPS denied environment, obstacle avoidance and path planning based on stereo vision, scene recoginition, 3D model generation, object following, object detection, instance segmentation, and a number of python based API as well as a series of tutorials.
 
-1. details about automatic taking off and landing can be found in: software/px4_mavros_scripts;
-2. navigation in GPS denied environment can be found in: software/SLAM/ygz_slam_ros, currently we are using stereo optical flow;
-3. obstacle avoidance based on stereo vision can be found in: software/Obstacle_Map;
-4. path planning can be found in software/Navigator;
-5. scene recoginition, given an image, recover its position in terms of given environment, details can be found in algorithms/scene_retrieving;
+1. Details about automatic taking off and landing can be found in: software/px4_mavros_scripts;
+2. Navigation in GPS denied environment can be found in: software/SLAM/ygz_slam_ros, currently we are using stereo optical flow;
+3. Obstacle avoidance based on stereo vision can be found in: software/Obstacle_Map;
+4. Path planning can be found in software/Navigator;
+5. Scene recoginition, given an image, recover its position in terms of given environment, details can be found in algorithms/scene_retrieving;
 6. 3D modeling, details can be found in algorithms/sfm;
 
 <img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
@@ -173,8 +173,27 @@ It is worth mentioning that we did not build everything from scratch, but on top
 We are also very grateful for our contributors. You may be able to find them at [AUTHORS.md](https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md).
 
 ## Contribute
+### I just want to build an autonomous drone
+You have come to the right place!
 
-Please follow [CONTRIBUTING.md](https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md)
+If this is your first time building an autonomous aviation system, check out our [first Tutorial](https://github.com/generalized-intelligence/GAAS/tree/master/demo/tutorial_1). You will get a basic understanding of what MavROS, PX4 and Gazebo are, which are fundamental for the success of your autonomous drone.
+
+If you are stuck with configuration, you may:
+1. Google the error messages and see if someone else has solved a similar problem.
+2. Visit the [Issues Page](https://github.com/generalized-intelligence/GAAS/issues) to see if others have provided solutions for a similar problem.
+3. If neither Step 1 or Step 2 were able to help you, submit an issue to let the community know that you need help. 
+
+If you are an advanced user, feel free to help others to get started, contribute by solving issues, or share with us about your project on our [Gitter group chat](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge). 
+
+### I want to contribute to the project
+We are so grateful for your interest in contributing!
+
+To start contributing, you need to become familiar with PX4 and MavROS, as well as the workflow of [GitHub](https://github.com/MarcDiethelm/contributing/blob/master/README.md). 
+
+A good place to start is to look at the [open issues](https://github.com/generalized-intelligence/GAAS/issues). From there, you may choose one that interests you to tackle, or open an issue of your own to communicate with other developers. 
+
+PS: One of the best ways to contribute is to help others to kick off their autonomous drone journey. Pay attention to the “Configuration” label in issues page to help others get started.
+For more details, please follow [CONTRIBUTING.md](https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md)
 
 Il Vole
 
@@ -304,7 +323,24 @@ Setup 部分中所有想要更改的组件源码安装。
 同时我们也十分感谢本项目的贡献者，你们可以在 [AUTHORS.md](https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md) 中认识他们。
 
 ## Contribute
+### 我想造一台无人自主飞行器
+这个项目正好适合你！
+如果这是你第一次着手配置自主飞行器的系统，可以看看我们[教程的第一课](https://github.com/generalized-intelligence/GAAS/tree/master/demo/tutorial_1)。你会得到一些关于 MavROS，PX4 和 Gazebo 的介绍，它们是无人机自主飞行的基础。
 
-请参阅 [CONTRIBUTING.md](https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md)
+如果在环境配置中遇到了困难，你可以尝试：
+1. 在泛用搜索引擎中搜索错误报告，看看是否有其他人也遇到了类似的问题。
+2. 在 [Issues](https://github.com/generalized-intelligence/GAAS/issues) 页面看看社区中是否有其他人遇到了类似的问题。
+3. 如果前两步都无法帮助你，你可以提交一个新的 Issue 并加上 "Configuration" 的标签，寻求社区力量的帮助。
+
+如果你已经可以熟练的运用这套系统，你也可以在社区里帮助新手上路，解决一些 Issue，或者在微信群里将你的项目进展分享给我们。
+
+
+### 我想为项目做贡献
+我们非常感激您对项目做贡献的意愿。
+首先，你需要对 PX4, MavROS 和 Gazebo 有一定的熟悉程度，并且熟悉 [GitHub 的工作流程](https://git-scm.com/book/zh/v2/GitHub-对项目做出贡献)。
+
+[Open Issues](https://github.com/generalized-intelligence/GAAS/issues) 页面是一个好的开始。你可以看看有哪些已知的问题是你感兴趣的，或者你也可以新建一个 Issue 来告诉我们你的看法和有哪些想提高的地方。
+
+另外，帮助项目运营最好的方式之一是帮助那些刚刚接触无人飞行的伙伴们快速上手这套系统。关注 Issues 页面中带有 “Configuration” 标注的 Issue 来帮助别的伙伴上手系统。具体细节请参阅 [CONTRIBUTING.md](https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md)
 
 Il Vole
