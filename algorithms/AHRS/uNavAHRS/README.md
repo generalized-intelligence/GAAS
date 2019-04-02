@@ -1,3 +1,6 @@
+May be we need a low-pass filter....
+
+
 # uNavAHRS
 uNav Attitude and Heading Reference System 7 State EKF Arduino Library.
 

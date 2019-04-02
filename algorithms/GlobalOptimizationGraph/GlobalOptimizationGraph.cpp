@@ -1,8 +1,9 @@
 #include "GlobalOptimizationGraph.h"
 #include <ros/ros.h>
-GlobalOptimizationGraph::GlobalOptimizationGraph()
+GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
 {
-
+    cv::FileStorage fSettings(string(argv[1]),cv::FileStorage::READ);
+    this->GPS_AVAIL_MINIMUM = fSettings["GPS_AVAIL_MINIMUM"];
     linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
     solver_ptr = new g2o::BlockSolverX(linearSolver);
     solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
@@ -14,7 +15,7 @@ GlobalOptimizationGraph::GlobalOptimizationGraph()
     optimizer.addVertex(&currentState);
 }
 
-bool GlobalOptimizationGraph::init_gps();//init longitude,latitude,altitude.
+bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
     //TODO:Init a GPS callback buffer block class,inherit callback buffer base,implement init and check avail.
 {
     double avg_lon,avg_lat,avg_alt;

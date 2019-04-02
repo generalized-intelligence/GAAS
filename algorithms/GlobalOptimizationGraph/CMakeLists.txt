@@ -3,6 +3,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 find_package(OpenCV 3.3.1 REQUIRED)
 set(g2o_PACKAGE_PATH ${PROJECT_SOURCE_DIR}/Thirdparty/g2o)
+
+find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
 find_package(g2o REQUIRED PATH g2o_PACKAGE_PATH)
 find_package(catkin REQUIRED COMPONENTS
     roscpp
@@ -12,7 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
     message_filters
 
 )
-
 
 
 include_directories(${PROJECT_SOURCE_DIR}

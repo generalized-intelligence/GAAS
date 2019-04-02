@@ -1,4 +1,8 @@
+INIT_SPIN_TIMES : 100
+INIT_MAX_TIME_us : 10000000
+
 ENABLE_GPS : true
+GPS_AVAIL_MINIMUM : 50
 
 GPS_topic_name : "/mavros/global_position/global"
 AHRS_topic_name : "/GAAS/AHRS/attitude"

@@ -9,6 +9,7 @@
 #include <sensor_msgs/NavSatFix.h>
 #include "GPSExpand.h"
 #include <cmath>
+#include <opencv2/opencv.hpp>
 using namespace std;
 using namespace ygz;
 //采用自顶向下设计方法,分块逐步实现.
@@ -25,11 +26,11 @@ using namespace ygz;
 typedef VertexPR State;
 typedef VertexPR Speed;
 const int GPS_INIT_BUFFER_SIZE = 100;
-const int GPS_AVAIL_MINIMUM = 50;
+
 class GlobalOptimizationGraph
 {
 public:
-    GlobalOptimizationGraph(const std::string& config_file_path);
+    GlobalOptimizationGraph(int argc,char** argv);
     
     bool checkAHRSValid();
     bool checkSLAMValid();
@@ -64,6 +65,7 @@ private:
     static const int STATUS_NO_GPS_WITH_SCENE = 1;
     static const int STATUS_WITH_GPS_NO_SCENE = 2;
     static const int STATUS_GPS_SCENE = 3;
+    int GPS_AVAIL_MINIMUM;
     int status = STATUS_NO_GPS_NO_SCENE;
     void stateTransfer(int new_state);
     //uav location attitude info management.
