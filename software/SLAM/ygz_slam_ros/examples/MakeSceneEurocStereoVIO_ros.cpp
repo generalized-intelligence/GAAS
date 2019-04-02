@@ -45,7 +45,6 @@
 #include <signal.h>
 #include <csignal>
 
-
 #include <DBoW3/DBoW3.h>
 
 
@@ -128,24 +127,23 @@ vector<cv::Mat> VecLeftImage, VecRightImage;
 
 DBoW3::Database cur_frame_db;
 
+LoopClosingManager* pLoopClosingManager;
+
 void mySigintHandler(int sig)
 {
-
     {
         pScene->saveFile("scene.scn");
         pScene->saveVoc();
         
         cout<<"Saving Scene.cn and Voc finished!"<<endl;
-        
-        
+
         cur_frame_db.save("database.bin");
         
-//         for(int i; i<VecLeftImage.size(); i++)
-//         {   
-//             cout<<"Saving image: "<<i<<endl;
-//             cv::imwrite("./image/left/"+to_string(i)+".png", VecLeftImage[i]);
-//             cv::imwrite("./image/right/"+to_string(i)+".png", VecRightImage[i]);
-//         }
+         for(int i; i<VecLeftImage.size(); i++)
+         {
+             cv::imwrite("./image/left/"+to_string(i)+".png", VecLeftImage[i].clone() );
+             cv::imwrite("./image/right/"+to_string(i)+".png", VecRightImage[i].clone() );
+         }
        
     }
     
@@ -491,7 +489,6 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     
         //pts2d_in    pts3d_in    desp,   R,    t
         //typedef  std::tuple<std::vector<cv::KeyPoint>, std::vector<cv::Point3d>, cv::Mat, cv::Mat, cv::Mat> SceneFrame;
-
         SceneFrame scene_frame = generateSceneFrameFromStereoImage(imLeftRect, imRightRect, rotationmat, translationmat, Q_mat);
         
         pScene->addFrame(scene_frame);
@@ -499,12 +496,15 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
         cur_frame_db.add(get<2>(scene_frame));
         
         cout<<"cur_frame_db info: "<<cur_frame_db<<endl;
-        
-        cv::imwrite("./image/left/"+to_string(frame_index)+".png", imLeftRect);
-        cv::imwrite("./image/right/"+to_string(frame_index)+".png", imRightRect);
-        
-//         VecLeftImage.push_back(imLeftRect);
-//         VecRightImage.push_back(imRightRect);
+
+
+        {
+            VecLeftImage.push_back(imLeftRect.clone());
+        }
+
+        {
+            VecRightImage.push_back(imRightRect.clone());
+        }
     
     }
 
@@ -534,6 +534,7 @@ int main(int argc, char **argv) {
     
     SlamPoseHistory.open("./slampose.csv");
     px4PoseHistory.open("./px4pose.csv");
+
 
     google::InitGoogleLogging(argv[0]);    
     string config_path = argv[1];
@@ -599,11 +600,13 @@ int main(int argc, char **argv) {
     }    
     
 
+
+
+
     ros::init(argc, argv, "ygz_with_gps", ros::init_options::NoSigintHandler);
     ros::NodeHandle nh;
     
     signal(SIGINT, mySigintHandler);
-    
 
     message_filters::Subscriber<sensor_msgs::Image> left_sub(nh, left_topic, 10);
     message_filters::Subscriber<sensor_msgs::Image> right_sub(nh, right_topic, 10);
