@@ -72,6 +72,10 @@ Currently the project provides the following funcitons: automatic taking off and
 
 10. a list of control API based on MAVROS, and a series of tutorials can be found in GAAS/demo.
 
+## Here is a tutorial for GAAS:
+
+https://gaas.gitbook.io/guide/
+
 
 ## Setup
 
@@ -199,6 +203,10 @@ Il Vole
 
 9. 语义分割， 具体实现在 algorithms/image_segmentation;
 10. 无人机控制API及中英文教程，具体在 demo 文件夹。
+
+## 这里是 GAAS 的详细教程：
+
+https://www.yuque.com/ieashw/wwaxro/nrxegn
 
 ## Setup
 
