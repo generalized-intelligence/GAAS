@@ -225,7 +225,7 @@ Il Vole
 
 ## 这里是 GAAS 的详细教程：
 
-https://www.yuque.com/ieashw/wwaxro/nrxegn
+https://www.yuque.com/docs/share/c58215c6-e582-4854-95bf-c395953ada8b
 
 ## Setup
 
