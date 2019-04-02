@@ -60,17 +60,17 @@ Currently the project provides the following funcitons: automatic taking off and
 
 <img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
 
-7. object following, details can be found in algorithms/object_trace_tracking;
+7. Object following, details can be found in algorithms/object_trace_tracking;
 
 [![Object Following](https://s2.ax1x.com/2019/04/01/AsvuCT.png)](https://youtu.be/C6902HKUVR8)
 
-8. object detection, details can be found in algorithms/image_detection;
+8. Object detection, details can be found in algorithms/image_detection;
 
 <img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/AsOyV0.jpg"/>
 
-9. instance segmentation, details can be found in algorithms/image_detection;
+9. Instance segmentation, details can be found in algorithms/image_detection;
 
-10. a list of control API based on MAVROS, and a series of tutorials can be found in GAAS/demo.
+10. A list of control API based on MAVROS, and a series of tutorials can be found in GAAS/demo.
 
 ## Here is a tutorial for GAAS:
 
