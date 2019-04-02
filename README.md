@@ -225,7 +225,11 @@ Il Vole
 
 ## 这里是 GAAS 的详细教程：
 
-https://www.yuque.com/docs/share/c58215c6-e582-4854-95bf-c395953ada8b
+第一课： https://www.yuque.com/docs/share/c58215c6-e582-4854-95bf-c395953ada8b
+
+第二课： https://www.yuque.com/docs/share/62b8319f-ed1a-439c-a71a-b2e72b4806ca
+
+Yuque 并不是一个很好的分享平台，如果你有更合适的选择，欢迎告诉我们！
 
 ## Setup
 
