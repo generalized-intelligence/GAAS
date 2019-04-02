@@ -324,7 +324,12 @@ Setup 部分中所有想要更改的组件源码安装。
 ## Special Thanks
 
 我们的项目并不是从零开始，而是站在了过去十余年无人机行业先驱的肩膀上。非常感谢 PX4 与 Dronecode 等组织对无人机行业发展的推动，让我们今天得以有机会制作 GAAS!
+
 同时我们也十分感谢本项目的贡献者，你们可以在 [AUTHORS.md](https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md) 中认识他们。
+
+感谢地面站社区在中文互联网上为 GAAS 提供的支持。如果你也对中文无人机社区感兴趣，欢迎访问：
+
+http://shequ.dimianzhan.com/topics
 
 ## Contribute
 ### 我想造一台自动驾驶无人机
