@@ -26,6 +26,6 @@ See step-by-step guide at: https://gaas.gitbook.io/guide/build-your-own-autonomo
 5. 停止 rosbag 录制并使用提供的脚本提取图片；
 6. 使用提供的网站构建模型（构建模型所需环境配置过于复杂，之后的教程会详细讲解）。
 
-详细版点此查看：https://gaas.gitbook.io/guide/wu-ren-ji-zi-dong-jia-shi-xi-lie-tong-guo-wu-ren-ji-ji-zai-she-xiang-tou-gou-jian-jian-zhu-wu-3d-mo
+详细版点此查看：https://www.yuque.com/docs/share/62b8319f-ed1a-439c-a71a-b2e72b4806ca
 
   
