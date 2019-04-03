@@ -22,7 +22,43 @@ Or join our Wechat group at:
 
 <img width="250" height="300" src="https://s2.ax1x.com/2019/03/29/ABiekq.jpg"/>
 
-# GAAS
+- [What is GAAS?](#what-is-gaas)
+  * [Project Overview](#project-overview)
+  * [Tutorial for GAAS:](#tutorial-for-gaas)
+  * [Setup](#setup)
+    + [1. Install ROS-Kinetic](#1-install-ros-kinetic)
+    + [2. Install Octomap-Server and mavros](#2-install-octomap-server-and-mavros)
+    + [3. Gazebo](#3-gazebo)
+    + [4. PCL](#4-pcl)
+    + [5. YGZ-slam](#5-ygz-slam)
+    + [6. PX4](#6-px4)
+  * [Sample Use Case](#sample-use-case)
+  * [Development Setup](#development-setup)
+  * [Meta](#meta)
+  * [Special Thanks](#special-thanks)
+  * [Contribute](#contribute)
+    + [I just want to build an autonomous drone](#i-just-want-to-build-an-autonomous-drone)
+    + [I want to contribute to the project](#i-want-to-contribute-to-the-project)
+    
+- [GAAS 是什么？](#gaas-是什么)
+  * [项目总览](#项目总览)
+  * [这里是 GAAS 的详细教程：](#这里是-gaas-的详细教程)
+  * [安装](#安装)
+    + [1. 安装 ROS-Kinetic](#1-安装-ros-kinetic)
+    + [2. 安装 Octomap-Server 以及 mavros](#2-安装-octomap-server-以及-mavros)
+    + [3. Gazebo](#3-gazebo-1)
+    + [4. PCL](#4-pcl-1)
+    + [5. YGZ-slam](#5-ygz-slam-1)
+    + [6. PX4](#6-px4-1)
+  * [使用案例](#使用案例)
+  * [开发配置](#开发配置)
+  * [Meta](#meta-1)
+  * [特别感谢](#特别感谢)
+  * [为项目做贡献](#为项目做贡献)
+    + [我想造一台自动驾驶无人机](#我想造一台自动驾驶无人机)
+    + [我想为项目做贡献](#我想为项目做贡献)
+
+# What is GAAS?
 
 <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
 
@@ -34,17 +70,13 @@ Or join our Wechat group at:
 
 > The current version of GAAS includes Simultaneous Localization and Mapping (SLAM), obstacle avoidance, navigation and flight control, supporting manned and unmanned multi-rotor drones and helicopters. Next step, we will also be supporting VTOL and eVTOL.
 
-> 泛化自动驾驶飞行器系统 Generalized Autonomy Aviation System（以下简称 GAAS）是一个面向未来飞行器设计的开源驾驶以及运行管理系统。
+<p align="center">
+<img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" width="300px">
+</p>
 
-> 想象一个每天用飞行汽车出门，无人机送餐和快递的未来。我们希望为这样的未来解决一些基础性的问题：满足对安全性的高要求并消除飞行员以及飞手的需求。
-
-> 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作。并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人飞行器上（也许是飞行汽车）。
-
->当前版本的 GAAS 包含 SLAM、避障路径规划、飞行控制模块；用于支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
-
-![UAV demo](https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg)
-
-An example of the hardware
+<p align="center">
+An Example of Assembled Hardware
+</p>
 
 
 ## Project Overview
@@ -57,8 +89,9 @@ Currently the project provides the following funcitons: automatic taking off and
 4. Path planning can be found in software/Navigator;
 5. Scene recoginition, given an image, recover its position in terms of given environment, details can be found in algorithms/scene_retrieving;
 6. 3D modeling, details can be found in algorithms/sfm;
-
+<p align="center">
 <img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
+</p>
 
 7. Object following, details can be found in algorithms/object_trace_tracking;
 
@@ -66,14 +99,15 @@ Currently the project provides the following funcitons: automatic taking off and
 
 8. Object detection, details can be found in algorithms/image_detection;
 
+<p align="center">
 <img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/AsOyV0.jpg"/>
+</p>
 
 9. Instance segmentation, details can be found in algorithms/image_detection;
 
 10. A list of control API based on MAVROS, and a series of tutorials can be found in GAAS/demo.
 
-## Here is a tutorial for GAAS:
-
+## Tutorial for GAAS:
 https://gaas.gitbook.io/guide/
 
 
@@ -186,6 +220,7 @@ If you are stuck with configuration, you may:
 If you are an advanced user, feel free to help others to get started, contribute by solving issues, or share with us about your project on our [Gitter group chat](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge). 
 
 ### I want to contribute to the project
+
 We are so grateful for your interest in contributing!
 
 To start contributing, you need to become familiar with PX4 and MavROS, as well as the workflow of [GitHub](https://github.com/MarcDiethelm/contributing/blob/master/README.md). 
@@ -199,8 +234,22 @@ Il Vole
 
 ---
 
-## 项目总览
+# GAAS 是什么？
+<img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
 
+> 泛化自动驾驶飞行器系统 Generalized Autonomy Aviation System（以下简称 GAAS）是一个面向未来飞行器设计的开源驾驶以及运行管理系统。
+
+> 想象一个每天用飞行汽车出门，无人机送餐和快递的未来。我们希望为这样的未来解决一些基础性的问题：满足对安全性的高要求并消除飞行员以及飞手的需求。
+
+> 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作。并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人飞行器上（也许是飞行汽车）。
+
+> 当前版本的 GAAS 包含 SLAM、避障路径规划、飞行控制模块；用于支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
+
+<p align="center">
+<img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" width="300px">
+</p>
+
+## 项目总览
 当前无人机可以实现自动启飞，降落，无 GPS 环境下自主飞行，基于双目视觉的避障以及路径规划，场景重识别，3D 建模， 物体跟踪，物体检测, 语义分割等功能，同时还提供了一系列基于python的无人机控制API以及中英文教程。
 
 1. 其中自动启飞，降落等功能实现在 software/px4_mavros_scripts；
@@ -210,7 +259,13 @@ Il Vole
 5. 场景重识别，即给定一张图片，恢复出当前图片在给定环境中的位置，具体实现在 algorithms/scene_retrieving；
 6. 3D 建模，具体实现在 algorithms/sfm；
 
+<p align="center">
 <img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
+</p>
+
+<p align="center">
+硬件组装示例
+</p>
 
 7. 物体跟踪，具体实现在 algorithms/object_trace_tracking；
 
@@ -218,29 +273,28 @@ Il Vole
 
 8. 物体检测，具体实现在 algorithms/image_detection；
 
+<p align="center">
 <img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/AsOyV0.jpg"/>
+</p>
 
 9. 语义分割，具体实现在 algorithms/image_segmentation；
 10. 无人机控制 API 及中英文教程，具体在 demo 文件夹。
 
 ## 这里是 GAAS 的详细教程：
+https://github.com/generalized-intelligence/GAAS/tree/master/demo
 
-第一课： https://www.yuque.com/docs/share/c58215c6-e582-4854-95bf-c395953ada8b
+文字教程所在的 Yuque 并不是一个很好的分享平台，如果你有更合适的选择，欢迎告诉我们！
 
-第二课： https://www.yuque.com/docs/share/62b8319f-ed1a-439c-a71a-b2e72b4806ca
-
-Yuque 并不是一个很好的分享平台，如果你有更合适的选择，欢迎告诉我们！
-
-## Setup
+## 安装
 
 NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。
 
-### 1.安装 ROS-Kinetic
+### 1. 安装 ROS-Kinetic
 
 建议安装 ros-kinetic-desktop-full; 可按照此地址进行安装：
 	http://wiki.ros.org/kinetic/Installation/Ubuntu.
 
-### 2.安装 Octomap-Server 以及 mavros
+### 2. 安装 Octomap-Server 以及 mavros
 
 	cd ~/catkin_ws/src
 	git clone https://github.com/OctoMap/octomap_mapping.git
@@ -281,7 +335,6 @@ NOTE:  仅在 px4 v1.8.0 上进行过测试。
     git checkout v1.8.0
 
 ## 使用案例
-
 1.带避障，不依赖 GPS 的路径规划指点飞行。
 
 	step<1> 如果是室内环境使用或需要高精度飞行，ROS launch file 加入 SLAM；否则跳过此步骤。
@@ -308,7 +361,6 @@ NOTE:  仅在 px4 v1.8.0 上进行过测试。
 
 
 ## 开发配置
-
 Setup 部分中所有想要更改的组件源码安装。
 
 在 ROS 的对应接口进行替换即可。
@@ -321,7 +373,7 @@ Setup 部分中所有想要更改的组件源码安装。
 本项目受 BSD 3-Clause 协议保护。点击``LICENSE`` 了解更多
 [GAAS GitHub](https://github.com/generalized-intelligence/GAAS)
 
-## Special Thanks
+## 特别感谢
 
 我们的项目并不是从零开始，而是站在了过去十余年无人机行业先驱的肩膀上。非常感谢 PX4 与 Dronecode 等组织对无人机行业发展的推动，让我们今天得以有机会制作 GAAS!
 
@@ -331,7 +383,7 @@ Setup 部分中所有想要更改的组件源码安装。
 
 http://shequ.dimianzhan.com/topics
 
-## Contribute
+## 为项目做贡献
 ### 我想造一台自动驾驶无人机
 这个项目正好适合你！
 如果这是你第一次着手配置自动驾驶无人机的系统，可以看看我们[教程的第一课](https://github.com/generalized-intelligence/GAAS/tree/master/demo/tutorial_1)。你会得到一些关于 MavROS，PX4 和 Gazebo 的介绍，它们是无人机自主飞行的基础。
