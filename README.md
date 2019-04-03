@@ -236,6 +236,7 @@ Il Vole
 
 # GAAS 是什么？
 <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
+
 > 泛化自动驾驶飞行器系统 Generalized Autonomy Aviation System（以下简称 GAAS）是一个面向未来飞行器设计的开源驾驶以及运行管理系统。
 
 > 想象一个每天用飞行汽车出门，无人机送餐和快递的未来。我们希望为这样的未来解决一些基础性的问题：满足对安全性的高要求并消除飞行员以及飞手的需求。
@@ -260,6 +261,10 @@ Il Vole
 
 <p align="center">
 <img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
+</p>
+
+<p align="center">
+硬件组装示例
 </p>
 
 7. 物体跟踪，具体实现在 algorithms/object_trace_tracking；
