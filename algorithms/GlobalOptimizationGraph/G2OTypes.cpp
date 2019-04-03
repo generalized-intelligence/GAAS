@@ -133,7 +133,7 @@ namespace ygz {
         J_pi_prcb.topRightCorner(3, 3) = J_pi_rcb;
         _jacobianOplus[3] = -Jpi * J_pi_prcb;
     }
-
+/*
     void EdgePRV::computeError() {
         
         const VertexPR *vPRi = static_cast<const VertexPR *>(_vertices[0]);
@@ -333,7 +333,7 @@ namespace ygz {
         _jacobianOplus[4] = JBiasG;
         _jacobianOplus[5] = JBiasA;
     }
-
+*/
     void EdgeProjectPoseOnly::computeError() {
         const VertexPR *vPR = static_cast<VertexPR *>(_vertices[0]);
         Matrix3d Rwb = vPR->R();

@@ -38,7 +38,10 @@ shared_ptr<visualization_msgs::Marker> make_marker_from_quaternion(double x,doub
     m->type = visualization_msgs::Marker::ARROW;
     return m;
 } 
-
+float degtorad(double deg)
+{
+    return 3.14159*(deg/180.0);
+}
 
 void onReceivedIMUandMagnetMessage(const sensor_msgs::Imu& imu_msg,const sensor_msgs::MagneticField& mag_msg)
 {
@@ -61,7 +64,8 @@ void onReceivedIMUandMagnetMessage(const sensor_msgs::Imu& imu_msg,const sensor_
         last_info_time = current_time;
         return;
     }*/
-    bool filter_ready = pAHRS->update(imu_msg.angular_velocity.x,imu_msg.angular_velocity.y,imu_msg.angular_velocity.z,
+    auto ang = imu_msg.angular_velocity;
+    bool filter_ready = pAHRS->update(ang.x,ang.y,ang.z,
 		imu_msg.linear_acceleration.x,imu_msg.linear_acceleration.y,imu_msg.linear_acceleration.z,
 		mag_msg.magnetic_field.x,mag_msg.magnetic_field.y,mag_msg.magnetic_field.z);
 			//,dt);

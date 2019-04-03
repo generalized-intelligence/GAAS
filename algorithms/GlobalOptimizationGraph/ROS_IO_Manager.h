@@ -15,21 +15,44 @@
 #include <memory>
 
 #include "CallbacksBufferBlock.h"
+
+#include <sys/time.h>
+
+#include <iostream>
+using namespace std;
+unsigned long long micros()//instead of micros in Arduino.h
+{
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    unsigned long long result = (unsigned long long)(tp.tv_sec * 1000000 + tp.tv_usec);
+    //std::cout<<"result:"<<result<<std::endl;
+    return result;
+}
+typedef unsigned long long time_us_t;
+
+
 class ROS_IO_Manager
 {
 public:
     ROS_IO_Manager(int argc,char** argv);
     //just try init receiver.
-    bool tryInitGPS();
-    bool tryInitSLAM();
+    //bool tryInitGPS();
+    //bool tryInitSLAM();
     //bool tryInitVelocity();
-    bool doUpdateOptimizationGraph();
+    bool initOptimizationGraph();//gathered enough msgs in buffer.init estimator.
+    bool doUpdateOptimizationGraph();//update OptimizationGraph once.
     bool publishAll();
     inline void setOptimizationGraph(shared_ptr<GlobalOptimizationGraph> pG)
     {
         this->pGraph = pG;
     }
 private:
+    time_us_t start_time_us;
+    double ros_start_time;
+    bool time_aligned = false;
+    
+    bool gps_avail = false;
+  
     ros::NodeHandle *pNH;
 
     void AHRS_callback(const nav_msgs::Odometry& AHRS_msg);
@@ -66,6 +89,62 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     //SceneRetrieve_sub = pNH->subscribe("/..../,10,....")
 
 }
+bool ROS_IO_Manager::initOptimizationGraph()
+{
+    //step<1> init AHRS.Must success.
+    bool ahrs_success = false;
+    if( this->AHRS_buffer.size() > (*(this->pSettings))["AHRS_AVAIL_MINIMUM"])
+    {
+        ros::spinOnce(); //reduce timestamp error.
+        this->start_time_us = micros();
+        this->ros_start_time = this->AHRS_buffer.queryLastMessageTime();//align start time.
+	this->time_aligned = true;
+	ahrs_success = this->pGraph->init_AHRS();
+
+    }
+    if(!ahrs_success)
+    {
+        cout<<"Fatal error:AHRS init failed.Exit."<<endl;
+        return false;
+    }
+    //step<2> check gps status.
+    bool gps_success = false;
+    if((*(this->pSettings))["ENABLE_GPS"])
+    {
+        //set init gps position.
+        //we do not need spinOnce for we have to match timestamp with AHRS.
+        double gps_init_time = this->GPS_buffer.queryLastMessageTime();
+	if( abs(gps_init_time - this-ros_start_time) < (*(this->pSettings))["GPS_AHRS_MAX_TIME_DIFF_s"])
+	{
+	    gps_success = this->pGraph->init_gps();
+	}	
+    }
+    if(!gps_success)
+    {//still can we go on.set status first.
+        cout<<"Warning:GPS init failed.Will continue."<<endl;
+	this->gps_avail = false;	  
+    }
+    //step<3> check slam,match coordinates.Must success.
+    bool slam_success = false;
+    if(this->SLAM_buffer.size()>(*(this->pSettings))["SLAM_AVAIL_MINIMUM"])
+    {
+        double slam_init_time = SLAM_buffer.queryLastMessageTime();
+        if(abs(slam_init_time-this->ros_start_time)< (*(this->pSettings))["SLAM_AHRS_MAX_TIME_DIFF_s"])
+	{
+            slam_success = this->pGraph->init_SLAM();
+	}
+    }
+    if(!slam_success)
+    {
+        cout<<"Fatal error:SLAM init faied.Exit."<<endl;
+	return false;
+    }
+    cout<<"OptimizationGraph init success!"<<endl;
+    ros::spinOnce();//get latest msg.
+    this->pGraph->tryInitVelocity();
+    return true;
+}
+
 void ROS_IO_Manager::GPS_callback(const nav_msgs::NavSatFix& GPS_msg)
 {
     this->GPS_buffer.onCallbackBlock(GPS_msg);
@@ -77,11 +156,12 @@ void ROS_IO_Manager::SLAM_callback(const geometry_msgs::PoseStamped& SLAM_msg)
     //Do other callback procedure.
 }
 
-
+/*
 bool ROS_IO_Manager::tryInitGPS()//Just init receiver.Confirm message link status correct.
 {
     if(this->SLAM_buffer.size()>this->pSettings["GPS_AVAIL_MINIMUM"])
     {
+        this->gps_avail = true;
         return this->pGraph->init_gps();
     }
     return false;
@@ -89,7 +169,7 @@ bool ROS_IO_Manager::tryInitGPS()//Just init receiver.Confirm message link statu
 bool ROS_IO_Manager::tryInitSLAM()
 {
     bool result = false;
-}
+}*/
 
 
 

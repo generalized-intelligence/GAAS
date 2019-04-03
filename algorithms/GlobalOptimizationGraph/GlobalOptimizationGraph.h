@@ -2,6 +2,7 @@
 #ifndef GLOBAL_OPTIMIZATION_GRAPH_H
 #define GLOBAL_OPTIMIZATION_GRAPH_H
 
+
 #include "G2OTypes.h"
 #include <memory>
 #include <iostream>
@@ -37,11 +38,13 @@ public:
     bool checkQRValid();
     bool checkGPSValid(const sensor_msgs::NavSatFix& gps);
     
-    
+    bool init_AHRS(const nav_msgs::Odometry& AHRS_msg);
     bool init_gps();//init longitude,latitude,altitude.
+    bool init_SLAM();//match Coordinate.
     //TODO:Init a GPS callback buffer block class,inherit callback buffer base,implement init and check avail.
 
     bool inputGPS(const sensor_msgs::NavSatFix& gps);
+    bool tryInitVelocity();
     inline bool isWorkingWithGPS()
     {
         return(this->allow_gps_usage&& this->gps_init_success);

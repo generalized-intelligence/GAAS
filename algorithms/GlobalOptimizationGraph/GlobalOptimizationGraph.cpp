@@ -14,6 +14,13 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     currentState.setId(0);//vertex 0 in optimization graph.
     optimizer.addVertex(&currentState);
 }
+bool GlobalOptimizationGraph::init_AHRS(const nav_msgs::Odometry& AHRS_msg)
+{
+    auto q = AHRS_msg.pose.pose.orientation;
+    
+    //Matrix3d m = q.....
+}
+
 
 bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
     //TODO:Init a GPS callback buffer block class,inherit callback buffer base,implement init and check avail.
@@ -190,10 +197,10 @@ GlobalOptimizationGraph::doOptimization()
 
 
 void subscribeGPSCallback();
-
+/*
 int main(int argc,char** argv)
 {
     ros::init(argc,argv,"GlobalOptimizationGraph_Node");
     //ros::Subscriber()
     return 0;
-}
+}*/

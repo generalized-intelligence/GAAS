@@ -1,10 +1,8 @@
 #ifndef YGZ_G2OTYPES_H
 #define YGZ_G2OTYPES_H
 
-#include "ygz/NumTypes.h"
-#include "ygz/Settings.h"
-#include "ygz/IMUPreIntegration.h"
-#include "ygz/Camera.h"
+#include "NumTypes.h"
+#include "Camera.h"
 
 #include <g2o/core/base_vertex.h>
 #include <g2o/core/base_unary_edge.h>
@@ -84,6 +82,7 @@ namespace ygz {
      * @brief The VertexGravityW class
      * 重力方向的顶点，估计的是重力的旋转
      */
+    /*
     class VertexGravityW : public BaseVertex<2, Vector3d> {
     public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
@@ -101,7 +100,7 @@ namespace ygz {
         virtual void oplusImpl(const double *update_) {
             _estimate = SO3d::exp(Vector3d(update_[0], update_[1], 0)) * _estimate;
         }
-    };
+    };*/
 
     /**
      * 逆深度地图点
@@ -271,6 +270,7 @@ namespace ygz {
      */
     //important. this edge merges imu preint and image pr estimation.
     //BaseMultiEdge<D(dim of E),E(measurement)>  multi measurement,pushed into a vector of edge.
+    /*
     
     class EdgePRV : public BaseMultiEdge<9, IMUPreIntegration> {
     public:
@@ -291,7 +291,7 @@ namespace ygz {
     protected:
         // Gravity vector in 'world' frame
         Vector3d GravityVec;
-    };
+    };*/
 
     
     

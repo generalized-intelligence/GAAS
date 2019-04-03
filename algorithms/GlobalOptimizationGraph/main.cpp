@@ -5,19 +5,7 @@
 #include <memory>
 #include <opencv/opencv2.hpp>
 
-#include <sys/time.h>
 
-#include <iostream>
-using namespace std;
-unsigned long micros()//instead of micros in Arduino.h
-{
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    unsigned long result = (unsigned long)(tp.tv_sec * 1000000 + tp.tv_usec);
-    //std::cout<<"result:"<<result<<std::endl;
-    return result;
-}
-typedef unsigned long time_us_t;
 
 bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pGOG,
             int argc,char** argv)
@@ -37,17 +25,18 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
         }
     }
     pRIM->setOptimizationGraph(pGOG);
-    if(!pRIM->tryInitSLAM())
-    {
-        return false;
-    }
-    //pRIM->tryInitVelocity();
+    /*
     if (fSettings["ENABLE_GPS"])
     {
         bool gps_valid = pRIM->tryInitGPS();
     }
-    
-    
+    if(!pRIM->tryInitSLAM())
+    {
+        cout<<"SLAM init failed."<<endl;
+        return false;
+    }*/
+    return pRIM->initOptimizationGraph();
+    //pRIM->tryInitVelocity();
 }
 
 void loop(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pGOG)
