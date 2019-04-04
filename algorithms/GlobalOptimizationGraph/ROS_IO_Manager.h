@@ -46,6 +46,16 @@ public:
     {
         this->pGraph = pG;
     }
+    bool loopFunc()
+    {
+        ros::spinOnce();//Handle all callbacks.
+        //一个简单实现:如果两种消息都凑齐至少一个,送一次.GPS有没有无所谓.
+        if(this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0)
+        {
+            pRIM->doUpdateOptimizationGraph();
+            pRIM->publishAll();
+        }
+    }
 private:
     time_us_t start_time_us;
     double ros_start_time;
@@ -144,6 +154,22 @@ bool ROS_IO_Manager::initOptimizationGraph()
     this->pGraph->tryInitVelocity();
     return true;
 }
+bool ROS_IO_Manager::doUpdateOptimizationGraph()
+{
+    //here we do update the graph.ros::spinOnce has been called.
+    //check if we have necessary msgs.
+    if(this->AHRS_buffer.size()>=1 && this->SLAM_buffer.size()>=1)
+    {
+        if(this->GPS_buffer.size()>=1)
+        {
+            this->pGraph->addBlockGPS(this->GPS_buffer.getLastMessage());//do update.
+        }
+        this->pGraph->addBlockAHRS(this->AHRS_buffer.getLastMessage());
+        this->pGraph->addBlockSLAM(this->SLAM_buffer.getLastMessage());
+    }
+
+
+}
 
 void ROS_IO_Manager::GPS_callback(const nav_msgs::NavSatFix& GPS_msg)
 {
@@ -155,7 +181,11 @@ void ROS_IO_Manager::SLAM_callback(const geometry_msgs::PoseStamped& SLAM_msg)
     this->SLAM_buffer.onCallbackBlock(SLAM_msg);
     //Do other callback procedure.
 }
-
+bool ROS_IO_Manager::publishAll()
+{
+    auto pose = this->pGraph->pCurrentPR->esitmate();
+    //make a ros msg.
+}
 /*
 bool ROS_IO_Manager::tryInitGPS()//Just init receiver.Confirm message link status correct.
 {

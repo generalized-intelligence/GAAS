@@ -43,9 +43,7 @@ void loop(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
 {
     while(true)
     {
-        ros::spinOnce();//Handle all callbacks.
-        pRIM->doUpdateOptimizationGraph();
-        pRIM->publishAll();
+        bool stateCorrect = pRIM->loopFunc();
     }
 }
 

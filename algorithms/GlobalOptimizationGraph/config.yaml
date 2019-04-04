@@ -7,12 +7,17 @@ AHRS_AVAIL_MINIMUM : 10
 ENABLE_GPS : true
 GPS_AVAIL_MINIMUM : 50
 GPS_AHRS_MAX_TIME_DIFF_s : 0.08
+GPS_INIT_VARIANCE_THRESHOLD_m : 1.0
+GPS_INIT_ALT_VARIANCE_THRESHOLD_m : 1.0
+GPS_MIN_VARIANCE_LONLAT_m : 0.5 # minimum variance allowed.
+GPS_MIN_VARIANCE_ALT_m : 0.8
 GPS_topic_name : "/mavros/global_position/global"
 
 SLAM_AVAIL_MINIMUM : 50
 SLAM_AHRS_MAX_TIME_DIFF_s : 0.08
 
 
+SCENE_RETREVE_GPS_AVAIL : false # use scene model gps info?do not recommend.
 
 AHRS_loss_thres : 10.0
 GPS_loss_thres : 5.0
