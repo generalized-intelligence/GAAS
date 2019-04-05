@@ -68,11 +68,11 @@ void Scene::loadFile(const std::string &filename)
         cout << "Deserialization finished" << endl;
     }
 
-    test();
+    this->test();
 
-    removeEmptyElement();
+//    this->removeEmptyElement();
+//    this->test();
 
-    test();
 }
 
 void Scene::saveDeserializedPoseToCSV()
@@ -176,6 +176,7 @@ void Scene::removeEmptyElement()
         }
     }
 
+    this->mIndex -= sum_a;
 
     cout <<"Removed Features: "<<sum_a <<endl;
     cout <<"Removed MapPoints: "<<sum_b <<endl;
@@ -185,6 +186,8 @@ void Scene::removeEmptyElement()
 
 }
 
+
+
 //---------------------------------------class SceneRetriever------------------------------------
 
 SceneRetriever::SceneRetriever(){};
@@ -193,10 +196,15 @@ SceneRetriever::SceneRetriever(){};
 SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
 {
     this->original_scene.loadFile(scene_file);
-//    this->original_scene.test(true);
 
-    this->ploop_closing_manager_of_scene = new LoopClosingManager(voc);
-    
+//    this->ploop_closing_manager_of_scene = new LoopClosingManager(voc);
+    this->ploop_closing_manager_of_scene = shared_ptr<LoopClosingManager>(new LoopClosingManager(voc));
+
+//    mpCv_helper = new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554);
+
+    this->mpCv_helper = shared_ptr<cv_helper>(new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554));
+    this->mpCv_helper->setMask("mask.png");
+
     this->_init_retriever();
 }
 
@@ -206,8 +214,11 @@ void SceneRetriever::_init_retriever()
     auto p2d = this->original_scene.getP2D();
     auto p3d = this->original_scene.getP3D();
 
+    cout<<"SceneRetriever::init retriever start: "<<original_scene.getImageCount()<<endl;
+
     for(int frame_index = 0; frame_index < original_scene.getImageCount(); frame_index++)
-    {   
+    {
+
         struct FrameInfo* pfr = new struct FrameInfo;
 	    
         pfr->keypoints = p2d[frame_index];
@@ -216,35 +227,66 @@ void SceneRetriever::_init_retriever()
         ptr_frameinfo frame_info(pfr);
         
         this->ploop_closing_manager_of_scene->addKeyFrame(frame_info);
-    
     }
 
-    mpCv_helper = new cv_helper(360.0652897865692, 363.2195731683743, 406.6650580307593, 256.20533579714373, 39.9554);
+    cout<<"frameinfo_list.size()"<<this->ploop_closing_manager_of_scene->frameinfo_list.size()<<endl;
 
     cout<<"loaded database information: "<<this->ploop_closing_manager_of_scene->frame_db<<endl;
 }
 
 
-/*std::pair<std::vector<std::vector<DMatch> >,std::vector<int>> SceneRetriever::matchImageWithScene2D(const cv::Mat image);
+void SceneRetriever::setImageVecPath(vector<string>& imageVec, int left)
 {
-    //step<1> extract feature.
-    for (int i=0;i<this->original_scene.getImageCount();i++)
+    if(left)
+        this->mVecLeftImagePath = imageVec;
+
+    if(!left)
+        this->mVecRightImagePath = imageVec;
+}
+
+
+cv::Mat SceneRetriever::fetchImage(size_t index, int left)
+{
+    if(left)
     {
-      cv::Mat& desp = this->original_scene.getDespByIndex(i);
-      ...//generate "info".
-      this->loop_closing_manager_of_scene.addKeyFrame(ptr_frameinfo info);
+        if(index >0 && index < this->mVecLeftImagePath.size())
+        {
+            return cv::imread(this->mVecLeftImagePath[index]);
+        }
     }
-    
-    //step<2> find loop with scene by loop closing algorithms.
-    this->loop_closing_manager_of_scene.queryKeyFrames(...);
-    //step<3> do match.return 2d matching.
-    return ...
-	
-}*/
+    else
+    {
+        if(index >0 && index < this->mVecRightImagePath.size())
+        {
+            return cv::imread(this->mVecRightImagePath[index]);
+        }
+    }
+}
 
 
-int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, const cv::Mat image_right_rect, const cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
+
+
+void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& current_frame_info, std::vector<cv::DMatch> matches)
 {
+
+    vector<cv::KeyPoint> cur_keypoints = current_frame_info->keypoints;
+
+    ptr_frameinfo retreived_Frame_info = ploop_closing_manager_of_scene->frameinfo_list[loop_index];
+
+    vector<cv::KeyPoint> old_keypoints = retreived_Frame_info->keypoints;
+
+    cv::Mat output_image;
+
+
+    cv::drawMatches(this->mCurrentImage, cur_keypoints, fetchImage(loop_index, 1), old_keypoints, matches, output_image);
+    if(!output_image.empty())
+        cv::imwrite("./loopclosure_result/" + std::to_string(this->LoopClosureDebugIndex) + "_" +std::to_string(loop_index) + ".png", output_image);
+}
+
+
+int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Mat image_right_rect, cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
+{
+    this->LoopClosureDebugIndex ++;
 
     //step<1> generate sparse pointcloud of image pair input and scene.
     if (image_left_rect.empty() && image_right_rect.empty())
@@ -252,111 +294,177 @@ int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
         cout<<"Left or Right image are empty, return."<<endl;
         return -1;
     }
+
+    // apply mask to input image
+    mpCv_helper->applyMask(image_right_rect);
+    mpCv_helper->applyMask(image_left_rect);
     
     cv::imshow("left image", image_left_rect);
-    cv::waitKey(10);
-    
+    //cv::waitKey(5);
+
+    this->mCurrentImage = image_left_rect;
+
     //<1>-(1) match left image with scene.
     std::vector<cv::DMatch> good_matches_output;
     ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
-    
+
     int loop_index= this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(frameinfo_left, good_matches_output, true);
+
+    cout<<"Loop Index: "<<loop_index<<endl;
     if(loop_index<0)
     {
         //frame match failed.
         return -1;
     }
 
-    cout<<"good_matches_output: "<<good_matches_output.size()<<endl;
-    
-    
-    //<1>-(2) calc left image point 3d position.LoopClosingManager
-    //ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
-    std::vector<cv::Point2f> InputKeypoints;
-    std::vector<cv::Point2f> PyrLKmatched_points;
-
-    for(int index = 0;index<good_matches_output.size();index++)// iterate matches.
-    {
-        int kp_index = good_matches_output[index].queryIdx;
-        InputKeypoints.push_back(frameinfo_left->keypoints[kp_index].pt);//only reserve matched points.
+    //NOTE display feature matches between current frame and detected old frame
+    cout << "good_matches_output: " << good_matches_output.size() << endl;
+    if (good_matches_output.size() > 5) {
+        this->displayFeatureMatches(loop_index, frameinfo_left, good_matches_output);
     }
-    
-    
-    for (auto& p: InputKeypoints)
-    {
-        cout<<"Recovered 2D point: "<<p<<endl;   
-    }
-    
-    
-    std::vector<unsigned char> PyrLKResults;
-    std::vector<float> err;
-    cv::calcOpticalFlowPyrLK(image_left_rect,
-                            image_right_rect,
-                            InputKeypoints,
-                            PyrLKmatched_points,
-                            PyrLKResults,
-                            err
-                            );
-    
-    
-    std::vector<cv::Point2f> matched_points;
-    std::vector<float> disparity_of_points;
 
-    for(int index = 0; index < InputKeypoints.size(); index++)
-    {
-        if(PyrLKResults[index] == 1)
-        {
-            matched_points.push_back(InputKeypoints[index]);
 
-            //disparity_of_points.push_back(PyrLKmatched_points[index].x - InputKeypoints[index].x);
-            disparity_of_points.push_back(InputKeypoints[index].x - PyrLKmatched_points[index].x);
+    // method 1
+
+//    solvePnP(cv::Mat& old_image_left,
+//             cv::Mat& old_image_right,
+//             cv::Mat& cur_image_left,
+//             cv::Mat& cur_image_right,
+//             cv::Mat R, cv::Mat t, cv::Mat Transformation)
+
+    //fetch left and right image
+    cv::Mat old_image_left = this->fetchImage(loop_index, 1);
+    cv::Mat old_image_right = this->fetchImage(loop_index, 0);
+
+    //fetch old frame R and t
+    cv::Mat R = this->original_scene.getR(loop_index);
+    cv::Mat t = this->original_scene.getT(loop_index);
+
+    //initialize PnP result
+    cv::Mat result_R, result_t;
+
+    //conduct pnp
+    this->mpCv_helper->solvePnP(old_image_left,
+                                old_image_right,
+                                image_left_rect,
+                                image_right_rect,
+                                R, t,
+                                result_R, result_t);
+
+
+
+
+
+
+
+
+
+
+
+    // method 2
+
+    if(0)
+    {
+
+        cout << "good_matches_output: " << good_matches_output.size() << endl;
+
+        if (good_matches_output.size() > 5) {
+            this->displayFeatureMatches(loop_index, frameinfo_left, good_matches_output);
         }
+
+
+        //NOTE continue to the next step if there are more than 20 matched points
+
+
+
+        //<1>-(2) calc left image point 3d position.LoopClosingManager
+        //ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
+        std::vector <cv::Point2f> InputKeypoints;
+        std::vector <cv::Point2f> PyrLKmatched_points;
+
+        for (int index = 0; index < good_matches_output.size(); index++)// iterate matches.
+        {
+            int kp_index = good_matches_output[index].queryIdx;
+            InputKeypoints.push_back(frameinfo_left->keypoints[kp_index].pt);//only reserve matched points.
+        }
+
+
+        for (auto &p: InputKeypoints) {
+            cout << "Recovered 2D point: " << p << endl;
+        }
+
+
+        std::vector<unsigned char> PyrLKResults;
+        std::vector<float> err;
+        cv::calcOpticalFlowPyrLK(image_left_rect,
+                                 image_right_rect,
+                                 InputKeypoints,
+                                 PyrLKmatched_points,
+                                 PyrLKResults,
+                                 err
+        );
+
+
+        std::vector <cv::Point2f> matched_points;
+        std::vector<float> disparity_of_points;
+
+        for (int index = 0; index < InputKeypoints.size(); index++) {
+            if (PyrLKResults[index] == 1) {
+                matched_points.push_back(InputKeypoints[index]);
+
+                //disparity_of_points.push_back(PyrLKmatched_points[index].x - InputKeypoints[index].x);
+                disparity_of_points.push_back(InputKeypoints[index].x - PyrLKmatched_points[index].x);
+            }
+        }
+
+
+        for (auto &p: PyrLKmatched_points) {
+            cout << "LKflow detected pt: " << p << endl;
+        }
+
+
+        for (auto &p: disparity_of_points) {
+            cout << "Recovered pts disp: " << p << endl;
+        }
+
+        cout << "cv helper 1" << endl;
+
+        vector <cv::Point3f> CamPoints;
+
+        {
+            CamPoints = mpCv_helper->image2cam(InputKeypoints, disparity_of_points);
+        }
+
+
+        cout << "cv helper 1.5" << endl;
+
+        for (auto &p: CamPoints) {
+            cout << "Recovered Cam point: " << p << endl;
+        }
+
+        cout << "cv helper 2" << endl;
+
+        //NOTE check:
+        //https://github.com/PointCloudLibrary/pcl/blob/master/test/registration/test_registration.cpp
+        //for more information about the usage
+
+        vector <cv::Point3f> frameOldMapPoints = mpCv_helper->Points3d2Points3f(
+                (this->original_scene).fetchFrameMapPoints(loop_index));
+
+        cout << "cv helper 3" << endl;
+
+        if (CamPoints.size() > 20 && frameOldMapPoints.size() > 20) {
+            cout << "Start general ICP!" << endl;
+            Matrix4f transformation = mpCv_helper->GeneralICP(CamPoints, frameOldMapPoints);
+            cout << "General ICP result is: \n" << transformation << endl;
+        } else {
+            cout << "GeneralICP requires at least 20 pairs of points, quit." << endl;
+            cout << "Current size is: " << CamPoints.size() << ", " << frameOldMapPoints.size() << endl;
+        }
+
+        cout << "cv helper 4" << endl;
+
     }
-
-    
-    for (auto& p: PyrLKmatched_points)
-    {
-        cout<<"LKflow detected pt: "<<p<<endl;   
-    }
-    
-    
-    for (auto& p: disparity_of_points)
-    {
-        cout<<"Recovered pts disp: "<<p<<endl;   
-    }
-
-
-    vector<cv::Point3f> CamPoints = mpCv_helper->image2cam(InputKeypoints, disparity_of_points);
-
-    for (auto& p: CamPoints)
-    {
-        cout<<"Recovered Cam point: "<<p<<endl;
-    }
-
-
-    //NOTE check:
-    //https://github.com/PointCloudLibrary/pcl/blob/master/test/registration/test_registration.cpp
-    //for more information about the usage
-
-    vector<cv::Point3f> frameOldMapPoints = mpCv_helper->Points3d2Points3f( (this->original_scene).fetchFrameMapPoints(loop_index) );
-
-    if(CamPoints.size()>20 && frameOldMapPoints.size()>20)
-    {
-        cout<<"Start general ICP!"<<endl;
-        Matrix4f transformation = mpCv_helper->GeneralICP(CamPoints, frameOldMapPoints);
-        cout<<"General ICP result is: \n"<<transformation<<endl;
-    }
-    else
-    {
-        cout<<"GeneralICP requires at least 20 pairs of points, quit."<<endl;
-        cout<<"Current size is: "<<CamPoints.size()<<", "<<frameOldMapPoints.size()<<endl;
-    }
-
-
-
-
-
-
       //method<2>
       /*
        * SCIA = pcl::SampleConsensusInitialAlignment< PointSource, PointTarget, FeatureT >
@@ -364,6 +472,9 @@ int SceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
 		const Eigen::Matrix4f &  	guess 
 	) 	
        */
+
+
+
 }
 
 

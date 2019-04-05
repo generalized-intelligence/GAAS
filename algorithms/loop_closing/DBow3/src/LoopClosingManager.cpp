@@ -22,16 +22,20 @@ LoopClosingManager::LoopClosingManager(const std::string &voc_path,const std::st
     this->frame_db = DBoW3::Database(frame_db_path.c_str());
 }
 
-void LoopClosingManager::addKeyFrame(ptr_frameinfo info)
-{   
-    
-    if (!info->descriptors.empty())
-    {
-        this->frame_db.add(info->descriptors);
-        frameinfo_list.push_back(info);
-        this->frame_index++;
-    }
-    
+
+
+void LoopClosingManager::addKeyFrame(const ptr_frameinfo& info)
+{
+//    if (!info->descriptors.empty())
+//    {
+//        this->frame_db.add(info->descriptors);
+//        frameinfo_list.push_back(info);
+//        this->frame_index++;
+//    }
+
+    this->frame_db.add(info->descriptors);
+    this->frameinfo_list.push_back(info);
+    this->frame_index++;
 }
 
 
@@ -41,38 +45,36 @@ void LoopClosingManager::addKeyFrame(const cv::Mat& image)
     this->addKeyFrame(info);
 }
 
+
 QueryResults LoopClosingManager::queryKeyFrames(ptr_frameinfo info)
 {
     QueryResults results;
-//     this->frame_db.query(info->descriptors, results, RET_QUERY_LEN, this->frame_index - TOO_CLOSE_THRES);
-    this->frame_db.query(info->descriptors, results, 4, this->frame_index - TOO_CLOSE_THRES);
-    
-//     cout<<"info->descriptors: "<<endl<<info->descriptors<<endl;
-//     cout<<"this->frame_db size: "<<this->frame_db.size()<<endl;
-    
+    //this->frame_db.query(info->descriptors, results, RET_QUERY_LEN, this->frame_index - TOO_CLOSE_THRES);
+
+    this->frame_db.query(info->descriptors, results, 4, this->curFrameIndex - TOO_CLOSE_THRES);
+    //this->frame_db.query(info->descriptors, results, 4, -1);
+
     return results;
 }
 
+
 int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv::DMatch>& good_matches_output, bool current_frame_has_index = true)
 {
-    int ret_index = -1;// Not found!
+    int ret_index = -1; // Not found!
+
     QueryResults results= this->queryKeyFrames(info);
+
     std::vector<cv::DMatch> matches_out;
-    
-//     cout<<"results.size(): "<<results.size()<<endl;
-    
+
     for(int wind_index =0; wind_index<results.size(); wind_index++)
-    {   
-//         cout<<"results[wind_index].Score: " <<results[wind_index].Score<<endl;
+    {
         
         //results[wind_index].Score>DB_QUERY_SCORE_THRES
         if (results[wind_index].Score>0.05)
         {
-            
-            //if (current_frame_has_index)
-                
-            if ((current_frame_has_index && results[wind_index].Id<this->frame_index-TOO_CLOSE_THRES) || (!current_frame_has_index))
+            if (current_frame_has_index && ( std::abs(results[wind_index].Id - this->curFrameIndex) > TOO_CLOSE_THRES) )
             {
+
                 // check if this loop candidate satisfies Epipolar Geometry constrain.
 
                 if (match_2_images_flann(info, results[wind_index].Id, this->loop_id, results[wind_index].Score, this->frameinfo_list, matches_out))
@@ -93,13 +95,13 @@ int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv:
           break;
         }
     }
-    
-    
+
     curFrameIndex ++;
     good_matches_output = matches_out;
     
     return ret_index;
 }
+
 
 int LoopClosingManager::saveDB()
 {
@@ -128,11 +130,11 @@ ptr_frameinfo LoopClosingManager::extractFeature(const cv::Mat& image)
 {
     cv::Mat mask;
     auto pframeinfo = shared_ptr<FrameInfo>(new FrameInfo);
-    //ptr_frameinfo->keypoints
-    //vector<cv::KeyPoint> keypoints;
+
     cv::Ptr<cv::ORB> orb;
     orb = cv::ORB::create();
     orb->detectAndCompute(image, mask, pframeinfo->keypoints, pframeinfo->descriptors);
+
     //orb->detect(image,keypoints);
     //brief->compute(image,keypoints,descriptors);
     //surf->detectAndCompute(image,mask,keypoints,descriptors);
@@ -164,9 +166,6 @@ void saveImagePair(int id1,int id2,int &save_index,std::vector<cv::DMatch>& good
 
 bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_index, double score, const std::vector<ptr_frameinfo>& frameinfo_list, std::vector<cv::DMatch>& good_matches_output)
 {
-
-    //TODO:refer VINS KeyFrame::findConnection().
-
     cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12,20,2));
     //cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::IndexParams>(12,20,2));
     //cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher();
@@ -175,7 +174,11 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
 
     matcher.match(current_frame->descriptors, frameinfo_list[index2]->descriptors, matches);
-    
+
+
+    if(matches.size()<30)
+        return false;
+
     double max_dist = 0; double min_dist = 100;
     for( int i = 0; i < matches.size(); i++ )
     {
@@ -187,18 +190,32 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     cout<<"min_dist:"<<min_dist<<endl;
     std::vector< cv::DMatch > good_matches;
 
+    cout<<"raw matches size: "<<matches.size()<<endl;
+
+
     for( int i = 0; i < matches.size(); i++ )
     {
         if( matches[i].distance <= 2*min_dist && matches[i].distance< ORB_TH_HIGH) // 3.0 too large;2.0 too large.
         {
-            good_matches.push_back( matches[i]); 
+            good_matches.push_back( matches[i]);
         }
     }
+
+
+//    for( int i = 0; i < matches.size(); i++ )
+//    {
+//        if( matches[i].distance <= 4*min_dist && matches[i].distance< 20) // 3.0 too large;2.0 too large.
+//        {
+//            good_matches.push_back( matches[i]);
+//        }
+//    }
+
     
     std::vector<cv::Point2f> match_points1;
     std::vector<cv::Point2f> match_points2;
 
-    cout<<"Good matches count:"<<good_matches.size()<<"."<<endl;
+    cout<<"Good matches size:"<<good_matches.size()<<"."<<endl;
+
     if(good_matches.size()<STEP1_KP_NUM) // 8 -> 12
     {
         cout<<"Good matches count:"<<good_matches.size()<<"< 8,MATCH FAILED."<<endl;
@@ -207,17 +224,18 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     
     for( size_t i = 0; i < good_matches.size(); i++ )
     {
-        //kp_list[index1][ good_matches[i].queryIdx ].pt );
-        match_points1.push_back( current_frame->keypoints[good_matches[i].queryIdx].pt);
-        //kp_list[index2][ good_matches[i].trainIdx ].pt );
-        match_points2.push_back( frameinfo_list[index2]->keypoints[good_matches[i].trainIdx].pt);
+        match_points1.push_back( current_frame->keypoints[good_matches[i].queryIdx].pt );
+        match_points2.push_back( frameinfo_list[index2]->keypoints[good_matches[i].trainIdx].pt );
     }
+
+    cout<<"match_2_images_flann, step 2 sizes are: "<<match_points1.size()<<", "<<match_points2.size()<<endl;
 
     cv::Mat isOutlierMask;
     cv::Mat fundamental_matrix = findFundamentalMat(match_points1, match_points2, cv::FM_RANSAC, 3, 0.99, isOutlierMask);
+
     int final_good_matches_count = 0;
     std::vector<cv::DMatch> final_good_matches;
-    for(int i = 0;i<good_matches.size();i++)
+    for(int i = 0; i<good_matches.size(); i++)
     {
         if (isOutlierMask.at<int>(i)!=0)
         {

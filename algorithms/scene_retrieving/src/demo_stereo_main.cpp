@@ -51,9 +51,10 @@ int main(int argc,char** argv)
     bool match_success;
 
     std::shared_ptr<SceneRetriever> pSceneRetriever(new SceneRetriever(voc_file_path, scene_path));
-    
+
+    int image_num = 7000;
     vector<string> left_image_path, right_image_path;
-    for (int i=0; i<685; i++)
+    for (int i=0; i<image_num; i++)
     {
         string left_path = "./image/left/" + to_string(i) + ".png";
         left_image_path.push_back(left_path);
@@ -62,16 +63,19 @@ int main(int argc,char** argv)
         right_image_path.push_back(right_path);
     }
     
-    
-    for (int i=0; i<685; i++)
+
+
+    for (int i=0; i<image_num; i++)
     {
         pSceneRetriever->retrieveSceneFromStereoImage(cv::imread(left_image_path[i]), cv::imread(right_image_path[i]), Q_mat, RT_mat, match_success);
-        
+
+        pSceneRetriever->setImageVecPath(left_image_path, 1);
+        pSceneRetriever->setImageVecPath(right_image_path, 0);
+
         if(match_success)
         {
             cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
         }
-    
     }
     
     return 0;

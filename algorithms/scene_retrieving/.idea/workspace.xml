@@ -6,15 +6,15 @@
       <config projectName="scene_retrieving" targetName="Continuous" />
       <config projectName="scene_retrieving" targetName="ExperimentalStart" />
       <config projectName="scene_retrieving" targetName="ExperimentalConfigure" />
-      <config projectName="scene_retrieving" targetName="NightlyBuild" />
       <config projectName="scene_retrieving" targetName="ContinuousBuild" />
-      <config projectName="scene_retrieving" targetName="ContinuousCoverage" />
       <config projectName="scene_retrieving" targetName="ContinuousSubmit" />
       <config projectName="scene_retrieving" targetName="ExperimentalMemCheck" />
+      <config projectName="scene_retrieving" targetName="NightlyMemCheck" />
+      <config projectName="scene_retrieving" targetName="demo_mono" />
       <config projectName="scene_retrieving" targetName="NightlyTest" />
       <config projectName="scene_retrieving" targetName="NightlyUpdate" />
+      <config projectName="scene_retrieving" targetName="ContinuousUpdate" />
       <config projectName="scene_retrieving" targetName="ContinuousMemCheck" />
-      <config projectName="scene_retrieving" targetName="ExperimentalCoverage" />
       <config projectName="scene_retrieving" targetName="NightlyMemoryCheck" />
       <config projectName="scene_retrieving" targetName="NightlyStart" />
       <config projectName="scene_retrieving" targetName="ContinuousConfigure" />
@@ -22,19 +22,19 @@
       <config projectName="scene_retrieving" targetName="NightlyConfigure" />
       <config projectName="scene_retrieving" targetName="uninstall" />
       <config projectName="scene_retrieving" targetName="ContinuousStart" />
-      <config projectName="scene_retrieving" targetName="NightlyMemCheck" />
+      <config projectName="scene_retrieving" targetName="NightlySubmit" />
       <config projectName="scene_retrieving" targetName="ExperimentalUpdate" />
       <config projectName="scene_retrieving" targetName="scene_retrieve" />
+      <config projectName="scene_retrieving" targetName="ExperimentalSubmit" />
       <config projectName="scene_retrieving" targetName="MakeSceneFromOpenSfMModel" />
-      <config projectName="scene_retrieving" targetName="Nightly" />
+      <config projectName="scene_retrieving" targetName="ContinuousCoverage" />
       <config projectName="scene_retrieving" targetName="Experimental" />
       <config projectName="scene_retrieving" targetName="ContinuousTest" />
       <config projectName="scene_retrieving" targetName="demo_stereo" />
       <config projectName="scene_retrieving" targetName="ExperimentalTest" />
-      <config projectName="scene_retrieving" targetName="NightlySubmit" />
-      <config projectName="scene_retrieving" targetName="ContinuousUpdate" />
-      <config projectName="scene_retrieving" targetName="ExperimentalSubmit" />
-      <config projectName="scene_retrieving" targetName="demo_mono" />
+      <config projectName="scene_retrieving" targetName="Nightly" />
+      <config projectName="scene_retrieving" targetName="ExperimentalCoverage" />
+      <config projectName="scene_retrieving" targetName="NightlyBuild" />
     </generated>
   </component>
   <component name="CMakeSettings">
@@ -116,23 +116,11 @@
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="558">
-              <caret line="67" column="53" selection-start-line="67" selection-start-column="25" selection-end-line="67" selection-end-column="53" />
-              <folding>
-                <element signature="e#73#90#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="677">
-              <caret line="75" column="41" selection-start-line="75" selection-start-column="41" selection-end-line="75" selection-end-column="41" />
+            <state relative-caret-position="149">
+              <caret line="336" column="41" lean-forward="true" selection-start-line="336" selection-start-column="41" selection-end-line="336" selection-end-column="41" />
               <folding>
                 <element signature="e#196#224#0" expanded="true" />
               </folding>
@@ -141,10 +129,40 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file:///usr/local/include/opencv2/calib3d.hpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="310">
+              <caret line="738" column="41" selection-start-line="738" selection-start-column="41" selection-end-line="738" selection-end-column="41" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file:///usr/local/include/opencv2/core/mat.hpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="310">
+              <caret line="413" column="38" selection-start-line="413" selection-start-column="38" selection-end-line="413" selection-end-column="38" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="545">
+              <caret line="75" column="9" selection-start-line="75" selection-start-column="9" selection-end-line="75" selection-end-column="9" />
+              <folding>
+                <element signature="e#73#90#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="245">
-              <caret line="153" column="55" selection-start-line="153" selection-start-column="55" selection-end-line="153" selection-end-column="55" />
+            <state relative-caret-position="41">
+              <caret line="56" column="35" selection-start-line="56" selection-start-column="35" selection-end-line="56" selection-end-column="35" />
               <folding>
                 <element signature="e#40#57#0" expanded="true" />
                 <element signature="e#190#217#0" expanded="true" />
@@ -156,8 +174,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="345">
-              <caret line="177" column="64" selection-start-line="177" selection-start-column="64" selection-end-line="177" selection-end-column="64" />
+            <state relative-caret-position="720">
+              <caret line="374" column="14" selection-start-line="374" selection-start-column="14" selection-end-line="374" selection-end-column="14" />
               <folding>
                 <element signature="e#172#199#0" expanded="true" />
                 <element signature="e#302#346#0" expanded="true" />
@@ -169,17 +187,38 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="381">
-              <caret line="262" column="68" lean-forward="true" selection-start-line="262" selection-start-column="68" selection-end-line="262" selection-end-column="68" />
+            <state relative-caret-position="517">
+              <caret line="279" selection-start-line="279" selection-end-line="281" selection-end-column="148" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="22">
+              <caret line="61" column="25" selection-start-line="61" selection-start-column="25" selection-end-line="61" selection-end-column="25" />
+              <folding>
+                <element signature="e#212#239#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="282">
-              <caret line="176" column="92" lean-forward="true" selection-start-line="176" selection-start-column="92" selection-end-line="176" selection-end-column="92" />
+            <state relative-caret-position="1744">
+              <caret line="232" column="26" selection-start-line="232" selection-start-column="26" selection-end-line="232" selection-end-column="26" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/Database.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="5274">
+              <caret line="293" column="48" selection-start-line="293" selection-start-column="42" selection-end-line="293" selection-end-column="48" />
             </state>
           </provider>
         </entry>
@@ -188,14 +227,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>save</find>
-      <find>retrieveSceneWithScaleFromMonoImage</find>
-      <find>matcher</find>
-      <find>test</find>
-      <find>target_cloud</find>
-      <find>frame_index</find>
+      <find>match_2_images_flann</find>
       <find>retrieveSceneFromStereoImage</find>
-      <find>good_matches_output</find>
+      <find>detectLoopByKeyFrame</find>
+      <find>displayFeatureMatches</find>
+      <find>ploop_closing_manager_of_scene</find>
+      <find>Recovered pts disp</find>
+      <find>mpCv_helper</find>
+      <find>LKflow detected pt</find>
+      <find>InputKeypoints</find>
+      <find>image2cam</find>
+      <find>PyrLKmatched_points</find>
+      <find>descriptors</find>
+      <find>matched_points</find>
+      <find>conver</find>
+      <find>good_matches</find>
+      <find>fetchImage</find>
+      <find>MapPoints_old</find>
+      <find>eigen2cv</find>
+      <find>solvePnP</find>
+      <find>setImageVecPath</find>
+      <find>matches</find>
+      <find>StereoImage2MapPoints</find>
+      <find>match2Images</find>
+      <find>image2KpAndDesp</find>
+      <find>image_pts_cur</find>
+      <find>intrinstic</find>
+      <find>rvec</find>
+      <find>queryIdx</find>
+      <find>output_points</find>
+      <find>mps_old</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -205,18 +266,19 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/src/demo_mono_main.cpp" />
-        <option value="$PROJECT_DIR$/src/demo_stereo_main.cpp" />
         <option value="$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp" />
+        <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" />
+        <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" />
+        <option value="$PROJECT_DIR$/src/demo_stereo_main.cpp" />
         <option value="$PROJECT_DIR$/src/scene_retrieve.h" />
-        <option value="$PROJECT_DIR$/include/cv_helper.h" />
         <option value="$PROJECT_DIR$/src/scene_retrieve.cpp" />
+        <option value="$PROJECT_DIR$/include/cv_helper.h" />
       </list>
     </option>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1985" />
-    <option name="y" value="-4" />
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="y" value="90" />
     <option name="width" value="1855" />
     <option name="height" value="1084" />
   </component>
@@ -257,7 +319,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
   </component>
@@ -440,12 +502,6 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="Application.uninstall" />
-      <item itemvalue="Application.demo_mono" />
-      <item itemvalue="Application.demo_stereo" />
-      <item itemvalue="Application.MakeSceneFromOpenSfMModel" />
-      <item itemvalue="Application.scene_retrieve" />
-      <item itemvalue="Application.Continuous" />
       <item itemvalue="Application.ContinuousBuild" />
       <item itemvalue="Application.ContinuousConfigure" />
       <item itemvalue="Application.ContinuousCoverage" />
@@ -454,7 +510,7 @@
       <item itemvalue="Application.ContinuousSubmit" />
       <item itemvalue="Application.ContinuousTest" />
       <item itemvalue="Application.ContinuousUpdate" />
-      <item itemvalue="Application.Experimental" />
+      <item itemvalue="Application.Continuous" />
       <item itemvalue="Application.ExperimentalBuild" />
       <item itemvalue="Application.ExperimentalConfigure" />
       <item itemvalue="Application.ExperimentalCoverage" />
@@ -463,7 +519,8 @@
       <item itemvalue="Application.ExperimentalSubmit" />
       <item itemvalue="Application.ExperimentalTest" />
       <item itemvalue="Application.ExperimentalUpdate" />
-      <item itemvalue="Application.Nightly" />
+      <item itemvalue="Application.Experimental" />
+      <item itemvalue="Application.MakeSceneFromOpenSfMModel" />
       <item itemvalue="Application.NightlyBuild" />
       <item itemvalue="Application.NightlyConfigure" />
       <item itemvalue="Application.NightlyCoverage" />
@@ -473,6 +530,11 @@
       <item itemvalue="Application.NightlySubmit" />
       <item itemvalue="Application.NightlyTest" />
       <item itemvalue="Application.NightlyUpdate" />
+      <item itemvalue="Application.Nightly" />
+      <item itemvalue="Application.demo_mono" />
+      <item itemvalue="Application.demo_stereo" />
+      <item itemvalue="Application.scene_retrieve" />
+      <item itemvalue="Application.uninstall" />
     </list>
   </component>
   <component name="SvnConfiguration">
@@ -490,17 +552,24 @@
       <workItem from="1554083097924" duration="1763000" />
       <workItem from="1554086659863" duration="611000" />
       <workItem from="1554098291962" duration="3052000" />
+      <workItem from="1554103701048" duration="8749000" />
+      <workItem from="1554172726945" duration="2024000" />
+      <workItem from="1554174855194" duration="12668000" />
+      <workItem from="1554192527149" duration="1746000" />
+      <workItem from="1554201362097" duration="18000" />
+      <workItem from="1554201472513" duration="1775000" />
+      <workItem from="1554260560466" duration="25967000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="26853000" />
+    <option name="totallyTimeSpent" value="79800000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1985" y="-4" width="1855" height="1084" extended-state="6" />
+    <frame x="65" y="-4" width="1855" height="1084" extended-state="7" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.049751244" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.053067993" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -514,7 +583,7 @@
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="10" />
-      <window_info anchor="bottom" id="CMake" order="11" weight="0.07628004" />
+      <window_info anchor="bottom" id="CMake" order="11" weight="0.075235106" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -549,13 +618,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/local/include/opencv2/core/types.hpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="732">
-          <caret line="269" column="23" selection-start-line="269" selection-start-column="23" selection-end-line="269" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/local/include/eigen3/Eigen/src/Core/Matrix.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="576">
@@ -563,10 +625,65 @@
         </state>
       </provider>
     </entry>
+    <entry file="file:///usr/include/c++/5/bits/shared_ptr.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="115" column="13" selection-start-line="115" selection-start-column="13" selection-end-line="115" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/Database.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5274">
+          <caret line="293" column="48" selection-start-line="293" selection-start-column="42" selection-end-line="293" selection-end-column="48" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/include/opencv2/video/tracking.hpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="310">
+          <caret line="175" column="18" selection-start-line="175" selection-start-column="18" selection-end-line="175" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/include/opencv2/core/types.hpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="310">
+          <caret line="753" column="24" selection-start-line="753" selection-start-column="24" selection-end-line="753" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="22">
+          <caret line="61" column="25" selection-start-line="61" selection-start-column="25" selection-end-line="61" selection-end-column="25" />
+          <folding>
+            <element signature="e#212#239#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1744">
+          <caret line="232" column="26" selection-start-line="232" selection-start-column="26" selection-end-line="232" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="545">
+          <caret line="75" column="9" selection-start-line="75" selection-start-column="9" selection-end-line="75" selection-end-column="9" />
+          <folding>
+            <element signature="e#73#90#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="245">
-          <caret line="153" column="55" selection-start-line="153" selection-start-column="55" selection-end-line="153" selection-end-column="55" />
+        <state relative-caret-position="41">
+          <caret line="56" column="35" selection-start-line="56" selection-start-column="35" selection-end-line="56" selection-end-column="35" />
           <folding>
             <element signature="e#40#57#0" expanded="true" />
             <element signature="e#190#217#0" expanded="true" />
@@ -574,30 +691,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
+    <entry file="file:///usr/local/include/opencv2/core/mat.hpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="677">
-          <caret line="75" column="41" selection-start-line="75" selection-start-column="41" selection-end-line="75" selection-end-column="41" />
-          <folding>
-            <element signature="e#196#224#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="310">
+          <caret line="413" column="38" selection-start-line="413" selection-start-column="38" selection-end-line="413" selection-end-column="38" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
+    <entry file="file:///usr/local/include/opencv2/calib3d.hpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="558">
-          <caret line="67" column="53" selection-start-line="67" selection-start-column="25" selection-end-line="67" selection-end-column="53" />
-          <folding>
-            <element signature="e#73#90#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="310">
+          <caret line="738" column="41" selection-start-line="738" selection-start-column="41" selection-end-line="738" selection-end-column="41" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="345">
-          <caret line="177" column="64" selection-start-line="177" selection-start-column="64" selection-end-line="177" selection-end-column="64" />
+        <state relative-caret-position="720">
+          <caret line="374" column="14" selection-start-line="374" selection-start-column="14" selection-end-line="374" selection-end-column="14" />
           <folding>
             <element signature="e#172#199#0" expanded="true" />
             <element signature="e#302#346#0" expanded="true" />
@@ -607,15 +718,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="381">
-          <caret line="262" column="68" lean-forward="true" selection-start-line="262" selection-start-column="68" selection-end-line="262" selection-end-column="68" />
+        <state relative-caret-position="517">
+          <caret line="279" selection-start-line="279" selection-end-line="281" selection-end-column="148" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
+    <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="282">
-          <caret line="176" column="92" lean-forward="true" selection-start-line="176" selection-start-column="92" selection-end-line="176" selection-end-column="92" />
+        <state relative-caret-position="149">
+          <caret line="336" column="41" lean-forward="true" selection-start-line="336" selection-start-column="41" selection-end-line="336" selection-end-column="41" />
+          <folding>
+            <element signature="e#196#224#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

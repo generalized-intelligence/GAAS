@@ -26,7 +26,7 @@
 #include <opencv2/core/eigen.hpp>
 
 //#include <pcl/point_types.h>
-//#include <pcl/point_cloud.h>
+//#include <pcl/point_cloud.h>loopclosure_result
 //#include <pcl/common/transforms.h>
 //#include <pcl/registration/gicp.h>
 //#include <pcl/conversions.h>
@@ -114,6 +114,8 @@ public:
 
     void removeEmptyElement();
 
+
+
     /////////////////////////////////// serialization////////////////////////////////////
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
@@ -158,6 +160,16 @@ public:
     /////////////////////////////////// serialization////////////////////////////////////
 
 
+    inline cv::Mat getR(size_t index)
+    {
+        return this->mVecR[index];
+    }
+
+    inline cv::Mat getT(size_t index)
+    {
+        return this->mVecT[index];
+    }
+
     bool hasScale = false;
 
 
@@ -178,28 +190,7 @@ private:
     //pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud_of_scene; //Take care:this cloud is not required, so do not use it in any algorithm.
 };
 
-string type2str(int type) {
-  string r;
 
-  uchar depth = type & CV_MAT_DEPTH_MASK;
-  uchar chans = 1 + (type >> CV_CN_SHIFT);
-
-  switch ( depth ) {
-    case CV_8U:  r = "8U"; break;
-    case CV_8S:  r = "8S"; break;
-    case CV_16U: r = "16U"; break;
-    case CV_16S: r = "16S"; break;
-    case CV_32S: r = "32S"; break;
-    case CV_32F: r = "32F"; break;
-    case CV_64F: r = "64F"; break;
-    default:     r = "User"; break;
-  }
-
-  r += "C";
-  r += (chans+'0');
-
-  return r;
-}
 
 
 SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr, const cv::Mat& RotationMat, const cv::Mat& TranslationMat, const cv::Mat& Q_mat)
@@ -221,16 +212,13 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     
     std::vector<int> good_2dmatches_index;
 
-
     cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12,20,2));
     //cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<flann::IndexParams>(12,20,2));
+    //cv::FlannBasedMatcher matcher = FlannBasedMatcher();
 
-
-
-    //FlannBasedMatcher matcher = FlannBasedMatcher();
     std::vector< cv::DMatch > matches;
-    //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
     matcher.match(feature_l, feature_r, matches);
+
     double max_dist = 0; 
     double min_dist = 100;
     for( int i = 0; i < matches.size(); i++ )
@@ -239,6 +227,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
         if( dist < min_dist ) min_dist = dist;
         if( dist > max_dist ) max_dist = dist;
     }
+
     std::vector< cv::DMatch > good_matches;
     for( int i = 0; i < matches.size(); i++ )
     {
@@ -254,22 +243,18 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     {
         lk_input_keypoints.push_back(pleft_image_info->keypoints[good_matches[i].queryIdx].pt);//will check if LKFlow exist.
         good_2dmatches_index.push_back(good_matches[i].queryIdx);
-    }//LoopClosingManager
-    
-    
-    std::vector<unsigned char> PyrLKResults;
-    std::vector<float> optflow_err;
-    
-    //Size winSize(31,31);
-    //TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,20,0.03);
-    
-    
+    }
+
+
     if (lk_input_keypoints.size()<=5)
     {
         SceneFrame failed;
         return failed;
     }
-    
+
+
+    std::vector<unsigned char> PyrLKResults;
+    std::vector<float> optflow_err;
     cv::calcOpticalFlowPyrLK(imgl,
                             imgr,
                             lk_input_keypoints,
@@ -377,20 +362,38 @@ public:
     
     int retrieveSceneWithMultiMonoCam(const std::vector<cv::Mat> images,std::vector<cv::Mat> RT_pose_of_mono_cams,cv::Mat &RT_mat_of_multi_mono_cam_output,bool& match_success);
     
-    int retrieveSceneFromStereoImage(const cv::Mat image_left_rect, const cv::Mat image_right_rect, const cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success);
-    
-    
-    
-    std::pair<std::vector<std::vector<cv::DMatch>>,std::vector<int>> matchImageWithScene2D(const cv::Mat image);
-    void debugVisualize();//visualize pointcloud and cam pose.
-    
-    
-private:
-    void _init_retriever();
-    Scene original_scene;
-    LoopClosingManager* ploop_closing_manager_of_scene;
+    int retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Mat image_right_rect, cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success);
 
-    cv_helper* mpCv_helper = nullptr;
-    
+    void debugVisualize();//visualize pointcloud and cam pose.
+
+    void readImage(vector<string>& image_paths);
+
+    void setImageVecPath(vector<string>& imageVec, int left);
+
+    cv::Mat fetchImage(size_t index, int left);
+
+    void displayFeatureMatches(size_t loop_index, ptr_frameinfo& current_frame, std::vector<cv::DMatch> matches);
+
+    size_t LoopClosureDebugIndex = 0;
+
+
+private:
+
+    void _init_retriever();
+
+    Scene original_scene;
+
+    //LoopClosingManager* ploop_closing_manager_of_scene;
+
+    shared_ptr<LoopClosingManager> ploop_closing_manager_of_scene = nullptr;
+
+    //cv_helper* mpCv_helper = nullptr;
+
+    shared_ptr<cv_helper> mpCv_helper = nullptr;
+
+    cv::Mat mCurrentImage;
+
+    vector<string> mVecLeftImagePath;
+    vector<string> mVecRightImagePath;
 };
 #endif

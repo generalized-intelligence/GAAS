@@ -93,7 +93,7 @@ public:
     LoopClosingManager(const std::string &voc_path,const std::string & frame_db_path);
     
     void addKeyFrame(const cv::Mat& image);
-    void addKeyFrame(ptr_frameinfo info);
+    void addKeyFrame(const ptr_frameinfo& info);
     
     QueryResults queryKeyFrames(ptr_frameinfo info);
     int detectLoopByKeyFrame(ptr_frameinfo info,std::vector<cv::DMatch>& good_matches_output,bool current_frame_has_index);
@@ -110,7 +110,8 @@ public:
     }
     
     Database frame_db;
-    
+    std::vector<ptr_frameinfo> frameinfo_list;
+
 private:
     
     Vocabulary voc;
@@ -119,8 +120,7 @@ private:
 
     int frame_index;
     size_t curFrameIndex = 0;
-    
-    std::vector<ptr_frameinfo> frameinfo_list;
+
     int loop_id;//just for visualize.
 };
 
