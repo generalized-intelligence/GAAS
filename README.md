@@ -20,7 +20,7 @@ Or follow the lastest news about the project at our [Medium Publication](https:/
 
 Or join our Wechat group at:
 
-<img width="250" height="300" src="https://free.imgsha.com/i/S14Rn"/>
+<img width="250" height="300" src="https://s3.imgsha.com/2019/04/06/WechatIMG67.jpg"/>
 
 - [What is GAAS?](#what-is-gaas)
   * [Project Overview](#project-overview)
