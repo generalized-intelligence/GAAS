@@ -36,8 +36,24 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
     // class initializer
-    cv_helper(const float &_fx, const float &_fy, const float &_cx, const float &_cy, const float _bf = 0)
-    : fx(_fx), fy(_fy), cx(_cx), cy(_cy), bf(_bf)
+//    cv_helper(float &_fx, float &_fy, float &_cx, float &_cy, float _bf = 0)
+//    : fx(_fx), fy(_fy), cx(_cx), cy(_cy), bf(_bf)
+//    {
+//        K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
+//
+//        Kmat = cv::Mat_<double>(3, 3) << fx, 0, cx,
+//                                         0, fy, cy,
+//                                         0, 0, 1;
+//
+//        fxinv = 1 / fx;
+//        fyinv = 1 / fy;
+//        Kinv = K.inverse();
+//        f = (fx + fy) * 0.5;
+//        b = bf / f;
+//    }
+
+    cv_helper(double _fx, double _fy, double _cx, double _cy, double _bf = 0)
+            : fx(_fx), fy(_fy), cx(_cx), cy(_cy), bf(_bf)
     {
         K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
 
@@ -50,6 +66,15 @@ public:
         Kinv = K.inverse();
         f = (fx + fy) * 0.5;
         b = bf / f;
+
+        cv::eigen2cv(K, Kmat);
+
+        cout<<"cv_helper Kmat: \n"<<Kmat<<endl;
+        cout<<"cv_helper K: \n"<<K<<endl;
+        cout<<"cv_helper fx: "<<fx<<endl;
+        cout<<"cv_helper fy: "<<fy<<endl;
+        cout<<"cv_helper f: "<<f<<endl;
+        cout<<"cv_helper b: "<<b<<endl;
     }
 
 
@@ -80,11 +105,15 @@ public:
 
             cv::Point2f pt = image_points[i];
 
-//            points_disparity[i] = (this->bf) / (points_disparity[i] + 1e-5);
+            //points_disparity[i] = (this->bf) / (points_disparity[i] + 1e-5);
+            float depth;
+            depth = (this->bf) / ( points_disparity[i] );
 
-            camera_point.x = (pt.x - cx) * fxinv * points_disparity[i];
-            camera_point.y = (pt.y - cy) * fyinv * points_disparity[i];
-            camera_point.z = points_disparity[i];
+            //cout<<"depth: "<<depth<<endl;
+
+            camera_point.x = (pt.x - cx) * fxinv * depth;
+            camera_point.y = (pt.y - cy) * fyinv * depth;
+            camera_point.z = depth;
 
             Matrix3f R_eigen;
             Vector3f t_eigen;
@@ -217,7 +246,7 @@ public:
 
     void image2KpAndDesp(cv::Mat image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
     {
-        cv::Ptr<cv::ORB> orb = cv::ORB::create();
+        cv::Ptr<cv::ORB> orb = cv::ORB::create(1200);
         cv::Mat mask;
 
         orb->detectAndCompute(image, mask, keypoints, descriptors);
@@ -273,8 +302,8 @@ public:
 
         //step 5, given pts2f, disps, R and t, compute mps
         mps = this->image2world(matched_points, disparity_of_points, R, t);
-
     }
+
 
     bool match2Images(vector<cv::KeyPoint>& kps1,
                       cv::Mat& desps1,
@@ -321,6 +350,10 @@ public:
         if (good_matches.size()<8)
             return false;
 
+        //for debug
+        result_matches = good_matches;
+        return true;
+        //--------------------------------------------------------------------------------
 
         vector<cv::Point2f> good_kps_old, good_kps_cur;
         for( size_t i = 0; i < good_matches.size(); i++ )
@@ -377,8 +410,6 @@ public:
         cv::Mat descriptors_old_left;
         vector<cv::Point3f> MapPoints_old;
 
-        cout<<"solve pnp 1"<<endl;
-
         cout<<"solve pnp 1: R and t: \n"<<R<<"\n"<<t<<endl;
 
         this->StereoImage2MapPoints(old_image_left,
@@ -395,7 +426,20 @@ public:
         this->image2KpAndDesp(cur_image_left, Keypoints_current_left, descriptors_current_left);
 
 
-        //step 3, find good matches between old frame and current frame and return good old_kps, cur_kps and old_mps
+
+
+        //for test , cv::CV_FM_8POINT
+        vector<cv::Point2f> kps1, kps2;
+        cv::KeyPoint::convert(Keypoints_old_left, kps1);
+        cv::KeyPoint::convert(Keypoints_current_left, kps2);
+
+        cv::Mat fundamental_matrix;
+        fundamental_matrix = cv::findFundamentalMat (kps1, kps2);
+        cout<<"fundamental_matrix is "<<endl<< fundamental_matrix<<endl;
+        //-------------------------------------------------------------------
+
+
+        //step 3, find good matches between old frame and current frame and return good old_kps, old_mps and cur_kps
         vector<cv::DMatch> good_matches;
         vector<cv::KeyPoint> kps_old_left, kps_cur_left;
         vector<cv::Point3f> mps_old;
@@ -404,9 +448,13 @@ public:
         {
             for(int i=0; i<good_matches.size(); i++)
             {
+
+                cout<<"good_matches[i].queryIdx and trainIdx: "<<good_matches[i].queryIdx<<", "<<good_matches[i].trainIdx<<endl;
+
                 kps_old_left.push_back(Keypoints_old_left[good_matches[i].queryIdx]);
-                kps_cur_left.push_back(Keypoints_current_left[good_matches[i].trainIdx]);
                 mps_old.push_back(MapPoints_old[good_matches[i].queryIdx]);
+
+                kps_cur_left.push_back(Keypoints_current_left[good_matches[i].trainIdx]);
             }
         }
         else
@@ -585,21 +633,21 @@ public:
 
 public:
 
-    float fx = 0;
-    float fy = 0;
-    float cx = 0;
-    float cy = 0;
-    float fxinv = 0;
-    float fyinv = 0;
-    float b = 0;
-    float f = 0;
-    float bf = 0;
+    double fx = 0;
+    double fy = 0;
+    double cx = 0;
+    double cy = 0;
+    double fxinv = 0;
+    double fyinv = 0;
+    double b = 0;
+    double f = 0;
+    double bf = 0;
 
-    Eigen::Matrix3f K = Matrix3f::Identity();     // intrinsics
+    Eigen::Matrix3d K = Matrix3d::Identity();     // intrinsics
 
     cv::Mat Kmat;
 
-    Eigen::Matrix3f Kinv = Matrix3f::Identity();  // inverse K
+    Eigen::Matrix3d Kinv = Matrix3d::Identity();  // inverse K
 
     int index=0;
 
