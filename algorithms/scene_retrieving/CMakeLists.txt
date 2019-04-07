@@ -31,7 +31,7 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 #   Find Dependencies
 # ----------------------------------------------------------------------------
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
-find_package(OpenCV 3.4.5 REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
 #                                cv_bridge
@@ -48,7 +48,7 @@ find_package(catkin REQUIRED COMPONENTS
 				)
 
 #find_package(PCL REQUIRED PATH ../../software/SLAM/ygz_slam_ros/Thirdparty/PCL)
-find_package(PCL 1.9 REQUIRED)
+find_package(PCL REQUIRED)
 
 
 find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
