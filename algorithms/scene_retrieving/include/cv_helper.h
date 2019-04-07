@@ -39,6 +39,7 @@ public:
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
+
     cv_helper(double _fx, double _fy, double _cx, double _cy, double _bf = 0)
             : fx(_fx), fy(_fy), cx(_cx), cy(_cy), bf(_bf)
     {
@@ -46,6 +47,7 @@ public:
         K << fx, 0, cx,
              0, fy, cy,
              0, 0, 1;
+
 
         fxinv = 1 / fx;
         fyinv = 1 / fy;
@@ -61,7 +63,6 @@ public:
         cout<<"cv_helper fy: "<<fy<<endl;
         cout<<"cv_helper f: "<<f<<endl;
         cout<<"cv_helper b: "<<b<<endl;
-
 
         this->PosePublisher = this->nh.advertise<visualization_msgs::Marker>("/pose_visualizer",10);
         ros::Duration(1).sleep();
@@ -334,8 +335,11 @@ public:
 
         this->PosePublisher.publish(mark);
 
+//        cout<<"mark: "<<mark<<endl;
+
         this->PoseId+=1;
 
+//        ros::spinOnce();
     }
 
 

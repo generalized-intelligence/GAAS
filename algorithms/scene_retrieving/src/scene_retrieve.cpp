@@ -43,7 +43,6 @@ void Scene::saveVoc()
     cout << endl << "Saving vocabulary..." << endl;
     voc.save("small_voc.yml.gz");
     cout << "Done" << endl;
-    
 }
 
 
