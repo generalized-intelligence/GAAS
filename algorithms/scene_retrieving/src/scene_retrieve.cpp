@@ -206,6 +206,8 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
     this->mpCv_helper->setMask("mask.png");
 
     this->_init_retriever();
+
+    this->publishPoseHistory();
 }
 
 
@@ -282,6 +284,7 @@ void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& cur
     if(!output_image.empty())
         cv::imwrite("./loopclosure_result/" + std::to_string(this->LoopClosureDebugIndex) + "_" +std::to_string(loop_index) + ".png", output_image);
 }
+
 
 
 int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Mat image_right_rect, cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
@@ -476,6 +479,25 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Ma
 
 
 }
+
+
+
+void SceneRetriever::publishPoseHistory()
+{
+    assert(this->mpCv_helper != nullptr);
+
+    vector<cv::Mat> vecT = this->original_scene.mVecT;
+
+    for(auto& t: this->original_scene.mVecT)
+    {
+        if(t.empty())
+            continue;
+
+        cout<<"publishing pose: "<<t<<endl;
+        this->mpCv_helper->publishPoses(cv::Mat(), t);
+    }
+}
+
 
 
 

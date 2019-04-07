@@ -33,18 +33,19 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 find_package(OpenCV 3.4.5 REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
-#find_package(catkin REQUIRED COMPONENTS
+find_package(catkin REQUIRED COMPONENTS
 #                                cv_bridge
 #                                image_transport
-#                                roscpp
-#                                sensor_msgs
-#				geometry_msgs
+                                roscpp
+                                sensor_msgs
+				geometry_msgs
 #                                nav_msgs
 #                                std_msgs
 #                                octomap_msgs
 #                                octomap_rviz_plugins
-#                               visualization_msgs
-#                               tf)
+                               visualization_msgs
+#                               tf
+				)
 
 #find_package(PCL REQUIRED PATH ../../software/SLAM/ygz_slam_ros/Thirdparty/PCL)
 find_package(PCL 1.9 REQUIRED)
@@ -68,6 +69,7 @@ include_directories(${OpenCV_INCLUDE_DIRS}
 			./include/
                         ${catkin_INCLUDE_DIRS}
                         ${EIGEN3_INCLUDE_DIR}
+			${catkin_INCLUDE_DIRS}
                         )
 
 MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")

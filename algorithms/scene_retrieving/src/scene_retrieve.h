@@ -98,7 +98,9 @@ public:
     {
         this->hasScale = hasScale_in;
     }
-    
+
+
+
     
     void saveVoc();
 
@@ -173,7 +175,7 @@ public:
     bool hasScale = false;
 
 
-private:
+public:
 
     size_t mIndex = 0;
     std::vector<std::vector<cv::KeyPoint>> vec_p2d;
@@ -373,6 +375,8 @@ public:
     cv::Mat fetchImage(size_t index, int left);
 
     void displayFeatureMatches(size_t loop_index, ptr_frameinfo& current_frame, std::vector<cv::DMatch> matches);
+
+    void publishPoseHistory();
 
     size_t LoopClosureDebugIndex = 0;
 

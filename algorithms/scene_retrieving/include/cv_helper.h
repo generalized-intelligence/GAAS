@@ -7,14 +7,14 @@
 #ifndef SCENE_RETRIEVING_CV_HELPER_H
 #define SCENE_RETRIEVING_CV_HELPER_H
 
+#include <iostream>
+
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/common/transforms.h>
 #include <pcl/registration/gicp.h>
 #include <pcl/conversions.h>
 #include <pcl/PCLPointCloud2.h>
-
-#include <iostream>
 
 #include <Eigen/Core>
 #include <opencv2/core/eigen.hpp>
@@ -23,6 +23,10 @@
 #include <opencv2/features2d.hpp>
 #include <opencv2/highgui.hpp>
 
+#include <ros/ros.h>
+#include <visualization_msgs/Marker.h>
+#include <geometry_msgs/Quaternion.h>
+#include <geometry_msgs/PoseStamped.h>
 
 
 
@@ -35,31 +39,13 @@ public:
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
-    // class initializer
-//    cv_helper(float &_fx, float &_fy, float &_cx, float &_cy, float _bf = 0)
-//    : fx(_fx), fy(_fy), cx(_cx), cy(_cy), bf(_bf)
-//    {
-//        K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
-//
-//        Kmat = cv::Mat_<double>(3, 3) << fx, 0, cx,
-//                                         0, fy, cy,
-//                                         0, 0, 1;
-//
-//        fxinv = 1 / fx;
-//        fyinv = 1 / fy;
-//        Kinv = K.inverse();
-//        f = (fx + fy) * 0.5;
-//        b = bf / f;
-//    }
-
     cv_helper(double _fx, double _fy, double _cx, double _cy, double _bf = 0)
             : fx(_fx), fy(_fy), cx(_cx), cy(_cy), bf(_bf)
     {
-        K << fx, 0, cx, 0, fy, cy, 0, 0, 1;
 
-        Kmat = cv::Mat_<double>(3, 3) << fx, 0, cx,
-                                         0, fy, cy,
-                                         0, 0, 1;
+        K << fx, 0, cx,
+             0, fy, cy,
+             0, 0, 1;
 
         fxinv = 1 / fx;
         fyinv = 1 / fy;
@@ -69,12 +55,17 @@ public:
 
         cv::eigen2cv(K, Kmat);
 
-        cout<<"cv_helper Kmat: \n"<<Kmat<<endl;
         cout<<"cv_helper K: \n"<<K<<endl;
+        cout<<"cv_helper Kmat: \n"<<Kmat<<endl;
         cout<<"cv_helper fx: "<<fx<<endl;
         cout<<"cv_helper fy: "<<fy<<endl;
         cout<<"cv_helper f: "<<f<<endl;
         cout<<"cv_helper b: "<<b<<endl;
+
+
+        this->PosePublisher = this->nh.advertise<visualization_msgs::Marker>("/pose_visualizer",10);
+        ros::Duration(1).sleep();
+
     }
 
 
@@ -305,6 +296,49 @@ public:
     }
 
 
+
+    void publishPoses(cv::Mat R, cv::Mat t)
+    {
+
+        ros::Duration(0.02).sleep();
+//        ros::Rate(30);
+
+        visualization_msgs::Marker mark;
+        mark.header.frame_id="/map";
+
+        //mark.header.seq = VisualOdomMSGindex;
+        mark.id = this->PoseId;
+        mark.color.a = 0.5;
+        mark.color.r = 1.0;
+
+        mark.pose.position.x = t.at<double> (0,0);
+        mark.pose.position.y = t.at<double> (0,1);
+        mark.pose.position.z = t.at<double> (0,2);
+
+//        mark.pose.orientation.x = quat.x();
+//        mark.pose.orientation.y = quat.y();
+//        mark.pose.orientation.z = quat.z();
+//        mark.pose.orientation.w = quat.w();
+
+        mark.pose.orientation.x = 1;
+        mark.pose.orientation.y = 0;
+        mark.pose.orientation.z = 0;
+        mark.pose.orientation.w = 0;
+
+        mark.scale.x = 0.2;
+        mark.scale.y = 0.2;
+        mark.scale.z = 0.2;
+
+        mark.action = visualization_msgs::Marker::ADD;
+        mark.type = visualization_msgs::Marker::ARROW;
+
+        this->PosePublisher.publish(mark);
+
+        this->PoseId+=1;
+
+    }
+
+
     bool match2Images(vector<cv::KeyPoint>& kps1,
                       cv::Mat& desps1,
                       vector<cv::KeyPoint>& kps2,
@@ -497,11 +531,11 @@ public:
         cout<<"image_pts_cur size(): "<<image_pts_cur.size()<<endl;
 
 
-        for(auto p: mps_old)
-            cout<<"mps_old: "<<p<<endl;
-
-        for(auto p: image_pts_cur)
-            cout<<"image_pts_cur: "<<p<<endl;
+//        for(auto p: mps_old)
+//            cout<<"mps_old: "<<p<<endl;
+//
+//        for(auto p: image_pts_cur)
+//            cout<<"image_pts_cur: "<<p<<endl;
 
 
         //SOLVEPNP_P3P
@@ -652,6 +686,12 @@ public:
     int index=0;
 
     cv::Mat mMask;
+
+    //for pose visualization
+    size_t PoseId = 0;
+
+    ros::NodeHandle nh;
+    ros::Publisher PosePublisher;
 };
 
 

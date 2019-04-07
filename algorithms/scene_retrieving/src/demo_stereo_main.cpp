@@ -5,12 +5,17 @@
 #include "scene_retrieve.h"
 #include <iostream>
 
+#include <ros/ros.h>
 
 using namespace std;
 
 int main(int argc,char** argv)
 {
-    
+
+
+    //ros init
+    ros::init(argc, argv, "scene_retrieve");
+
     //NOTE simple test, for fast serialization test
 //     std::shared_ptr<Scene> pSceneTest(new Scene());
 //     string test_scene_path = "../../scene.scn";
@@ -77,6 +82,8 @@ int main(int argc,char** argv)
             cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
         }
     }
+
+
     
     return 0;
 }
