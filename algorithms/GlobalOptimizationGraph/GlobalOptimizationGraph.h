@@ -2,12 +2,19 @@
 #ifndef GLOBAL_OPTIMIZATION_GRAPH_H
 #define GLOBAL_OPTIMIZATION_GRAPH_H
 
-
+#include <g2o/core/block_solver.h>
+#include <g2o/core/optimization_algorithm_gauss_newton.h>
+#include <g2o/core/optimization_algorithm_levenberg.h>
+#include <g2o/solvers/linear_solver_eigen.h>
+#include <g2o/core/robust_kernel_impl.h>
 #include "G2OTypes.h"
 #include <memory>
 #include <iostream>
 #include <ros/ros.h>
 #include <sensor_msgs/NavSatFix.h>
+#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseStamped.h>
+
 #include "GPSExpand.h"
 #include <cmath>
 #include <opencv2/opencv.hpp>
@@ -31,7 +38,7 @@ using namespace ygz;
 typedef VertexPR State;
 typedef VertexPR Speed;
 const int GPS_INIT_BUFFER_SIZE = 100;
-
+using namespace ygz;
 class GlobalOptimizationGraph
 {
 public:
@@ -56,7 +63,7 @@ public:
     }
     void addBlockAHRS(const nav_msgs::Odometry& AHRS_msg);
     void addBlockSLAM(const geometry_msgs::PoseStamped& SLAM_msg);
-    void addBlockGPS(const nav_msgs::NavSatFix& GPS_msg);
+    void addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg);
     void addBlockQRCode();
     void addBlockSceneRetriever();
     void addBlockFCAttitude();
@@ -87,10 +94,10 @@ private:
     //SLAM
     VertexPR SLAM_to_UAV_coordinate_transfer;
     //AHRS
-    RotationMatrix ahrs_R;
+    Matrix3d ahrs_R_init;
 
     //optimization graph.
-    G2OOptimizationGraph graph;
+    //G2OOptimizationGraph graph;
     g2o::SparseOptimizer optimizer;
     g2o::BlockSolverX::LinearSolverType * linearSolver;
     g2o::BlockSolverX* solver_ptr;
@@ -99,7 +106,7 @@ private:
     vector<shared_ptr<g2o::BaseVertex>> VertexVec;
     vector<shared_ptr<g2o::BaseEdge>> EdgeVec;
 
-    shared_ptr<g2o::VertexPR> pCurrentPR;
+    shared_ptr<VertexPR> pCurrentPR;
     //gps configuration and initiation.
     void remap_UAV_coordinate_with_GPS_coordinate();
     GPSExpand GPS_coord;

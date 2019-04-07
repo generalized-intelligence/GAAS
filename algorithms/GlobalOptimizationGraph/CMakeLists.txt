@@ -1,10 +1,12 @@
 Project(GlobalOptimizationGraph)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 find_package(Eigen3 3.1.0 REQUIRED)
 
 find_package(OpenCV 3.3.1 REQUIRED)
-set(g2o_PACKAGE_PATH ${PROJECT_SOURCE_DIR}/Thirdparty/g2o)
+#set(g2o_PACKAGE_PATH ${PROJECT_SOURCE_DIR}/Thirdparty/g2o)
 
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -22,6 +24,8 @@ include_directories(${PROJECT_SOURCE_DIR}
 	${PROJECT_SOURCE_DIR}/Thirdparty/g2o/
 	${PROJECT_SOURCE_DIR/Thirdparty/Sophus/sophus}
 	${EIGEN3_INCLUDE_DIR}
+        ${catkin_INCLUDE_DIRS}
+
 
 	)
 set (THIRD_PARTY_LIBS

@@ -1,7 +1,7 @@
 #ifndef YGZ_CAMERA_H
 #define YGZ_CAMERA_H
 
-#include "ygz/NumTypes.h"
+#include "NumTypes.h"
 
 namespace ygz {
 

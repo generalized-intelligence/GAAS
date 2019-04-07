@@ -1,6 +1,8 @@
 #include "GlobalOptimizationGraph.h"
 #include <ros/ros.h>
 #include "CheckValid.h"
+
+
 GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
 {
     cv::FileStorage fSettings(string(argv[1]),cv::FileStorage::READ);
@@ -18,18 +20,29 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
 bool GlobalOptimizationGraph::init_AHRS(const nav_msgs::Odometry& AHRS_msg)
 {
     auto q = AHRS_msg.pose.pose.orientation;
-    Eigen::Quaterniond q_() = q;
+    Eigen::Quaterniond q_;
+    q_.w() = q.w;
+    q_.x() = q.x;
+    q_.y() = q.y;
+    q_.z() = q.z;
     Matrix3d R_init = q_.toRotationMatrix();
+    this->ahrs_R_init = R_init;
     //TODO:set R_init into graph state.
-    this->currentState.R = R_init;
+    this->currentState.R() = R_init;
 }
 bool GlobalOptimizationGraph::init_SLAM(const geometry_msgs::PoseStamped& slam_msg)
 {
     //match rotation matrix and translation vector to E,0.
     auto q = slam_msg.pose.pose.orientation;//TODO
+    Eigen::Quaterniond q_();
+    q_.w() = q.w;
+    q_.x() = q.x;
+    q_.y() = q.y;
+    q_.z() = q.z;
     auto t_slam = slam_msg.pose.pose.position;
-    SLAM_to_UAV_coordinate_transfer.R = q.toRotationMatrix().inverse() *this->R_init;
-    SLAM_to_UAV_coordinate_transfer.t = -1 * SLAM_to_UAV_coordinate_transfer.R * t_slam;
+    Vector3d t_slam_(t_slam.x,t_slam.y,t_slam.z);
+    SLAM_to_UAV_coordinate_transfer.R() = q.toRotationMatrix().inverse() *this->ahrs_R_init;
+    SLAM_to_UAV_coordinate_transfer.t() = -1 * SLAM_to_UAV_coordinate_transfer.R() * t_slam_;
 }
 
 bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
@@ -146,8 +159,15 @@ bool GlobalOptimizationGraph::inputGPS(const sensor_msgs::NavSatFix& gps)
 void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
 {
     EdgeAttitude* pEdgeAttitude = new EdgeAttitude();
-    pEdgeAttitude->setMeasurement();
-    pEdgeAttitude->setInformation();
+    auto q = AHRS_msg.pose.pose.orientation;//TODO
+    Eigen::Quaterniond q_();
+    q_.w() = q.w;
+    q_.x() = q.x;
+    q_.y() = q.y;
+    q_.z() = q.z;
+    pEdgeAttitude->setMeasurement(q_);
+    Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
+    pEdgeAttitude->setInformation(info_mat);
     pEdgeAttitude->setLevel(!checkAHRSValid());
     pEdgeAttitude->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get()));
 
@@ -182,8 +202,11 @@ void GlobalOptimizationGraph::addBlockGPS(const nav_msgs::NavSatFix& GPS_msg)
   info_lat = min((1.0/this->gps_init_lat_variance),1.0/(*(this->pSettings))["GPS_MIN_VARIANCE_LONLAT_m"]);
   info_alt = min((1.0/this->gps_init_alt_variance),1.0/(*(this->pSettings))["GPS_MIN_VARIANCE_ALT_m"]);
 
-
-  pEdgePRGPS->setInformation(...);//the inverse mat of covariance.
+  Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
+  info_mat(0,0) = info_lon;
+  info_mat(1,1) = info_lat;
+  info_mat(2,2) = info_alt;
+  pEdgePRGPS->setInformation(info_mat);//the inverse mat of covariance.
 
   pEdgePRGPS->setLevel(!checkGPSValid());
   this->optimizer.addEdge(pEdgePRGPS);
@@ -197,37 +220,49 @@ bool GlobalOptimizationGraph::estimateCurrentSpeed()
 }
 
 
-GlobalOptimizationGraph::addBlockSLAM()
+void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLAM_msg)
 {
+    //part<1> Rotation.
     pEdgeSlam = new EdgeAttitude();
     shared_ptr<g2o::BaseEdge> ptr_slam(pEdgeSlam);
     pEdgeSlam->setId(this->EdgeVec.size());
     this->EdgeVec.push_back(ptr_slam);
     pEdgeSlam->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get()));
 
-    pEdgeSlam->setMeasurement(...);
-    pEdgeSlam->setInformation(...);
+    auto q = SLAM_msg.pose.pose.orientation;
+    Eigen::Quaterniond q_();
+    q_.w() = q.w;
+    q_.x() = q.x;
+    q_.y() = q.y;
+    q_.z() = q.z;
+    Eigen::Matrix<double,3,3> info_mat_slam_rotation = Eigen::Matrix<double,3,3>::Identity();
+    
+    pEdgeSlam->setMeasurement(q_.toRotationMatrix());
+    pEdgeSlam->setInformation(info_mat_slam_rotation);
     optimizer.addEdge(pEdgeSlam);
+    //part<2> Translation
+    //TODO
 }
-GlobalOptimizationGraph::addBlockQRCode()
+void GlobalOptimizationGraph::addBlockQRCode()
 {
-    pEdgeQRCode = 
+    //pEdgeQRCode = 
 }
 void addBlockSceneRetriever_StrongCoupling(); //Solve se(3) from multiple points PRXYZ;
 void addBlockSceneRetriever_WeakCoupling();//just do square dist calc.
 
-GlobalOptimizationGraph::addBlockSceneRetriever()
+void GlobalOptimizationGraph::addBlockSceneRetriever()
 {
+    ;//TODO
     //step<1>.add vertex PR for scene.
     //set infomation matrix that optimize Rotation and altitude.Do not change longitude and latitude.
     //pBlockSceneRetriever = 
 }
-GlobalOptimizationGraph::addBlockFCAttitude()
+void GlobalOptimizationGraph::addBlockFCAttitude()
 {
     //just call addBlockAHRS.
     this->addBlockAHRS();
 }
-GlobalOptimizationGraph::addBlockAHRS()
+void GlobalOptimizationGraph::addBlockAHRS()
 {
     pEdgeAHRS = new EdgeAttitude();
     shared_ptr<g2o::BaseEdge> ptr_ahrs(pEdgeAHRS);
@@ -246,7 +281,7 @@ GlobalOptimizationGraph::addBlockAHRS()
     }
 
 }
-GlobalOptimizationGraph::doOptimization()
+void GlobalOptimizationGraph::doOptimization()
 {
     this->optimizer.initializeOptimization();
     this->optimizer.optimize(10);
