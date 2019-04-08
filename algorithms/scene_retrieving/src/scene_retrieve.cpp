@@ -278,7 +278,6 @@ void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& cur
 
     cv::Mat output_image;
 
-
     cv::drawMatches(this->mCurrentImage, cur_keypoints, fetchImage(loop_index, 1), old_keypoints, matches, output_image);
     if(!output_image.empty())
         cv::imwrite("./loopclosure_result/" + std::to_string(this->LoopClosureDebugIndex) + "_" +std::to_string(loop_index) + ".png", output_image);
@@ -346,7 +345,7 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Ma
     cv::Mat result_R, result_t;
 
     //conduct pnp
-    this->mpCv_helper->solvePnP(old_image_left,
+    bool pnpResult = this->mpCv_helper->solvePnP(old_image_left,
                                 old_image_right,
                                 image_left_rect,
                                 image_right_rect,
@@ -355,7 +354,18 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Ma
 
 
 
+    if(pnpResult)
+    {
+        cout<<"pnp result are: \n: "<<result_R<<endl<<result_t<<endl;
+        cout<<"solve pnp finished, publishing the result."<<endl;
 
+        cv::Mat temp_t =  -result_R.t()*result_t;
+
+        //this->mpCv_helper->publishPose(result_R, result_t, 0);
+        this->mpCv_helper->publishPose(-result_R.t(), temp_t, 0);
+
+        cout<<"solve pnp finished, publishing the result finished."<<endl;
+    }
 
 
 
@@ -493,7 +503,7 @@ void SceneRetriever::publishPoseHistory()
             continue;
 
         cout<<"publishing pose: "<<t<<endl;
-        this->mpCv_helper->publishPoses(cv::Mat(), t);
+        this->mpCv_helper->publishPose(cv::Mat(), t);
     }
 }
 

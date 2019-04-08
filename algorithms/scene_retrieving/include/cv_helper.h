@@ -61,6 +61,8 @@ public:
         cout<<"cv_helper Kmat: \n"<<Kmat<<endl;
         cout<<"cv_helper fx: "<<fx<<endl;
         cout<<"cv_helper fy: "<<fy<<endl;
+        cout<<"cv_helper cx: "<<cx<<endl;
+        cout<<"cv_helper cy: "<<cy<<endl;
         cout<<"cv_helper f: "<<f<<endl;
         cout<<"cv_helper b: "<<b<<endl;
 
@@ -79,7 +81,6 @@ public:
 
     void applyMask(cv::Mat& image)
     {
-
         cv::bitwise_and(image, this->mMask, image);
     }
 
@@ -120,6 +121,7 @@ public:
             pt_eigen[2] = camera_point.z;
 
             map = (R_eigen * pt_eigen + t_eigen);
+
             map_point.x = map[0];
             map_point.y = map[1];
             map_point.z = map[2];
@@ -129,6 +131,7 @@ public:
 
         return map_points;
     }
+
 
     // project image points to camera frame
     vector<cv::Point3f> image2cam(vector<cv::Point2f> image_points, vector<float> points_disparity) {
@@ -298,19 +301,33 @@ public:
 
 
 
-    void publishPoses(cv::Mat R, cv::Mat t)
+
+    void publishPose(cv::Mat R, cv::Mat t, int useRed = 1)
     {
 
-        ros::Duration(0.02).sleep();
+//        ros::Duration(0.02).sleep();
+        ros::Duration(0.002).sleep();
 //        ros::Rate(30);
 
         visualization_msgs::Marker mark;
         mark.header.frame_id="/map";
 
-        //mark.header.seq = VisualOdomMSGindex;
         mark.id = this->PoseId;
-        mark.color.a = 0.5;
-        mark.color.r = 1.0;
+
+        mark.color.a = 1.0;
+
+        if(useRed)
+        {
+            mark.color.r = 1.0;
+            mark.color.g = 0.0;
+            mark.color.b = 0.0;
+        }
+        else
+        {
+            mark.color.r = 0.0;
+            mark.color.g = 1.0;
+            mark.color.b = 0.0;
+        }
 
         mark.pose.position.x = t.at<double> (0,0);
         mark.pose.position.y = t.at<double> (0,1);
@@ -326,31 +343,32 @@ public:
         mark.pose.orientation.z = 0;
         mark.pose.orientation.w = 0;
 
-        mark.scale.x = 0.2;
-        mark.scale.y = 0.2;
-        mark.scale.z = 0.2;
+        if(useRed)
+        {
+            mark.scale.x = 0.2;
+            mark.scale.y = 0.2;
+            mark.scale.z = 0.2;
+        }
+        else
+        {
+            mark.scale.x = 1;
+            mark.scale.y = 1;
+            mark.scale.z = 1;
+        }
 
         mark.action = visualization_msgs::Marker::ADD;
         mark.type = visualization_msgs::Marker::ARROW;
 
         this->PosePublisher.publish(mark);
 
-//        cout<<"mark: "<<mark<<endl;
-
         this->PoseId+=1;
-
-//        ros::spinOnce();
     }
 
 
-    bool match2Images(vector<cv::KeyPoint>& kps1,
-                      cv::Mat& desps1,
-                      vector<cv::KeyPoint>& kps2,
-                      cv::Mat& desps2,
+    bool match2Images(vector<cv::KeyPoint>& kps1, cv::Mat& desps1,
+                      vector<cv::KeyPoint>& kps2, cv::Mat& desps2,
                       vector<cv::DMatch>& result_matches)
     {
-
-        cout<<"match2Images 1"<<endl;
 
         //step 1, match raw desps
         std::vector<cv::DMatch> matches;
@@ -375,15 +393,23 @@ public:
 
         std::vector< cv::DMatch > good_matches;
 
+//        for( int i = 0; i < matches.size(); i++ )
+//        {
+//            if( matches[i].distance <= 2*min_dist && matches[i].distance< 20) // 3.0 too large;2.0 too large.
+//            {
+//                good_matches.push_back( matches[i]);
+//            }
+//        }
+
         for( int i = 0; i < matches.size(); i++ )
         {
-            if( matches[i].distance <= 2*min_dist && matches[i].distance< 20) // 3.0 too large;2.0 too large.
+            if( matches[i].distance <= 4*min_dist && matches[i].distance< 20) // 3.0 too large;2.0 too large.
             {
                 good_matches.push_back( matches[i]);
             }
         }
 
-        cout<<"match2Images 2: good_matches.size() "<<good_matches.size()<<endl;
+        cout<<"match2Images: good_matches.size() "<<good_matches.size()<<endl;
 
         if (good_matches.size()<8)
             return false;
@@ -427,12 +453,11 @@ public:
     }
 
 
-    bool solvePnP(cv::Mat old_image_left,
-                  cv::Mat old_image_right,
-                  cv::Mat cur_image_left,
-                  cv::Mat cur_image_right,
+    // R and t from YGZ-SLAM are Rwc and Twc, which means they are from camera to world
+    bool solvePnP(cv::Mat old_image_left, cv::Mat old_image_right,
+                  cv::Mat cur_image_left, cv::Mat cur_image_right,
                   cv::Mat R, cv::Mat t,
-                  cv::Mat result_R, cv::Mat result_t)
+                  cv::Mat& result_R, cv::Mat& result_t)
     {
 
         this->index++;
@@ -450,12 +475,12 @@ public:
 
         cout<<"solve pnp 1: R and t: \n"<<R<<"\n"<<t<<endl;
 
-        this->StereoImage2MapPoints(old_image_left,
-                                    old_image_right,
-                                    R, t,
-                                    Keypoints_old_left,
-                                    descriptors_old_left,
-                                    MapPoints_old);
+        this->StereoImage2MapPoints(old_image_left,      //input
+                                    old_image_right,     //input
+                                    R, t,                //input
+                                    Keypoints_old_left,  //output kps
+                                    descriptors_old_left,//output desps
+                                    MapPoints_old);      //output MapPoints in world frame
 
 
         //step 2, get kps and desps of current image
@@ -464,16 +489,14 @@ public:
         this->image2KpAndDesp(cur_image_left, Keypoints_current_left, descriptors_current_left);
 
 
-
-
         //for test , cv::CV_FM_8POINT
-        vector<cv::Point2f> kps1, kps2;
-        cv::KeyPoint::convert(Keypoints_old_left, kps1);
-        cv::KeyPoint::convert(Keypoints_current_left, kps2);
-
-        cv::Mat fundamental_matrix;
-        fundamental_matrix = cv::findFundamentalMat (kps1, kps2);
-        cout<<"fundamental_matrix is "<<endl<< fundamental_matrix<<endl;
+//        vector<cv::Point2f> kps1, kps2;
+//        cv::KeyPoint::convert(Keypoints_old_left, kps1);
+//        cv::KeyPoint::convert(Keypoints_current_left, kps2);
+//
+//        cv::Mat fundamental_matrix;
+//        fundamental_matrix = cv::findFundamentalMat (kps1, kps2);
+//        cout<<"fundamental_matrix is "<<endl<< fundamental_matrix<<endl;
         //-------------------------------------------------------------------
 
 
@@ -482,14 +505,12 @@ public:
         vector<cv::KeyPoint> kps_old_left, kps_cur_left;
         vector<cv::Point3f> mps_old;
 
+
         if(this->match2Images(Keypoints_old_left, descriptors_old_left, Keypoints_current_left, descriptors_current_left, good_matches))
         {
             for(int i=0; i<good_matches.size(); i++)
             {
-
-                cout<<"good_matches[i].queryIdx and trainIdx: "<<good_matches[i].queryIdx<<", "<<good_matches[i].trainIdx<<endl;
-
-                kps_old_left.push_back(Keypoints_old_left[good_matches[i].queryIdx]);
+                kps_old_left.push_back(Keypoints_current_left[good_matches[i].queryIdx]);
                 mps_old.push_back(MapPoints_old[good_matches[i].queryIdx]);
 
                 kps_cur_left.push_back(Keypoints_current_left[good_matches[i].trainIdx]);
@@ -501,8 +522,6 @@ public:
         }
 
 
-
-
         // ---------------------------------------------------for debugging----------------------------------------------------------
         cv::Mat test_image;
         cv::drawMatches(old_image_left, Keypoints_old_left, cur_image_left, Keypoints_current_left, good_matches, test_image);
@@ -511,10 +530,12 @@ public:
         // --------------------------------------------------------------------------------------------------------------------------
 
 
-
-        cout<<"Fetched kps_old_left size: "<<kps_old_left.size()<<endl;
+//        cout<<"Fetched kps_old_left size: "<<kps_old_left.size()<<endl;
         cout<<"Fetched kps_cur_left size: "<<kps_cur_left.size()<<endl;
         cout<<"Fetched mps_old size: "<<mps_old.size()<<endl;
+
+        assert(mps_old.size() == kps_cur_left.size());
+
 
 
         //step 3, conduct PnP ransac given old mps and current kps
@@ -549,7 +570,10 @@ public:
         //NOTE this could be a good indication of the result
         //http://answers.opencv.org/question/87546/solvepnp-fails-with-perfect-coordinates-and-cvposit-passes/
 
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 8, 0.99, inliers);
+        cv::Rodrigues(R, rvec);
+        cv::Rodrigues(t, tvec);
+
+        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers);
 
         cout<<"inliers 1: "<<inliers<<endl;
 
@@ -557,10 +581,13 @@ public:
 
         cout<<"solve pnp 1"<<endl;
 
+        cout<<"cv helper solve R 1: \n"<<R<<endl;
+        cout<<"cv helper solve t 1: \n"<<t<<endl;
         cout<<"cv helper solve rvec 1: \n"<<rvec<<endl;
         cout<<"cv helper solve tvec 1: \n"<<tvec<<endl;
 
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 8, 0.99, inliers, cv::SOLVEPNP_P3P);
+
+        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_P3P);
 
         cout<<"inliers 2: "<<inliers<<endl;
 
@@ -572,7 +599,7 @@ public:
         cout<<"cv helper solve tvec 2: \n"<<tvec<<endl;
 
 
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 8, 0.99, inliers, cv::SOLVEPNP_UPNP);
+        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_EPNP);
 
         cout<<"inliers 3: "<<inliers<<endl;
 
@@ -583,7 +610,46 @@ public:
         cout<<"cv helper solve rvec 3: \n"<<rvec<<endl;
         cout<<"cv helper solve tvec 3: \n"<<tvec<<endl;
 
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 8, 0.99, inliers, cv::SOLVEPNP_AP3P);
+
+        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_UPNP);
+
+        cout<<"inliers 3: "<<inliers<<endl;
+
+        cout<<"solvepnpransac 3"<<endl;
+
+        cout<<"solve pnp 3"<<endl;
+
+        cout<<"cv helper solve rvec 3: \n"<<rvec<<endl;
+        cout<<"cv helper solve tvec 3: \n"<<tvec<<endl;
+
+
+        cv::Rodrigues (rvec, result_R);
+        result_t = tvec;
+
+        cv::Mat homographyR = this->getRotationfromEssential(kps_old_left, kps_cur_left);
+
+        cout<<"homographyR is: "<<homographyR<<endl;
+
+        cv::Mat homographyRvec;
+
+        cv::Rodrigues (homographyR, homographyRvec);
+
+        cout<<"homographyRvec is: "<<homographyRvec<<endl;
+        cout<<"rvec is: "<<rvec<<endl;
+
+        float distanceR = this->Vec3Distance(homographyR, rvec);
+
+        cout<<"distanceR is: "<<distanceR<<endl;
+
+
+        //if (distanceR < 1.5) // works OK, with few outliers, the majority are inliers
+        if (distanceR < 1.5) // works OK, with few outliers, the majority are inliers
+            return true;
+        else
+            return false;
+
+
+        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.5, 0.99, inliers, cv::SOLVEPNP_AP3P);
 
         cout<<"inliers 4: "<<inliers<<endl;
 
@@ -668,6 +734,35 @@ public:
         return r;
     }
 
+    float Vec3Distance(cv::Mat a, cv::Mat b)
+    {
+        float result = abs(a.at<double>(0,0) - b.at<double>(0,0))
+                    +  abs(a.at<double>(0,1) - b.at<double>(0,1))
+                    +  abs(a.at<double>(0,2) - b.at<double>(0,2));
+
+        cout<<"Vec3Distance result is: "<<result<<endl;
+
+        return result;
+    }
+
+    cv::Mat getRotationfromEssential(vector<cv::KeyPoint>& pts1, vector<cv::KeyPoint>& pts2)
+    {
+        cv::Point2d principal_point(this->cx, this->cy);
+        int focal_length = this->f;
+
+        vector<cv::Point2f> pts1f, pts2f;
+        cv::KeyPoint::convert(pts1, pts1f);
+        cv::KeyPoint::convert(pts2, pts2f);
+
+        cv::Mat essential_mat = cv::findEssentialMat(pts1f, pts2f, focal_length, principal_point, cv::RANSAC);
+
+        cout<<"Recovered essential mat is: "<<essential_mat<<endl;
+
+        cv::Mat R, t;
+        cv::recoverPose(essential_mat, pts1f, pts2f, R, t, focal_length, principal_point);
+
+        return R;
+    }
 
 public:
 

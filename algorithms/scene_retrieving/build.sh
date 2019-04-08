@@ -1,1 +1,3 @@
-cd build && cmake .. && make && cd ..
+cd build && cmake ..
+make -j8
+cd ..

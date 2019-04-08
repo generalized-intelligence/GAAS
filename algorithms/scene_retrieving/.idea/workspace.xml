@@ -1,41 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
-    <generated>
-      <config projectName="scene_retrieving" targetName="NightlyCoverage" />
-      <config projectName="scene_retrieving" targetName="Continuous" />
-      <config projectName="scene_retrieving" targetName="ExperimentalStart" />
-      <config projectName="scene_retrieving" targetName="ExperimentalConfigure" />
-      <config projectName="scene_retrieving" targetName="ContinuousBuild" />
-      <config projectName="scene_retrieving" targetName="ContinuousSubmit" />
-      <config projectName="scene_retrieving" targetName="ExperimentalMemCheck" />
-      <config projectName="scene_retrieving" targetName="NightlyMemCheck" />
-      <config projectName="scene_retrieving" targetName="demo_mono" />
-      <config projectName="scene_retrieving" targetName="NightlyTest" />
-      <config projectName="scene_retrieving" targetName="NightlyUpdate" />
-      <config projectName="scene_retrieving" targetName="ContinuousUpdate" />
-      <config projectName="scene_retrieving" targetName="ContinuousMemCheck" />
-      <config projectName="scene_retrieving" targetName="NightlyMemoryCheck" />
-      <config projectName="scene_retrieving" targetName="NightlyStart" />
-      <config projectName="scene_retrieving" targetName="ContinuousConfigure" />
-      <config projectName="scene_retrieving" targetName="ExperimentalBuild" />
-      <config projectName="scene_retrieving" targetName="NightlyConfigure" />
-      <config projectName="scene_retrieving" targetName="uninstall" />
-      <config projectName="scene_retrieving" targetName="ContinuousStart" />
-      <config projectName="scene_retrieving" targetName="NightlySubmit" />
-      <config projectName="scene_retrieving" targetName="ExperimentalUpdate" />
-      <config projectName="scene_retrieving" targetName="scene_retrieve" />
-      <config projectName="scene_retrieving" targetName="ExperimentalSubmit" />
-      <config projectName="scene_retrieving" targetName="MakeSceneFromOpenSfMModel" />
-      <config projectName="scene_retrieving" targetName="ContinuousCoverage" />
-      <config projectName="scene_retrieving" targetName="Experimental" />
-      <config projectName="scene_retrieving" targetName="ContinuousTest" />
-      <config projectName="scene_retrieving" targetName="demo_stereo" />
-      <config projectName="scene_retrieving" targetName="ExperimentalTest" />
-      <config projectName="scene_retrieving" targetName="Nightly" />
-      <config projectName="scene_retrieving" targetName="ExperimentalCoverage" />
-      <config projectName="scene_retrieving" targetName="NightlyBuild" />
-    </generated>
+    <generated />
   </component>
   <component name="CMakeSettings">
     <configurations>
@@ -44,9 +10,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4dcb950e-8026-46a0-854e-9fd2e7f1bc02" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build.sh" beforeDir="false" afterPath="$PROJECT_DIR$/build.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/cv_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/cv_helper.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -55,22 +27,45 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="DatabaseView">
+    <option name="SHOW_INTERMEDIATE" value="true" />
+    <option name="GROUP_DATA_SOURCES" value="true" />
+    <option name="GROUP_SCHEMA" value="true" />
+    <option name="GROUP_CONTENTS" value="false" />
+    <option name="SORT_POSITIONED" value="false" />
+    <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
+    <option name="HIDDEN_KINDS">
+      <set />
+    </option>
+    <expand />
+    <select />
+  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="836">
-              <caret line="44" column="27" selection-start-line="44" selection-start-column="27" selection-end-line="44" selection-end-column="27" />
+            <state relative-caret-position="5598">
+              <caret line="311" column="78" selection-start-line="311" selection-start-column="58" selection-end-line="311" selection-end-column="78" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="6840">
+              <caret line="380" column="37" selection-start-line="380" selection-start-column="37" selection-end-line="380" selection-end-column="37" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="836">
-              <caret line="44" column="5" lean-forward="true" selection-start-line="44" selection-start-column="5" selection-end-line="44" selection-end-column="5" />
+            <state relative-caret-position="717">
+              <caret line="645" column="85" selection-start-line="645" selection-start-column="85" selection-end-line="645" selection-end-column="85" />
             </state>
           </provider>
         </entry>
@@ -78,11 +73,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1159">
-              <caret line="61" column="25" selection-start-line="61" selection-start-column="25" selection-end-line="61" selection-end-column="25" />
-              <folding>
-                <element signature="e#212#239#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="1854">
+              <caret line="103" column="22" selection-start-line="103" selection-start-column="22" selection-end-line="103" selection-end-column="22" />
             </state>
           </provider>
         </entry>
@@ -90,8 +82,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4408">
-              <caret line="232" column="26" selection-start-line="232" selection-start-column="26" selection-end-line="232" selection-end-column="26" />
+            <state relative-caret-position="1872">
+              <caret line="104" column="55" selection-start-line="104" selection-start-column="55" selection-end-line="104" selection-end-column="55" />
             </state>
           </provider>
         </entry>
@@ -99,8 +91,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/Database.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5567">
-              <caret line="293" column="48" selection-start-line="293" selection-start-column="42" selection-end-line="293" selection-end-column="48" />
+            <state relative-caret-position="4572">
+              <caret line="254" selection-start-line="254" selection-end-line="254" />
             </state>
           </provider>
         </entry>
@@ -109,36 +101,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>match_2_images_flann</find>
-      <find>retrieveSceneFromStereoImage</find>
-      <find>detectLoopByKeyFrame</find>
-      <find>displayFeatureMatches</find>
-      <find>ploop_closing_manager_of_scene</find>
-      <find>Recovered pts disp</find>
-      <find>mpCv_helper</find>
-      <find>LKflow detected pt</find>
-      <find>InputKeypoints</find>
-      <find>image2cam</find>
-      <find>PyrLKmatched_points</find>
-      <find>descriptors</find>
-      <find>matched_points</find>
-      <find>conver</find>
-      <find>good_matches</find>
-      <find>fetchImage</find>
-      <find>MapPoints_old</find>
-      <find>eigen2cv</find>
-      <find>solvePnP</find>
-      <find>setImageVecPath</find>
-      <find>matches</find>
-      <find>StereoImage2MapPoints</find>
-      <find>match2Images</find>
-      <find>image2KpAndDesp</find>
-      <find>image_pts_cur</find>
-      <find>intrinstic</find>
-      <find>rvec</find>
-      <find>queryIdx</find>
       <find>output_points</find>
       <find>mps_old</find>
+      <find>setMask</find>
+      <find>publishPoses</find>
+      <find>publishPOse</find>
+      <find>mpCv_helper</find>
+      <find>good_matches_output</find>
+      <find>image2KpAndDesp size</find>
+      <find>image2KpAndDesp</find>
+      <find>solvePnP</find>
+      <find>StereoImage2MapPoints</find>
+      <find>Keypoints_current_left</find>
+      <find>match2Images</find>
+      <find>Good matches size:0</find>
+      <find>Good matches size</find>
+      <find>queryKeyFrames</find>
+      <find>good_matches</find>
+      <find>displayFeatureMatches</find>
+      <find>fetchImage</find>
+      <find>retreived_Frame_info</find>
+      <find>publishPose</find>
+      <find>good_matches_output:</find>
+      <find>detectLoopByKeyFrame</find>
+      <find>match_2_images_flann</find>
+      <find>curFrameIndex</find>
+      <find>LoopClosureDebugIndex</find>
+      <find>matches_out</find>
+      <find>info</find>
+      <find>loopclosure_result</find>
+      <find>homographyRvec</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -149,20 +141,21 @@
       <list>
         <option value="$PROJECT_DIR$/src/demo_mono_main.cpp" />
         <option value="$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp" />
-        <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" />
-        <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" />
         <option value="$PROJECT_DIR$/src/demo_stereo_main.cpp" />
         <option value="$PROJECT_DIR$/src/scene_retrieve.h" />
-        <option value="$PROJECT_DIR$/include/cv_helper.h" />
+        <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" />
         <option value="$PROJECT_DIR$/src/scene_retrieve.cpp" />
+        <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" />
+        <option value="$PROJECT_DIR$/include/cv_helper.h" />
       </list>
     </option>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="y" value="90" />
-    <option name="width" value="1855" />
-    <option name="height" value="1084" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="65" />
+    <option name="y" value="-4" />
+    <option name="width" value="1853" />
+    <option name="height" value="1076" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -170,6 +163,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -196,7 +190,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -216,208 +209,6 @@
         </RuleState>
       </list>
     </option>
-  </component>
-  <component name="RunManager" selected="Application.demo_mono">
-    <configuration name="Continuous" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="Continuous" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ContinuousBuild" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ContinuousBuild" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ContinuousBuild">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ContinuousConfigure" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ContinuousConfigure" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ContinuousConfigure">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ContinuousCoverage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ContinuousCoverage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ContinuousCoverage">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ContinuousMemCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ContinuousMemCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ContinuousMemCheck">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ContinuousStart" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ContinuousStart" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ContinuousStart">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ContinuousSubmit" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ContinuousSubmit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ContinuousSubmit">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ContinuousTest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ContinuousTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ContinuousTest">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ContinuousUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ContinuousUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ContinuousUpdate">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Experimental" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="Experimental" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ExperimentalBuild" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ExperimentalBuild" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ExperimentalBuild">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ExperimentalConfigure" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ExperimentalConfigure" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ExperimentalConfigure">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ExperimentalCoverage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ExperimentalCoverage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ExperimentalCoverage">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ExperimentalMemCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ExperimentalMemCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ExperimentalMemCheck">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ExperimentalStart" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ExperimentalStart" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ExperimentalStart">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ExperimentalSubmit" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ExperimentalSubmit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ExperimentalSubmit">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ExperimentalTest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ExperimentalTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ExperimentalTest">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="ExperimentalUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="ExperimentalUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="ExperimentalUpdate">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="MakeSceneFromOpenSfMModel" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="MakeSceneFromOpenSfMModel" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="MakeSceneFromOpenSfMModel">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Nightly" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="Nightly" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="NightlyBuild" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="NightlyBuild" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="NightlyBuild">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="NightlyConfigure" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="NightlyConfigure" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="NightlyConfigure">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="NightlyCoverage" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="NightlyCoverage" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="NightlyCoverage">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="NightlyMemCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="NightlyMemCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="NightlyMemCheck">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="NightlyMemoryCheck" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="NightlyMemoryCheck" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="NightlyMemoryCheck">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="NightlyStart" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="NightlyStart" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="NightlyStart">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="NightlySubmit" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="NightlySubmit" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="NightlySubmit">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="NightlyTest" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="NightlyTest" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="NightlyTest">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="NightlyUpdate" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="NightlyUpdate" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="NightlyUpdate">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="demo_mono" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="demo_mono" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="demo_mono">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="demo_stereo" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="demo_stereo" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="scene_retrieving" RUN_TARGET_NAME="demo_stereo">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="scene_retrieve" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="scene_retrieve" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="uninstall" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="scene_retrieving" TARGET_NAME="uninstall" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <list>
-      <item itemvalue="Application.ContinuousBuild" />
-      <item itemvalue="Application.ContinuousConfigure" />
-      <item itemvalue="Application.ContinuousCoverage" />
-      <item itemvalue="Application.ContinuousMemCheck" />
-      <item itemvalue="Application.ContinuousStart" />
-      <item itemvalue="Application.ContinuousSubmit" />
-      <item itemvalue="Application.ContinuousTest" />
-      <item itemvalue="Application.ContinuousUpdate" />
-      <item itemvalue="Application.Continuous" />
-      <item itemvalue="Application.ExperimentalBuild" />
-      <item itemvalue="Application.ExperimentalConfigure" />
-      <item itemvalue="Application.ExperimentalCoverage" />
-      <item itemvalue="Application.ExperimentalMemCheck" />
-      <item itemvalue="Application.ExperimentalStart" />
-      <item itemvalue="Application.ExperimentalSubmit" />
-      <item itemvalue="Application.ExperimentalTest" />
-      <item itemvalue="Application.ExperimentalUpdate" />
-      <item itemvalue="Application.Experimental" />
-      <item itemvalue="Application.MakeSceneFromOpenSfMModel" />
-      <item itemvalue="Application.NightlyBuild" />
-      <item itemvalue="Application.NightlyConfigure" />
-      <item itemvalue="Application.NightlyCoverage" />
-      <item itemvalue="Application.NightlyMemCheck" />
-      <item itemvalue="Application.NightlyMemoryCheck" />
-      <item itemvalue="Application.NightlyStart" />
-      <item itemvalue="Application.NightlySubmit" />
-      <item itemvalue="Application.NightlyTest" />
-      <item itemvalue="Application.NightlyUpdate" />
-      <item itemvalue="Application.Nightly" />
-      <item itemvalue="Application.demo_mono" />
-      <item itemvalue="Application.demo_stereo" />
-      <item itemvalue="Application.scene_retrieve" />
-      <item itemvalue="Application.uninstall" />
-    </list>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -442,17 +233,20 @@
       <workItem from="1554201472513" duration="1775000" />
       <workItem from="1554260560466" duration="25967000" />
       <workItem from="1554646795683" duration="143000" />
+      <workItem from="1554692471426" duration="10644000" />
+      <workItem from="1554707984835" duration="8967000" />
+      <workItem from="1554718430781" duration="2733000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="79959000" />
+    <option name="totallyTimeSpent" value="102303000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="64" y="-11" width="2497" height="1452" extended-state="6" />
+    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12780727" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.04809287" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -470,7 +264,7 @@
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="right" id="Database" order="3" />
+      <window_info anchor="right" id="Database" order="3" weight="0.32946378" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -561,48 +355,45 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5598">
+          <caret line="311" column="78" selection-start-line="311" selection-start-column="58" selection-end-line="311" selection-end-column="78" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="720">
-          <caret line="376" column="14" selection-start-line="376" selection-start-column="14" selection-end-line="376" selection-end-column="14" />
+        <state relative-caret-position="6840">
+          <caret line="380" column="37" selection-start-line="380" selection-start-column="37" selection-end-line="380" selection-end-column="37" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1159">
-          <caret line="61" column="25" selection-start-line="61" selection-start-column="25" selection-end-line="61" selection-end-column="25" />
-          <folding>
-            <element signature="e#212#239#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="1854">
+          <caret line="103" column="22" selection-start-line="103" selection-start-column="22" selection-end-line="103" selection-end-column="22" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4408">
-          <caret line="232" column="26" selection-start-line="232" selection-start-column="26" selection-end-line="232" selection-end-column="26" />
+        <state relative-caret-position="1872">
+          <caret line="104" column="55" selection-start-line="104" selection-start-column="55" selection-end-line="104" selection-end-column="55" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/Database.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5567">
-          <caret line="293" column="48" selection-start-line="293" selection-start-column="42" selection-end-line="293" selection-end-column="48" />
+        <state relative-caret-position="4572">
+          <caret line="254" selection-start-line="254" selection-end-line="254" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="836">
-          <caret line="44" column="5" lean-forward="true" selection-start-line="44" selection-start-column="5" selection-end-line="44" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="836">
-          <caret line="44" column="27" selection-start-line="44" selection-start-column="27" selection-end-line="44" selection-end-column="27" />
+        <state relative-caret-position="717">
+          <caret line="645" column="85" selection-start-line="645" selection-start-column="85" selection-end-line="645" selection-end-column="85" />
         </state>
       </provider>
     </entry>

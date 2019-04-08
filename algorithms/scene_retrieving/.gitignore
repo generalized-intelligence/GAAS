@@ -12,3 +12,9 @@
 */*/build/*
 *.kdev*
 ./image
+image
+./loopclosure_result2/*
+./loopclosure_result2/*
+test.log
+./cmake-build-debug
+
