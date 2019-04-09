@@ -12,10 +12,7 @@
     <list default="true" id="4dcb950e-8026-46a0-854e-9fd2e7f1bc02" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.sh" beforeDir="false" afterPath="$PROJECT_DIR$/build.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/cv_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/cv_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeCache.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
@@ -46,8 +43,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5598">
-              <caret line="311" column="78" selection-start-line="311" selection-start-column="58" selection-end-line="311" selection-end-column="78" />
+            <state relative-caret-position="527">
+              <caret line="292" column="60" selection-start-line="292" selection-start-column="60" selection-end-line="292" selection-end-column="60" />
             </state>
           </provider>
         </entry>
@@ -55,8 +52,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6840">
-              <caret line="380" column="37" selection-start-line="380" selection-start-column="37" selection-end-line="380" selection-end-column="37" />
+            <state relative-caret-position="-1075">
+              <caret line="299" column="5" selection-start-line="299" selection-start-column="5" selection-end-line="299" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -64,8 +61,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="717">
-              <caret line="645" column="85" selection-start-line="645" selection-start-column="85" selection-end-line="645" selection-end-column="85" />
+            <state relative-caret-position="671">
+              <caret line="655" column="99" selection-start-line="655" selection-start-column="99" selection-end-line="655" selection-end-column="99" />
             </state>
           </provider>
         </entry>
@@ -73,8 +70,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1854">
-              <caret line="103" column="22" selection-start-line="103" selection-start-column="22" selection-end-line="103" selection-end-column="22" />
+            <state relative-caret-position="-1053">
+              <caret line="28" column="69" selection-start-line="28" selection-start-column="69" selection-end-line="28" selection-end-column="69" />
             </state>
           </provider>
         </entry>
@@ -82,8 +79,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1872">
-              <caret line="104" column="55" selection-start-line="104" selection-start-column="55" selection-end-line="104" selection-end-column="55" />
+            <state relative-caret-position="699">
+              <caret line="155" selection-start-line="155" selection-end-line="155" />
             </state>
           </provider>
         </entry>
@@ -91,7 +88,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/Database.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4572">
+            <state relative-caret-position="869">
               <caret line="254" selection-start-line="254" selection-end-line="254" />
             </state>
           </provider>
@@ -101,7 +98,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>output_points</find>
       <find>mps_old</find>
       <find>setMask</find>
       <find>publishPoses</find>
@@ -124,13 +120,14 @@
       <find>publishPose</find>
       <find>good_matches_output:</find>
       <find>detectLoopByKeyFrame</find>
-      <find>match_2_images_flann</find>
       <find>curFrameIndex</find>
       <find>LoopClosureDebugIndex</find>
-      <find>matches_out</find>
       <find>info</find>
       <find>loopclosure_result</find>
       <find>homographyRvec</find>
+      <find>matches_out</find>
+      <find>match_2_images_flann</find>
+      <find>VecMatches</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -143,19 +140,19 @@
         <option value="$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp" />
         <option value="$PROJECT_DIR$/src/demo_stereo_main.cpp" />
         <option value="$PROJECT_DIR$/src/scene_retrieve.h" />
-        <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" />
         <option value="$PROJECT_DIR$/src/scene_retrieve.cpp" />
+        <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" />
         <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" />
         <option value="$PROJECT_DIR$/include/cv_helper.h" />
       </list>
     </option>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds" extendedState="6">
+  <component name="ProjectFrameBounds" extendedState="7">
     <option name="x" value="65" />
     <option name="y" value="-4" />
-    <option name="width" value="1853" />
-    <option name="height" value="1076" />
+    <option name="width" value="1851" />
+    <option name="height" value="1068" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -236,17 +233,18 @@
       <workItem from="1554692471426" duration="10644000" />
       <workItem from="1554707984835" duration="8967000" />
       <workItem from="1554718430781" duration="2733000" />
+      <workItem from="1554776068317" duration="8289000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="102303000" />
+    <option name="totallyTimeSpent" value="110592000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.04809287" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.04864566" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -355,45 +353,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5598">
-          <caret line="311" column="78" selection-start-line="311" selection-start-column="58" selection-end-line="311" selection-end-column="78" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6840">
-          <caret line="380" column="37" selection-start-line="380" selection-start-column="37" selection-end-line="380" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1854">
-          <caret line="103" column="22" selection-start-line="103" selection-start-column="22" selection-end-line="103" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1872">
-          <caret line="104" column="55" selection-start-line="104" selection-start-column="55" selection-end-line="104" selection-end-column="55" />
+        <state relative-caret-position="-1053">
+          <caret line="28" column="69" selection-start-line="28" selection-start-column="69" selection-end-line="28" selection-end-column="69" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/Database.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4572">
+        <state relative-caret-position="869">
           <caret line="254" selection-start-line="254" selection-end-line="254" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="699">
+          <caret line="155" selection-start-line="155" selection-end-line="155" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="527">
+          <caret line="292" column="60" selection-start-line="292" selection-start-column="60" selection-end-line="292" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1075">
+          <caret line="299" column="5" selection-start-line="299" selection-start-column="5" selection-end-line="299" selection-end-column="5" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="717">
-          <caret line="645" column="85" selection-start-line="645" selection-start-column="85" selection-end-line="645" selection-end-column="85" />
+        <state relative-caret-position="671">
+          <caret line="655" column="99" selection-start-line="655" selection-start-column="99" selection-end-line="655" selection-end-column="99" />
         </state>
       </provider>
     </entry>

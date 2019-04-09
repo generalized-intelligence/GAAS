@@ -19,6 +19,9 @@
 //#include<boost/smart_ptr.hp0p>
 //#include "opencv2/xfeatures2d.hpp"
 
+#include <vector>
+#include <algorithm>
+
 using namespace DBoW3;
 using namespace std;
 
@@ -46,8 +49,8 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
 
 const int RET_QUERY_LEN = 4;
 //const int TOO_CLOSE_THRES = 15;
-const int TOO_CLOSE_THRES = 50;
-
+//const int TOO_CLOSE_THRES = 50;
+const int TOO_CLOSE_THRES = 1;
 
 //const float DB_QUERY_SCORE_THRES = 0.4;//0.5;//0.65;
 const float DB_QUERY_SCORE_THRES = 0.0075;//0.015;//0.5;//0.65;

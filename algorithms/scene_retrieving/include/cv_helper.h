@@ -641,9 +641,19 @@ public:
 
         cout<<"distanceR is: "<<distanceR<<endl;
 
+        float distanceT = this->Vec3Distance(t, tvec);
 
-        //if (distanceR < 1.5) // works OK, with few outliers, the majority are inliers
-        if (distanceR < 1.5) // works OK, with few outliers, the majority are inliers
+        //if (distanceR < 1.5) // works OK, with few outliers, the majority are inliers, DBow query score threshold 0.07
+        //if (distanceR < 2.0) // works moderate, with more outliers, the majority are inliers, DBow query score threshold 0.07
+        //if (distanceR < 1.0) // works good, with nearly no outlier, score threshold 0.005
+        //if (distanceR < 1.0) // works good, with nearly no outlier, score threshold 0.001
+        //if (distanceR < 1.5) // works good, with 4 outliers, score threshold 0.001
+        //if (distanceR < 3) // works poor, with 30 outliers, score threshold 0.001
+        //if (distanceR < 2.5 && distanceT < 100) // works poor, with 10 outliers, score threshold 0.001
+        //if (distanceR < 2.5 && distanceT < 50) // works poor than last, poor recall, with 10 outliers, score threshold 0.001
+        //if (distanceR < 2.0 && distanceT < 100) // works good, with 5 outliers, score threshold 0.001
+        //if (distanceR < 2.0 && distanceT < 50) // poor recall, with 4 outliers, score threshold 0.001
+        if (distanceR < 1.5 && distanceT < 150) // decent recall, 2 outliers, score threshold 0.001
             return true;
         else
             return false;
