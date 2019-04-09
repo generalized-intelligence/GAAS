@@ -89,7 +89,7 @@
       <parent>base_link</parent>
       <update_rate>30.0</update_rate>
       <camera name="right">
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0 0.12 0 0 0 0</pose>
         <horizontal_fov>1.5708</horizontal_fov>
         <image>
           <width>752</width>
@@ -107,7 +107,7 @@
         </noise>
       </camera>
       <camera name="left">
-        <pose>0 0.11098722222222221 0 0 0 0</pose>
+        <pose>0 0 0 0 0 0</pose>
         <horizontal_fov>1.5708</horizontal_fov>
         <image>
           <width>752</width>
