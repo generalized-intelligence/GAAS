@@ -24,7 +24,9 @@ public:
     void loadRelativeSceneInfoFromInternet(double gps_longitute,double gps_latitude,
                                       int count = 10,double range_km=5);
 
-    virtual int retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in_rect,const cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success);
+    virtual int retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in_rect,
+        const cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,
+        double img_lon,double img_lat,bool img_lon_lat_valid = false);
     
     virtual int retrieveSceneWithMultiStereoCam(const std::vector<cv::Mat> leftCams,const std::vector<cv::Mat> rightCams,
 				      std::vector<cv::Mat> RT_pose_of_stereo_cams,
