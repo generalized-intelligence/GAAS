@@ -28,6 +28,9 @@ To use ygz slam with ROS wrapper, please use the following method.
 
     ./bin/EurocStereoVIO_ros ./examples/SimulationCamera.yaml
 
+    Or
+
+    sh run.sh
 
 # 中文使用指南
 
@@ -60,3 +63,7 @@ To use ygz slam with ROS wrapper, please use the following method.
 ## 使用
 
     ./bin/EurocStereoVIO_ros ./examples/SimulationCamera.yaml 
+
+    或
+
+    sh run.sh

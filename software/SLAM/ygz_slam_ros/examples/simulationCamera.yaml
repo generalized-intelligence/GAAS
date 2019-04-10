@@ -6,24 +6,21 @@
 
 
 # camera and imu topics
-#Left: /multisense_sl/camera/right/image_raw
-#Right: /multisense_sl/camera/left/image_raw
-Left: /mynteye/left/image_rect
-Right: /mynteye/right/image_rect
+Left: /gi/simulation/left/image_raw
+Right: /gi/simulation/right/image_raw
 
-#Left: /cam0/image_raw
-#Right: /cam1/image_raw
+#Left: /mynteye/left/image_rect
+#Right: /mynteye/right/image_rect
 
 # not used for now
-Imu: /mynteye/imu/data_raw
-#Imu: /imu0
+Imu: /imu0
 
 # Camera calibration and distortion parameters (OpenCV) 
 # if running in pure stereo vision mode
 PureVisionMode: true
 
 # do we need visualization?
-UseViewer: false
+UseViewer: true
 
 # display mappoints?
 displayMapPoints: false

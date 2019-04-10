@@ -105,22 +105,26 @@ namespace ygz {
         this->use_mVA =  use_atti;
         this->mHeight = height;
         this->use_mHeight = use_height;
-        
+
+
+        LOG(INFO)<<"Tracking frame 1"<<endl;
+
         Track();
-        
-        
+
+        LOG(INFO)<<"Tracking frame 2"<<endl;
+
         //NOTE for serialization
-        if (mpCurrentFrame->IsKeyFrame() && mpMapSerialization!=nullptr)
-        {
-            mpMapSerialization->addFrame(mpCurrentFrame);
-        
-            if(mpMapSerialization->getSize()>200)
-            {
-                string path = "./MapSerialization.bin";
-                mpMapSerialization->serialize(path);
-                mpMapSerialization->test();
-            }
-        }
+//        if (mpCurrentFrame->IsKeyFrame() && mpMapSerialization!=nullptr)
+//        {
+//            mpMapSerialization->addFrame(mpCurrentFrame);
+//
+//            if(mpMapSerialization->getSize()>200)
+//            {
+//                string path = "./MapSerialization.bin";
+//                mpMapSerialization->serialize(path);
+//                mpMapSerialization->test();
+//            }
+//        }
         
         
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -140,7 +144,9 @@ namespace ygz {
             mpViewer->SetTrackStatus(static_cast<int>(mState), mTrackInliersCnt);
         }
 
-        
+
+        LOG(INFO)<<"Tracking frame 3"<<endl;
+
         auto position_var = mpCurrentFrame->GetPose().translation();
 
         
@@ -162,13 +168,15 @@ namespace ygz {
         this->frame_to_build_count+=1;
         this->frame_id+=1;
         this->frame_to_build_count_mutex.unlock();
+
         return mpCurrentFrame->GetPose();
+
     }
 
     void TrackerLK::Track() {
 
         mTrackInliersCnt = 0;
-	
+
         if (mState == NO_IMAGES_YET) {
 
             // 尝试通过视觉双目构建初始地图
@@ -191,24 +199,19 @@ namespace ygz {
 
             // 置状态为等待初始化状态
             mState = NOT_INITIALIZED;
-
             return;
 
         }
         else if (mState == NOT_INITIALIZED) 
         {   //不使用imu会永远停留在这个状态。
-
             // IMU未初始化时，位姿预测不靠谱，先用纯视觉追踪
             bool bOK = false;
             mpCurrentFrame->SetPose(mpLastFrame->GetPose() * mSpeed);  // assume the speed is constant
-
             bOK = TrackLastFrame(false);
-
             if (bOK)
             {
                 bOK = TrackLocalMap(mTrackInliersCnt);
             }
-
             if (bOK == false)
             {
                 // 纯视觉追踪失败了，reset整个系统
@@ -219,7 +222,7 @@ namespace ygz {
             }
             
             CleanOldFeatures();
-            
+
             if (NeedNewKeyFrame(mTrackInliersCnt))
             {
                 std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
@@ -246,7 +249,6 @@ namespace ygz {
                 }
             }
 
-
             mSpeed = mpLastFrame->GetPose().inverse() * mpCurrentFrame->GetPose();
             mpLastFrame = mpCurrentFrame;
 	    
@@ -255,8 +257,8 @@ namespace ygz {
                 //this->mCloud;//TODO:do something to insert into global temporary cloud or octree.
             }
             bool USE_LOOPCLOSING = false;
-           
 
+            LOG(INFO) <<"track 4.7"<<endl;
             if (USE_LOOPCLOSING)
             {
                 if(mpCurrentFrame->IsKeyFrame())
@@ -268,7 +270,7 @@ namespace ygz {
                     mpLoopClosing->addKeyFrame(mpCurrentFrame, true);
                 }
             }
-            
+
             return;
         } 
         
@@ -316,6 +318,7 @@ namespace ygz {
                 // in this case, don't save current as last frame
             }
         } else if (mState == WEAK) {
+            LOG(INFO) <<"track 7"<<endl;
             LOG(WARNING) << "Running WEAK mode" << endl;
             // use imu only to propagate the pose and try to initialize stereo vision
             PredictCurrentPose();   // 这步可能不可靠
@@ -357,6 +360,7 @@ namespace ygz {
         SE3d TCW = mpCurrentFrame->GetTCW();
         unique_lock<mutex> lock(mpLastFrame->mMutexFeature);
 
+
         for (size_t i = 0; i < mpLastFrame->mFeaturesLeft.size(); i++) {
             shared_ptr<Feature> feat = mpLastFrame->mFeaturesLeft[i];
             if (feat == nullptr) {
@@ -376,11 +380,13 @@ namespace ygz {
             }
         }
 
+
         // 注意 LK 只管追踪2D点，而不管这些2D点是否关联了3D地图点
         int cntMatches = LKFlowCV(mpLastFrame, mpCurrentFrame, refPts, trackedPts);
         // int cntMatches = LKFlow(mpLastFrame, mpCurrentFrame, trackedPts);
 
         int validMatches = 0;
+
 
         for (size_t i = 0; i < trackedPts.size(); i++) {
             if (trackedPts[i][0] < 0 || trackedPts[i][1] < 0)
@@ -396,6 +402,7 @@ namespace ygz {
             }
 
         }
+
 
         //LOG(INFO) << "Current features: " << mpCurrentFrame->mFeaturesLeft.size() << endl;
 
@@ -413,8 +420,16 @@ namespace ygz {
         double timeCost = std::chrono::duration_cast<std::chrono::duration<double> >(t3 - t1).count();
         //LOG(INFO) << "      LK in last frame cost time: " << timeCost << ", pts: " << refPts.size() << endl;
 
-        mTrackInliersCnt = OptimizeCurrentPose();
-        // LOG(INFO) << "Track last frame inliers: " << inliers << endl;
+
+        try {
+            mTrackInliersCnt = OptimizeCurrentPose();
+            // LOG(INFO) << "Track last frame inliers: " << inliers << endl;
+        }
+        catch (exception& e)
+        {
+            cout << "Standard exception: " << e.what() << endl;
+        }
+
 
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
         timeCost = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t3).count();
@@ -566,7 +581,7 @@ namespace ygz {
 		    {
 		        shared_ptr<FrameLight> pFrameLight = this->id_to_frame_map[this->frame_id];
 		        mpCurrentFrame->obs_lock.lock();
-			PointerObs pObs = make_shared<ObstacleCandidate>(
+			    PointerObs pObs = make_shared<ObstacleCandidate>(
 				mpCurrentFrame->Rwc().inverse() * (mp->GetWorldPos() - mpCurrentFrame->Ow()),feat
 					  );
 		        pFrameLight->obstacle_list.push_back(pObs); // the 3d pos is relative to its owner KF.

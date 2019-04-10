@@ -58,6 +58,10 @@ find_package(Pangolin REQUIRED)
 find_package(Glog REQUIRED )
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
 
+find_package(G2O REQUIRED)
+
+MESSAGE("G2O PATH: ${G2O_INCLUDE_DIR}")
+
 find_package(PCL REQUIRED)
 # octomap
 find_package( octomap REQUIRED )
@@ -90,7 +94,8 @@ ${DBoW3_DIRS}
 ${OpenCV_INCLUDE_DIRS}
 ${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/src
 #${PROJECT_SOURCE_DIR}/Thirdparty/DVision/
-${PROJECT_SOURCE_DIR}/Thirdparty/g2o/
+#${PROJECT_SOURCE_DIR}/Thirdparty/g2o/
+${G2O_INCLUDE_DIR}
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
 ${GLOG_INCLUDE_DIRS}
@@ -107,11 +112,19 @@ set(THIRD_PARTY_LIBS
         ${OpenCV_LIBS}
         ${EIGEN3_LIBS}
         ${Pangolin_LIBRARIES}
+	${G2O_LIBS}
+  	${G2O_CORE_LIBRARY}
+ 	${G2O_STUFF_LIBRARY}
+ 	${G2O_TYPES_SLAM2D}
+	${G2O_TYPES_SLAM3D}
+ 	${G2O_SOLVER_CHOLMOD}
+	${G2O_SOLVER_CSPARSE}
+	${G2O_SOLVER_CSPARSE_EXTENSION}
         #${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/lib/libDBo.so
         ${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/build/src/libDBoW3.so
         ${PROJECT_SOURCE_DIR}/Thirdparty/DBow3/build/libloopclosingmanager.so
         ${PROJECT_SOURCE_DIR}/Thirdparty/fast/build/libfast.so
-        ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+        #${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
         ${BLAS_LIBRARIES}
         ${LAPACK_LIBRARIES}
         ${GLOG_LIBRARY}

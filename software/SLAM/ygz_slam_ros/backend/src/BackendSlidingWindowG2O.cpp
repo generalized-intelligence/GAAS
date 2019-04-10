@@ -11,7 +11,7 @@
 #include <g2o/core/block_solver.h>
 #include <g2o/core/optimization_algorithm_gauss_newton.h>
 #include <g2o/core/optimization_algorithm_levenberg.h>
-#include <g2o/solvers/linear_solver_eigen.h>
+#include <g2o/solvers/eigen/linear_solver_eigen.h>
 #include <g2o/core/robust_kernel_impl.h>
 
 namespace ygz {
@@ -431,13 +431,25 @@ namespace ygz {
     void BackendSlidingWindowG2O::LocalBAXYZWithoutIMU(bool verbose) {
 
         LOG(INFO) << "Calling Local BA XYZ without IMU" << endl;
+
         // Setup optimizer
+//        g2o::SparseOptimizer optimizer;
+//        g2o::BlockSolverX::LinearSolverType *linearSolver;
+//        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
+//        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+//        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+//        optimizer.setAlgorithm(solver);
+
+
         g2o::SparseOptimizer optimizer;
-        g2o::BlockSolverX::LinearSolverType *linearSolver;
-        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
-        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
-        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+        std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver;
+        linearSolver = g2o::make_unique <g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>>();
+
+        std::unique_ptr <g2o::BlockSolverX> solver_ptr (new g2o::BlockSolverX( std::move(linearSolver)) );
+
+        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
         optimizer.setAlgorithm(solver);
+
         
         cout<<"BackendSlidingWindowG2O::LocalBAXYZWithoutIMU 1"<<endl;
         
@@ -638,15 +650,26 @@ namespace ygz {
         LOG(INFO) << "Calling Local BA without IMU" << endl;
 
         // Setup optimizer
-        g2o::SparseOptimizer optimizer;
-        g2o::BlockSolverX::LinearSolverType *linearSolver;
-        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
-        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
-        // g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
-        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
-
-        optimizer.setAlgorithm(solver);
+//        g2o::SparseOptimizer optimizer;
+//        g2o::BlockSolverX::LinearSolverType *linearSolver;
+//        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
+//        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+//        // g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+//        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+//
+//        optimizer.setAlgorithm(solver);
         // optimizer.setVerbose(verbose);
+
+
+        g2o::SparseOptimizer optimizer;
+        std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver;
+        linearSolver = g2o::make_unique <g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>>();
+
+        std::unique_ptr <g2o::BlockSolverX> solver_ptr (new g2o::BlockSolverX( std::move(linearSolver)) );
+
+        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
+        optimizer.setAlgorithm(solver);
+
 
         // 关键帧顶点
         int maxKFid = 0;
@@ -918,15 +941,27 @@ namespace ygz {
         Vector3d GravityVec = mpTracker->g();
 
         // Setup optimizer
+//        g2o::SparseOptimizer optimizer;
+//        g2o::BlockSolverX::LinearSolverType *linearSolver;
+//        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
+//        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+//        // g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+//        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+
+
         g2o::SparseOptimizer optimizer;
-        g2o::BlockSolverX::LinearSolverType *linearSolver;
-        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
-        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
-        // g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
-        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+        std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver;
+        linearSolver = g2o::make_unique <g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>>();
+
+        std::unique_ptr <g2o::BlockSolverX> solver_ptr (new g2o::BlockSolverX( std::move(linearSolver)) );
+
+        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
+
+
 
         optimizer.setAlgorithm(solver);
         optimizer.setVerbose(verbose);
+
 
         int maxKFid = 0;
         // 关键帧顶点
@@ -1336,11 +1371,21 @@ namespace ygz {
         Vector3d GravityVec = mpTracker->g();
 
         // Setup optimizer
+//        g2o::SparseOptimizer optimizer;
+//        g2o::BlockSolverX::LinearSolverType *linearSolver;
+//        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
+//        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+//        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+
+
         g2o::SparseOptimizer optimizer;
-        g2o::BlockSolverX::LinearSolverType *linearSolver;
-        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
-        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
-        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+        std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver;
+        linearSolver = g2o::make_unique <g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>>();
+
+        std::unique_ptr <g2o::BlockSolverX> solver_ptr (new g2o::BlockSolverX( std::move(linearSolver)) );
+
+        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
+
 
         optimizer.setAlgorithm(solver);
         optimizer.setVerbose(verbose);

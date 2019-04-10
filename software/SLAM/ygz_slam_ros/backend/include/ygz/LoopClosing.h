@@ -19,7 +19,7 @@
 //#include <DBoW2/DBoW2.h>
 #include "LoopClosingManager.h"
 
-#include "Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
+#include <g2o/types/sim3/types_seven_dof_expmap.h>
 #include <opencv2/opencv.hpp>
 #include <eigen3/Eigen/Dense>
 

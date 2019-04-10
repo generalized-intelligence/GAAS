@@ -10,8 +10,8 @@
 #include <g2o/core/base_unary_edge.h>
 #include <g2o/core/base_multi_edge.h>
 #include <g2o/core/base_binary_edge.h>
-#include <g2o/types/vertex_pointxyz.h>
-#include <g2o/types/edge_pointxyz.h>
+#include <g2o/types/slam3d/vertex_pointxyz.h>
+#include <g2o/types/slam3d/edge_pointxyz.h>
 
 using namespace Eigen;
 

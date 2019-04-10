@@ -8,6 +8,9 @@
 
 Scene::Scene()
 {
+
+    mpCv_helper = new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554);
+
     return;//TODO:fill in init functions.
 }
 
@@ -119,6 +122,169 @@ void Scene::test()
     
     cout<<"---------------Current scene info---------------"<<endl;
 }
+
+
+
+SceneFrame Scene::generateSceneFrameFromStereoImage(cv::Mat imgl, cv::Mat imgr, cv::Mat RotationMat, cv::Mat TranslationMat, cv::Mat Q_mat)
+{
+
+    cout<<"generateSceneFrameFromStereoImage 1"<<endl;
+
+    LoopClosingManager lcm("./voc/brief_k10L6.bin");
+
+    std::vector<cv::KeyPoint> key_points2d_candidate;
+    std::vector<cv::KeyPoint> key_points2d_final;
+    std::vector<cv::Point3d> points3d;
+    cv::Mat feature;
+
+    ptr_frameinfo pleft_image_info = lcm.extractFeature(imgl);
+    ptr_frameinfo pright_image_info = lcm.extractFeature(imgr);
+
+    cv::Mat feature_l,feature_r;
+    feature_l = pleft_image_info->descriptors;
+    feature_r = pright_image_info->descriptors;
+
+    std::vector<int> good_2dmatches_index;
+
+    FlannBasedMatcher matcher = FlannBasedMatcher(makePtr<flann::LshIndexParams>(12,20,2));
+    //FlannBasedMatcher matcher = FlannBasedMatcher();
+
+    std::vector< DMatch > matches;
+    matcher.match(feature_l, feature_r, matches);
+
+    double max_dist = 0;
+    double min_dist = 100;
+    for( int i = 0; i < matches.size(); i++ )
+    {
+        double dist = matches[i].distance;
+        if( dist < min_dist ) min_dist = dist;
+        if( dist > max_dist ) max_dist = dist;
+    }
+
+    std::vector< DMatch > good_matches;
+    for( int i = 0; i < matches.size(); i++ )
+    {
+        if( matches[i].distance <= 2*min_dist && matches[i].distance< 10) // 3.0 too large;2.0 too large.
+        {
+            good_matches.push_back( matches[i]);
+        }
+    }
+
+    std::vector<Point2f> lk_input_keypoints, lk_output_keypoints;
+    for(size_t i = 0; i < good_matches.size(); i++)
+    {
+        lk_input_keypoints.push_back(pleft_image_info->keypoints[good_matches[i].queryIdx].pt);//will check if LKFlow exist.
+        good_2dmatches_index.push_back(good_matches[i].queryIdx);
+    }
+
+
+    std::vector<unsigned char> PyrLKResults;
+    std::vector<float> optflow_err;
+
+    //Size winSize(31,31);
+    //TermCriteria termcrit(TermCriteria::COUNT|TermCriteria::EPS,20,0.03);
+
+    cout<<"lk_input_keypoints.size(): "<<(lk_input_keypoints.size())<<endl;
+
+    if (lk_input_keypoints.size()<=5)
+    {
+        SceneFrame failed;
+        return failed;
+    }
+
+    cv::calcOpticalFlowPyrLK(imgl,
+                             imgr,
+                             lk_input_keypoints,
+                             lk_output_keypoints,
+                             PyrLKResults,
+                             optflow_err);
+
+
+    cout<<"lk_output_keypoints.size() == 0: "<<(lk_output_keypoints.size())<<endl;
+    cout<<"PyrLKResults.size() == 0: "<<(PyrLKResults.size())<<endl;
+
+
+    if (lk_input_keypoints.size() < 5 || lk_output_keypoints.size() < 5 || PyrLKResults.size() < 5)
+    {
+        cout<<"lk_input_keypoints.size() == 0: "<<(lk_input_keypoints.size() == 0)<<endl;
+        cout<<"lk_output_keypoints.size() == 0: "<<(lk_output_keypoints.size() == 0)<<endl;
+        cout<<"PyrLKResults.size() == 0: "<<(PyrLKResults.size() == 0)<<endl;
+    }
+
+
+    std::vector<Point2f> matched_points;
+    std::vector<float> disparity_of_points;
+    cv::Mat descriptors_reserved;
+
+
+    for(int index = 0; index<lk_input_keypoints.size(); index++)
+    {
+        if(PyrLKResults[index] == 1)
+        {
+            matched_points.push_back(lk_input_keypoints[index]);
+            disparity_of_points.push_back(lk_input_keypoints[index].x - lk_output_keypoints[index].x);
+
+            //Mat desp_reserved = pleft_image_info->descriptors.colRange(good_2dmatches_index[index], good_2dmatches_index[index]+1).clone().reshape(0);
+            Mat desp_reserved = pleft_image_info->descriptors.row(good_2dmatches_index[index]).clone().reshape(0);
+            descriptors_reserved.push_back(desp_reserved);
+        }
+    }
+
+    cout<<"Q_mat: "<<Q_mat<<endl;
+
+    std::vector<cv::Point3f> points3f;
+
+//    points3f = mpCv_helper->image2world(lk_input_keypoints, disparity_of_points, RotationMat, TranslationMat);
+
+    points3f = mpCv_helper->image2world(lk_input_keypoints, disparity_of_points, RotationMat, TranslationMat);
+
+    points3d = mpCv_helper->Points3f2Points3d(points3f);
+
+
+//    cv::reprojectImageTo3D(disparity_of_points, points3f, Q_mat);
+//
+//
+//    //do rotation and translation to points3d.
+//    for(int i = 0;i<points3d.size();i++)
+//    {
+//        cv::Mat point3d_temp(points3d[i]);
+//
+//        Eigen::Matrix3f rotation;
+//        Eigen::Vector3f translation;
+//        Eigen::Vector3f point;
+//        Eigen::Vector3f result;
+//
+//        cv::cv2eigen(RotationMat, rotation);
+//        cv::cv2eigen(TranslationMat, translation);
+//        cv::cv2eigen(point3d_temp, point);
+//
+//        result = rotation * point + translation;
+//
+//        //cv::Mat transformed = RotationMat*point3d_temp + TranslationMat;
+//
+//        cv::Mat transformed;
+//        cv::eigen2cv(result, transformed);
+//
+//        Point3d output;
+//        output.x = transformed.at<float>(0);
+//        output.y = transformed.at<float>(1);
+//        output.z = transformed.at<float>(2);
+//        points3d[i] = output;//do transform in mat form.
+//    }
+
+    cv::KeyPoint::convert(matched_points, key_points2d_final);
+
+    cout<<"generate scene, points3d size: "<<points3d.size()<<endl;
+
+
+    return std::make_tuple(key_points2d_final, points3d, descriptors_reserved, RotationMat, TranslationMat);
+
+}
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 SceneRetriever::SceneRetriever()
