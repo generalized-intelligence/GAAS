@@ -1,3 +1,0 @@
-/home/gishr/software/GAAS/software/SLAM/ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/edit_cache.dir
-/home/gishr/software/GAAS/software/SLAM/ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/rebuild_cache.dir
-/home/gishr/software/GAAS/software/SLAM/ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir

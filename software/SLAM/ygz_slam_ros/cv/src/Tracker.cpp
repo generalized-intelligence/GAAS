@@ -12,7 +12,7 @@
 #include <g2o/core/block_solver.h>
 #include <g2o/core/optimization_algorithm_gauss_newton.h>
 #include <g2o/core/optimization_algorithm_levenberg.h>
-#include <g2o/solvers/linear_solver_eigen.h>
+#include <g2o/solvers/eigen/linear_solver_eigen.h>
 #include <g2o/core/robust_kernel_impl.h>
 
 #include <opencv2/core/core.hpp>
@@ -112,9 +112,8 @@ namespace ygz {
         // 这里有比较麻烦的流程
 
         int TrackInliersCnt = 0;
-	
-	
-	
+
+
 	// 初始化双目， 添加关键帧， 设置状态
         if (mState == NO_IMAGES_YET) {
             // 尝试通过视觉双目构建初始地图
@@ -122,6 +121,7 @@ namespace ygz {
                 LOG(INFO) << "Feature is not enough: " << mpCurrentFrame->mFeaturesLeft.size() << endl;
                 return;
             }
+
 
             // TODO 检查这个图像能否初始化双目
             if (StereoInitialization() == false) {
@@ -141,7 +141,6 @@ namespace ygz {
             return;
 
         } else if (mState == NOT_INITIALIZED) {
-
             // IMU未初始化时，位姿预测不靠谱，先用纯视觉追踪
             bool bOK = false;
             mpCurrentFrame->SetPose(mpLastFrame->GetPose());  // same with last, or use speed model
@@ -559,13 +558,23 @@ namespace ygz {
     Vector3d Tracker::IMUInitEstBg(const std::deque<shared_ptr<Frame>> &vpKFs) {
 
         // Setup optimizer
+//        g2o::SparseOptimizer optimizer;
+//        g2o::BlockSolverX::LinearSolverType *linearSolver;
+//
+//        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
+//
+//        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+//        g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+
         g2o::SparseOptimizer optimizer;
-        g2o::BlockSolverX::LinearSolverType *linearSolver;
+        std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver;
+        linearSolver = g2o::make_unique <g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>>();
 
-        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
+        std::unique_ptr <g2o::BlockSolverX> solver_ptr (new g2o::BlockSolverX( std::move(linearSolver)) );
 
-        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
-        g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
+
+
         optimizer.setAlgorithm(solver);
         // Add vertex of gyro bias, to optimizer graph
         ygz::VertexGyrBias *vBiasg = new ygz::VertexGyrBias();
@@ -887,7 +896,19 @@ namespace ygz {
             // return OptimizeCurrentPoseWithoutIMU();
         } else {
             // WEAK 或 初始化时，不要带IMU
-            return OptimizeCurrentPoseWithoutIMU();
+
+            int ret;
+
+            try {
+                ret = this->OptimizeCurrentPoseWithoutIMU();
+            }
+            catch (exception& e)
+            {
+                cout << "Standard exception in OptimizeCurrentPose: " << e.what() << endl;
+            }
+
+
+            return ret;
             // return OptimizeCurrentPoseFaster();
         }
     }
@@ -913,12 +934,24 @@ namespace ygz {
         IMUPreIntegration imupreint = GetIMUFromLastKF();
 
         // setup g2o
+//        g2o::SparseOptimizer optimizer;
+//        g2o::BlockSolverX::LinearSolverType *linearSolver;
+//        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
+//        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+//        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+//        // g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+
+
         g2o::SparseOptimizer optimizer;
-        g2o::BlockSolverX::LinearSolverType *linearSolver;
-        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
-        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
-        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
-        // g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+        std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver;
+        linearSolver = g2o::make_unique <g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>>();
+
+        std::unique_ptr <g2o::BlockSolverX> solver_ptr (new g2o::BlockSolverX( std::move(linearSolver)) );
+
+        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
+
+
+
         optimizer.setAlgorithm(solver);
 
         // Set current frame vertex PVR/Bias
@@ -1184,20 +1217,34 @@ namespace ygz {
 
     // 不带IMU的优化
     int Tracker::OptimizeCurrentPoseWithoutIMU() {
+
+
         const double gps_weight = 5.0;
-	//const double AttitudeWeight = 7.0;//1000;
-	//const double AttitudeWeight = 20;//200
-    const double AttitudeWeight = 200;//200
-	const double height_weight = 50;//1000;//50.0;// 50 -1000 are both ok.
+	    //const double AttitudeWeight = 7.0;//1000;
+	    //const double AttitudeWeight = 20;//200
+	    const double AttitudeWeight = 200;//200
+	    const double height_weight = 50;//1000;//50.0;// 50 -1000 are both ok.
         // 不带IMU的清爽很多，只要优化当前帧的PR即可
         assert(mpCurrentFrame != nullptr);
 
+
         // setup g2o
+//        g2o::SparseOptimizer optimizer;
+//        g2o::BlockSolverX::LinearSolverType *linearSolver;
+//        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
+//        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+//        g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+
+
         g2o::SparseOptimizer optimizer;
-        g2o::BlockSolverX::LinearSolverType *linearSolver;
-        linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
-        g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
-        g2o::OptimizationAlgorithmGaussNewton *solver = new g2o::OptimizationAlgorithmGaussNewton(solver_ptr);
+        std::unique_ptr<g2o::BlockSolverX::LinearSolverType> linearSolver;
+        linearSolver = g2o::make_unique <g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>>();
+
+        std::unique_ptr <g2o::BlockSolverX> solver_ptr (new g2o::BlockSolverX( std::move(linearSolver)) );
+
+        g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(std::move(solver_ptr));
+
+
         // g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
         optimizer.setAlgorithm(solver);
         // 当前帧的P+R
@@ -1205,81 +1252,81 @@ namespace ygz {
         vPR->setEstimate(mpCurrentFrame->PR());
         vPR->setId(0);
         optimizer.addVertex(vPR);
-	
 
-	//bool GlobalUseGPS = true;
-	bool GlobalUseGPS = false;
-	if(GlobalUseGPS)
-	{
-	    if(this->mUseGPS)
-	    {
-	      //cout << "adding edgeGPS to Optimization."<<endl;
 
-	      double x=this->mGPSx;
-	      double y=this->mGPSy;
-	      double z = this->mGPSz;
-	      EdgePRGPS *ePRGPS = new EdgePRGPS();
-	      ePRGPS->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(vPR));
-	      ePRGPS->setMeasurement(Vector3d(x,y,z));
-	      Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
-	      ePRGPS->setInformation( info_mat*gps_weight);
-	      optimizer.addEdge(ePRGPS);
-	    
-	    }
-	    else
-	    {
-	      cout<<"edgeGPS not added!"<<endl;
-	    }
-	}
+        //bool GlobalUseGPS = true;
+        bool GlobalUseGPS = false;
+        if(GlobalUseGPS)
+        {
+            if(this->mUseGPS)
+            {
+              //cout << "adding edgeGPS to Optimization."<<endl;
 
-	bool GlobalUseAttitude = true;
-	if (GlobalUseAttitude)
-	{
-	    //if(this->use_mVA)
-	    //{
-	        cout<<"USING PX4 ATTITUDE INFO!!!"<<endl;
-		EdgeAttitude *pEdgeAttitude = new EdgeAttitude();
-		pEdgeAttitude->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex*> (vPR));
-		Vector3d so3_r = SO3d::log(this->mVA.q.toRotationMatrix());
-		pEdgeAttitude->setMeasurement(so3_r);
-		Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
-			
-		pEdgeAttitude->setInformation(info_mat*AttitudeWeight);
-		
-		optimizer.addEdge(pEdgeAttitude);
-	    //}
-	    //else
-	    //{
-	    //    LOG(WARNING)<<"use_mVA is false.Attitude not used."<<endl;
-	    //}
-	}
-	else
-    {
-        cout<<"NOT USING PX4 ATTITUDE INFO!!!"<<endl;
-    }
-	
-	bool UseHeightBundle = true;//Height bundle used to fix drift.
-	if (UseHeightBundle)
-	{
-	  if(use_mHeight)
-	  {	    
-	    double x=0;
-	    double y=0;
-	    double z = mHeight;
-	    EdgePRGPS *ePRHeight = new EdgePRGPS();
-	    ePRHeight->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(vPR));
-	    ePRHeight->setMeasurement(Vector3d(x,y,z));
-	    Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
-	    
-	    info_mat(0,0) = 0;
-	    info_mat(1,1) = 0;
-	    ePRHeight->setInformation( info_mat*height_weight);
-	    optimizer.addEdge(ePRHeight);
-	  }
-	}
+              double x=this->mGPSx;
+              double y=this->mGPSy;
+              double z = this->mGPSz;
+              EdgePRGPS *ePRGPS = new EdgePRGPS();
+              ePRGPS->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(vPR));
+              ePRGPS->setMeasurement(Vector3d(x,y,z));
+              Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
+              ePRGPS->setInformation( info_mat*gps_weight);
+              optimizer.addEdge(ePRGPS);
+
+            }
+            else
+            {
+              cout<<"edgeGPS not added!"<<endl;
+            }
+        }
+
+        bool GlobalUseAttitude = true;
+        if (GlobalUseAttitude)
+        {
+            //if(this->use_mVA)
+            //{
+                cout<<"USING PX4 ATTITUDE INFO!!!"<<endl;
+            EdgeAttitude *pEdgeAttitude = new EdgeAttitude();
+            pEdgeAttitude->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex*> (vPR));
+            Vector3d so3_r = SO3d::log(this->mVA.q.toRotationMatrix());
+            pEdgeAttitude->setMeasurement(so3_r);
+            Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
+
+            pEdgeAttitude->setInformation(info_mat*AttitudeWeight);
+
+            optimizer.addEdge(pEdgeAttitude);
+            //}
+            //else
+            //{
+            //    LOG(WARNING)<<"use_mVA is false.Attitude not used."<<endl;
+            //}
+        }
+        else
+        {
+            cout<<"NOT USING PX4 ATTITUDE INFO!!!"<<endl;
+        }
+
+
+        bool UseHeightBundle = true;//Height bundle used to fix drift.
+        if (UseHeightBundle)
+        {
+          if(use_mHeight)
+          {
+            double x=0;
+            double y=0;
+            double z = mHeight;
+            EdgePRGPS *ePRHeight = new EdgePRGPS();
+            ePRHeight->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(vPR));
+            ePRHeight->setMeasurement(Vector3d(x,y,z));
+            Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
+
+            info_mat(0,0) = 0;
+            info_mat(1,1) = 0;
+            ePRHeight->setInformation( info_mat*height_weight);
+            optimizer.addEdge(ePRHeight);
+          }
+        }
         // 加入投影点
         // Set MapPoint vertices
-
 
         const int N = mpCurrentFrame->mFeaturesLeft.size();
         //const int N = mpCurrentFrame->mFeaturesLeft.size()>100?100:mpCurrentFrame->mFeaturesLeft.size();//reduce calculation.
@@ -1318,11 +1365,12 @@ namespace ygz {
             }
         }
 
+
         // 处理优化，保留ORB2的四遍优化策略
         //const float chi2Mono[4] = {5.991, 5.991, 5.991, 5.991};
         //magnify loss threshold in first 2 times.
         const float chi2Mono[4] = {59.91, 5.991*5, 5.991*2, 5.991};
-	//const int its[4] = {10, 10, 10, 10};
+	    //const int its[4] = {10, 10, 10, 10};
         const int its[4] = {3, 3, 3, 3};
         int nBad = 0;
         int optimize_times = 4;
@@ -1366,6 +1414,7 @@ namespace ygz {
                 break;
         }
 
+
         // Recover optimized pose and return number of inliers
         int inliers = nInitialCorrespondences - nBad;
         //LOG(INFO) << "bad/total = " << nBad << "/" << nInitialCorrespondences << endl;
@@ -1377,6 +1426,7 @@ namespace ygz {
             //LOG(INFO) << "Estimated Twb = \n" << mpCurrentFrame->GetPose().matrix() << endl;
         }
 
+
         // 为了显示效果，我们再计算一下所有inlier观测点的深度，这样viewer里看起来比较均匀
         for (shared_ptr<Feature> feat: mpCurrentFrame->mFeaturesLeft) {
             if (feat->mpPoint && feat->mbOutlier == false &&
@@ -1386,6 +1436,7 @@ namespace ygz {
                 feat->mfInvDepth = 1.0 / (mpCurrentFrame->mRcw * pw + mpCurrentFrame->mtcw)[2];
             }
         }
+
 
         return inliers;
     }

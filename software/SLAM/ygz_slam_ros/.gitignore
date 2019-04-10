@@ -1,8 +1,10 @@
-*.gz
-*.yml.gz
-*.zip
-./kdev4
+image/
+build/
+.idea/
+.kdev4/
 database.bin
-*.scn
-./image
-
+MapSerialization.bin
+*.csv
+*.kdev4
+./Thirdparty/DBow3/build
+./Thirdparty/fast/build

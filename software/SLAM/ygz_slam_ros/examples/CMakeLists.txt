@@ -27,3 +27,4 @@ target_link_libraries(MakeSceneEurocStereoVIO_ros
         ${YGZ_LIBS}
         ${THIRD_PARTY_LIBS}
         )
+

@@ -1,4 +1,4 @@
-/home/gishr/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/gishr/software/GAAS_dev/software/SLAM/ygz_slam_ros
+/home/gishr/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/gishr/software/GAAS_backup/software/SLAM/ygz_slam_ros_dev
 -- Building with build type 'Release', turn on the compiler optimization
 -- Using flag -std=c++11.
 OPENCV PATH: /usr/local/include;/usr/local/include/opencv
@@ -7,7 +7,8 @@ OPENCV PATH: /usr/local/include;/usr/local/include/opencv
 --   serialization
 --   wserialization
 --   system
--- Eigen found (include: /usr/include/eigen3, version: 3.2.92)
+G2O PATH: /usr/local/include
+-- Eigen found (include: /usr/local/include/eigen3, version: 3.3.4)
 -- Boost version: 1.58.0
 -- Found the following Boost libraries:
 --   system
@@ -19,24 +20,6 @@ OPENCV PATH: /usr/local/include;/usr/local/include/opencv
 --   chrono
 --   atomic
 --   regex
-CMake Warning (dev) at /usr/local/share/pcl-1.8/PCLConfig.cmake:244 (find_package):
-  Policy CMP0074 is not set: find_package uses <PackageName>_ROOT variables.
-  Run "cmake --help-policy CMP0074" for policy details.  Use the cmake_policy
-  command to set the policy and suppress this warning.
-
-  CMake variable FLANN_ROOT is set to:
-
-    /usr
-
-  For compatibility, CMake is ignoring the variable.
-Call Stack (most recent call first):
-  /usr/local/share/pcl-1.8/PCLConfig.cmake:299 (find_flann)
-  /usr/local/share/pcl-1.8/PCLConfig.cmake:508 (find_external_library)
-  CMakeLists.txt:61 (find_package)
-This warning is for project developers.  Use -Wno-dev to suppress it.
-
--- FLANN found (include: /usr/include, lib: optimized;/usr/lib/x86_64-linux-gnu/libflann_cpp.so;debug;/usr/lib/x86_64-linux-gnu/libflann_cpp.so)
--- FLANN found (include: /usr/include, lib: optimized;/usr/lib/x86_64-linux-gnu/libflann_cpp.so;debug;/usr/lib/x86_64-linux-gnu/libflann_cpp.so)
 -- The imported target "vtkRenderingPythonTkWidgets" references the file
    "/usr/lib/x86_64-linux-gnu/libvtkRenderingPythonTkWidgets.so"
 but this file does not exist.  Possible reasons include:
@@ -82,7 +65,7 @@ but not all the files it references.
 -- looking for PCL_SURFACE
 -- looking for PCL_KEYPOINTS
 -- looking for PCL_PEOPLE
-CMake Error at CMakeLists.txt:64 (find_package):
+CMake Error at CMakeLists.txt:68 (find_package):
   By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
   asked CMake to find a package configuration file provided by "catkin", but
   CMake did not find one.
@@ -100,5 +83,5 @@ CMake Error at CMakeLists.txt:64 (find_package):
 
 
 -- Configuring incomplete, errors occurred!
-See also "/home/gishr/software/GAAS_dev/software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeFiles/CMakeOutput.log".
-See also "/home/gishr/software/GAAS_dev/software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeFiles/CMakeError.log".
+See also "/home/gishr/software/GAAS_backup/software/SLAM/ygz_slam_ros_dev/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "/home/gishr/software/GAAS_backup/software/SLAM/ygz_slam_ros_dev/cmake-build-debug/CMakeFiles/CMakeError.log".

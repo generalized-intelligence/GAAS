@@ -51,6 +51,9 @@
 using namespace DBoW3;
 using namespace std;
 using namespace ygz;
+
+
+
 //Scene Pointer
 Scene* pScene = NULL;
 
@@ -112,6 +115,9 @@ SE3d pos_and_atti;
 
 cv::Mat M1l, M2l, M1r, M2r;
 
+cv::Mat CurrentLeftImage, CurrentRightImage;
+
+
 #define GD_semiMajorAxis 6378.137000000
 #define GD_TranMercB     6356.752314245
 #define GD_geocentF      0.003352810664
@@ -132,7 +138,7 @@ LoopClosingManager* pLoopClosingManager;
 void mySigintHandler(int sig)
 {
     {
-        pScene->saveFile("scene.scn");
+        pScene->saveFile("./image/scene.scn");
         pScene->saveVoc();
         
         cout<<"Saving Scene.cn and Voc finished!"<<endl;
@@ -144,9 +150,7 @@ void mySigintHandler(int sig)
              cv::imwrite("./image/left/"+to_string(i)+".png", VecLeftImage[i].clone() );
              cv::imwrite("./image/right/"+to_string(i)+".png", VecRightImage[i].clone() );
          }
-       
     }
-    
     
     cout << "All done"<<endl;
     
@@ -430,12 +434,13 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
         return;
     }
     
-    cv::Mat imLeftRect, imRightRect;
+//    cv::Mat CurrentLeftImage, CurrentRightImage;
+
     //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
     //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
 
-    imLeftRect = cv_ptrLeft->image;
-    imRightRect = cv_ptrRight->image;
+    CurrentLeftImage = cv_ptrLeft->image;
+    CurrentRightImage = cv_ptrRight->image;
 
     VehicleAttitude atti;
     atti.q.x() = posemsg.pose.orientation.x;
@@ -449,7 +454,7 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     //LOG(WARNING)<<"Attitude input:\n\n"<<endl;
     //LOG(WARNING)<<atti.q.toRotationMatrix()<<endl;
     atti.time_ms = posemsg.header.stamp.toNSec();
-    pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
+    pos_and_atti = system.AddStereoIMU(CurrentLeftImage, CurrentRightImage, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
                                            0,0,0,false,atti,true,0,false);
     
     Vector3d pos = pos_and_atti.translation();
@@ -475,37 +480,37 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     cv::Mat rotationmat,translationmat;
     cv::eigen2cv(mat,rotationmat); // inverse operation:eigen2cv.
     cv::eigen2cv(pos,translationmat);
-    
+
+
+
+    //NOTE not used
     cv::Mat Q_mat = (Mat_<float>(4,4) << 1, 0, 0, 0,
                                          0, 1, 0, 0,
                                          0, 0, 1, 0,
                                          0, 0, 0, 1);
     
     
-    
+
     if(!rotationmat.empty() && !translationmat.empty())
     {
         cout<<"r, t, q are: "<<rotationmat<<endl<<translationmat<<endl;
-    
+
         //pts2d_in    pts3d_in    desp,   R,    t
         //typedef  std::tuple<std::vector<cv::KeyPoint>, std::vector<cv::Point3d>, cv::Mat, cv::Mat, cv::Mat> SceneFrame;
-        SceneFrame scene_frame = generateSceneFrameFromStereoImage(imLeftRect, imRightRect, rotationmat, translationmat, Q_mat);
-        
+
+        SceneFrame scene_frame = pScene->generateSceneFrameFromStereoImage(CurrentLeftImage, CurrentRightImage, rotationmat, translationmat, Q_mat);
+
+        //save scene
         pScene->addFrame(scene_frame);
-        
+
+        //save database
         cur_frame_db.add(get<2>(scene_frame));
-        
+
         cout<<"cur_frame_db info: "<<cur_frame_db<<endl;
 
+        VecLeftImage.push_back(CurrentLeftImage.clone());
+        VecRightImage.push_back(CurrentRightImage.clone());
 
-        {
-            VecLeftImage.push_back(imLeftRect.clone());
-        }
-
-        {
-            VecRightImage.push_back(imRightRect.clone());
-        }
-    
     }
 
     frame_index++;
@@ -549,7 +554,7 @@ int main(int argc, char **argv) {
     string right_topic = string(fsSettings["Right"]);
     
     string cur_voc_path = string(fsSettings["VocPath"]);
-    cur_frame_db = DBoW3::Database("/home/gishr/software/GAAS_backup/software/SLAM/ygz_slam_ros/image/small_voc.yml.gz", false, 0);
+    cur_frame_db = DBoW3::Database("./small_voc.yml.gz", false, 0);
     
     // rectification parameters
     cv::Mat K_l, K_r, P_l, P_r, R_l, R_r, D_l, D_r;
@@ -601,8 +606,6 @@ int main(int argc, char **argv) {
     
 
 
-
-
     ros::init(argc, argv, "ygz_with_gps", ros::init_options::NoSigintHandler);
     ros::NodeHandle nh;
     
@@ -611,11 +614,13 @@ int main(int argc, char **argv) {
     message_filters::Subscriber<sensor_msgs::Image> left_sub(nh, left_topic, 10);
     message_filters::Subscriber<sensor_msgs::Image> right_sub(nh, right_topic, 10);
     
+
     ros::Subscriber imu_sub = nh.subscribe("/mynteye/imu/data_raw", 1000, FetchImuCallback);
     ros::Subscriber gps_sub = nh.subscribe("/dji_sdk/gps_position",100,FetchGPSCallback);
     ros::Publisher ygz_odom_vis_pub = nh.advertise<visualization_msgs::Marker>("/ygz_odom_marker",10);
     pVisualOdomPublisher = &ygz_odom_vis_pub;
     VisualOdomMSGindex = 0;
+
     
     //for DJI device:
     //ros::Subscriber atti_sub_dji = nh.subscribe("/dji_sdk/attitude",100,FetchAttitudeCallback_dji);
