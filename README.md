@@ -264,7 +264,7 @@ Il Vole
 </p>
 
 <p align="center">
-硬件组装示例
+3D 还原重建
 </p>
 
 7. 物体跟踪，具体实现在 algorithms/object_trace_tracking；
