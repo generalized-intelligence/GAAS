@@ -5,7 +5,6 @@
 */.kdev4
 */.kdev4/*
 *.so
-*.png
 *.jpg
 *.log
 *.bag
