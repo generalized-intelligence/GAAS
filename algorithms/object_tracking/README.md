@@ -3,7 +3,7 @@
 
 实现1.TLD(Tracking-Learning-Detection).
 链接:
-https://github.com/generalized-intelligence/Tracking
+https://github.com/generalized-intelligence/GAAS-Object-Tracking
 
 实现2.Goturn.需要GPU支持.
 
