@@ -22,6 +22,10 @@
 #include <vector>
 #include <algorithm>
 
+//NOTE GMS feature matcher
+#include "Thirdparty/GMS/gms_matcher.h"
+
+
 using namespace DBoW3;
 using namespace std;
 

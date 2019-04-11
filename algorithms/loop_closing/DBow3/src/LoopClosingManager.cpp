@@ -66,90 +66,73 @@ int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv:
 
     std::vector<cv::DMatch> matches_out;
 
-
     //NOTE method 1 will introduce too many outliers
 
     //iterate four matches
     //-------------------------------------------------------NOTE method 1-------------------------------------------------------
-//    vector<int> VecMatchSizes;
-//    vector<int> VecIDs;
-//    vector<vector<cv::DMatch> > VecMatches;
-//
-//    for(int wind_index =0; wind_index<results.size(); wind_index++)
-//    {
-//
-//        //results[wind_index].Score>DB_QUERY_SCORE_THRES
-//        if (results[wind_index].Score>0.001)
-//        {
-//            if (current_frame_has_index)
-//            //if (current_frame_has_index && ( std::abs(results[wind_index].Id - this->curFrameIndex) > TOO_CLOSE_THRES) )
-//            {
-//                // check if this loop candidate satisfies Epipolar Geometry constrain.
-//                if (match_2_images_flann(info, results[wind_index].Id, this->loop_id, results[wind_index].Score, this->frameinfo_list, matches_out))
-//                {
-//                    cout<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[wind_index].Id<<"]"<<endl;
-//
-//
-//                    int current_match_size = matches_out.size();
-//                    ret_index = results[wind_index].Id;
-//
+    vector<int> VecMatchSizes;
+    vector<int> VecIDs;
+    vector<vector<cv::DMatch> > VecMatches;
+
+    for(int wind_index =0; wind_index<results.size(); wind_index++)
+    {
+        //results[wind_index].Score>DB_QUERY_SCORE_THRES
+        if (results[wind_index].Score>0.05)
+        {
+            if (current_frame_has_index)
+            //if (current_frame_has_index && ( std::abs(results[wind_index].Id - this->curFrameIndex) > TOO_CLOSE_THRES) )
+            {
+                // check if this loop candidate satisfies Epipolar Geometry constrain.
+                if (match_2_images_flann(info, results[wind_index].Id, this->loop_id, results[wind_index].Score, this->frameinfo_list, matches_out))
+                {
+                    cout<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[wind_index].Id<<"]"<<endl;
+
+
+                    int current_match_size = matches_out.size();
+                    ret_index = results[wind_index].Id;
+
 //                    VecMatchSizes.push_back(current_match_size);
 //                    VecIDs.push_back(ret_index);
 //                    VecMatches.push_back(matches_out);
-//                }
-//            }
-//        }
-//        else
-//        {
-//            continue;
-//        }
-//    }
-//
-//
-//    if(VecMatchSizes.size()>0)
-//    {
-//        cout<<"loopclosing manager max_element"<<endl;
-//        auto p = max_element(VecMatchSizes.begin(), VecMatchSizes.end());
-//        int max_index = *p;
-//        cout<<"max_index is: "<<max_index<<endl;
-//
-//        int retID = VecIDs[max_index];
-//        matches_out = VecMatches[max_index];
-//    }
-//    else
-//    {
-//        return ret_index;
-//    }
+                }
+            }
+        }
+        else
+        {
+            continue;
+        }
+    }
 
 
     //-------------------------------------------------------NOTE method 1-------------------------------------------------------
 
 
     //NOTE method 2
-    if(results.size()>0)
-    {
-        //results[wind_index].Score>DB_QUERY_SCORE_THRES
-        //if (results[0].Score>0.08) // works OK
-        //if (results[0].Score>0.1) // a bit too strict
-        //if (results[0].Score>0.05) // too much outliers
-        //if (results[0].Score>0.07) //works OK
-        //if (results[0].Score>0.005) //with EssentialMat outlier detection, works ok with Rotation distance less than 1.5
-        if (results[0].Score>0.001)
-        {
-            if (current_frame_has_index)
-                //if (current_frame_has_index && ( std::abs(results[wind_index].Id - this->curFrameIndex) > TOO_CLOSE_THRES) )
-            {
-                // check if this loop candidate satisfies Epipolar Geometry constrain.
-                if (match_2_images_flann(info, results[0].Id, this->loop_id, results[0].Score, this->frameinfo_list, matches_out))
-                {
-                    //cout<<"Loop between ["<<this->frame_index<<"\t"<<results[wind_index].Id<<"]"<<endl;
-                    cout<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[0].Id<<"]"<<endl;
-
-                    ret_index = results[0].Id;
-                }
-            }
-        }
-    }
+//    if(results.size()>0)
+//    {
+//        //results[wind_index].Score>DB_QUERY_SCORE_THRES
+//        //if (results[0].Score>0.08) // works OK
+//        //if (results[0].Score>0.1) // a bit too strict
+//        //if (results[0].Score>0.05) // too much outliers
+//        //if (results[0].Score>0.07) //works OK
+//        //if (results[0].Score>0.005) //with EssentialMat outlier detection, works ok with Rotation distance less than 1.5
+//        //if (results[0].Score>0.001) //with EssentialMat outlier detection, works ok with Rotation distance less than 2.5
+//        if (results[0].Score>0.05)
+//        {
+//            if (current_frame_has_index)
+//                //if (current_frame_has_index && ( std::abs(results[wind_index].Id - this->curFrameIndex) > TOO_CLOSE_THRES) )
+//            {
+//                // check if this loop candidate satisfies Epipolar Geometry constrain.
+//                if (match_2_images_flann(info, results[0].Id, this->loop_id, results[0].Score, this->frameinfo_list, matches_out))
+//                {
+//                    //cout<<"Loop between ["<<this->frame_index<<"\t"<<results[wind_index].Id<<"]"<<endl;
+//                    cout<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[0].Id<<"]"<<endl;
+//
+//                    ret_index = results[0].Id;
+//                }
+//            }
+//        }
+//    }
 
 
 
@@ -231,11 +214,43 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     std::vector< cv::DMatch > matches;
     //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
 
+
+    cout<<"frameinfo_list[index2]->descriptors size: "<<frameinfo_list[index2]->descriptors.size()<<endl;
+    cout<<"frameinfo_list[index2]->keypoints size: "<<frameinfo_list[index2]->keypoints.size()<<endl;
+
+    cout<<"current_frame->descriptors size: "<<current_frame->descriptors.size()<<endl;
+    cout<<"current_frame->keypoints size: "<<current_frame->keypoints.size()<<endl;
+
     matcher.match(current_frame->descriptors, frameinfo_list[index2]->descriptors, matches);
 
 
-    if(matches.size()<30)
-        return false;
+    //GMS
+//    vector<cv::DMatch> matches_gms;
+//    int GMS_Feature_Matches = 0;
+//
+//    std::vector<bool> vbInliers;
+//    gms_matcher gms(current_frame->keypoints, cv::Size(200, 200), frameinfo_list[index2]->keypoints, cv::Size(200, 200), matches);
+//
+//    int num_inliers = gms.GetInlierMask(vbInliers, false, false);
+//    cout << "GMS Get total " << num_inliers << " matches." << endl;
+//
+//    // collect matches
+//    for (size_t i = 0; i < vbInliers.size(); ++i)
+//    {
+//        if (vbInliers[i] == true)
+//        {
+//            cout<<"??? 1"<<endl;
+//            matches_gms.push_back(matches[i]);
+//            GMS_Feature_Matches ++;
+//            cout<<"??? 2"<<endl;
+//        }
+//    }
+//
+//
+//    matches = matches_gms;
+
+//    if(matches.size()<30)
+//        return false;
 
     double max_dist = 0; double min_dist = 100;
     for( int i = 0; i < matches.size(); i++ )
@@ -251,24 +266,23 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     cout<<"raw matches size: "<<matches.size()<<endl;
 
 
-    for( int i = 0; i < matches.size(); i++ )
-    {
-        if( matches[i].distance <= 2*min_dist && matches[i].distance< ORB_TH_HIGH) // 3.0 too large;2.0 too large.
-        {
-            good_matches.push_back( matches[i]);
-        }
-    }
-
-
 //    for( int i = 0; i < matches.size(); i++ )
 //    {
-//        if( matches[i].distance <= 4*min_dist && matches[i].distance< 20) // 3.0 too large;2.0 too large.
+//        if( matches[i].distance <= 2*min_dist && matches[i].distance< ORB_TH_HIGH) // 3.0 too large;2.0 too large.
 //        {
 //            good_matches.push_back( matches[i]);
 //        }
 //    }
 
-    
+
+    for( int i = 0; i < matches.size(); i++ )
+    {
+        if( matches[i].distance <= 2*min_dist && matches[i].distance< 15) // 3.0 too large;2.0 too large.
+        {
+            good_matches.push_back( matches[i]);
+        }
+    }
+
     std::vector<cv::Point2f> match_points1;
     std::vector<cv::Point2f> match_points2;
 
@@ -306,7 +320,9 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
             final_good_matches_count++;
         }
     }
-    
+
+
+
     if(final_good_matches_count>STEP2_KP_NUM)
     {
         //saveImagePair(index1,index2,save_index,final_good_matches,score, frameinfo_list);  //for debug only.
@@ -314,11 +330,11 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
         good_matches_output = final_good_matches;
         return true;
     }
-    
+
     final_good_matches.clear();
     good_matches_output = final_good_matches;
-    
     return false;
+
 }
 
 

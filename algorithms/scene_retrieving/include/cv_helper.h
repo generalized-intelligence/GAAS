@@ -20,7 +20,6 @@
 #include <opencv2/core/eigen.hpp>
 #include <opencv2/core.hpp>
 #include <opencv2/opencv.hpp>
-#include <opencv2/features2d.hpp>
 #include <opencv2/highgui.hpp>
 
 #include <ros/ros.h>
@@ -102,7 +101,6 @@ public:
             float depth;
             depth = (this->bf) / ( points_disparity[i] );
 
-            //cout<<"depth: "<<depth<<endl;
 
             camera_point.x = (pt.x - cx) * fxinv * depth;
             camera_point.y = (pt.y - cy) * fyinv * depth;
@@ -141,14 +139,10 @@ public:
         cv::Point3f camera_point;
         vector<cv::Point3f> cam_points;
 
-        cout<<"image2cam 1"<<endl;
-
         for(size_t i=0; i<image_points.size(); i++)
         {
 
             cv::Point2f pt = image_points[i];
-
-            cout<<"image2cam 2"<<endl;
 
             points_disparity[i] = (this->bf) / (points_disparity[i] + 1e-5);
 
@@ -159,8 +153,6 @@ public:
             cam_points.push_back(camera_point);
         }
 
-        cout<<"image2cam 3"<<endl;
-        cout<<"image2cam 3: "<<cam_points.size()<<endl;
 
         return cam_points;
     }
@@ -241,9 +233,9 @@ public:
 
     void image2KpAndDesp(cv::Mat image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
     {
-        cv::Ptr<cv::ORB> orb = cv::ORB::create(1200);
         cv::Mat mask;
 
+        cv::Ptr<cv::ORB> orb = cv::ORB::create(2000);
         orb->detectAndCompute(image, mask, keypoints, descriptors);
 
         cout<<"image2KpAndDesp size: "<<keypoints.size()<<", "<<descriptors.size()<<endl;
@@ -372,7 +364,10 @@ public:
 
         //step 1, match raw desps
         std::vector<cv::DMatch> matches;
+
+        //NOTE for ORB kps and desps
         cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12,20,2));
+
         matcher.match(desps1, desps2, matches);
 
         cout<<"desps1 shape: "<<desps1.size()<<endl;
@@ -403,7 +398,7 @@ public:
 
         for( int i = 0; i < matches.size(); i++ )
         {
-            if( matches[i].distance <= 4*min_dist && matches[i].distance< 20) // 3.0 too large;2.0 too large.
+            if( matches[i].distance <= 3*min_dist && matches[i].distance< 20) // 3.0 too large;2.0 too large.
             {
                 good_matches.push_back( matches[i]);
             }
@@ -415,8 +410,8 @@ public:
             return false;
 
         //for debug
-        result_matches = good_matches;
-        return true;
+//        result_matches = good_matches;
+//        return true;
         //--------------------------------------------------------------------------------
 
         vector<cv::Point2f> good_kps_old, good_kps_cur;
@@ -431,7 +426,8 @@ public:
 
         //step 3, use H to find second bunch of good matches
         cv::Mat isOutlierMask;
-        cv::Mat fundamental_matrix = cv::findFundamentalMat(good_kps_old, good_kps_cur, cv::FM_RANSAC, 3, 0.99, isOutlierMask);
+//        cv::Mat fundamental_matrix = cv::findFundamentalMat(good_kps_old, good_kps_cur, cv::FM_RANSAC, 3, 0.99, isOutlierMask);
+        cv::Mat fundamental_matrix = cv::findFundamentalMat(good_kps_old, good_kps_cur, cv::FM_RANSAC, 2, 0.995, isOutlierMask);
 
         std::vector<cv::DMatch> final_good_matches;
         for(int i = 0; i<good_matches.size(); i++)
@@ -444,7 +440,8 @@ public:
 
         cout<<"final_good_matches size: "<<final_good_matches.size()<<endl;
 
-        if(final_good_matches.size()<5)
+        // for findEssentialMat requirement
+        if(final_good_matches.size()<8)
             return false;
 
 
@@ -459,14 +456,25 @@ public:
                   cv::Mat R, cv::Mat t,
                   cv::Mat& result_R, cv::Mat& result_t)
     {
+        cout<<"solvePnP ...."<<endl;
+
+        if(old_image_left.empty() || old_image_right.empty() ||
+           cur_image_left.empty() || cur_image_right.empty() ||
+           R.empty() || t.empty())
+            return false;
+
+        cout<<"solvePnP 0"<<endl;
 
         this->index++;
+
+        cout<<"solvePnP 1"<<endl;
 
         this->applyMask(old_image_left);
         this->applyMask(old_image_right);
         this->applyMask(cur_image_left);
         this->applyMask(cur_image_right);
 
+        cout<<"solvePnP 2"<<endl;
 
         //step 1, given old stereo images, R and t, get kps, desps and mps of old frame
         vector<cv::KeyPoint> Keypoints_old_left;
@@ -482,12 +490,14 @@ public:
                                     descriptors_old_left,//output desps
                                     MapPoints_old);      //output MapPoints in world frame
 
+        cout<<"solvePnP 3"<<endl;
 
         //step 2, get kps and desps of current image
         vector<cv::KeyPoint> Keypoints_current_left;
         cv::Mat descriptors_current_left;
         this->image2KpAndDesp(cur_image_left, Keypoints_current_left, descriptors_current_left);
 
+        cout<<"solvePnP 4"<<endl;
 
         //for test , cv::CV_FM_8POINT
 //        vector<cv::Point2f> kps1, kps2;
@@ -521,6 +531,7 @@ public:
             return false;
         }
 
+        cout<<"solvePnP 5"<<endl;
 
         // ---------------------------------------------------for debugging----------------------------------------------------------
         cv::Mat test_image;
@@ -549,7 +560,7 @@ public:
         cv::eigen2cv(this->K, intrinstic);
         cv::Mat inliers;
 
-        cv::Mat D = cv::Mat::zeros(4,1,cv::DataType<double>::type);
+        cv::Mat D = cv::Mat::zeros(4, 1, cv::DataType<double>::type);
 
         //cv::solvePnPRansac(mps_old, image_pts_cur, intrinstic, NULL, rvec, tvec, 0, 30, 0.2, 5);
         cout<<"mps_old size(): "<<mps_old.size()<<endl;
@@ -573,45 +584,33 @@ public:
         cv::Rodrigues(R, rvec);
         cv::Rodrigues(t, tvec);
 
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers);
-
-        cout<<"inliers 1: "<<inliers<<endl;
-
-        cout<<"solvepnpransac 1"<<endl;
-
-        cout<<"solve pnp 1"<<endl;
-
-        cout<<"cv helper solve R 1: \n"<<R<<endl;
-        cout<<"cv helper solve t 1: \n"<<t<<endl;
-        cout<<"cv helper solve rvec 1: \n"<<rvec<<endl;
-        cout<<"cv helper solve tvec 1: \n"<<tvec<<endl;
-
-
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_P3P);
-
-        cout<<"inliers 2: "<<inliers<<endl;
-
-        cout<<"solvepnpransac 2"<<endl;
-
-        cout<<"solve pnp 2"<<endl;
-
-        cout<<"cv helper solve rvec 2: \n"<<rvec<<endl;
-        cout<<"cv helper solve tvec 2: \n"<<tvec<<endl;
-
-
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_EPNP);
-
-        cout<<"inliers 3: "<<inliers<<endl;
-
-        cout<<"solvepnpransac 3"<<endl;
-
-        cout<<"solve pnp 3"<<endl;
-
-        cout<<"cv helper solve rvec 3: \n"<<rvec<<endl;
-        cout<<"cv helper solve tvec 3: \n"<<tvec<<endl;
+//        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers);
+//
+//        cout<<"inliers 1: "<<inliers<<endl;
+//
+//        cout<<"solvepnpransac 1"<<endl;
+//
+//        cout<<"solve pnp 1"<<endl;
+//
+//        cout<<"cv helper solve R 1: \n"<<R<<endl;
+//        cout<<"cv helper solve t 1: \n"<<t<<endl;
+//        cout<<"cv helper solve rvec 1: \n"<<rvec<<endl;
+//        cout<<"cv helper solve tvec 1: \n"<<tvec<<endl;
+//
+//
+//        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_P3P);
+//
+//        cout<<"inliers 2: "<<inliers<<endl;
+//
+//        cout<<"solvepnpransac 2"<<endl;
+//
+//        cout<<"solve pnp 2"<<endl;
+//
+//        cout<<"cv helper solve rvec 2: \n"<<rvec<<endl;
+//        cout<<"cv helper solve tvec 2: \n"<<tvec<<endl;
 
 
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_UPNP);
+        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.2, 0.99, inliers, cv::SOLVEPNP_EPNP);
 
         cout<<"inliers 3: "<<inliers<<endl;
 
@@ -621,6 +620,18 @@ public:
 
         cout<<"cv helper solve rvec 3: \n"<<rvec<<endl;
         cout<<"cv helper solve tvec 3: \n"<<tvec<<endl;
+
+
+//        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_UPNP);
+//
+//        cout<<"inliers 3: "<<inliers<<endl;
+//
+//        cout<<"solvepnpransac 3"<<endl;
+//
+//        cout<<"solve pnp 3"<<endl;
+//
+//        cout<<"cv helper solve rvec 3: \n"<<rvec<<endl;
+//        cout<<"cv helper solve tvec 3: \n"<<tvec<<endl;
 
 
         cv::Rodrigues (rvec, result_R);
@@ -643,6 +654,7 @@ public:
 
         float distanceT = this->Vec3Distance(t, tvec);
 
+
         //if (distanceR < 1.5) // works OK, with few outliers, the majority are inliers, DBow query score threshold 0.07
         //if (distanceR < 2.0) // works moderate, with more outliers, the majority are inliers, DBow query score threshold 0.07
         //if (distanceR < 1.0) // works good, with nearly no outlier, score threshold 0.005
@@ -653,28 +665,33 @@ public:
         //if (distanceR < 2.5 && distanceT < 50) // works poor than last, poor recall, with 10 outliers, score threshold 0.001
         //if (distanceR < 2.0 && distanceT < 100) // works good, with 5 outliers, score threshold 0.001
         //if (distanceR < 2.0 && distanceT < 50) // poor recall, with 4 outliers, score threshold 0.001
-        if (distanceR < 1.5 && distanceT < 150) // decent recall, 2 outliers, score threshold 0.001
+        //if (distanceR < 1.5 && distanceT < 150) // decent recall, 2 outliers, score threshold 0.001, works poor on SLAM square scene
+        //if (distanceR < 1.5) // a bit too strict, few recall, no outliers on square scene
+        //if (distanceR < 10) // too many outliers, good recall.
+        //if (distanceR < 4) // fewer outliers than before, good recall
+        //if (distanceR < 1.0) // too strict
+        if (distanceR < 1.2)
             return true;
         else
             return false;
 
 
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.5, 0.99, inliers, cv::SOLVEPNP_AP3P);
-
-        cout<<"inliers 4: "<<inliers<<endl;
-
-        cout<<"solvepnpransac 4"<<endl;
-
-        cout<<"solve pnp 4"<<endl;
-
-        cout<<"cv helper solve rvec 4: \n"<<rvec<<endl;
-        cout<<"cv helper solve tvec 4: \n"<<tvec<<endl;
-
-        //-----------------------final result-------------------------
-        cv::Rodrigues (rvec, result_R);
-        result_t = tvec;
-
-        return true;
+//        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.5, 0.99, inliers, cv::SOLVEPNP_AP3P);
+//
+//        cout<<"inliers 4: "<<inliers<<endl;
+//
+//        cout<<"solvepnpransac 4"<<endl;
+//
+//        cout<<"solve pnp 4"<<endl;
+//
+//        cout<<"cv helper solve rvec 4: \n"<<rvec<<endl;
+//        cout<<"cv helper solve tvec 4: \n"<<tvec<<endl;
+//
+//        //-----------------------final result-------------------------
+//        cv::Rodrigues (rvec, result_R);
+//        result_t = tvec;
+//
+//        return true;
     }
 
 
@@ -766,9 +783,11 @@ public:
 
         cv::Mat essential_mat = cv::findEssentialMat(pts1f, pts2f, focal_length, principal_point, cv::RANSAC);
 
-        cout<<"Recovered essential mat is: "<<essential_mat<<endl;
+        cout<<"Recovered essential mat is: \n"<<essential_mat<<endl;
 
         cv::Mat R, t;
+
+        cout<<"Recover Rotation from essential mat, pts1f and pts2f size: "<<pts1f.size()<<", "<<pts2f.size()<<endl;
         cv::recoverPose(essential_mat, pts1f, pts2f, R, t, focal_length, principal_point);
 
         return R;

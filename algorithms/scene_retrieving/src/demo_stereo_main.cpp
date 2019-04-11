@@ -67,19 +67,32 @@ int main(int argc,char** argv)
         string right_path = "./image/right/" + to_string(i) + ".png";
         right_image_path.push_back(right_path);
     }
-    
+
+
+    pSceneRetriever->setImageVecPath(left_image_path, 1);
+    pSceneRetriever->setImageVecPath(right_image_path, 0);
 
 
     for (int i=0; i<image_num; i++)
     {
-        pSceneRetriever->retrieveSceneFromStereoImage(cv::imread(left_image_path[i]), cv::imread(right_image_path[i]), Q_mat, RT_mat, match_success);
+        cout<<"retrieveSceneFromStereoImage 1"<<endl;
+        cv::Mat left_image = cv::imread(left_image_path[i]);
+        cv::Mat right_image = cv::imread(right_image_path[i]);
 
-        pSceneRetriever->setImageVecPath(left_image_path, 1);
-        pSceneRetriever->setImageVecPath(right_image_path, 0);
-
-        if(match_success)
+        if(left_image.empty() && right_image.empty() && Q_mat.empty())
         {
-            cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
+            cout<<"left or right image or Q_mat is empty!"<<endl;
+            continue;
+        }
+        else
+        {
+            pSceneRetriever->retrieveSceneFromStereoImage(left_image, right_image, Q_mat, RT_mat, match_success);
+            cout<<"retrieveSceneFromStereoImage 2"<<endl;
+
+            if(match_success)
+            {
+                cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
+            }
         }
     }
 

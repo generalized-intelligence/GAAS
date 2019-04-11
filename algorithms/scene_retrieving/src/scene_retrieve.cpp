@@ -224,7 +224,12 @@ void SceneRetriever::_init_retriever()
 	    
         pfr->keypoints = p2d[frame_index];
 	    pfr->descriptors = this->original_scene.getDespByIndex(frame_index);
-        
+
+
+	    cout<<"pfr->keypoints size: "<<pfr->keypoints.size()<<endl;
+	    cout<<"pfr->descriptors size: "<<pfr->descriptors.size()<<endl;
+
+
         ptr_frameinfo frame_info(pfr);
         
         this->ploop_closing_manager_of_scene->addKeyFrame(frame_info);
@@ -270,27 +275,35 @@ cv::Mat SceneRetriever::fetchImage(size_t index, int left)
 void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& current_frame_info, std::vector<cv::DMatch> matches)
 {
 
+    cout<<"displayFeatureMatches 1"<<endl;
+
     vector<cv::KeyPoint> cur_keypoints = current_frame_info->keypoints;
 
     ptr_frameinfo retreived_Frame_info = ploop_closing_manager_of_scene->frameinfo_list[loop_index];
+
+    cout<<"displayFeatureMatches 2"<<endl;
 
     vector<cv::KeyPoint> old_keypoints = retreived_Frame_info->keypoints;
 
     cv::Mat output_image;
 
+//    cout<<<<endl;
+
     cv::drawMatches(this->mCurrentImage, cur_keypoints, fetchImage(loop_index, 1), old_keypoints, matches, output_image);
     if(!output_image.empty())
         cv::imwrite("./loopclosure_result/" + std::to_string(this->LoopClosureDebugIndex) + "_" +std::to_string(loop_index) + ".png", output_image);
+
+    cout<<"displayFeatureMatches 3"<<endl;
 }
 
 
 
-int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Mat image_right_rect, cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
+int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect, cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
 {
     this->LoopClosureDebugIndex ++;
 
     //step<1> generate sparse pointcloud of image pair input and scene.
-    if (image_left_rect.empty() && image_right_rect.empty())
+    if (image_left_rect.empty() || image_right_rect.empty())
     {
         cout<<"Left or Right image are empty, return."<<endl;
         return -1;
@@ -300,8 +313,8 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Ma
     mpCv_helper->applyMask(image_right_rect);
     mpCv_helper->applyMask(image_left_rect);
     
-    cv::imshow("left image", image_left_rect);
-    //cv::waitKey(5);
+//    cv::imshow("left image", image_left_rect);
+//    cv::waitKey(5);
 
     this->mCurrentImage = image_left_rect;
 
@@ -320,10 +333,12 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Ma
 
     //NOTE display feature matches between current frame and detected old frame
     cout << "good_matches_output: " << good_matches_output.size() << endl;
-    if (good_matches_output.size() > 5) {
-        this->displayFeatureMatches(loop_index, frameinfo_left, good_matches_output);
-    }
 
+//    if (good_matches_output.size() > 5) {
+//        this->displayFeatureMatches(loop_index, frameinfo_left, good_matches_output);
+//    }
+
+    cout<<"this->displayFeatureMatches 2"<<endl;
 
     // method 1
 
@@ -344,27 +359,41 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Ma
     //initialize PnP result
     cv::Mat result_R, result_t;
 
+    cout<<"this->displayFeatureMatches 3"<<endl;
+
+    cout<<"this->displayFeatureMatches 33"<<endl;
+
     //conduct pnp
-    bool pnpResult = this->mpCv_helper->solvePnP(old_image_left,
-                                old_image_right,
-                                image_left_rect,
-                                image_right_rect,
-                                R, t,
-                                result_R, result_t);
 
-
-
-    if(pnpResult)
+    if (old_image_right.empty() || old_image_left.empty() || image_left_rect.empty() || image_right_rect.empty() || R.empty() || t.empty())
     {
-        cout<<"pnp result are: \n: "<<result_R<<endl<<result_t<<endl;
-        cout<<"solve pnp finished, publishing the result."<<endl;
+        cout<<"Image empty in solvePnP"<<endl;
+        return -1;
+    }
+    else
+    {
+        bool pnpResult = this->mpCv_helper->solvePnP(old_image_left,
+                                                     old_image_right,
+                                                     image_left_rect,
+                                                     image_right_rect,
+                                                     R, t,
+                                                     result_R, result_t);
 
-        cv::Mat temp_t =  -result_R.t()*result_t;
+        cout<<"this->displayFeatureMatches 4"<<endl;
 
-        //this->mpCv_helper->publishPose(result_R, result_t, 0);
-        this->mpCv_helper->publishPose(-result_R.t(), temp_t, 0);
+        if(pnpResult)
+        {
+            cout<<"pnp result are: \n: "<<result_R<<endl<<result_t<<endl;
+            cout<<"solve pnp finished, publishing the result."<<endl;
 
-        cout<<"solve pnp finished, publishing the result finished."<<endl;
+            cv::Mat temp_t =  -result_R.t()*result_t;
+
+            //this->mpCv_helper->publishPose(result_R, result_t, 0);
+            this->mpCv_helper->publishPose(-result_R.t(), temp_t, 0);
+
+            cout<<"solve pnp finished, publishing the result finished."<<endl;
+        }
+
     }
 
 
