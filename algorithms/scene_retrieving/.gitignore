@@ -12,7 +12,9 @@
 */*/build/*
 *.kdev*
 ./image
+./image2
 image
+image2
 ./loopclosure_result2/*
 ./loopclosure_result2/*
 test.log
