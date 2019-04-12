@@ -109,6 +109,7 @@ ptr_frameinfo LoopClosingManager::extractFeature(const cv::Mat& image)
     //features.push_back(vector<cv::Mat >());
     return pframeinfo;
 }
+
 void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_matches,double score, const std::vector<ptr_frameinfo> frameinfo_list)
 {
     stringstream ss;
@@ -127,14 +128,17 @@ void saveImagePair(int id1,int id2,int &save_index,std::vector<DMatch>& good_mat
     cv::imwrite(output_ss.str(),merged_img);
     save_index++;
 }
+
 bool match_2_images_flann(ptr_frameinfo current_frame,int index2,int &save_index,double score,const std::vector<ptr_frameinfo>& frameinfo_list,std::vector<DMatch>& good_matches_output)
 {
     //TODO:refer VINS KeyFrame::findConnection().
+
     FlannBasedMatcher matcher = FlannBasedMatcher(makePtr<flann::LshIndexParams>(12,20,2));
     //FlannBasedMatcher matcher = FlannBasedMatcher();
     std::vector< DMatch > matches;
     //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
     matcher.match(current_frame->descriptors, frameinfo_list[index2]->descriptors, matches);
+
     double max_dist = 0; double min_dist = 100;
     for( int i = 0; i < matches.size(); i++ )
     {
@@ -155,6 +159,7 @@ bool match_2_images_flann(ptr_frameinfo current_frame,int index2,int &save_index
     std::vector<cv::Point2f> match_points1;
     std::vector<cv::Point2f> match_points2;
 
+
     cout<<"Good matches count:"<<good_matches.size()<<"."<<endl;
     if(good_matches.size()<STEP1_KP_NUM) // 8 -> 12
     {
@@ -168,6 +173,7 @@ bool match_2_images_flann(ptr_frameinfo current_frame,int index2,int &save_index
         //kp_list[index2][ good_matches[i].trainIdx ].pt );
         match_points2.push_back( frameinfo_list[index2]->keypoints[good_matches[i].trainIdx].pt);
     }
+
     Mat isOutlierMask;
     Mat fundamental_matrix = findFundamentalMat(match_points1, match_points2, FM_RANSAC, 3, 0.99,isOutlierMask);
     int final_good_matches_count = 0;
@@ -180,6 +186,7 @@ bool match_2_images_flann(ptr_frameinfo current_frame,int index2,int &save_index
             final_good_matches_count++;
         }
     }
+
     if(final_good_matches_count>STEP2_KP_NUM)
     {
         //saveImagePair(index1,index2,save_index,final_good_matches,score, frameinfo_list);  //for debug only.

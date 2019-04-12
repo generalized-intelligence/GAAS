@@ -23,7 +23,7 @@
 //#include <pcl_conversions/pcl_conversions.h"
 #include<pcl/conversions.h>
 #include <pcl/PCLPointCloud2.h>
-#include "ygz/LoopClosingManager.h"
+#include "LoopClosingManager.h"
 #include "ygz/scene_frame_properties.h"
 #include "ygz/serialization.h"
 

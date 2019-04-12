@@ -10,85 +10,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bef0d037-830c-4f35-acab-ab4842427d77" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/AHRS/uNavAHRS/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/AHRS/uNavAHRS/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/AHRS/uNavAHRS/ros_api_main.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/AHRS/uNavAHRS/uNavAHRS.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/AHRS/uNavAHRS/uNavAHRS.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/AHRS/uNavAHRS/uNavAHRS.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/AHRS/uNavAHRS/uNavAHRS.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/GlobalOptimizationGraph/GlobalOptimizationGraph.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/GlobalOptimizationGraph/GlobalOptimizationGraph.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/GlobalOptimizationGraph/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/GlobalOptimizationGraph/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/loop_closing/DBow3/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/loop_closing/DBow3/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/loop_closing/DBow3/demo/demo.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/loop_closing/DBow3/demo/demo.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/loop_closing/DBow3/src/LoopClosingManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/loop_closing/DBow3/src/LoopClosingManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/CMakeFiles/Makefile.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/CMakeFiles/Makefile.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/scene_retrieving.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/scene_retrieving.cbp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/flags.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/MakeSceneFromOpenSfMModel.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_mono.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_mono.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_mono.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_mono.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_mono.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_mono.dir/flags.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_mono.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_mono.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_stereo.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_stereo.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_stereo.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_stereo.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_stereo.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_stereo.dir/flags.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_stereo.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/demo_stereo.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/flags.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/link.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/CMakeFiles/scene_retrieve.dir/link.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/nlohmann_json/nlohmann_json.cbp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/cmake-build-debug/src/nlohmann_json/nlohmann_json.cbp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/MakeSceneEurocStereoVIO_ros.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/MakeSceneEurocStereoVIO_ros.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/MakeSceneFromOpenSfMModel.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/MakeSceneFromOpenSfMModel.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/demo_mono_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/demo_mono_main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/demo_stereo_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/demo_stereo_main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/scene_retrieve.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/scene_retrieve.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/src/scene_retrieve.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/test.scene" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/README.MD" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/README.MD" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/build/CMakeFiles/loopclosingmanager.dir/src/LoopClosingManager.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/build/CMakeFiles/loopclosingmanager.dir/src/LoopClosingManager.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/build/src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/build/src/CMakeFiles/DBoW3.dir/LoopClosingManager.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/build/src/libDBoW3.so.0.0.1" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/build/src/libDBoW3.so.0.0.1" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/src/LoopClosingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/src/LoopClosingManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/src/LoopClosingManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/DBow3/src/LoopClosingManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/CMakeDirectoryInformation.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/CMakeDirectoryInformation.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/Makefile2" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/Makefile2" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/TargetDirectories.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/TargetDirectories.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/C.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/C.includecache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/CXX.includecache" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/CXX.includecache" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/DependInfo.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/DependInfo.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/build.make" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/build.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/depend.internal" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/depend.internal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/flags.make" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/flags.make" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/g2o/core/optimizable_graph.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/CMakeFiles/g2o.dir/g2o/core/optimizable_graph.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/Makefile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/cmake_install.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/build/cmake_install.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/g2o/core/jacobian_workspace.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/g2o/core/jacobian_workspace.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/g2o/core/optimizable_graph.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/Thirdparty/g2o/g2o/core/optimizable_graph.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/common/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/common/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/common/include/ygz/LoopClosingManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/common/include/ygz/LoopClosingManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/common/src/LoopClosingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/common/src/LoopClosingManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/cv/src/Tracker.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/cv/src/Tracker.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/cv/src/TrackerLK.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/cv/src/TrackerLK.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/debug.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/debug.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/do_compile.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/examples/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/examples/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/examples/simulationCamera.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/examples/simulationCamera.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../ygz_slam_ros/slampose.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../ygz_slam_ros/slampose.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../px4_mavros_scripts/1_px4_mavros_offboard_controller/commander.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../px4_mavros_scripts/1_px4_mavros_offboard_controller/commander.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../px4_mavros_scripts/1_px4_mavros_offboard_controller/px4_mavros_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../px4_mavros_scripts/1_px4_mavros_offboard_controller/px4_mavros_run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/image2/scene.scn" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../algorithms/scene_retrieving/image2/small_voc.yml.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../demo/tutorial_2/2_Struction_from_Motion/square_20_15.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../../demo/tutorial_2/2_Struction_from_Motion/square_20_15.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../simulator/models/iris_stereo_camera/iris_stereo_camera.sdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../simulator/models/iris_stereo_camera/model.config" beforeDir="false" afterPath="$PROJECT_DIR$/../../../simulator/models/iris_stereo_camera/model.config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/include/ygz/LoopClosingManager.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/include/ygz/scene_retrieve.h" beforeDir="false" afterPath="$PROJECT_DIR$/common/include/ygz/scene_retrieve.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/common/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/common/src/scene_retrieve.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/EurocStereoVIO_ros.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/examples/EurocStereoVIO_ros.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/MakeSceneEurocStereoVIO_ros.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/examples/MakeSceneEurocStereoVIO_ros.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/examples/simulationCamera.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/examples/simulationCamera.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/small_voc.yml.gz" beforeDir="false" afterPath="$PROJECT_DIR$/small_voc.yml.gz" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -99,24 +38,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/cv/src/TrackerLK.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="334">
-              <caret line="435" column="60" selection-start-line="435" selection-start-column="60" selection-end-line="435" selection-end-column="60" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/backend/src/BackendSlidingWindowG2O.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="515">
-              <caret line="1380" selection-start-line="1380" selection-end-line="1386" selection-end-column="117" />
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/backend/src/LoopClosing.cpp">
           <provider selected="true" editor-type-id="text-editor">
@@ -129,7 +50,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cv/src/Tracker.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="316">
+            <state relative-caret-position="25974">
               <caret line="1443" column="36" selection-start-line="1443" selection-start-column="36" selection-end-line="1443" selection-end-column="36" />
             </state>
           </provider>
@@ -165,8 +86,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/common/include/ygz/scene_retrieve.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3672">
-              <caret line="204" column="46" selection-start-line="204" selection-start-column="13" selection-end-line="204" selection-end-column="46" />
+            <state relative-caret-position="198">
+              <caret line="11" column="30" selection-start-line="11" selection-start-column="30" selection-end-line="11" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -174,8 +95,35 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/common/src/scene_retrieve.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2502">
-              <caret line="139" column="48" selection-start-line="139" selection-start-column="41" selection-end-line="139" selection-end-column="48" />
+            <state relative-caret-position="6894">
+              <caret line="383" column="71" selection-start-line="383" selection-start-column="71" selection-end-line="383" selection-end-column="71" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/examples/EurocStereoVIO_ros.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="639">
+              <caret line="893" column="4" lean-forward="true" selection-start-line="893" selection-start-column="4" selection-end-line="893" selection-end-column="4" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1422">
+              <caret line="79" column="28" selection-start-line="79" selection-start-column="8" selection-end-line="79" selection-end-column="28" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3150">
+              <caret line="175" selection-start-line="175" selection-end-line="175" />
             </state>
           </provider>
         </entry>
@@ -184,14 +132,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>SE3d</find>
-      <find>SE3d(</find>
-      <find>InsertStereo</find>
-      <find>SE3d()</find>
-      <find>GetPose</find>
-      <find>cur_frame_db</find>
-      <find>extractFeature</find>
-      <find>generateSceneFrameFromStereoImage</find>
       <find>extract</find>
       <find>Tracking frame</find>
       <find>Track</find>
@@ -214,6 +154,14 @@
       <find>optimizecurrentpose</find>
       <find>optimizecurrentposewithou</find>
       <find>OptimizeCurrentPose 0</find>
+      <find>generateSceneFrameFromStereoImage</find>
+      <find>lk_input_keypoints</find>
+      <find>matched_points</find>
+      <find>descriptors_reserved</find>
+      <find>match_2_images_flann</find>
+      <find>FetchImageCallback</find>
+      <find>pos_and_atti</find>
+      <find>heading_deg</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -246,29 +194,29 @@
         <option value="$PROJECT_DIR$/cv/include/ygz/Align.h" />
         <option value="$PROJECT_DIR$/cv/src/Align.cpp" />
         <option value="$PROJECT_DIR$/util/include/ygz/Viewer.h" />
-        <option value="$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.cpp" />
         <option value="$PROJECT_DIR$/backend/include/ygz/LoopClosing.h" />
         <option value="$PROJECT_DIR$/backend/src/LoopClosing.cpp" />
-        <option value="$PROJECT_DIR$/examples/EurocStereoVIO_ros.cpp" />
         <option value="$PROJECT_DIR$/system/include/ygz/System.h" />
         <option value="$PROJECT_DIR$/examples/MakeSceneFromeImages.cpp" />
         <option value="$PROJECT_DIR$/common/include/ygz/cv_helper.h" />
-        <option value="$PROJECT_DIR$/common/include/ygz/scene_retrieve.h" />
-        <option value="$PROJECT_DIR$/common/src/scene_retrieve.cpp" />
-        <option value="$PROJECT_DIR$/examples/MakeSceneEurocStereoVIO_ros.cpp" />
         <option value="$PROJECT_DIR$/common/src/LoopClosingManager.cpp" />
         <option value="$PROJECT_DIR$/backend/src/BackendSlidingWindowG2O.cpp" />
         <option value="$PROJECT_DIR$/cv/src/Tracker.cpp" />
         <option value="$PROJECT_DIR$/cv/src/TrackerLK.cpp" />
+        <option value="$PROJECT_DIR$/common/include/ygz/scene_retrieve.h" />
+        <option value="$PROJECT_DIR$/examples/MakeSceneEurocStereoVIO_ros.cpp" />
+        <option value="$PROJECT_DIR$/common/src/scene_retrieve.cpp" />
+        <option value="$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.cpp" />
+        <option value="$PROJECT_DIR$/examples/EurocStereoVIO_ros.cpp" />
       </list>
     </option>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-128" />
-    <option name="y" value="82" />
-    <option name="width" value="1853" />
-    <option name="height" value="1076" />
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="67" />
+    <option name="y" value="12" />
+    <option name="width" value="1851" />
+    <option name="height" value="1068" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -282,17 +230,40 @@
           <expand>
             <path>
               <item name="YGZ-Stereo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="ygz_slam_ros_dev" type="462c0819:PsiDirectoryNode" />
+              <item name="ygz_slam_ros" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="YGZ-Stereo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="ygz_slam_ros_dev" type="462c0819:PsiDirectoryNode" />
-              <item name="backend" type="462c0819:PsiDirectoryNode" />
+              <item name="ygz_slam_ros" type="462c0819:PsiDirectoryNode" />
+              <item name="common" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="YGZ-Stereo" type="b2602c69:ProjectViewProjectNode" />
-              <item name="ygz_slam_ros_dev" type="462c0819:PsiDirectoryNode" />
-              <item name="backend" type="462c0819:PsiDirectoryNode" />
+              <item name="ygz_slam_ros" type="462c0819:PsiDirectoryNode" />
+              <item name="common" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="YGZ-Stereo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ygz_slam_ros" type="462c0819:PsiDirectoryNode" />
+              <item name="examples" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="YGZ-Stereo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ygz_slam_ros" type="462c0819:PsiDirectoryNode" />
+              <item name="Thirdparty" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="YGZ-Stereo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ygz_slam_ros" type="462c0819:PsiDirectoryNode" />
+              <item name="Thirdparty" type="462c0819:PsiDirectoryNode" />
+              <item name="DBow3" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="YGZ-Stereo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="ygz_slam_ros" type="462c0819:PsiDirectoryNode" />
+              <item name="Thirdparty" type="462c0819:PsiDirectoryNode" />
+              <item name="DBow3" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
@@ -306,6 +277,7 @@
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -350,17 +322,23 @@
       <workItem from="1554801035028" duration="5292000" />
       <workItem from="1554806924501" duration="264000" />
       <workItem from="1554875888950" duration="2699000" />
+      <workItem from="1554884282630" duration="4841000" />
+      <workItem from="1554891559186" duration="59000" />
+      <workItem from="1554961177636" duration="1701000" />
+      <workItem from="1554969839924" duration="3794000" />
+      <workItem from="1554976574813" duration="3727000" />
+      <workItem from="1555034803009" duration="5400000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="67834000" />
+    <option name="totallyTimeSpent" value="87356000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.09397457" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.056937534" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -374,7 +352,7 @@
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.2565172" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="10" />
-      <window_info active="true" anchor="bottom" id="CMake" order="11" visible="true" weight="0.09195402" />
+      <window_info anchor="bottom" id="CMake" order="11" weight="0.08777429" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -498,20 +476,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1422">
-          <caret line="79" column="28" selection-start-line="79" selection-start-column="8" selection-end-line="79" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="918">
-          <caret line="51" column="46" selection-start-line="51" selection-start-column="46" selection-end-line="51" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/backend/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -570,13 +534,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="450">
           <caret line="34" column="22" selection-start-line="34" selection-start-column="22" selection-end-line="34" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/examples/EurocStereoVIO_ros.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2356">
-          <caret line="405" column="49" selection-start-line="405" selection-start-column="49" selection-end-line="405" selection-end-column="49" />
         </state>
       </provider>
     </entry>
@@ -657,10 +614,31 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/common/src/LoopClosingManager.cpp" />
+    <entry file="file://$PROJECT_DIR$/cv/src/TrackerLK.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5683">
+          <caret line="425" column="62" selection-start-line="425" selection-start-column="62" selection-end-line="425" selection-end-column="62" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/backend/src/BackendSlidingWindowG2O.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="24840">
+          <caret line="1380" selection-start-line="1380" selection-end-line="1386" selection-end-column="117" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/backend/src/LoopClosing.cpp">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5436">
           <caret line="302" column="38" selection-start-line="302" selection-start-column="38" selection-end-line="302" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cv/src/Tracker.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="25974">
+          <caret line="1443" column="36" selection-start-line="1443" selection-start-column="36" selection-end-line="1443" selection-end-column="36" />
         </state>
       </provider>
     </entry>
@@ -687,36 +665,36 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/common/include/ygz/scene_retrieve.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3672">
-          <caret line="204" column="46" selection-start-line="204" selection-start-column="13" selection-end-line="204" selection-end-column="46" />
+        <state relative-caret-position="198">
+          <caret line="11" column="30" selection-start-line="11" selection-start-column="30" selection-end-line="11" selection-end-column="30" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/common/src/scene_retrieve.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2502">
-          <caret line="139" column="48" selection-start-line="139" selection-start-column="41" selection-end-line="139" selection-end-column="48" />
+        <state relative-caret-position="6894">
+          <caret line="383" column="71" selection-start-line="383" selection-start-column="71" selection-end-line="383" selection-end-column="71" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/backend/src/BackendSlidingWindowG2O.cpp">
+    <entry file="file://$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="515">
-          <caret line="1380" selection-start-line="1380" selection-end-line="1386" selection-end-column="117" />
+        <state relative-caret-position="1422">
+          <caret line="79" column="28" selection-start-line="79" selection-start-column="8" selection-end-line="79" selection-end-column="28" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cv/src/Tracker.cpp">
+    <entry file="file://$PROJECT_DIR$/Thirdparty/DBow3/src/LoopClosingManager.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="316">
-          <caret line="1443" column="36" selection-start-line="1443" selection-start-column="36" selection-end-line="1443" selection-end-column="36" />
+        <state relative-caret-position="3150">
+          <caret line="175" selection-start-line="175" selection-end-line="175" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cv/src/TrackerLK.cpp">
+    <entry file="file://$PROJECT_DIR$/examples/EurocStereoVIO_ros.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="334">
-          <caret line="435" column="60" selection-start-line="435" selection-start-column="60" selection-end-line="435" selection-end-column="60" />
+        <state relative-caret-position="639">
+          <caret line="893" column="4" lean-forward="true" selection-start-line="893" selection-start-column="4" selection-end-line="893" selection-end-column="4" />
         </state>
       </provider>
     </entry>

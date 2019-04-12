@@ -40,7 +40,7 @@
 
 //add scene retrieving.
 #include "ygz/scene_retrieve.h"
-#include "ygz/LoopClosingManager.h"
+#include "LoopClosingManager.h"
 
 #include <signal.h>
 #include <csignal>

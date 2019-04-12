@@ -9,18 +9,15 @@
 Left: /gi/simulation/left/image_raw
 Right: /gi/simulation/right/image_raw
 
-#Left: /mynteye/left/image_rect
-#Right: /mynteye/right/image_rect
-
 # not used for now
-Imu: /imu0
+Imu: /mavros/imu/data
 
 # Camera calibration and distortion parameters (OpenCV) 
 # if running in pure stereo vision mode
 PureVisionMode: true
 
 # do we need visualization?
-UseViewer: true
+UseViewer: false
 
 # display mappoints?
 displayMapPoints: false

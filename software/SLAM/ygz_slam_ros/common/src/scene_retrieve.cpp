@@ -140,6 +140,11 @@ SceneFrame Scene::generateSceneFrameFromStereoImage(cv::Mat imgl, cv::Mat imgr, 
     ptr_frameinfo pleft_image_info = lcm.extractFeature(imgl);
     ptr_frameinfo pright_image_info = lcm.extractFeature(imgr);
 
+
+    cout<<"pleft_image_info kps size: "<<pleft_image_info->keypoints.size()<<endl;
+    cout<<"pright_image_info kps size: "<<pright_image_info->keypoints.size()<<endl;
+
+
     cv::Mat feature_l,feature_r;
     feature_l = pleft_image_info->descriptors;
     feature_r = pright_image_info->descriptors;
@@ -276,6 +281,12 @@ SceneFrame Scene::generateSceneFrameFromStereoImage(cv::Mat imgl, cv::Mat imgr, 
 
     cout<<"generate scene, points3d size: "<<points3d.size()<<endl;
 
+
+
+
+    //TODO for debug purposes
+    key_points2d_final = pleft_image_info->keypoints;
+    descriptors_reserved = pleft_image_info->descriptors;
 
     return std::make_tuple(key_points2d_final, points3d, descriptors_reserved, RotationMat, TranslationMat);
 
