@@ -72,6 +72,12 @@ We recommend using the Range sensor parameter and purchasing a Lidar lite v3 las
 
 hardware 目录放置推荐的硬件配置，方便使用者购买相应的元件制作原型机。
 
+我们的项目完全开源，你可以用任何你希望使用的开发方式来开发 GAAS。
+
+但如果你希望快速上手，直接开始写代码的话，你也可以购买 GAAS 团队内部自己使用的开发套件：
+
+https://item.taobao.com/item.htm?id=591140560551
+
 下面是我们使用的测试设备明细：
 
 为了方便室内测试和日常维护，我们并没有选取过大或者过小的机型，优秀的性能和便于维护性是我们选配这架无人机的初衷。

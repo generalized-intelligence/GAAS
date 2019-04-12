@@ -18,9 +18,9 @@ Or watch the step-by-step [tutorial](https://github.com/generalized-intelligence
 
 Or follow the lastest news about the project at our [Medium Publication](https://medium.com/generalized-intelligence)
 
-Or join our Wechat group at:
+扫码加入 GAAS 微信讨论群（由于现有的群人数都超过 100 人，需要先加 GAAS 管理员，由管理员发送入群邀请）：
 
-<img width="250" height="300" src="https://s2.ax1x.com/2019/04/08/A4OhJH.jpg"/>
+<img width="200" height="200" src="https://s2.ax1x.com/2019/04/11/A7y6SS.jpg"/>
 
 - [What is GAAS?](#what-is-gaas)
   * [Project Overview](#project-overview)
@@ -264,7 +264,7 @@ Il Vole
 </p>
 
 <p align="center">
-硬件组装示例
+3D 还原重建
 </p>
 
 7. 物体跟踪，具体实现在 algorithms/object_trace_tracking；
@@ -364,6 +364,13 @@ NOTE:  仅在 px4 v1.8.0 上进行过测试。
 Setup 部分中所有想要更改的组件源码安装。
 
 在 ROS 的对应接口进行替换即可。
+
+## 相关硬件
+我们的项目完全开源，你可以用任何你希望使用的开发方式来开发 GAAS。
+
+但如果你希望快速上手，直接开始写代码的话，你也可以购买 GAAS 团队内部自己使用的开发套件：
+
+https://item.taobao.com/item.htm?id=591140560551
 
 
 ## Meta
