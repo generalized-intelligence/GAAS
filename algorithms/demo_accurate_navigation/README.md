@@ -12,6 +12,8 @@ However, CV-enabled navigation is not suitable for an environment that does not 
 
 After going through this demo, you should be able to implement CV-enabled precision localization in your desired use cases. 
 
+---
+
 ### 精准定点导航例程
 
 精准定点导航例程使用摄像头的视觉信息进行精准导航。可完成功能有：
