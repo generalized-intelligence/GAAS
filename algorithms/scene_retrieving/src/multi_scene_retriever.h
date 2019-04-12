@@ -12,7 +12,7 @@
 
 class MultiSceneNode();
 
-class MultiSceneRetriever
+class MultiSceneRetriever//Support gps environment only.To do navigation indoor,just init a single SceneRetriever.
 {
 public:
     MultiSceneRetriever();
@@ -20,10 +20,11 @@ public:
     {//init this class itself.
     }
     void findNRelativeSceneByGPS(double gps_longitude,double gps_latitude,
-                                 int count = 10,double range_km = 5);
+                                vector<int> &output_scene_index,
+                                int count = 10,double range_km = 5)
     void loadRelativeSceneInfoFromInternet(double gps_longitute,double gps_latitude,
                                       int count = 10,double range_km=5);
-
+    void generate_visualization_graph();
     virtual int retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in_rect,
         const cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,
         double img_lon,double img_lat,bool img_lon_lat_valid = false);
@@ -34,10 +35,12 @@ public:
 				      bool &match_success
 				       );
     virtual int retrieveSceneWithMultiMonoCam(const std::vector<cv::Mat> images,std::vector<cv::Mat> RT_pose_of_mono_cams,cv::Mat &RT_mat_of_multi_mono_cam_output,bool& match_success);
-    virtual int retrieveSceneFromStereoImage(const cv::Mat image_left_rect, const cv::Mat image_right_rect, const cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success);
+    virtual int retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
+        const cv::Mat image_right_rect, const cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output,
+         bool& match_success,double img_lon,double img_lat,bool img_lon_lat_valid=false);
 private:
     void insertSceneIntoKDTree(double longi,double lati,shared_ptr<Scene> pScene);
-    void insertSceneIntoKDTree(shared_ptr<MultiSceneNode> nodeptr)
+    void insertSceneIntoKDTree(shared_ptr<MultiSceneNode> nodeptr);
 private:
     int scene_index;
     map<int,shared_ptr<MultiSceneNode> > idToNodeMap;
@@ -52,10 +55,12 @@ public:
     MultiSceneNode(bool load_scene = False)
     { //TODO:lazy download of pScene.
     }
+    MultiSceneNode(const string& desc_file_of_scene_node);
 public:
     shared_ptr<Scene> pScene;
     double longitude;
     double latitude;
+    std::string SfM_Model_path;//load scene and visualize.
 };
 
 
