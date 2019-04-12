@@ -40,3 +40,28 @@ add_executable(demo_mono
 target_link_libraries(demo_mono
 			${REQUIRED_LIBRARIES}
 			scene_retrieve)
+
+
+add_library(multi_scene_retriever multi_scene_retriever.cpp)
+target_link_libraries(multi_scene_retriever PRIVATE nlohmann_json::nlohmann_json
+                       ${REQUIRED_LIBRARIES}
+                       scene_retrieve
+			)
+#add_executable(demo_mono_multi_scene_retriever
+#               demo_mono_multi_scene_retriever.cpp)
+#target_link_libraries(demo_mono_multi_scene_retriever
+#			${REQUIRED_LIBRARIES}
+#			scene_retrieve
+#                        multi_scene_retriever)
+
+#add_executable(demo_stereo_multi_scene_retriever
+#               demo_stereo_multi_scene_retriever.cpp)
+
+#target_link_libraries(demo_stereo_multi_scene_retriever
+#                        ${REQUIRED_LIBRARIES}
+#                        scene_retrieve
+#                        multi_scene_retriever)
+
+
+
+
