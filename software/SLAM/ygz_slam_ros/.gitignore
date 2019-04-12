@@ -1,6 +1,6 @@
 image/
 build/
-.idea/
+.idea
 .kdev4/
 database.bin
 MapSerialization.bin
@@ -9,3 +9,4 @@ MapSerialization.bin
 ./Thirdparty/DBow3/build
 ./Thirdparty/fast/build
 *.log
+*.csv
