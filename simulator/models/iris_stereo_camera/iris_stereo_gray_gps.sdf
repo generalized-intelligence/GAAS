@@ -1,5 +1,5 @@
 <sdf version='1.6'>
-  <model name='iris_stereo_camera'>
+  <model name='iris_stereo_gray_gps'>
     <link name='base_link'>
       <pose frame=''>0 0 0 0 -0 0</pose>
       <inertial>
@@ -82,12 +82,11 @@
       <gravity>1</gravity>
       <velocity_decay/>
 
-
       <sensor type="multicamera" name="stereo_camera">
       <pose frame=''>0 0 0.2 0 0 0</pose>
       <child>/multicamera_link</child>
       <parent>base_link</parent>
-      <update_rate>30.0</update_rate>
+      <update_rate>15.0</update_rate>
       <camera name="right">
         <pose>0 0.12 0 0 0 0</pose>
         <horizontal_fov>1.5708</horizontal_fov>
@@ -127,7 +126,7 @@
       <plugin name="stereo_camera_controller" filename="libgazebo_ros_multicamera.so">
         <alwaysOn>true</alwaysOn>
         <updateRate>0.0</updateRate>
-        <cameraName>multisense_sl/camera</cameraName>
+        <cameraName>gi/simulation</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
         <frameName>left_camera_optical_frame</frameName>
