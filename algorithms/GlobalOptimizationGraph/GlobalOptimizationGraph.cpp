@@ -221,9 +221,12 @@ bool GlobalOptimizationGraph::estimateCurrentSpeed()
 
 
 void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLAM_msg)
+//if use this api,only reserve the last one.
+//void GlobalOptimizationGraph::addBlockSLAM(std::vector<const geometry_msgs::PoseStamped&> SLAM_msg_list)
+//for multiple msgs.
 {
     //part<1> Rotation.
-    pEdgeSlam = new EdgeAttitude();
+    auto pEdgeSlam = new EdgeAttitude();
     shared_ptr<g2o::BaseEdge> ptr_slam(pEdgeSlam);
     pEdgeSlam->setId(this->EdgeVec.size());
     this->EdgeVec.push_back(ptr_slam);
@@ -241,6 +244,27 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     pEdgeSlam->setInformation(info_mat_slam_rotation);
     optimizer.addEdge(pEdgeSlam);
     //part<2> Translation
+    //Edge PRV.
+    if(this->historyStates.size()>0)
+    {
+        shared_ptr<Edge_SLAM_PRV>pEdge_SLAM_PRV(new Edge_SLAM_PRV());
+        pEdge_SLAM_PRV->setId(this->EdgeVec.size());
+        this->EdgeVec.push_back(pEdge_SLAM_PRV);
+        pEdge_SLAM_PRV->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>this->historyStates[this->historyStates.size()-1]);//old one.
+        pEdge_SLAM_PRV->setVertex(1,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get());
+        pEdge_SLAM_PRV->setVertex(2,dynamic_cast<g2o::OptimizableGraph::Vertex *>this->historySpeed[this->historySpeed.size()-1]);
+        pEdge_SLAM_PRV->setVertex(3,dynamic_cast<g2o::OptimizableGraph::Vertex *>this->currentSpeed);
+        pEdge_SLAM_PRV->setInformation(....);
+    }
+    else
+    {//just add translation.
+        shared_ptr<EdgePRGPS> pEdgePositionSLAM(new EdgePRGPS());
+        pEdgePositionSLAM->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get());
+        //calc infomation mat from multiple/single slam msg.May be it can be estimated from points num or quality.
+        pEdgePositionSLAM->setInformation(...);
+    }
+
+
     //TODO
 }
 void GlobalOptimizationGraph::addBlockQRCode()
@@ -288,16 +312,3 @@ void GlobalOptimizationGraph::doOptimization()
     this->historyStates.push_back(currentState);
     this->historyStates.reserve();///...
 }
-
-
-
-
-
-
-/*
-int main(int argc,char** argv)
-{
-    ros::init(argc,argv,"GlobalOptimizationGraph_Node");
-    //ros::Subscriber()
-    return 0;
-}*/

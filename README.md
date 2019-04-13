@@ -20,7 +20,7 @@ Or follow the lastest news about the project at our [Medium Publication](https:/
 
 扫码加入 GAAS 微信讨论群（由于现有的群人数都超过 100 人，需要先加 GAAS 管理员，由管理员发送入群邀请）：
 
-<img width="200" height="200" src="https://s2.ax1x.com/2019/04/11/A7y6SS.jpg"/>
+<img width="200" height="200" src="https://s2.ax1x.com/2019/04/12/AbWeyV.jpg"/>
 
 - [What is GAAS?](#what-is-gaas)
   * [Project Overview](#project-overview)

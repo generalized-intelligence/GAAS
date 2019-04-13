@@ -1,0 +1,21 @@
+{
+    "scenes":[
+	{
+		"scene_path":"...",
+                "sfm_model_path":"...",
+		"gps_longitude":120,
+                "gps_latitude":45
+	},
+	{
+                "scene_path":"...",
+                "sfm_model_path":"...",
+                "gps_longitude":123,
+                "gps_latitude":46
+		
+	}
+	]
+
+}
+
+
+
