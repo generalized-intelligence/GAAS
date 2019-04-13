@@ -17,7 +17,7 @@ Imu: /mavros/imu/data
 PureVisionMode: true
 
 # do we need visualization?
-UseViewer: false
+UseViewer: true
 
 # display mappoints?
 displayMapPoints: false
