@@ -133,6 +133,10 @@
         <frameName>left_camera_optical_frame</frameName>
         <!--<rightFrameName>right_camera_optical_frame</rightFrameName>-->
         <hackBaseline>0.05</hackBaseline>
+        <Fx>376.0</Fx>
+        <Fy>376.0</Fy>
+        <Cx>376.0</Cx>
+        <Cy>240.0</Cy>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
         <distortionK3>0.0</distortionK3>

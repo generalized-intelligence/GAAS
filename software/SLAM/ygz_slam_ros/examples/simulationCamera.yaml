@@ -22,10 +22,15 @@ UseViewer: true
 # display mappoints?
 displayMapPoints: false
 
-Camera.fx: 360.09504424
-Camera.fy: 359.18528959
-Camera.cx: 385.27044636
-Camera.cy: 213.93170184
+#Camera.fx: 360.09504424
+#Camera.fy: 359.18528959
+#Camera.cx: 385.27044636
+#Camera.cy: 213.93170184
+
+Camera.fx: 376.0
+Camera.fy: 376.0
+Camera.cx: 376.0
+Camera.cy: 240.0
 
 Camera.k1: 0.0
 Camera.k2: 0.0
