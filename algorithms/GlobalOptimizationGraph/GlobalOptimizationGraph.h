@@ -69,10 +69,12 @@ public:
     void addBlockFCAttitude();
 
     void doOptimization();
+
     void resetOptimizationGraph()
     {
         this->optimizer.clear();
     }
+    bool SpeedInitialization();
     bool estimateCurrentSpeed();
 
 private:
