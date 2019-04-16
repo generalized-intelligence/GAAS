@@ -10,7 +10,7 @@ Left: /gi/simulation/left/image_raw
 Right: /gi/simulation/right/image_raw
 
 # not used for now
-Imu: /mavros/imu/data
+#Imu: /mavros/imu/data
 
 # Camera calibration and distortion parameters (OpenCV) 
 # if running in pure stereo vision mode
