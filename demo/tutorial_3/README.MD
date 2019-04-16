@@ -1,6 +1,6 @@
 In this tutorial we will talk about how to provide accurate position estimation from SLAM (Simultaneous localization and mapping) and control your drone in GPS denied environment.
 
-Step-by-step: https://gaas.gitbook.io/guide/build-your-own-autonomous-drone-part-3-using-slam-in-gps-denied-environment-for-position-estimation
+Step-by-step instruction: https://gaas.gitbook.io/guide/build-your-own-autonomous-drone-part-3-using-slam-in-gps-denied-environment-for-position-estimation
 
 This tutorial has been validated on a real drone but the performance is not stable and there is plenty of room for improvement. Therefore, I would recommend you to proceed with extreme caution and do not test it on a real drone before you are ready. In this tutorial we will test it in Gazebo and the setup procedure is pretty much the same as a real drone.
 This tutorial can be organized into the following part:
