@@ -16,7 +16,7 @@ int MultiSceneRetriever::retrieveSceneWithScaleFromMonoImage(const cv::Mat image
     //step<1> select scene nearby.
     if(img_lon_lat_valid == false)
     {
-        cout<<"Error:Image Longitude,Latitude must be valid!"<<endl;
+        cout<<"Fatal Error:Image Longitude,Latitude must be valid!"<<endl;
         return -1;
     }
     vector<int> scene_index_list;
@@ -66,8 +66,8 @@ int MultiSceneRetriever::retrieveSceneWithScaleFromMonoImage(const cv::Mat image
     }
 
 }
-/*
-virtual int MultiSceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
+
+int MultiSceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
     const cv::Mat image_right_rect, 
     const cv::Mat& Q_mat, 
     cv::Mat& RT_mat_of_stereo_cam_output,
@@ -81,8 +81,10 @@ virtual int MultiSceneRetriever::retrieveSceneFromStereoImage(const cv::Mat imag
         cout<<"Fatal Error:no gps info in retrieveSceneFromStereoImage().Failed."<<endl;
         return -1;
     }
+
     vector<int> scene_index_list;
-    scene_list = this->findNRelativeSceneByGPS(lon,lat,scene_index_list);
+    this->findNRelativeSceneByGPS(img_lon,img_lat,scene_index_list);
+
     //step<2> do match.
     vector<match_result> match_result_list;
 
@@ -90,30 +92,40 @@ virtual int MultiSceneRetriever::retrieveSceneFromStereoImage(const cv::Mat imag
     {
         bool match_success;
         //do matching.get multiple results.
-        this->idToNodeMap[index].pScene->retrieveSceneFromStereoImage(cv::imread(left_image_path[i]), cv::imread(right_image_path[i]), Q_mat, RT_mat, match_success);
+        int matched_points_count = this->idToNodeMap[index].pScene->retrieveSceneFromStereoImage(cv::imread(left_image_path[i]), cv::imread(right_image_path[i]), Q_mat, RT_mat, match_success);
         if(match_success)
         {
-            match_result_list.push_back(...);
+            match_result_list.push_back(std::make_pair(index,matched_points_count));
         }
     }
-        //step<3> select and reserve only the best match.
+    //step<3> select and reserve only the best match.
+    int best_match_id = -1;
+    int best_match_points_count = -1;
     for(auto match:match_result_list)
     {
-        if match....
-            ....
+        int curr_index = std::get<0>(match);
+        int curr_count = std::get<1>(match);
+        if(curr_count>best_match_points_count)
+        {
+            best_match_points_count = curr_count;
+            best_match_id = curr_index;
+        }
     }
+    if(best_match_id>=0 && best_match_points_count>5)
+    {
+        //redo mapping;for the last one is not always the best one.
+        this->idToNodeMap[best_match_id]->pSceneRetriever->retrieveSceneWithScaleFromMonoImage(image_in_rect, cameraMatrix, RT_mat_of_mono_cam_output, match_success);
+    }
+    if(match_success)
+    {
+        return best_match_id;
+    }
+    else
+    {
+        return -1;
+    }
+}
 
-}*/
-
-/*
-void MultiSceneRetriever::insertSceneIntoKDTree(double longi,double lati,shared_ptr<Scene> pScene)
-{
-    shared_ptr<MultiSceneNode> pNew(new MultiSceneNode());
-    pNew->longitude = longi;
-    pNew->lati = lati;
-    pNew->pScene = pScene;
-    this->insertSceneIntoKDTree(pNew);
-}*/
 void MultiSceneRetriever::insertSceneIntoKDTree(shared_ptr<MultiSceneNode> nodeptr)
 {
     this->idToNodeMap[this->scene_index] = nodeptr;
