@@ -14,25 +14,32 @@
 using namespace nlohmann;
 
 class MultiSceneNode;
+
 class MultiSceneNode
 {
 public:
+
     MultiSceneNode()
     {;}
+
     MultiSceneNode(bool load_scene = false)
     { //TODO:lazy download of pScene.
     }
+
     MultiSceneNode(shared_ptr<SceneRetriever> pSR,double lon,double lat)
     {
         this->pSceneRetriever=pSR;
         this->longitude = lon;
         this->latitude = lat;
     }
+
     void setSfMModelPath(const string& path);
+
     bool hasSfmModel()
     {
         return this->SfM_Model_path == "NO_PATH";
     }
+
 public:
     shared_ptr<SceneRetriever> pSceneRetriever;
     double longitude;
@@ -42,8 +49,11 @@ public:
 
 class MultiSceneRetriever//Support gps environment only.To do navigation indoor,just init a single SceneRetriever.
 {
+
 public:
+
     MultiSceneRetriever();
+
     void loadSceneInfoFromLocalFile(const string& scene_file_list_path,const string& voc_path)
     {
       //init this class itself.
@@ -87,15 +97,17 @@ public:
 				      bool &match_success
 				       );
     virtual int retrieveSceneWithMultiMonoCam(const std::vector<cv::Mat> images,std::vector<cv::Mat> RT_pose_of_mono_cams,cv::Mat &RT_mat_of_multi_mono_cam_output,bool& match_success);
-    virtual int retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
-        const cv::Mat image_right_rect, const cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output,
-         bool& match_success,double img_lon,double img_lat,bool img_lon_lat_valid=false);
+    virtual int retrieveSceneFromStereoImage(cv::Mat image_left_rect, cv::Mat image_right_rect,
+                                             cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output,
+                                             bool& match_success,double img_lon,double img_lat,bool img_lon_lat_valid=false);
+
 private:
     //void insertSceneIntoKDTree(double longi,double lati,shared_ptr<Scene> pScene);
     void insertSceneIntoKDTree(shared_ptr<MultiSceneNode> nodeptr);
+
 private:
     int scene_index;
-    map<int,shared_ptr<MultiSceneNode> > idToNodeMap;
+    map<int, shared_ptr<MultiSceneNode> > idToNodeMap;
     pcl::PointCloud<pcl::PointXYZ>::Ptr gps_KDTree; // using pcl pointcloud as kdtree.
 
 };

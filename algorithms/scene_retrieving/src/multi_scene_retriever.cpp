@@ -67,12 +67,12 @@ int MultiSceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_in_re
 
 }
 
-int MultiSceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_rect, 
-    const cv::Mat image_right_rect, 
-    const cv::Mat& Q_mat, 
-    cv::Mat& RT_mat_of_stereo_cam_output,
-    bool& match_success,
-    double img_lon,double img_lat,bool img_lon_lat_valid)
+int MultiSceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect,
+                                                      cv::Mat image_right_rect,
+                                                      cv::Mat& Q_mat,
+                                                      cv::Mat& RT_mat_of_stereo_cam_output,
+                                                      bool& match_success,
+                                                      double img_lon,double img_lat,bool img_lon_lat_valid)
 {
   
     //step<1> select scene nearby.
@@ -86,13 +86,17 @@ int MultiSceneRetriever::retrieveSceneFromStereoImage(const cv::Mat image_left_r
     this->findNRelativeSceneByGPS(img_lon,img_lat,scene_index_list);
 
     //step<2> do match.
-    vector<match_result> match_result_list;
+    vector<cv::DMatch> match_result_list;
 
     for (const int& index:scene_index_list)
     {
         bool match_success;
+        cv::Mat RT_mat;
+
         //do matching.get multiple results.
-        int matched_points_count = this->idToNodeMap[index].pScene->retrieveSceneFromStereoImage(cv::imread(left_image_path[i]), cv::imread(right_image_path[i]), Q_mat, RT_mat, match_success);
+        //int matched_points_count = this->idToNodeMap[index].pScene->retrieveSceneFromStereoImage(cv::imread(left_image_path[i]), cv::imread(right_image_path[i]), Q_mat, RT_mat, match_success);
+        int matched_points_count = (this->idToNodeMap[index]->pSceneRetriever)->retrieveSceneFromStereoImage(image_left_rect, image_right_rect, Q_mat, RT_mat, match_success);
+
         if(match_success)
         {
             match_result_list.push_back(std::make_pair(index,matched_points_count));

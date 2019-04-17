@@ -510,7 +510,7 @@ public:
 
 
     // R and t from YGZ-SLAM are Rwc and Twc, which means they are from camera to world
-    bool solvePnP(cv::Mat old_image_left, cv::Mat old_image_right,
+    int solvePnP(cv::Mat old_image_left, cv::Mat old_image_right,
                   cv::Mat cur_image_left, cv::Mat R, cv::Mat t,
                   cv::Mat& result_R, cv::Mat& result_t)
     {
@@ -518,7 +518,7 @@ public:
         if(old_image_left.empty() || old_image_right.empty() ||
            cur_image_left.empty() ||
            R.empty() || t.empty())
-            return false;
+            return -1;
 
 
         this->index++;
@@ -578,7 +578,7 @@ public:
         }
         else
         {
-            return false;
+            return -1;
         }
 
         cout<<"solvePnP 5"<<endl;
@@ -667,10 +667,13 @@ public:
         //if (distanceR < 4) // fewer outliers than before, good recall
         //if (distanceR < 1.0) // too strict
         //if (distanceR < 1.2)
-        if (distanceR < 2.0)
-            return true;
+        cout<<"(inliers.size()): "<<inliers<<endl;
+        cout<<"(inliers.size()).width and height are: "<<(inliers.size()).width<<", "<<(inliers.size()).height<<endl;
+
+        if (distanceR < 1.2)
+            return (inliers.size()).width;
         else
-            return false;
+            return -1;
 
     }
 
