@@ -18,6 +18,7 @@ add_definitions(-std=c++14)
 IF(NOT CMAKE_BUILD_TYPE )
    SET( CMAKE_BUILD_TYPE "Release" )
 ENDIF()
+#SET( CMAKE_BUILD_TYPE "Debug" )
 
 #------------------------------------------------------
 # Lib Names and Dirs
@@ -46,6 +47,7 @@ find_package(catkin REQUIRED COMPONENTS
                                visualization_msgs
 #                               tf
 				)
+
 
 #find_package(PCL REQUIRED PATH ../../software/SLAM/ygz_slam_ros/Thirdparty/PCL)
 find_package(PCL REQUIRED)

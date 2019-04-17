@@ -77,8 +77,8 @@ public:
     
     //for these methods,return best matched scene's id.
     //here we assert the return value of scene retriever's methods is matched points count.
-    virtual int retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in_rect,
-        const cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,
+    virtual int retrieveSceneWithScaleFromMonoImage(cv::Mat image_in_rect,
+        cv::Mat cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,
         double img_lon,double img_lat,bool img_lon_lat_valid = false);
     
     virtual int retrieveSceneWithMultiStereoCam(const std::vector<cv::Mat> leftCams,const std::vector<cv::Mat> rightCams,

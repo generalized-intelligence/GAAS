@@ -57,7 +57,7 @@ int main(int argc,char** argv)
 
     std::shared_ptr<SceneRetriever> pSceneRetriever(new SceneRetriever(voc_file_path, scene_path));
 
-    int image_num = 7000;
+    int image_num = 5000;
     vector<string> left_image_path, right_image_path;
     for (int i=0; i<image_num; i++)
     {
@@ -73,6 +73,30 @@ int main(int argc,char** argv)
     pSceneRetriever->setImageVecPath(right_image_path, 0);
 
 
+    // test case for mono case
+    for (int i=0; i<image_num; i++)
+    {
+        cout<<"retrieveSceneFromStereoImage 1"<<endl;
+        cv::Mat left_image = cv::imread(left_image_path[i]);
+
+        if(left_image.empty() && Q_mat.empty())
+        {
+            cout<<"left or Q_mat is empty!"<<endl;
+            continue;
+        }
+        else
+        {
+            pSceneRetriever->retrieveSceneWithScaleFromMonoImage(left_image, Q_mat, RT_mat, match_success);
+            cout<<"retrieveSceneWithScaleFromMonoImage"<<endl;
+
+            if(match_success)
+            {
+                cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
+            }
+        }
+    }
+
+    // test case for stereo image
     for (int i=0; i<image_num; i++)
     {
         cout<<"retrieveSceneFromStereoImage 1"<<endl;
@@ -95,8 +119,6 @@ int main(int argc,char** argv)
             }
         }
     }
-
-
     
     return 0;
 }

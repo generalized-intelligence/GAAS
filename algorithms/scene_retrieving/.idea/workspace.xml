@@ -10,27 +10,38 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4dcb950e-8026-46a0-854e-9fd2e7f1bc02" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.13.2/CMakeCCompiler.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.13.2/CMakeCXXCompiler.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.13.2/CMakeDetermineCompilerABI_C.bin" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.13.2/CMakeDetermineCompilerABI_CXX.bin" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.13.2/CMakeSystem.cmake" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.13.2/CompilerIdC/CMakeCCompilerId.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.13.2/CompilerIdC/a.out" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.13.2/CompilerIdCXX/CMakeCXXCompilerId.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/3.13.2/CompilerIdCXX/a.out" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-environment.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/cmake.check_cache" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/feature_tests.bin" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/feature_tests.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeFiles/feature_tests.cxx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/debug.sh" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/image2/scene.scn" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/image2/small_voc.yml.gz" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/include/cv_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/cv_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scene.scn" beforeDir="false" afterPath="$PROJECT_DIR$/scene.scn" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/CMakeLists.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/demo_stereo_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/demo_stereo_main.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/multi_scene_retriever.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/multi_scene_retriever.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/multi_scene_retriever.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/multi_scene_retriever.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/scene_retrieve.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../demo/tutorial_2/2_Struction_from_Motion/square_20_15.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../demo/tutorial_2/2_Struction_from_Motion/square_20_15.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../simulator/models/iris_stereo_camera/iris_stereo_camera.sdf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../simulator/models/iris_stereo_camera/model.config" beforeDir="false" afterPath="$PROJECT_DIR$/../../simulator/models/iris_stereo_camera/model.config" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/Thirdparty/DBow3/src/LoopClosingManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/Thirdparty/DBow3/src/LoopClosingManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeFiles/clion-log.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/cmake-build-debug/CMakeFiles/clion-log.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/include/ygz/LoopClosingManager.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/include/ygz/scene_retrieve.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/include/ygz/scene_retrieve.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/src/scene_retrieve.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/examples/MakeSceneEurocStereoVIO_ros.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/examples/MakeSceneEurocStereoVIO_ros.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/examples/simulationCamera.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/examples/simulationCamera.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/small_voc.yml.gz" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/small_voc.yml.gz" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -53,13 +64,32 @@
     <expand />
     <select />
   </component>
+  <component name="DockManager">
+    <window id="1">
+      <content type="file-editors">
+        <state>
+          <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+            <file pinned="false" current-in-tab="true">
+              <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
+                <provider selected="true" editor-type-id="text-editor">
+                  <state relative-caret-position="673">
+                    <caret line="673" selection-start-line="673" selection-end-line="673" />
+                  </state>
+                </provider>
+              </entry>
+            </file>
+          </leaf>
+        </state>
+      </content>
+    </window>
+  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1584">
-              <caret line="88" column="57" selection-start-line="88" selection-start-column="29" selection-end-line="88" selection-end-column="57" />
+            <state relative-caret-position="257">
+              <caret line="81" column="47" lean-forward="true" selection-start-line="81" selection-start-column="47" selection-end-line="81" selection-end-column="47" />
             </state>
           </provider>
         </entry>
@@ -67,8 +97,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6588">
-              <caret line="366" column="71" selection-start-line="366" selection-start-column="71" selection-end-line="366" selection-end-column="71" />
+            <state relative-caret-position="339">
+              <caret line="357" column="4" selection-start-line="357" selection-start-column="4" selection-end-line="358" selection-end-column="49" />
             </state>
           </provider>
         </entry>
@@ -76,8 +106,26 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5724">
-              <caret line="318" column="42" selection-start-line="318" selection-start-column="42" selection-end-line="318" selection-end-column="42" />
+            <state relative-caret-position="183">
+              <caret line="609" column="27" selection-start-line="609" selection-start-column="27" selection-end-line="609" selection-end-column="27" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="198">
+              <caret line="11" column="60" selection-start-line="11" selection-start-column="25" selection-end-line="11" selection-end-column="60" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="237">
+              <caret line="76" column="4" selection-start-line="76" selection-start-column="4" selection-end-line="76" selection-end-column="4" />
             </state>
           </provider>
         </entry>
@@ -85,35 +133,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="202">
-              <caret line="672" column="27" selection-start-line="672" selection-start-column="27" selection-end-line="672" selection-end-column="27" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="162">
-              <caret line="9" selection-start-line="9" selection-end-line="9" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="279" column="72" selection-start-line="279" selection-start-column="72" selection-end-line="279" selection-end-column="72" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/Database.cpp">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4572">
-              <caret line="254" selection-start-line="254" selection-end-line="254" />
+            <state relative-caret-position="249">
+              <caret line="619" column="23" lean-forward="true" selection-start-line="619" selection-start-column="23" selection-end-line="619" selection-end-column="23" />
             </state>
           </provider>
         </entry>
@@ -122,36 +143,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>info</find>
-      <find>loopclosure_result</find>
-      <find>homographyRvec</find>
-      <find>matches_out</find>
-      <find>VecMatches</find>
-      <find>orb</find>
-      <find>image2k</find>
-      <find>Recovered essential mat</find>
-      <find>getRotationfromEssential</find>
-      <find>kps_old_left</find>
-      <find>match2Images</find>
-      <find>extractFeature</find>
-      <find>$PROJECT_DIR$/../../../GAAS_backup/software/SLAM/ygz_slam_ros/image/scene.scn</find>
-      <find>frameinfo_left</find>
-      <find>matches</find>
-      <find>ptr_frameinfo</find>
-      <find>LoopClosingManager</find>
-      <find>voc</find>
-      <find>voc_file_path</find>
-      <find>SceneRetriever</find>
-      <find>imshow</find>
-      <find>good_matches_output</find>
-      <find>displayFeatureMatches</find>
-      <find>solvePnP</find>
-      <find>good_matches_output:</find>
-      <find>this-&gt;displayFeatureMatches 3</find>
+      <find>publishing pose</find>
+      <find>good_matches</find>
+      <find>StereoImage2CamPoints 1</find>
+      <find>image2KpAndDesp(</find>
+      <find>match2images 1</find>
+      <find>StereoImage2CamPoints 1.1</find>
+      <find>Keypoints_left</find>
+      <find>MATCH SUCCEED!</find>
       <find>retrieveSceneFromStereoImage</find>
-      <find>detectLoopByKeyFrame</find>
-      <find>match_2_images_flann</find>
-      <find>ORB_TH_HIGH</find>
+      <find>publis</find>
+      <find>publishPose</find>
+      <find>result_transformation</find>
+      <find>result_T</find>
+      <find>image2KpAndDesp size:</find>
+      <find>image2KpAndDesp 2</find>
+      <find>image2KpAndDesp</find>
+      <find>StereoImage2CamPoints</find>
+      <find>fetchImage</find>
+      <find>getR</find>
+      <find>new_T</find>
+      <find>cv helper::GeneralICP points size</find>
+      <find>GeneralICP</find>
+      <find>Vec3Distance</find>
+      <find>icp GeneralICP</find>
+      <find>cur_image_right</find>
+      <find>image_left_rect</find>
+      <find>publishpose</find>
+      <find>cameraMatrix</find>
+      <find>retrieveSceneWithScaleFromMonoImage</find>
+      <find>solvePnP</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -162,21 +183,23 @@
       <list>
         <option value="$PROJECT_DIR$/src/demo_mono_main.cpp" />
         <option value="$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp" />
-        <option value="$PROJECT_DIR$/src/demo_stereo_main.cpp" />
-        <option value="$PROJECT_DIR$/src/scene_retrieve.h" />
-        <option value="$PROJECT_DIR$/src/scene_retrieve.cpp" />
         <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" />
-        <option value="$PROJECT_DIR$/include/cv_helper.h" />
         <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" />
+        <option value="$PROJECT_DIR$/src/demo_stereo_main.cpp" />
+        <option value="$PROJECT_DIR$/src/scene_retrieve.cpp" />
+        <option value="$PROJECT_DIR$/src/scene_retrieve.h" />
+        <option value="$PROJECT_DIR$/src/multi_scene_retriever.cpp" />
+        <option value="$PROJECT_DIR$/src/multi_scene_retriever.h" />
+        <option value="$PROJECT_DIR$/include/cv_helper.h" />
       </list>
     </option>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="40" />
-    <option name="y" value="39" />
-    <option name="width" value="1855" />
-    <option name="height" value="1028" />
+    <option name="x" value="225" />
+    <option name="y" value="88" />
+    <option name="width" value="1839" />
+    <option name="height" value="992" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -184,6 +207,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -200,12 +224,11 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../GlobalOptimizationGraph" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
   </component>
@@ -254,18 +277,22 @@
       <workItem from="1554806926215" duration="127000" />
       <workItem from="1554883479669" duration="5580000" />
       <workItem from="1554891559759" duration="2705000" />
-      <workItem from="1554948313341" duration="5090000" />
+      <workItem from="1554948313341" duration="7145000" />
+      <workItem from="1555388167602" duration="9945000" />
+      <workItem from="1555398402772" duration="14863000" />
+      <workItem from="1555466792610" duration="10305000" />
+      <workItem from="1555483517668" duration="2700000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="132698000" />
+    <option name="totallyTimeSpent" value="172566000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.10889994" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.064123824" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -279,7 +306,7 @@
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="10" />
-      <window_info anchor="bottom" id="CMake" order="11" weight="0.075235106" />
+      <window_info anchor="bottom" id="CMake" order="11" weight="0.052246604" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -296,9 +323,6 @@
           <caret line="75" column="8" selection-start-line="75" selection-start-column="8" selection-end-line="75" selection-end-column="8" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/demo_mono_main.cpp">
       <provider selected="true" editor-type-id="text-editor">
@@ -367,55 +391,81 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
+    <entry file="file://$PROJECT_DIR$/include/GMS/gms_matcher.h" />
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1584">
-          <caret line="88" column="57" selection-start-line="88" selection-start-column="29" selection-end-line="88" selection-end-column="57" />
+        <state relative-caret-position="288">
+          <caret line="16" column="55" selection-start-line="16" selection-start-column="55" selection-end-line="16" selection-end-column="55" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
+    <entry file="file://$PROJECT_DIR$/multiscene_demo_files/scene_file_list.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6588">
-          <caret line="366" column="71" selection-start-line="366" selection-start-column="71" selection-end-line="366" selection-end-column="71" />
+        <state relative-caret-position="198">
+          <caret line="11" column="36" lean-forward="true" selection-start-line="11" selection-start-column="36" selection-end-line="11" selection-end-column="36" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5724">
-          <caret line="318" column="42" selection-start-line="318" selection-start-column="42" selection-end-line="318" selection-end-column="42" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/Database.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4572">
-          <caret line="254" selection-start-line="254" selection-end-line="254" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/GMS/gms_matcher.h">
-      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="162">
-          <caret line="9" selection-start-line="9" selection-end-line="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="202">
-          <caret line="672" column="27" selection-start-line="672" selection-start-column="27" selection-end-line="672" selection-end-column="27" />
+        <state relative-caret-position="155">
+          <caret line="36" column="64" lean-forward="true" selection-start-line="36" selection-start-column="64" selection-end-line="36" selection-end-column="64" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="279" column="72" selection-start-line="279" selection-start-column="72" selection-end-line="279" selection-end-column="72" />
+        <state relative-caret-position="204">
+          <caret line="227" column="37" lean-forward="true" selection-start-line="227" selection-start-column="37" selection-end-line="227" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../loop_closing/DBow3/src/Database.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="819">
+          <caret line="254" selection-start-line="254" selection-end-line="254" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="198">
+          <caret line="11" column="60" selection-start-line="11" selection-start-column="25" selection-end-line="11" selection-end-column="60" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="237">
+          <caret line="76" column="4" selection-start-line="76" selection-start-column="4" selection-end-line="76" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="339">
+          <caret line="357" column="4" selection-start-line="357" selection-start-column="4" selection-end-line="358" selection-end-column="49" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="183">
+          <caret line="609" column="27" selection-start-line="609" selection-start-column="27" selection-end-line="609" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="249">
+          <caret line="619" column="23" lean-forward="true" selection-start-line="619" selection-start-column="23" selection-end-line="619" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="257">
+          <caret line="81" column="47" lean-forward="true" selection-start-line="81" selection-start-column="47" selection-end-line="81" selection-end-column="47" />
         </state>
       </provider>
     </entry>

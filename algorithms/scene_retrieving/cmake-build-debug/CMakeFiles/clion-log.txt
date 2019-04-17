@@ -1,0 +1,21 @@
+/home/gishr/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/gishr/software/GAAS/algorithms/scene_retrieving
+CMake Error at CMakeLists.txt:37 (find_package):
+  By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "catkin", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "catkin" with any
+  of the following names:
+
+    catkinConfig.cmake
+    catkin-config.cmake
+
+  Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set
+  "catkin_DIR" to a directory containing one of the above files.  If "catkin"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+
+-- Configuring incomplete, errors occurred!
+See also "/home/gishr/software/GAAS/algorithms/scene_retrieving/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "/home/gishr/software/GAAS/algorithms/scene_retrieving/cmake-build-debug/CMakeFiles/CMakeError.log".

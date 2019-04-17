@@ -354,7 +354,7 @@ public:
     //SceneRetriever(Scene& original_scene_input);
     SceneRetriever(const string&voc,const std::string& scene_file);
     
-    int retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in_rect,const cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success);
+    int retrieveSceneWithScaleFromMonoImage(cv::Mat image_in_rect, cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success);
     
     int retrieveSceneWithMultiStereoCam(const std::vector<cv::Mat> leftCams,const std::vector<cv::Mat> rightCams,
                                         std::vector<cv::Mat> RT_pose_of_stereo_cams,
@@ -373,6 +373,10 @@ public:
     void setImageVecPath(vector<string>& imageVec, int left);
 
     cv::Mat fetchImage(size_t index, int left);
+
+    void displayFeatureMatches(cv::Mat curImage, vector<cv::KeyPoint> curKps,
+                               cv::Mat oldImage, vector<cv::KeyPoint> oldKps,
+                               std::vector<cv::DMatch> matches, size_t loop_index);
 
     void displayFeatureMatches(size_t loop_index, ptr_frameinfo& current_frame, std::vector<cv::DMatch> matches);
 

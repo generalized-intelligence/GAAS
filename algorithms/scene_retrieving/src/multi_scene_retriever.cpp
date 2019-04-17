@@ -9,8 +9,8 @@ void MultiSceneRetriever::generate_visualization_graph()
     //iterate all scene,build graph.draw graph to a image file.
 }
 
-int MultiSceneRetriever::retrieveSceneWithScaleFromMonoImage(const cv::Mat image_in_rect,
-        const cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,
+int MultiSceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_in_rect,
+        cv::Mat cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,
         double img_lon,double img_lat,bool img_lon_lat_valid)
 {
     //step<1> select scene nearby.

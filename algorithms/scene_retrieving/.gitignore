@@ -12,6 +12,7 @@
 *.kdev*
 ./image
 ./image2
+.idea
 image
 image2
 ./loopclosure_result2/*

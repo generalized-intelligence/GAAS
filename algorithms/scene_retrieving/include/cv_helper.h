@@ -98,9 +98,7 @@ public:
             cv::Point2f pt = image_points[i];
 
             //points_disparity[i] = (this->bf) / (points_disparity[i] + 1e-5);
-            float depth;
-            depth = (this->bf) / ( points_disparity[i] );
-
+            float depth = (this->bf) / ( points_disparity[i] );
 
             camera_point.x = (pt.x - cx) * fxinv * depth;
             camera_point.y = (pt.y - cy) * fyinv * depth;
@@ -144,11 +142,11 @@ public:
 
             cv::Point2f pt = image_points[i];
 
-            points_disparity[i] = (this->bf) / (points_disparity[i] + 1e-5);
+            float depth = (this->bf) / ( points_disparity[i] );
 
-            camera_point.x = (pt.x - cx) * fxinv * points_disparity[i];
-            camera_point.y = (pt.y - cy) * fyinv * points_disparity[i];
-            camera_point.z = points_disparity[i];
+            camera_point.x = (pt.x - cx) * fxinv * depth;
+            camera_point.y = (pt.y - cy) * fyinv * depth;
+            camera_point.z = depth;
 
             cam_points.push_back(camera_point);
         }
@@ -231,13 +229,16 @@ public:
     }
 
 
-    void image2KpAndDesp(cv::Mat image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
+    void image2KpAndDesp(cv::Mat& image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
     {
-        cv::Mat mask;
 
-        cv::Ptr<cv::ORB> orb = cv::ORB::create(2000);
-        orb->detectAndCompute(image, mask, keypoints, descriptors);
+        cout<<"image2KpAndDesp 1"<<endl;
+        cv::Ptr<cv::ORB> orb = cv::ORB::create(1000);
+        cout<<"image2KpAndDesp 2"<<endl;
 
+        cout<<"image size: "<<image.size()<<endl;
+
+        orb->detectAndCompute(image, cv::Mat(), keypoints, descriptors);
         cout<<"image2KpAndDesp size: "<<keypoints.size()<<", "<<descriptors.size()<<endl;
     }
 
@@ -292,20 +293,70 @@ public:
     }
 
 
+    bool StereoImage2CamPoints(cv::Mat& image_left_rect,
+                               cv::Mat& image_right_rect,
+                               vector<cv::KeyPoint>& Keypoints_left,
+                               vector<cv::Point3f>& Camera_pts_left,
+                               cv::Mat& descriptors_left)
+    {
+
+        //step 1, detect and compute kps and desp
+        cout<<"StereoImage2CamPoints 1"<<endl;
+        cout<<"image_left_rect size: "<<image_left_rect.size()<<endl;
+        this->image2KpAndDesp(image_left_rect, Keypoints_left, descriptors_left);
+        cout<<"StereoImage2CamPoints 2"<<endl;
+        if(Keypoints_left.size()< 10)
+            return false;
+
+        //step 2, convert kps to pt2f
+        vector<cv::Point2f> InputKeypoints;
+        cv::KeyPoint::convert(Keypoints_left, InputKeypoints);
+        cout<<"StereoImage2CamPoints 3"<<endl;
+        //step 3, conduct LK flow
+        std::vector<unsigned char> PyrLKResults;
+        std::vector<float> err;
+        std::vector<cv::Point2f> PyrLKmatched_points;
+
+        cv::calcOpticalFlowPyrLK(image_left_rect,
+                                 image_right_rect,
+                                 InputKeypoints,
+                                 PyrLKmatched_points,
+                                 PyrLKResults,
+                                 err
+        );
+
+        cout<<"StereoImage2CamPoints 4"<<endl;
+        //step 4, eliminate good points and only keep matched ones
+        std::vector<cv::Point2f> matched_points;
+        std::vector<float> disparity_of_points;
+
+        for(int index = 0; index < InputKeypoints.size(); index++)
+        {
+            if(PyrLKResults[index] == 1)
+            {
+                matched_points.push_back(InputKeypoints[index]);
+                disparity_of_points.push_back(InputKeypoints[index].x - PyrLKmatched_points[index].x);
+            }
+        }
+
+
+        //step 5, given pts2f, disps, R and t, compute mps
+        Camera_pts_left = this->image2cam(matched_points, disparity_of_points);
+        cout<<"StereoImage2CamPoints 5"<<endl;
+        cout<<"KeyPoint size: "<<Keypoints_left.size()<<endl;
+        return true;
+    }
 
 
     void publishPose(cv::Mat R, cv::Mat t, int useRed = 1)
     {
 
-//        ros::Duration(0.02).sleep();
         ros::Duration(0.002).sleep();
-//        ros::Rate(30);
 
         visualization_msgs::Marker mark;
         mark.header.frame_id="/map";
 
         mark.id = this->PoseId;
-
         mark.color.a = 1.0;
 
         if(useRed)
@@ -321,9 +372,13 @@ public:
             mark.color.b = 0.0;
         }
 
+        cout<<"publish pose 1"<<endl;
+
         mark.pose.position.x = t.at<double> (0,0);
-        mark.pose.position.y = t.at<double> (0,1);
-        mark.pose.position.z = t.at<double> (0,2);
+        mark.pose.position.y = t.at<double> (1,0);
+        mark.pose.position.z = t.at<double> (2,0);
+
+        cout<<"publish pose 2"<<endl;
 
 //        mark.pose.orientation.x = quat.x();
 //        mark.pose.orientation.y = quat.y();
@@ -352,7 +407,6 @@ public:
         mark.type = visualization_msgs::Marker::ARROW;
 
         this->PosePublisher.publish(mark);
-
         this->PoseId+=1;
     }
 
@@ -361,6 +415,8 @@ public:
                       vector<cv::KeyPoint>& kps2, cv::Mat& desps2,
                       vector<cv::DMatch>& result_matches)
     {
+
+        cout<<"match2images 1"<<endl;
 
         //step 1, match raw desps
         std::vector<cv::DMatch> matches;
@@ -372,7 +428,7 @@ public:
 
         cout<<"desps1 shape: "<<desps1.size()<<endl;
         cout<<"desps2 shape: "<<desps2.size()<<endl;
-        cout<<"match2Images 1: matches.size() "<<matches.size()<<endl;
+        cout<<"match2Images 2: matches.size() "<<matches.size()<<endl;
 
         //step 2, find first bunch of good matches using desp distance
         double max_dist = 0;
@@ -426,24 +482,27 @@ public:
 
         //step 3, use H to find second bunch of good matches
         cv::Mat isOutlierMask;
-//        cv::Mat fundamental_matrix = cv::findFundamentalMat(good_kps_old, good_kps_cur, cv::FM_RANSAC, 3, 0.99, isOutlierMask);
         cv::Mat fundamental_matrix = cv::findFundamentalMat(good_kps_old, good_kps_cur, cv::FM_RANSAC, 2, 0.995, isOutlierMask);
+
+        cout<<"isOutlierMask shape: "<<isOutlierMask.size()<<endl;
+        cout<<"isOutlierMask depth: "<<isOutlierMask.depth()<<endl;
 
         std::vector<cv::DMatch> final_good_matches;
         for(int i = 0; i<good_matches.size(); i++)
         {
-            if (isOutlierMask.at<int>(i)!=0)
+            //if (isOutlierMask.at<int>(i)!=0)
+            if (isOutlierMask.at<uchar>(i)!=0)
             {
                 final_good_matches.push_back(good_matches[i]);
             }
         }
+
 
         cout<<"final_good_matches size: "<<final_good_matches.size()<<endl;
 
         // for findEssentialMat requirement
         if(final_good_matches.size()<8)
             return false;
-
 
         result_matches = final_good_matches;
         return true;
@@ -452,29 +511,22 @@ public:
 
     // R and t from YGZ-SLAM are Rwc and Twc, which means they are from camera to world
     bool solvePnP(cv::Mat old_image_left, cv::Mat old_image_right,
-                  cv::Mat cur_image_left, cv::Mat cur_image_right,
-                  cv::Mat R, cv::Mat t,
+                  cv::Mat cur_image_left, cv::Mat R, cv::Mat t,
                   cv::Mat& result_R, cv::Mat& result_t)
     {
-        cout<<"solvePnP ...."<<endl;
 
         if(old_image_left.empty() || old_image_right.empty() ||
-           cur_image_left.empty() || cur_image_right.empty() ||
+           cur_image_left.empty() ||
            R.empty() || t.empty())
             return false;
 
-        cout<<"solvePnP 0"<<endl;
 
         this->index++;
-
-        cout<<"solvePnP 1"<<endl;
 
         this->applyMask(old_image_left);
         this->applyMask(old_image_right);
         this->applyMask(cur_image_left);
-        this->applyMask(cur_image_right);
 
-        cout<<"solvePnP 2"<<endl;
 
         //step 1, given old stereo images, R and t, get kps, desps and mps of old frame
         vector<cv::KeyPoint> Keypoints_old_left;
@@ -490,14 +542,12 @@ public:
                                     descriptors_old_left,//output desps
                                     MapPoints_old);      //output MapPoints in world frame
 
-        cout<<"solvePnP 3"<<endl;
 
         //step 2, get kps and desps of current image
         vector<cv::KeyPoint> Keypoints_current_left;
         cv::Mat descriptors_current_left;
         this->image2KpAndDesp(cur_image_left, Keypoints_current_left, descriptors_current_left);
 
-        cout<<"solvePnP 4"<<endl;
 
         //for test , cv::CV_FM_8POINT
 //        vector<cv::Point2f> kps1, kps2;
@@ -541,12 +591,10 @@ public:
         // --------------------------------------------------------------------------------------------------------------------------
 
 
-//        cout<<"Fetched kps_old_left size: "<<kps_old_left.size()<<endl;
         cout<<"Fetched kps_cur_left size: "<<kps_cur_left.size()<<endl;
         cout<<"Fetched mps_old size: "<<mps_old.size()<<endl;
 
         assert(mps_old.size() == kps_cur_left.size());
-
 
 
         //step 3, conduct PnP ransac given old mps and current kps
@@ -567,17 +615,10 @@ public:
         cout<<"image_pts_cur size(): "<<image_pts_cur.size()<<endl;
 
 
-//        for(auto p: mps_old)
-//            cout<<"mps_old: "<<p<<endl;
-//
-//        for(auto p: image_pts_cur)
-//            cout<<"image_pts_cur: "<<p<<endl;
-
 
         //SOLVEPNP_P3P
         //SOLVEPNP_UPNP
         //SOLVEPNP_AP3P
-
         //NOTE this could be a good indication of the result
         //http://answers.opencv.org/question/87546/solvepnp-fails-with-perfect-coordinates-and-cvposit-passes/
 
@@ -585,54 +626,9 @@ public:
         cv::Rodrigues(t, tvec);
 
 //        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers);
-//
-//        cout<<"inliers 1: "<<inliers<<endl;
-//
-//        cout<<"solvepnpransac 1"<<endl;
-//
-//        cout<<"solve pnp 1"<<endl;
-//
-//        cout<<"cv helper solve R 1: \n"<<R<<endl;
-//        cout<<"cv helper solve t 1: \n"<<t<<endl;
-//        cout<<"cv helper solve rvec 1: \n"<<rvec<<endl;
-//        cout<<"cv helper solve tvec 1: \n"<<tvec<<endl;
-//
-//
 //        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_P3P);
-//
-//        cout<<"inliers 2: "<<inliers<<endl;
-//
-//        cout<<"solvepnpransac 2"<<endl;
-//
-//        cout<<"solve pnp 2"<<endl;
-//
-//        cout<<"cv helper solve rvec 2: \n"<<rvec<<endl;
-//        cout<<"cv helper solve tvec 2: \n"<<tvec<<endl;
-
-
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.2, 0.99, inliers, cv::SOLVEPNP_EPNP);
-
-        cout<<"inliers 3: "<<inliers<<endl;
-
-        cout<<"solvepnpransac 3"<<endl;
-
-        cout<<"solve pnp 3"<<endl;
-
-        cout<<"cv helper solve rvec 3: \n"<<rvec<<endl;
-        cout<<"cv helper solve tvec 3: \n"<<tvec<<endl;
-
-
 //        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_UPNP);
-//
-//        cout<<"inliers 3: "<<inliers<<endl;
-//
-//        cout<<"solvepnpransac 3"<<endl;
-//
-//        cout<<"solve pnp 3"<<endl;
-//
-//        cout<<"cv helper solve rvec 3: \n"<<rvec<<endl;
-//        cout<<"cv helper solve tvec 3: \n"<<tvec<<endl;
-
+        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.2, 0.99, inliers, cv::SOLVEPNP_EPNP);
 
         cv::Rodrigues (rvec, result_R);
         result_t = tvec;
@@ -648,7 +644,7 @@ public:
         cout<<"homographyRvec is: "<<homographyRvec<<endl;
         cout<<"rvec is: "<<rvec<<endl;
 
-        float distanceR = this->Vec3Distance(homographyR, rvec);
+        float distanceR = this->Vec3Distance(homographyRvec, rvec);
 
         cout<<"distanceR is: "<<distanceR<<endl;
 
@@ -670,35 +666,20 @@ public:
         //if (distanceR < 10) // too many outliers, good recall.
         //if (distanceR < 4) // fewer outliers than before, good recall
         //if (distanceR < 1.0) // too strict
-        if (distanceR < 1.2)
+        //if (distanceR < 1.2)
+        if (distanceR < 2.0)
             return true;
         else
             return false;
 
-
-//        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.5, 0.99, inliers, cv::SOLVEPNP_AP3P);
-//
-//        cout<<"inliers 4: "<<inliers<<endl;
-//
-//        cout<<"solvepnpransac 4"<<endl;
-//
-//        cout<<"solve pnp 4"<<endl;
-//
-//        cout<<"cv helper solve rvec 4: \n"<<rvec<<endl;
-//        cout<<"cv helper solve tvec 4: \n"<<tvec<<endl;
-//
-//        //-----------------------final result-------------------------
-//        cv::Rodrigues (rvec, result_R);
-//        result_t = tvec;
-//
-//        return true;
     }
+
 
 
     // a wrapper for pcl::GeneralizedIterativeClosestPoint to return the transformation matrix between a input point cloud and a
     // target point cloud
     // input points cloud size should be greater than 20
-    Eigen::Matrix4f GeneralICP(vector<cv::Point3f> input_cloud, vector<cv::Point3f> target_cloud, int num_iter = 50, double transformationEpsilon = 1e-8)
+    Eigen::Matrix4f GeneralICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 50, double transformationEpsilon = 1e-8)
     {
 
         cout<<"cv helper::GeneralICP points size: "<<input_cloud.size()<<", "<<target_cloud.size()<<endl;
@@ -707,12 +688,12 @@ public:
 
         // define input point cloud
         pcl::PointCloud<PointT>::Ptr src (new pcl::PointCloud<PointT>);
-        pcl::PointCloud<PointT> src_cloud = PtsVec2PointCloud(input_cloud);
+        pcl::PointCloud<PointT> src_cloud = this->PtsVec2PointCloud(input_cloud);
         *src  = src_cloud;
 
         // define target point cloud
         pcl::PointCloud<PointT>::Ptr tgt (new pcl::PointCloud<PointT>);
-        pcl::PointCloud<PointT> tgt_cloud = PtsVec2PointCloud(target_cloud);
+        pcl::PointCloud<PointT> tgt_cloud = this->PtsVec2PointCloud(target_cloud);
         *tgt = tgt_cloud;
 
         // define output point cloud
@@ -720,6 +701,7 @@ public:
 
         // parameter setter
         pcl::GeneralizedIterativeClosestPoint<PointT, PointT> reg;
+
         reg.setInputSource(src);
         reg.setInputTarget(tgt);
         reg.setMaximumIterations(num_iter);
@@ -730,11 +712,23 @@ public:
         // expect fitness score is less than a certain value
         cout<<"GeneralICP::General ICP fitness score: "<<reg.getFitnessScore()<<endl;
 
-        Eigen::Matrix4f transformation;
-        transformation = reg.getFinalTransformation();
+        Eigen::Matrix4f transformation = reg.getFinalTransformation();
 
-        cout<<"GeneralICP::transformation matrix: "<<transformation<<endl;
+        cout<<"GeneralICP::transformation matrix: \n"<<transformation<<endl;
+
+        result = transformation;
+
+        return  transformation;
     }
+
+    //not implemented
+    Eigen::Matrix4f ICPcv()
+    {
+
+
+    }
+
+
 
     // print type of cv::Mat
 
@@ -761,11 +755,30 @@ public:
         return r;
     }
 
+//    float Vec3Distance(cv::Mat a, cv::Mat b)
+//    {
+//        cout<<"a shape is: "<<a.size()<<endl;
+//        cout<<"b shape is: "<<b.size()<<endl;
+//        float result = abs(a.at<double>(0,0) - b.at<double>(0,0))
+//                    +  abs(a.at<double>(0,1) - b.at<double>(0,1))
+//                    +  abs(a.at<double>(0,2) - b.at<double>(0,2));
+//
+//        cout<<"Vec3Distance result is: "<<result<<endl;
+//
+//        return result;
+//    }
+
     float Vec3Distance(cv::Mat a, cv::Mat b)
     {
-        float result = abs(a.at<double>(0,0) - b.at<double>(0,0))
-                    +  abs(a.at<double>(0,1) - b.at<double>(0,1))
-                    +  abs(a.at<double>(0,2) - b.at<double>(0,2));
+        a.convertTo(a, CV_64F);
+        b.convertTo(b, CV_64F);
+
+//        float result = abs(a.at<double>(0,0) - b.at<double>(0,0))
+//                    +  abs(a.at<double>(0,1) - b.at<double>(0,1))
+//                    +  abs(a.at<double>(0,2) - b.at<double>(0,2));
+        float result = abs(a.at<double>(0) - b.at<double>(0))
+                    +  abs(a.at<double>(1) - b.at<double>(1))
+                    +  abs(a.at<double>(2) - b.at<double>(2));
 
         cout<<"Vec3Distance result is: "<<result<<endl;
 
