@@ -256,9 +256,9 @@ namespace ygz {
             {
                 //this->mCloud;//TODO:do something to insert into global temporary cloud or octree.
             }
-            bool USE_LOOPCLOSING = false;
 
-            LOG(INFO) <<"track 4.7"<<endl;
+
+            bool USE_LOOPCLOSING = false;
             if (USE_LOOPCLOSING)
             {
                 if(mpCurrentFrame->IsKeyFrame())
@@ -272,9 +272,8 @@ namespace ygz {
             }
 
             return;
-        } 
-        
-        
+
+        }
         else if (mState == OK) {
             // 正常追踪
             // 用imu预测位姿，再尝试用预测的位姿进行特征匹配

@@ -103,7 +103,6 @@ ${Boost_INCLUDE_DIRS}
 ${catkin_INCLUDE_DIRS}
 ${PCL_INCLUDE_DIRS}
 ${OCTOMAP_INCLUDE_DIRS}
-${CERES_INCLUDE_DIRS}
 )
 
 
@@ -132,7 +131,6 @@ set(THIRD_PARTY_LIBS
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
         ${OCTOMAP_LIBRARIES}
-        ${Ceres_LIBRARIES}
         ${DBoW3_LIBRARIES}
 )
 

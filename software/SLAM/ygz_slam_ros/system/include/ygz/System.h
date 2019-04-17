@@ -52,7 +52,7 @@ namespace ygz {
 
     public:
         
-        shared_ptr<LoopClosing> mpLoopClosing = nullptr;
+        //shared_ptr<LoopClosing> mpLoopClosing = nullptr;
 
         shared_ptr<Tracker> mpTracker = nullptr;
         shared_ptr<BackendInterface> mpBackend = nullptr;

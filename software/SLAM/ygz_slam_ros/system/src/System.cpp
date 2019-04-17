@@ -61,10 +61,9 @@ namespace ygz {
         //loopClosing instance related
         string mVocPath = fsSettings["VocPath"];
 
-        mpLoopClosing = shared_ptr<LoopClosing>(new LoopClosing(mVocPath));
+        //mpLoopClosing = shared_ptr<LoopClosing>(new LoopClosing(mVocPath));
 
-        
-        mpTracker->setLoopClosing(mpLoopClosing);
+        //mpTracker->setLoopClosing(mpLoopClosing);
 
         LOG(INFO) << "YGZ system all ready, waiting for images ..." << endl;
     }

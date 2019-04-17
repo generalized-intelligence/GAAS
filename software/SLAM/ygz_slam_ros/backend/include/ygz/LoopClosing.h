@@ -9,7 +9,7 @@
 #include <ygz/Settings.h>
 #include <ygz/ORBMatcher.h>
 #include <ygz/Frame.h>
-#include <ygz/CeresHelper.h>
+//#include <ygz/CeresHelper.h>
 #include <ygz/utility.h>
 
 //#include <DBoW2/BowVector.h>

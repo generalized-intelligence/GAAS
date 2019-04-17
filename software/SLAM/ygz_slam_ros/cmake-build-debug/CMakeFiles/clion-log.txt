@@ -1,47 +1,13 @@
 /home/gishr/Downloads/clion-2018.3.3/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/gishr/software/GAAS/software/SLAM/ygz_slam_ros
--- The C compiler identification is GNU 5.4.0
--- The CXX compiler identification is GNU 5.4.0
--- Check for working C compiler: /usr/bin/cc
--- Check for working C compiler: /usr/bin/cc -- works
--- Detecting C compiler ABI info
--- Detecting C compiler ABI info - done
--- Detecting C compile features
--- Detecting C compile features - done
--- Check for working CXX compiler: /usr/bin/c++
--- Check for working CXX compiler: /usr/bin/c++ -- works
--- Detecting CXX compiler ABI info
--- Detecting CXX compiler ABI info - done
--- Detecting CXX compile features
--- Detecting CXX compile features - done
 -- Building with build type 'Release', turn on the compiler optimization
--- Performing Test COMPILER_SUPPORTS_CXX11
--- Performing Test COMPILER_SUPPORTS_CXX11 - Success
--- Performing Test COMPILER_SUPPORTS_CXX0X
--- Performing Test COMPILER_SUPPORTS_CXX0X - Success
 -- Using flag -std=c++11.
--- Looking for pthread.h
--- Looking for pthread.h - found
--- Looking for pthread_create
--- Looking for pthread_create - not found
--- Looking for pthread_create in pthreads
--- Looking for pthread_create in pthreads - not found
--- Looking for pthread_create in pthread
--- Looking for pthread_create in pthread - found
--- Found Threads: TRUE  
--- Found CUDA: /usr/local/cuda (found suitable exact version "9.0") 
--- Found OpenCV: /usr/local (found suitable version "3.4.0", minimum required is "3.3.1") 
 OPENCV PATH: /usr/local/include;/usr/local/include/opencv
--- Found Eigen3: /usr/local/include/eigen3 (Required is at least version "3.1.0") 
--- Found Glog: /usr/local/include  
 -- Boost version: 1.58.0
 -- Found the following Boost libraries:
 --   serialization
 --   wserialization
 --   system
 G2O PATH: /usr/local/include
--- Checking for module 'eigen3'
---   Found eigen3, version 3.3.4
--- Found Eigen: /usr/local/include/eigen3 (Required is at least version "3.1") 
 -- Eigen found (include: /usr/local/include/eigen3, version: 3.3.4)
 -- Boost version: 1.58.0
 -- Found the following Boost libraries:
@@ -54,9 +20,6 @@ G2O PATH: /usr/local/include
 --   chrono
 --   atomic
 --   regex
--- Checking for module 'flann'
---   Found flann, version 1.8.4
--- Found FLANN: /usr/lib/x86_64-linux-gnu/libflann_cpp.so  
 -- The imported target "vtkRenderingPythonTkWidgets" references the file
    "/usr/lib/x86_64-linux-gnu/libvtkRenderingPythonTkWidgets.so"
 but this file does not exist.  Possible reasons include:
@@ -75,61 +38,33 @@ but this file does not exist.  Possible reasons include:
    "/usr/lib/cmake/vtk-6.2/VTKTargets.cmake"
 but not all the files it references.
 
--- Checking for module 'libusb-1.0'
---   Found libusb-1.0, version 1.0.20
--- Found USB_10: /usr/lib/x86_64-linux-gnu/libusb-1.0.so  
--- Found OpenNI: /usr/lib/libOpenNI.so  
 -- OpenNI found (include: /usr/include/ni, lib: /usr/lib/libOpenNI.so)
 ** WARNING ** io features related to pcap will be disabled
 ** WARNING ** io features related to png will be disabled
--- Found libusb-1.0: /usr/include  
 ** WARNING ** io features related to libusb-1.0 will be disabled
 -- OpenNI found (include: /usr/include/ni, lib: /usr/lib/libOpenNI.so)
--- Found Qhull: optimized;/usr/lib/x86_64-linux-gnu/libqhull.so;debug;/usr/lib/x86_64-linux-gnu/libqhull.so  
 -- QHULL found (include: /usr/include, lib: optimized;/usr/lib/x86_64-linux-gnu/libqhull.so;debug;/usr/lib/x86_64-linux-gnu/libqhull.so)
 -- looking for PCL_COMMON
--- Found PCL_COMMON: /usr/local/lib/libpcl_common.so  
 -- looking for PCL_GEOMETRY
--- Found PCL_GEOMETRY: /usr/local/include/pcl-1.9  
 -- looking for PCL_KDTREE
--- Found PCL_KDTREE: /usr/local/lib/libpcl_kdtree.so  
 -- looking for PCL_OCTREE
--- Found PCL_OCTREE: /usr/local/lib/libpcl_octree.so  
 -- looking for PCL_SEARCH
--- Found PCL_SEARCH: /usr/local/lib/libpcl_search.so  
 -- looking for PCL_SAMPLE_CONSENSUS
--- Found PCL_SAMPLE_CONSENSUS: /usr/local/lib/libpcl_sample_consensus.so  
 -- looking for PCL_FILTERS
--- Found PCL_FILTERS: /usr/local/lib/libpcl_filters.so  
 -- looking for PCL_2D
--- Found PCL_2D: /usr/local/include/pcl-1.9  
 -- looking for PCL_FEATURES
--- Found PCL_FEATURES: /usr/local/lib/libpcl_features.so  
 -- looking for PCL_ML
--- Found PCL_ML: /usr/local/lib/libpcl_ml.so  
 -- looking for PCL_SEGMENTATION
--- Found PCL_SEGMENTATION: /usr/local/lib/libpcl_segmentation.so  
 -- looking for PCL_IO
--- Found PCL_IO: /usr/local/lib/libpcl_io.so  
 -- looking for PCL_STEREO
--- Found PCL_STEREO: /usr/local/lib/libpcl_stereo.so  
 -- looking for PCL_VISUALIZATION
--- Found PCL_VISUALIZATION: /usr/local/lib/libpcl_visualization.so  
 -- looking for PCL_OUTOFCORE
--- Found PCL_OUTOFCORE: /usr/local/lib/libpcl_outofcore.so  
 -- looking for PCL_TRACKING
--- Found PCL_TRACKING: /usr/local/lib/libpcl_tracking.so  
 -- looking for PCL_REGISTRATION
--- Found PCL_REGISTRATION: /usr/local/lib/libpcl_registration.so  
 -- looking for PCL_RECOGNITION
--- Found PCL_RECOGNITION: /usr/local/lib/libpcl_recognition.so  
 -- looking for PCL_SURFACE
--- Found PCL_SURFACE: /usr/local/lib/libpcl_surface.so  
 -- looking for PCL_KEYPOINTS
--- Found PCL_KEYPOINTS: /usr/local/lib/libpcl_keypoints.so  
 -- looking for PCL_PEOPLE
--- Found PCL_PEOPLE: /usr/local/lib/libpcl_people.so  
--- Found PCL: pcl_common;pcl_kdtree;pcl_octree;pcl_search;pcl_sample_consensus;pcl_filters;pcl_features;pcl_ml;pcl_segmentation;pcl_io;pcl_stereo;pcl_visualization;pcl_outofcore;pcl_tracking;pcl_registration;pcl_recognition;pcl_surface;pcl_keypoints;pcl_people;/usr/lib/x86_64-linux-gnu/libboost_system.so;/usr/lib/x86_64-linux-gnu/libboost_filesystem.so;/usr/lib/x86_64-linux-gnu/libboost_thread.so;-lpthread;/usr/lib/x86_64-linux-gnu/libboost_date_time.so;/usr/lib/x86_64-linux-gnu/libboost_iostreams.so;/usr/lib/x86_64-linux-gnu/libboost_serialization.so;/usr/lib/x86_64-linux-gnu/libboost_chrono.so;/usr/lib/x86_64-linux-gnu/libboost_atomic.so;/usr/lib/x86_64-linux-gnu/libboost_regex.so;optimized;/usr/lib/x86_64-linux-gnu/libqhull.so;debug;/usr/lib/x86_64-linux-gnu/libqhull.so;/usr/lib/libOpenNI.so;vtkChartsCore;vtkCommonColor;vtkCommonDataModel;vtkCommonMath;vtkCommonCore;vtksys;vtkCommonMisc;vtkCommonSystem;vtkCommonTransforms;vtkInfovisCore;vtkFiltersExtraction;vtkCommonExecutionModel;vtkFiltersCore;vtkFiltersGeneral;vtkCommonComputationalGeometry;vtkFiltersStatistics;vtkImagingFourier;vtkImagingCore;vtkalglib;vtkRenderingContext2D;vtkRenderingCore;vtkFiltersGeometry;vtkFiltersSources;vtkRenderingFreeType;/usr/lib/x86_64-linux-gnu/libfreetype.so;/usr/lib/x86_64-linux-gnu/libz.so;vtkftgl;vtkDICOMParser;vtkDomainsChemistry;vtkIOXML;vtkIOGeometry;vtkIOCore;/usr/lib/x86_64-linux-gnu/libjsoncpp.so;vtkIOXMLParser;/usr/lib/x86_64-linux-gnu/libexpat.so;vtkFiltersAMR;vtkParallelCore;vtkIOLegacy;vtkFiltersFlowPaths;vtkFiltersGeneric;vtkFiltersHybrid;vtkImagingSources;vtkFiltersHyperTree;vtkFiltersImaging;vtkImagingGeneral;vtkFiltersModeling;vtkFiltersParallel;vtkFiltersParallelFlowPaths;vtkParallelMPI;vtkFiltersParallelGeometry;vtkFiltersParallelImaging;vtkFiltersParallelMPI;vtkFiltersParallelStatistics;vtkFiltersProgrammable;vtkFiltersPython;/usr/lib/x86_64-linux-gnu/libpython2.7.so;vtkWrappingPythonCore;vtkWrappingTools;vtkFiltersReebGraph;vtkFiltersSMP;vtkFiltersSelection;vtkFiltersTexture;vtkFiltersVerdict;verdict;vtkGUISupportQt;vtkInteractionStyle;vtkRenderingOpenGL;vtkImagingHybrid;vtkIOImage;vtkmetaio;/usr/lib/x86_64-linux-gnu/libjpeg.so;/usr/lib/x86_64-linux-gnu/libpng.so;/usr/lib/x86_64-linux-gnu/libtiff.so;vtkGUISupportQtOpenGL;vtkGUISupportQtSQL;vtkIOSQL;sqlite3;vtkGUISupportQtWebkit;vtkViewsQt;vtkViewsInfovis;vtkInfovisLayout;vtkRenderingLabel;vtkViewsCore;vtkInteractionWidgets;vtkRenderingAnnotation;vtkImagingColor;vtkRenderingVolume;vtkGeovisCore;vtkproj4;vtkIOAMR;/usr/lib/x86_64-linux-gnu/hdf5/openmpi/lib/libhdf5.so;/usr/lib/x86_64-linux-gnu/libsz.so;/usr/lib/x86_64-linux-gnu/libdl.so;/usr/lib/x86_64-linux-gnu/libm.so;/usr/lib/x86_64-linux-gnu/hdf5/openmpi/lib/libhdf5_hl.so;/usr/lib/openmpi/lib/libmpi.so;vtkIOEnSight;vtkIOExodus;vtkexoIIc;/usr/lib/x86_64-linux-gnu/libnetcdf_c++.so;/usr/lib/x86_64-linux-gnu/libnetcdf.so;vtkIOExport;vtkRenderingGL2PS;vtkRenderingContextOpenGL;/usr/lib/libgl2ps.so;vtkIOFFMPEG;vtkIOMovie;/usr/lib/x86_64-linux-gnu/libtheoraenc.so;/usr/lib/x86_64-linux-gnu/libtheoradec.so;/usr/lib/x86_64-linux-gnu/libogg.so;vtkIOGDAL;vtkIOGeoJSON;vtkIOImport;vtkIOInfovis;/usr/lib/x86_64-linux-gnu/libxml2.so;vtkIOLSDyna;vtkIOMINC;vtkIOMPIImage;vtkIOMPIParallel;vtkIOMySQL;vtkIONetCDF;vtkIOODBC;vtkIOPLY;vtkIOParallel;vtkIOParallelExodus;vtkIOParallelLSDyna;vtkIOParallelNetCDF;vtkIOParallelXML;vtkIOPostgreSQL;vtkIOVPIC;VPIC;vtkIOVideo;vtkIOXdmf2;vtkxdmf2;vtkImagingMath;vtkImagingMorphological;vtkImagingStatistics;vtkImagingStencil;vtkInfovisBoostGraphAlgorithms;vtkInteractionImage;vtkLocalExample;vtkParallelMPI4Py;vtkPythonInterpreter;vtkRenderingExternal;vtkRenderingFreeTypeFontConfig;vtkRenderingFreeTypeOpenGL;vtkRenderingImage;vtkRenderingLIC;vtkRenderingLOD;vtkRenderingMatplotlib;vtkRenderingParallel;vtkRenderingParallelLIC;vtkRenderingQt;vtkRenderingVolumeOpenGL;vtkTestingGenericBridge;vtkTestingIOSQL;vtkTestingRendering;vtkViewsContext2D;vtkViewsGeovis;vtkWrappingJava;FLANN::FLANN  
 CMake Error at CMakeLists.txt:68 (find_package):
   By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
   asked CMake to find a package configuration file provided by "catkin", but
