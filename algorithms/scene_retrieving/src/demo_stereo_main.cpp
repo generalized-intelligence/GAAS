@@ -73,30 +73,8 @@ int main(int argc,char** argv)
     pSceneRetriever->setImageVecPath(right_image_path, 0);
 
 
-    // test case for mono case
-    for (int i=0; i<image_num; i++)
-    {
-        cout<<"retrieveSceneFromStereoImage 1"<<endl;
-        cv::Mat left_image = cv::imread(left_image_path[i]);
-
-        if(left_image.empty() && Q_mat.empty())
-        {
-            cout<<"left or Q_mat is empty!"<<endl;
-            continue;
-        }
-        else
-        {
-            pSceneRetriever->retrieveSceneWithScaleFromMonoImage(left_image, Q_mat, RT_mat, match_success);
-            cout<<"retrieveSceneWithScaleFromMonoImage"<<endl;
-
-            if(match_success)
-            {
-                cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
-            }
-        }
-    }
-
     // test case for stereo image
+    int recalled_result=0;
     for (int i=0; i<image_num; i++)
     {
         cout<<"retrieveSceneFromStereoImage 1"<<endl;
@@ -110,15 +88,51 @@ int main(int argc,char** argv)
         }
         else
         {
-            pSceneRetriever->retrieveSceneFromStereoImage(left_image, right_image, Q_mat, RT_mat, match_success);
+            int inliers = pSceneRetriever->retrieveSceneFromStereoImage(left_image, right_image, Q_mat, RT_mat, match_success);
             cout<<"retrieveSceneFromStereoImage 2"<<endl;
 
             if(match_success)
             {
                 cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
+                recalled_result++;
             }
         }
+
+        cout<<"retrieveSceneFromStereoImage recalled result: "<<recalled_result<<endl;
+        cout<<"retrieveSceneFromStereoImage recall: "<<(recalled_result/image_num)<<endl;
     }
+
+
+    // test case for mono case
+    recalled_result=0;
+    for (int i=0; i<image_num; i++)
+    {
+        cout<<"retrieveSceneFromStereoImage !"<<endl;
+        cv::Mat left_image = cv::imread(left_image_path[i]);
+
+        if(left_image.empty() && Q_mat.empty())
+        {
+            cout<<"left or Q_mat is empty!"<<endl;
+            continue;
+        }
+        else
+        {
+            int inliers = pSceneRetriever->retrieveSceneWithScaleFromMonoImage(left_image, Q_mat, RT_mat, match_success);
+
+            if(match_success)
+            {
+                cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
+
+                recalled_result++;
+            }
+        }
+
+        cout<<"retrieveSceneFromStereoImage recalled result: "<<recalled_result<<endl;
+        cout<<"retrieveSceneFromStereoImage recall: "<<(recalled_result/image_num)<<endl;
+    }
+
+
+
     
     return 0;
 }

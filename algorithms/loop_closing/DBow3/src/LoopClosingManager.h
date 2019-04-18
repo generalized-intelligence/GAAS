@@ -52,8 +52,10 @@ void testDatabase(const vector<vector<cv::Mat > > &features,const std::string db
 //const int NIMAGES = 40;
 
 const int RET_QUERY_LEN = 4;
+
 //const int TOO_CLOSE_THRES = 15;
 //const int TOO_CLOSE_THRES = 50;
+//const int TOO_CLOSE_THRES = 1;
 const int TOO_CLOSE_THRES = 1;
 
 //const float DB_QUERY_SCORE_THRES = 0.4;//0.5;//0.65;

@@ -347,66 +347,6 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
     //NOTE display feature matches between current frame and detected old frame
     cout << "good_matches_output: " << good_matches_output.size() << endl;
 
-//    if (good_matches_output.size() > 5) {
-//        this->displayFeatureMatches(loop_index, frameinfo_left, good_matches_output);
-//    }
-
-    cout<<"this->displayFeatureMatches 2"<<endl;
-
-
-    // method 1
-
-//    //fetch left and right image
-//    cv::Mat old_image_left = this->fetchImage(loop_index, 1);
-//    cv::Mat old_image_right = this->fetchImage(loop_index, 0);
-//
-//    //fetch old frame R and t
-//    cv::Mat R = this->original_scene.getR(loop_index);
-//    cv::Mat t = this->original_scene.getT(loop_index);
-//
-//    //initialize PnP result
-//    cv::Mat result_R, result_t;
-//
-//    cout<<"this->displayFeatureMatches 3"<<endl;
-//
-//    cout<<"this->displayFeatureMatches 33"<<endl;
-//
-//    //conduct pnp
-//
-//    if (old_image_right.empty() || old_image_left.empty() || image_left_rect.empty() || R.empty() || t.empty())
-//    {
-//        cout<<"Image empty in solvePnP"<<endl;
-//        return -1;
-//    }
-//    else
-//    {
-//        bool pnpResult = this->mpCv_helper->solvePnP(old_image_left,
-//                                                     old_image_right,
-//                                                     image_left_rect,
-//                                                     R, t,
-//                                                     result_R, result_t);
-//
-//        cout<<"this->displayFeatureMatches 4"<<endl;
-//
-//        if(pnpResult)
-//        {
-//            cout<<"pnp result are: \n: "<<result_R<<endl<<result_t<<endl;
-//            cout<<"solve pnp finished, publishing the result."<<endl;
-//
-//            cv::Mat temp_t =  -result_R.t()*result_t;
-//
-//            //this->mpCv_helper->publishPose(result_R, result_t, 0);
-//            this->mpCv_helper->publishPose(-result_R.t(), temp_t, 0);
-//
-//            cout<<"solve pnp finished, publishing the result finished."<<endl;
-//        }
-//
-//    }
-
-
-
-    // method 2
-
     //step 1, fetch current frame camera points and desps
 
     cout<<"icp fetch current frame camera points and desps"<<endl;
@@ -474,7 +414,7 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
     cout<<"icp GeneralICP and std::to_string(this->LoopClosureDebugIndex): "<<std::to_string(this->LoopClosureDebugIndex)<<endl;
 
     Eigen::Matrix4f result;
-    mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
+    int result_size = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
 
     cout<<"icp given old T and relative loop closure T, get new T"<<endl;
     cout<<"Calculated transform matrix is: \n"<<result<<endl;
@@ -547,7 +487,7 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
     this->mpCv_helper->publishPose(new_R, new_t, 0);
     RT_mat_of_stereo_cam_output = new_T;
 
-    return 1;
+    return result_size;
 }
 
 
@@ -614,17 +554,20 @@ int SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect,
     if (old_image_right.empty() || old_image_left.empty() || R.empty() || t.empty())
     {
         cout<<"Image empty or Rt empty before solvePnP"<<endl;
+        match_success = false;
         return -1;
     }
     else
     {
-        bool pnpResult = this->mpCv_helper->solvePnP(old_image_left,
+        int pnpResult = this->mpCv_helper->solvePnP(old_image_left,
                                                      old_image_right,
                                                      image_left_rect,
                                                      R, t,
                                                      result_R, result_t);
 
-        if(pnpResult)
+        cout<<"pnpresult: "<<pnpResult<<endl;
+        cout<<"pnpresult: "<<bool(pnpResult)<<endl;
+        if(pnpResult>0 && !result_R.empty() && !result_t.empty())
         {
             cout<<"pnp result are: \n: "<<result_R<<endl<<result_t<<endl;
             cout<<"solve pnp finished, publishing the result."<<endl;
@@ -637,7 +580,12 @@ int SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect,
             cout<<"solve pnp finished, publishing the result finished."<<endl;
 
             match_success = true;
-            return 1;
+            return pnpResult;
+        }
+        else
+        {
+            match_success = false;
+            return -1;
         }
 
     }

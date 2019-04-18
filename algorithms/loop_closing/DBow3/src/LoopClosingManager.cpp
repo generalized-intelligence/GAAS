@@ -196,8 +196,7 @@ void saveImagePair(int id1,int id2,int &save_index,std::vector<cv::DMatch>& good
     ss2<< "images/image"<<id2<<".png";
     cv::Mat image2 = cv::imread(ss2.str(),0);
     cv::Mat merged_img;
-//    cv::hconcat(image,image2,merged_img);
-//use cv::drawMatches replace hconcat.
+
     cv::drawMatches(image,frameinfo_list[id1]->keypoints,image2,frameinfo_list[id2]->keypoints,good_matches,merged_img);
     stringstream output_ss;
     output_ss<<"loops/image"<<save_index<<"__"<<id1<<"_"<<id2<<"___"<<score<<".png";
@@ -221,8 +220,9 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     cout<<"current_frame->descriptors size: "<<current_frame->descriptors.size()<<endl;
     cout<<"current_frame->keypoints size: "<<current_frame->keypoints.size()<<endl;
 
-    matcher.match(current_frame->descriptors, frameinfo_list[index2]->descriptors, matches);
-
+    if(index2<frameinfo_list.size() && !current_frame->descriptors.empty()) {
+        matcher.match(current_frame->descriptors, frameinfo_list[index2]->descriptors, matches);
+    }
 
     //GMS
 //    vector<cv::DMatch> matches_gms;
@@ -264,15 +264,6 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     std::vector< cv::DMatch > good_matches;
 
     cout<<"raw matches size: "<<matches.size()<<endl;
-
-
-//    for( int i = 0; i < matches.size(); i++ )
-//    {
-//        if( matches[i].distance <= 2*min_dist && matches[i].distance< ORB_TH_HIGH) // 3.0 too large;2.0 too large.
-//        {
-//            good_matches.push_back( matches[i]);
-//        }
-//    }
 
 
     for( int i = 0; i < matches.size(); i++ )

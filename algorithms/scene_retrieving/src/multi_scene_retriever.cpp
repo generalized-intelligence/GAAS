@@ -1,9 +1,12 @@
 #include "multi_scene_retriever.h"
+
+
 MultiSceneRetriever::MultiSceneRetriever()
 {
     this->gps_KDTree = boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ>> ( new  pcl::PointCloud<pcl::PointXYZ>() );
     scene_index = 0;
 }
+
 void MultiSceneRetriever::generate_visualization_graph()
 {
     //iterate all scene,build graph.draw graph to a image file.
@@ -86,7 +89,7 @@ int MultiSceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect,
     this->findNRelativeSceneByGPS(img_lon,img_lat,scene_index_list);
 
     //step<2> do match.
-    vector<cv::DMatch> match_result_list;
+    vector<std::pair<int, int> > match_result_list;
 
     for (const int& index:scene_index_list)
     {
@@ -99,9 +102,10 @@ int MultiSceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect,
 
         if(match_success)
         {
-            match_result_list.push_back(std::make_pair(index,matched_points_count));
+            match_result_list.push_back(std::make_pair(index, matched_points_count));
         }
     }
+
     //step<3> select and reserve only the best match.
     int best_match_id = -1;
     int best_match_points_count = -1;
@@ -115,15 +119,19 @@ int MultiSceneRetriever::retrieveSceneFromStereoImage(cv::Mat image_left_rect,
             best_match_id = curr_index;
         }
     }
+
     if(best_match_id>=0 && best_match_points_count>5)
     {
         //redo mapping;for the last one is not always the best one.
-        this->idToNodeMap[best_match_id]->pSceneRetriever->retrieveSceneWithScaleFromMonoImage(image_in_rect, cameraMatrix, RT_mat_of_mono_cam_output, match_success);
+        cv::Mat cameraMatrix, RT_mat_of_mono_cam_output;
+        this->idToNodeMap[best_match_id]->pSceneRetriever->retrieveSceneWithScaleFromMonoImage(image_left_rect, cameraMatrix, RT_mat_of_mono_cam_output, match_success);
     }
+
     if(match_success)
     {
         return best_match_id;
     }
+
     else
     {
         return -1;

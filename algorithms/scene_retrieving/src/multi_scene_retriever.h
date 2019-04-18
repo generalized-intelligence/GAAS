@@ -8,15 +8,14 @@
 
 //Build a auto balanced kdtree to do quick retrieve of multi scene.
 //Load multiple scenes in different place(maybe include the whole world) at once,and automaticly check the most related and closed ones.
-//Will reserve all query interfaces of Scene Retriever.So just query the whole world just like querying a single scene.
+//Will reserve all query interfaces of Scene Retriever. So just query the whole world just like querying a single scene.
 
 #include "nlohmann/json.hpp"
 using namespace nlohmann;
 
-class MultiSceneNode;
-
 class MultiSceneNode
 {
+
 public:
 
     MultiSceneNode()

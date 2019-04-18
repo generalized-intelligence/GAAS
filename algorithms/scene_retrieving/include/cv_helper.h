@@ -581,7 +581,6 @@ public:
             return -1;
         }
 
-        cout<<"solvePnP 5"<<endl;
 
         // ---------------------------------------------------for debugging----------------------------------------------------------
         cv::Mat test_image;
@@ -610,11 +609,9 @@ public:
 
         cv::Mat D = cv::Mat::zeros(4, 1, cv::DataType<double>::type);
 
-        //cv::solvePnPRansac(mps_old, image_pts_cur, intrinstic, NULL, rvec, tvec, 0, 30, 0.2, 5);
+
         cout<<"mps_old size(): "<<mps_old.size()<<endl;
         cout<<"image_pts_cur size(): "<<image_pts_cur.size()<<endl;
-
-
 
         //SOLVEPNP_P3P
         //SOLVEPNP_UPNP
@@ -628,21 +625,17 @@ public:
 //        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers);
 //        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_P3P);
 //        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.02, 0.99, inliers, cv::SOLVEPNP_UPNP);
-        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 0.2, 0.99, inliers, cv::SOLVEPNP_EPNP);
+//        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, false, 100, 1, 0.99, inliers, cv::SOLVEPNP_EPNP);
+        cv::solvePnPRansac(mps_old, image_pts_cur, this->Kmat, cv::Mat(), rvec, tvec, true, 100, 2, 0.99, inliers, cv::SOLVEPNP_EPNP);
 
         cv::Rodrigues (rvec, result_R);
         result_t = tvec;
 
         cv::Mat homographyR = this->getRotationfromEssential(kps_old_left, kps_cur_left);
 
-        cout<<"homographyR is: "<<homographyR<<endl;
-
         cv::Mat homographyRvec;
 
         cv::Rodrigues (homographyR, homographyRvec);
-
-        cout<<"homographyRvec is: "<<homographyRvec<<endl;
-        cout<<"rvec is: "<<rvec<<endl;
 
         float distanceR = this->Vec3Distance(homographyRvec, rvec);
 
@@ -666,12 +659,11 @@ public:
         //if (distanceR < 10) // too many outliers, good recall.
         //if (distanceR < 4) // fewer outliers than before, good recall
         //if (distanceR < 1.0) // too strict
-        //if (distanceR < 1.2)
         cout<<"(inliers.size()): "<<inliers<<endl;
         cout<<"(inliers.size()).width and height are: "<<(inliers.size()).width<<", "<<(inliers.size()).height<<endl;
 
-        if (distanceR < 1.2)
-            return (inliers.size()).width;
+        if (distanceR < 4 && (inliers.size()).height > 0 && distanceT < 50)
+            return (inliers.size()).height;
         else
             return -1;
 
@@ -682,7 +674,7 @@ public:
     // a wrapper for pcl::GeneralizedIterativeClosestPoint to return the transformation matrix between a input point cloud and a
     // target point cloud
     // input points cloud size should be greater than 20
-    Eigen::Matrix4f GeneralICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 50, double transformationEpsilon = 1e-8)
+    int GeneralICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 50, double transformationEpsilon = 1e-8)
     {
 
         cout<<"cv helper::GeneralICP points size: "<<input_cloud.size()<<", "<<target_cloud.size()<<endl;
@@ -721,7 +713,9 @@ public:
 
         result = transformation;
 
-        return  transformation;
+
+        vector<int> Indices = *(reg.getIndices());
+        return Indices.size();
     }
 
     //not implemented

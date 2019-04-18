@@ -14,9 +14,14 @@
       <change beforePath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/cv_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/cv_helper.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scene_retreving_recovered_pose_and_pnp_result.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/scene_retreving_recovered_pose_and_pnp_result2.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/demo_stereo_main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/demo_stereo_main.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/multi_scene_retriever.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/multi_scene_retriever.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/multi_scene_retriever.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/multi_scene_retriever.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../demo/tutorial_2/2_Struction_from_Motion/square_20_15.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../demo/tutorial_2/2_Struction_from_Motion/square_20_15.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/CMakeLists.txt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -48,7 +53,7 @@
               <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
                 <provider selected="true" editor-type-id="text-editor">
                   <state relative-caret-position="385">
-                    <caret line="657" column="72" selection-start-line="657" selection-start-column="72" selection-end-line="657" selection-end-column="72" />
+                    <caret line="650" column="72" selection-start-line="650" selection-start-column="72" selection-end-line="650" selection-end-column="72" />
                   </state>
                 </provider>
               </entry>
@@ -63,17 +68,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="563">
-              <caret line="83" column="50" selection-start-line="83" selection-start-column="50" selection-end-line="83" selection-end-column="50" />
+            <state relative-caret-position="275">
+              <caret line="76" column="8" selection-start-line="76" selection-start-column="8" selection-end-line="76" selection-end-column="8" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="6426">
-              <caret line="357" column="4" selection-start-line="357" selection-start-column="4" selection-end-line="358" selection-end-column="49" />
+            <state relative-caret-position="309">
+              <caret line="367" lean-forward="true" selection-start-line="367" selection-end-line="367" />
             </state>
           </provider>
         </entry>
@@ -81,8 +86,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="219">
-              <caret line="620" column="52" selection-start-line="620" selection-start-column="44" selection-end-line="620" selection-end-column="52" />
+            <state relative-caret-position="237">
+              <caret line="311" column="48" selection-start-line="311" selection-start-column="20" selection-end-line="311" selection-end-column="48" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.h">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="132">
+              <caret line="9" column="70" selection-start-line="9" selection-start-column="70" selection-end-line="9" selection-end-column="70" />
             </state>
           </provider>
         </entry>
@@ -90,17 +104,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="129">
-              <caret line="69" column="53" selection-start-line="69" selection-start-column="25" selection-end-line="69" selection-end-column="53" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="393">
-              <caret line="96" column="41" lean-forward="true" selection-start-line="96" selection-start-column="41" selection-end-line="96" selection-end-column="41" />
+            <state relative-caret-position="216">
+              <caret line="156" column="34" selection-start-line="156" selection-start-column="34" selection-end-line="156" selection-end-column="34" />
             </state>
           </provider>
         </entry>
@@ -108,8 +113,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="306">
-              <caret line="495" column="62" selection-start-line="495" selection-start-column="62" selection-end-line="495" selection-end-column="62" />
+            <state relative-caret-position="483">
+              <caret line="676" column="18" selection-start-line="676" selection-start-column="8" selection-end-line="676" selection-end-column="18" />
             </state>
           </provider>
         </entry>
@@ -118,11 +123,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>match2images 1</find>
-      <find>StereoImage2CamPoints 1.1</find>
-      <find>Keypoints_left</find>
-      <find>MATCH SUCCEED!</find>
-      <find>retrieveSceneFromStereoImage</find>
       <find>publis</find>
       <find>publishPose</find>
       <find>result_transformation</find>
@@ -135,19 +135,24 @@
       <find>getR</find>
       <find>new_T</find>
       <find>cv helper::GeneralICP points size</find>
-      <find>GeneralICP</find>
-      <find>Vec3Distance</find>
       <find>icp GeneralICP</find>
       <find>cur_image_right</find>
       <find>image_left_rect</find>
       <find>publishpose</find>
       <find>cameraMatrix</find>
       <find>retrieveSceneWithScaleFromMonoImage</find>
-      <find>solvePnP</find>
       <find>match_result</find>
       <find>idToNodeMap</find>
       <find>MultiSceneNode</find>
       <find>RT_mat</find>
+      <find>pnp result are</find>
+      <find>solvePnP</find>
+      <find>pnpResult</find>
+      <find>Vec3Distance</find>
+      <find>cv::imread(this-&gt;mVecLeftImagePath[index])</find>
+      <find>retrieveSceneFromStereoImage</find>
+      <find>GeneralICP</find>
+      <find>pnp result are:</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -160,21 +165,21 @@
         <option value="$PROJECT_DIR$/src/MakeSceneFromOpenSfMModel.cpp" />
         <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.h" />
         <option value="$PROJECT_DIR$/../loop_closing/DBow3/src/LoopClosingManager.cpp" />
-        <option value="$PROJECT_DIR$/src/demo_stereo_main.cpp" />
-        <option value="$PROJECT_DIR$/src/scene_retrieve.cpp" />
         <option value="$PROJECT_DIR$/src/scene_retrieve.h" />
-        <option value="$PROJECT_DIR$/include/cv_helper.h" />
         <option value="$PROJECT_DIR$/src/multi_scene_retriever.cpp" />
         <option value="$PROJECT_DIR$/src/multi_scene_retriever.h" />
+        <option value="$PROJECT_DIR$/src/demo_stereo_main.cpp" />
+        <option value="$PROJECT_DIR$/include/cv_helper.h" />
+        <option value="$PROJECT_DIR$/src/scene_retrieve.cpp" />
       </list>
     </option>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="232" />
-    <option name="y" value="97" />
-    <option name="width" value="1845" />
-    <option name="height" value="1016" />
+    <option name="x" value="77" />
+    <option name="y" value="69" />
+    <option name="width" value="1843" />
+    <option name="height" value="1008" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -182,6 +187,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -193,7 +199,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -252,18 +257,19 @@
       <workItem from="1555398402772" duration="14863000" />
       <workItem from="1555466792610" duration="10305000" />
       <workItem from="1555483517668" duration="3324000" />
-      <workItem from="1555498773113" duration="2347000" />
+      <workItem from="1555498773113" duration="2459000" />
+      <workItem from="1555557738127" duration="7645000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="175537000" />
+    <option name="totallyTimeSpent" value="183294000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.04477612" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.06965174" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -398,45 +404,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
+    <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6426">
-          <caret line="357" column="4" selection-start-line="357" selection-start-column="4" selection-end-line="358" selection-end-column="49" />
+        <state relative-caret-position="132">
+          <caret line="9" column="70" selection-start-line="9" selection-start-column="70" selection-end-line="9" selection-end-column="70" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/demo_stereo_main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="563">
-          <caret line="83" column="50" selection-start-line="83" selection-start-column="50" selection-end-line="83" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="219">
-          <caret line="620" column="52" selection-start-line="620" selection-start-column="44" selection-end-line="620" selection-end-column="52" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="495" column="62" selection-start-line="495" selection-start-column="62" selection-end-line="495" selection-end-column="62" />
+        <state relative-caret-position="275">
+          <caret line="76" column="8" selection-start-line="76" selection-start-column="8" selection-end-line="76" selection-end-column="8" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="129">
-          <caret line="69" column="53" selection-start-line="69" selection-start-column="25" selection-end-line="69" selection-end-column="53" />
+        <state relative-caret-position="216">
+          <caret line="156" column="34" selection-start-line="156" selection-start-column="34" selection-end-line="156" selection-end-column="34" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/multi_scene_retriever.h">
+    <entry file="file://$PROJECT_DIR$/include/cv_helper.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="393">
-          <caret line="96" column="41" lean-forward="true" selection-start-line="96" selection-start-column="41" selection-end-line="96" selection-end-column="41" />
+        <state relative-caret-position="483">
+          <caret line="676" column="18" selection-start-line="676" selection-start-column="8" selection-end-line="676" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="237">
+          <caret line="311" column="48" selection-start-line="311" selection-start-column="20" selection-end-line="311" selection-end-column="48" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/scene_retrieve.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="309">
+          <caret line="367" lean-forward="true" selection-start-line="367" selection-end-line="367" />
         </state>
       </provider>
     </entry>
