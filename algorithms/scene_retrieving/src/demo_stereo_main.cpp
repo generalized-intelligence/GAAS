@@ -12,20 +12,14 @@ using namespace std;
 int main(int argc,char** argv)
 {
 
-
     //ros init
     ros::init(argc, argv, "scene_retrieve");
-
-    //NOTE simple test, for fast serialization test
-//     std::shared_ptr<Scene> pSceneTest(new Scene());
-//     string test_scene_path = "../../scene.scn";
-//     pSceneTest->loadFile(test_scene_path);
-//     pSceneTest->test();
     
     if (argc!=5)
     {
         cout<<"Usage: demo [scene_file_path] [voc_file_path] [l_image_path] [r_image_path] [Q_mat_file_path]"<<endl;
     }
+
 
     std::string scene_path(argv[1]), voc_file_path(argv[2]) , l_img_path(argv[3]), r_img_path(argv[4]), Q_mat_path(argv[5]);
     
@@ -94,35 +88,6 @@ int main(int argc,char** argv)
             if(match_success)
             {
                 cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
-                recalled_result++;
-            }
-        }
-
-        cout<<"retrieveSceneFromStereoImage recalled result: "<<recalled_result<<endl;
-        cout<<"retrieveSceneFromStereoImage recall: "<<(recalled_result/image_num)<<endl;
-    }
-
-
-    // test case for mono case
-    recalled_result=0;
-    for (int i=0; i<image_num; i++)
-    {
-        cout<<"retrieveSceneFromStereoImage !"<<endl;
-        cv::Mat left_image = cv::imread(left_image_path[i]);
-
-        if(left_image.empty() && Q_mat.empty())
-        {
-            cout<<"left or Q_mat is empty!"<<endl;
-            continue;
-        }
-        else
-        {
-            int inliers = pSceneRetriever->retrieveSceneWithScaleFromMonoImage(left_image, Q_mat, RT_mat, match_success);
-
-            if(match_success)
-            {
-                cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
-
                 recalled_result++;
             }
         }
