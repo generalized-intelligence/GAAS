@@ -405,7 +405,8 @@ namespace ygz {
         if (mState == OK)
             optinliers = OptimizeCurrentPoseWithIMU();
         else
-            optinliers = OptimizeCurrentPoseWithoutIMU();
+            //optinliers = OptimizeCurrentPoseWithoutIMU();
+	    optinliers = OptimizeCurrentPoseFaster();
 
         inliers = 0;
 
@@ -900,7 +901,8 @@ namespace ygz {
             int ret;
 
             try {
-                ret = this->OptimizeCurrentPoseWithoutIMU();
+                //ret = this->OptimizeCurrentPoseWithoutIMU();
+		ret = this->OptimizeCurrentPoseFaster();
             }
             catch (exception& e)
             {

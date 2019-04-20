@@ -258,19 +258,6 @@ namespace ygz {
             }
 
 
-            bool USE_LOOPCLOSING = false;
-            if (USE_LOOPCLOSING)
-            {
-                if(mpCurrentFrame->IsKeyFrame())
-                {   
-                    //first compute its brief descriptors
-                    mpCurrentFrame->computeBRIEFPoint();
-                    
-                    //and then add this frame to loopclosing backend to process
-                    mpLoopClosing->addKeyFrame(mpCurrentFrame, true);
-                }
-            }
-
             return;
 
         }
