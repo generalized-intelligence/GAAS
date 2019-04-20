@@ -3,6 +3,6 @@
 
 
 
-# The Earliest of All Early Adaptors
+# The Earliest of All Early Adoptors
 [![first_issue](https://s2.ax1x.com/2019/03/28/AwumKf.jpg)](https://github.com/ElderWanng)
 
