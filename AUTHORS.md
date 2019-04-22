@@ -1,8 +1,8 @@
 # Most Active Contributors
-[![tutorial bug exterminator](https://s2.ax1x.com/2019/04/18/ESYs5n.jpg)](https://github.com/bys1123)
+[<img src="https://s2.ax1x.com/2019/04/22/EktKD1.png" width="160">](https://github.com/bys1123)
 
 
 
 # The Earliest of All Early Adoptors
-[![first_issue](https://s2.ax1x.com/2019/03/28/AwumKf.jpg)](https://github.com/ElderWanng)
+[<img src="https://s2.ax1x.com/2019/04/22/EktMHx.png" width="160">](https://github.com/ElderWanng)[<img src="https://s2.ax1x.com/2019/04/22/EktlE6.png" width="160">](https://github.com/AlexisTM)
 
