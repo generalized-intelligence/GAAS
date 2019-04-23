@@ -45,7 +45,7 @@ class Commander:
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
 
-        # ROS uses ENU internally, so we will stick to this convension
+        # ROS uses ENU internally, so we will stick to this convention
 
         if BODY_OFFSET_ENU:
             pose.header.frame_id = 'base_link'
