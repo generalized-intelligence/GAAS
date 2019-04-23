@@ -20,7 +20,7 @@ class Px4Controller:
         self.current_state = None
         self.current_heading = None
         self.takeoff_height = 3.2
-        self.initial_heading = 0
+        self.local_enu_position = None
 
         self.cur_target_pose = None
         self.global_target = None
@@ -63,7 +63,6 @@ class Px4Controller:
 
     def start(self):
         rospy.init_node("offboard_node")
-        rate = rospy.Rate(20)
 
         self.cur_target_pose = self.construct_target(0, 0, self.takeoff_height, self.current_heading)
 
@@ -75,23 +74,17 @@ class Px4Controller:
             self.offboard_state = self.offboard()
 
 
-        # while self.offboard_state is False:
-        #     self.local_target_pub.publish(self.cur_target_pose)
-        #     self.arm_state = self.arm()
-        #     self.offboard_state = self.offboard()
+        if self.takeoff_detection():
+            print("Vehicle Took Off!")
 
+        else:
+            print("Vehicle Took Off Failed!")
 
-        # self.initial_heading = self.q2yaw(self.imu.orientation)
-
-        self.initial_heading = math.pi / 2
-        print("Initial heading set to: ", self.initial_heading)
-        print("Vehicle Took Off!")
 
         '''
         main ROS thread
         '''
         while self.arm_state and self.offboard_state and (rospy.is_shutdown() is False):
-
 
             self.local_target_pub.publish(self.cur_target_pose)
 
@@ -143,6 +136,8 @@ class Px4Controller:
 
     def local_pose_callback(self, msg):
         self.local_pose = msg
+        self.local_enu_position = msg
+
 
 
     def mavros_state_callback(self, msg):
@@ -164,18 +159,77 @@ class Px4Controller:
 
     def body2enu(self, body_target_x, body_target_y, body_target_z):
 
-        heading_delta = self.initial_heading - self.current_heading
-
-        ENU_y = body_target_y * math.cos(heading_delta) - body_target_x * math.sin(heading_delta)
-        ENU_x = body_target_y * math.sin(heading_delta) + body_target_x * math.cos(heading_delta)
+        ENU_x = body_target_y
+        ENU_y = - body_target_x
         ENU_z = body_target_z
 
         return ENU_x, ENU_y, ENU_z
 
 
+    def BodyOffsetENU2FLU(self, msg):
+
+        FLU_x = msg.pose.position.x * math.cos(self.current_heading) - msg.pose.position.y * math.sin(self.current_heading)
+        FLU_y = msg.pose.position.x * math.sin(self.current_heading) + msg.pose.position.y * math.cos(self.current_heading)
+        FLU_z = msg.pose.position.z
+
+        return FLU_x, FLU_y, FLU_z
+
+
+    def set_target_position_callback(self, msg):
+        print("Received New Position Task!")
+
+        if msg.header.frame_id == 'base_link':
+            '''
+            BODY_OFFSET_ENU
+            '''
+            # For Body frame, we will use FLU (Forward, Left and Up)
+            #           +Z     +X
+            #            ^    ^
+            #            |  /
+            #            |/
+            #  +Y <------body
+
+            self.frame = "BODY"
+
+            print("body FLU frame")
+
+            FLU_x, FLU_y, FLU_z = self.BodyOffsetENU2FLU(msg)
+
+            body_x = FLU_x + self.local_pose.pose.position.x
+            body_y = FLU_y + self.local_pose.pose.position.y
+            body_z = FLU_z + self.local_pose.pose.position.z
+
+            self.cur_target_pose = self.construct_target(body_x,
+                                                         body_y,
+                                                         body_z,
+                                                         self.current_heading)
+
+
+        else:
+            '''
+            LOCAL_ENU
+            '''
+            # For world frame, we will use ENU (EAST, NORTH and UP)
+            #     +Z     +Y
+            #      ^    ^
+            #      |  /
+            #      |/
+            #    world------> +X
+
+            self.frame = "LOCAL_ENU"
+            print("local ENU frame")
+
+            ENU_x, ENU_y, ENU_z = self.body2enu(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
+
+            self.cur_target_pose = self.construct_target(ENU_x,
+                                                         ENU_y,
+                                                         ENU_z,
+                                                         self.current_heading)
+
     '''
-    Receive A Custom Activity
-    '''
+     Receive A Custom Activity
+     '''
+
     def custom_activity_callback(self, msg):
 
         print("Received Custom Activity:", msg.data)
@@ -193,36 +247,8 @@ class Px4Controller:
             self.state = "HOVER"
             self.hover()
 
-
         else:
             print("Received Custom Activity:", msg.data, "not supported yet!")
-
-
-
-    def set_target_position_callback(self, msg):
-        print("Received New Position Task!")
-
-        '''
-        BODY_OFFSET_ENU
-        '''
-        if self.frame is "BODY" and msg.header.frame_id=='frame.body':
-            new_x, new_y, new_z = self.body2enu(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
-            print(new_x, new_y, new_z)
-            ENU_x = new_x + self.local_pose.pose.position.x
-            ENU_y = new_y + self.local_pose.pose.position.y
-            ENU_z = new_z + self.local_pose.pose.position.z
-
-            self.cur_target_pose = self.construct_target(ENU_x, ENU_y, ENU_z, self.current_heading)
-
-        else:
-            print("LOCAL ENU")
-            '''
-            LOCAL_ENU
-            '''
-            self.cur_target_pose = self.construct_target(msg.pose.position.x,
-                                                         msg.pose.position.y,
-                                                         msg.pose.position.z,
-                                                         self.current_heading)
 
 
     def set_target_yaw_callback(self, msg):
@@ -276,6 +302,12 @@ class Px4Controller:
                                                      self.local_pose.pose.position.y,
                                                      self.local_pose.pose.position.z,
                                                      self.current_heading)
+
+    def takeoff_detection(self):
+        if self.local_pose.pose.position.z > 0.1:
+            return True
+        else:
+            return False
 
 
 if __name__ == '__main__':
