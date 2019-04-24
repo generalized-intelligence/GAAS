@@ -3,7 +3,7 @@
 #include "GlobalOptimizationGraph.h"
 #include "ROS_IO_Manager.h"
 #include <memory>
-#include <opencv/opencv2.hpp>
+
 
 
 
@@ -13,13 +13,15 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
     //to start global optimization,first check all input topics.
     cv::FileStorage fSettings(string(argv[1]),cv::FileStorage::READ);
     time_us_t t1 = micros();
-    for(int i=0;i<fSettings["INIT_SPIN_TIMES"],i++)
+    int init_spin_times = fSettings["INIT_SPIN_TIMES"];
+    for(int i=0;i<init_spin_times;i++)
     {
         ros::spinOnce();//store enough msgs to init buffer.
         //ros::spinOnce() will call all the callbacks waiting to be called at that point in time.
         //So we do not worry about call block.
         time_us_t current_t = micros();
-        if (current_t - t1 > fSettings["INIT_MAX_TIME_us"]) // ensure this step shall be finished in time.
+        int init_max_time_us = fSettings["INIT_MAX_TIME_us"];
+        if (current_t - t1 > init_max_time_us) // ensure this step shall be finished in time.
         {
             break;
         }
@@ -60,7 +62,7 @@ int main(int argc,char** argv)
     //step<2> init ROS_IO_Manager. ROS operation inside;
     shared_ptr<ROS_IO_Manager> pRIM(new ROS_IO_Manager(argc,argv));
     //step<3> init GlobalOptimizationGraph.
-    shared_ptr<GlobalOptimizationGraph> pGOG(new GlobalOptimizationGraph());
+    shared_ptr<GlobalOptimizationGraph> pGOG(new GlobalOptimizationGraph(argc,argv));
     //init()
     if (!init(pRIM,pGOG,argc,argv))
     {

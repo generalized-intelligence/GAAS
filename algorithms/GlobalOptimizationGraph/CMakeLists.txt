@@ -1,7 +1,7 @@
 Project(GlobalOptimizationGraph)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fpermissive")
 
 find_package(Eigen3 3.1.0 REQUIRED)
 
@@ -41,12 +41,12 @@ add_library(GlobalOptimizationGraph GlobalOptimizationGraph.cpp)
 
 add_executable(GlobalOptimizationGraph_main main.cpp)
 
-target_link_libraries(GlobalOptimizationGraph_main
-			G2OTypesLib
-			ROS_IO_Manager
-			GlobalOptimizationGraph
-			${THIRD_PARTY_LIBS}
-)
+#target_link_libraries(GlobalOptimizationGraph_main
+#			G2OTypesLib
+#			ROS_IO_Manager
+#			GlobalOptimizationGraph
+#			${THIRD_PARTY_LIBS}
+#)
 
 
 

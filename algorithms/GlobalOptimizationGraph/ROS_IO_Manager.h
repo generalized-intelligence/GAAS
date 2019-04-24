@@ -11,9 +11,11 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <ros/duration.h>
-#include "uNavAHRS.h"
-#include <memory>
 
+
+//#include "uNavAHRS.h"
+#include <memory>
+#include <opencv2/core/persistence.hpp>
 #include "CallbacksBufferBlock.h"
 
 #include <sys/time.h>
@@ -45,6 +47,7 @@ public:
     inline void setOptimizationGraph(shared_ptr<GlobalOptimizationGraph> pG)
     {
         this->pGraph = pG;
+        this->pGraph->initBuffers(this->SLAM_buffer,this->GPS_buffer,this->AHRS_buffer);
     }
     bool loopFunc()
     {
@@ -52,8 +55,8 @@ public:
         //一个简单实现:如果两种消息都凑齐至少一个,送一次.GPS有没有无所谓.
         if(this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0)
         {
-            pRIM->doUpdateOptimizationGraph();
-            pRIM->publishAll();
+            this->doUpdateOptimizationGraph();
+            this->publishAll();
         }
     }
 private:
@@ -66,39 +69,58 @@ private:
     ros::NodeHandle *pNH;
 
     void AHRS_callback(const nav_msgs::Odometry& AHRS_msg);
-    CallbacksBufferBlock<nav_msgs::Odometry> AHRS_buffer;
+    CallbackBufferBlock<nav_msgs::Odometry> AHRS_buffer;
     ros::Subscriber AHRS_sub;
 
-    void GPS_callback(const nav_msgs::NavSatFix& GPS_msg);
-    CallbacksBufferBlock<nav_msgs::NavSatFix> GPS_buffer;
+    void GPS_callback(const sensor_msgs::NavSatFix& GPS_msg);
+    CallbackBufferBlock<sensor_msgs::NavSatFix> GPS_buffer;
     ros::Subscriber GPS_sub;
 
     void SLAM_callback(const geometry_msgs::PoseStamped& SLAM_msg);
-    CallbacksBufferBlock<geometry_msgs::PoseStamped> SLAM_buffer;
+    CallbackBufferBlock<geometry_msgs::PoseStamped> SLAM_buffer;
     ros::Subscriber SLAM_sub;
 
     shared_ptr<GlobalOptimizationGraph> pGraph;
     shared_ptr<cv::FileStorage> pSettings;
 
-    //CallbacksBufferBlock<xxx_msgs::SceneRetrieveInfo> SceneRetrieve_Buffer;
+    //CallbackBufferBlock<xxx_msgs::SceneRetrieveInfo> SceneRetrieve_Buffer;
     //ros::Subscriber SceneRetrieve_sub;
 };
 
 
+#include "ros_buffer_helper.h" //function helpers.
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+#include <functional>
 ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
 {
     //step<1> read config.
-    this->pSettings (new cv::FileStorage (string(argv[1]),cv::FileStorage::READ));
+    this->pSettings = shared_ptr<cv::FileStorage>(new cv::FileStorage (string(argv[1]),cv::FileStorage::READ));
     //step<2> init ros.
-    ros::init(argc,argv);
+    ros::init(argc,argv,"GlobalOptimizationGraph_ROSNode");
     this->pNH = new ros::NodeHandle();
     //step<3> init subscriber.
-    AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,boost::bind(this->AHRS_buffer.onCallbackBlock,_1)(&this->AHRS_buffer));
-    GPS_sub = pNH->subscribe("/mavros/global_position/global",10,boost::bind(this->GPS_callback,_1)(this));
-    SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,boost::bind(this->SLAM_callback,_1)(this));
+    //
+    //auto f1 = 
+    //boost::function<void (const nav_msgs::Odometry)> 
+    
+    //reference:
+    //const boost::function<void(const boost::shared_ptr<M const> &)> callback
+    //auto f2 = 
+    boost::function<void(const boost::shared_ptr<nav_msgs::Odometry const>&
+		   )> ahrs_callback(boost::bind(&ahrs_buffer_helper,boost::ref(this->AHRS_buffer),_1 ));
+    boost::function<void(const boost::shared_ptr<sensor_msgs::NavSatFix const>&
+		   )> gps_callback(boost::bind(&gps_buffer_helper,boost::ref(this->GPS_buffer),_1));
+    boost::function<void(const boost::shared_ptr<geometry_msgs::PoseStamped const>&
+		   )> slam_callback(boost::bind(&slam_buffer_helper,boost::ref(this->SLAM_buffer),_1));
+    AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
+    GPS_sub = pNH->subscribe("/mavros/global_position/global",10,gps_callback);
+    SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
+    //
+    //
     //SceneRetrieve_sub = pNH->subscribe("/..../,10,....")
 
-}
+}/*
 bool ROS_IO_Manager::initOptimizationGraph()
 {
     //step<1> init AHRS.Must success.
@@ -118,8 +140,8 @@ bool ROS_IO_Manager::initOptimizationGraph()
         return false;
     }
     //step<2> check gps status.
-    bool gps_success = false;
-    if((*(this->pSettings))["ENABLE_GPS"])
+    bool gps_success = (*(this->pSettings))["ENABLE_GPS"];
+    if(gps_success)
     {
         //set init gps position.
         //we do not need spinOnce for we have to match timestamp with AHRS.
@@ -171,7 +193,7 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
 
 }
 
-void ROS_IO_Manager::GPS_callback(const nav_msgs::NavSatFix& GPS_msg)
+void ROS_IO_Manager::GPS_callback(const sensor_msgs::NavSatFix& GPS_msg)
 {
     this->GPS_buffer.onCallbackBlock(GPS_msg);
     //Do other callback procedure.
@@ -183,9 +205,12 @@ void ROS_IO_Manager::SLAM_callback(const geometry_msgs::PoseStamped& SLAM_msg)
 }
 bool ROS_IO_Manager::publishAll()
 {
-    auto pose = this->pGraph->pCurrentPR->esitmate();
+    auto pose = this->pGraph->getpCurrentPR()->estimate();
     //make a ros msg.
 }
+*/
+
+
 /*
 bool ROS_IO_Manager::tryInitGPS()//Just init receiver.Confirm message link status correct.
 {

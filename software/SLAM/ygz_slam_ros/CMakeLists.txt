@@ -78,8 +78,8 @@ find_package(catkin REQUIRED COMPONENTS
                                 visualization_msgs
                                 tf)
 #find_package(CUDA  REQUIRED)
-#find_package(DBoW3 REQUIRED PATH Thirdparty/DBow3/build)
-find_package(DBoW3)
+find_package(DBoW3 REQUIRED PATH Thirdparty/DBow3/build)
+#find_package(DBoW3)
 # to show 'include' in QtCreator
 FILE(GLOB_RECURSE INC_ALL "*/*.h")
 add_custom_target(headers SOURCES ${INC_ALL})

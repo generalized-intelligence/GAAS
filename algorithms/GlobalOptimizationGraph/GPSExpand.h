@@ -17,6 +17,18 @@ public:
     {
         return vari_km_per_lat_deg()*cos(center_lat*pi_/180);
     }
+    inline double getLon()
+    {
+        return this->center_lon;
+    }
+    inline double getLat()
+    {
+        return this->center_lat;
+    }
+    inline double getAlt()
+    {
+        return this->center_alt;
+    }
 private:
     double center_lon;
     double center_lat;

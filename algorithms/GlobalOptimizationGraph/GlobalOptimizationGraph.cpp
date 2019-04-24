@@ -30,18 +30,21 @@ bool GlobalOptimizationGraph::init_AHRS(const nav_msgs::Odometry& AHRS_msg)
     //TODO:set R_init into graph state.
     this->currentState.R() = R_init;
 }
-bool GlobalOptimizationGraph::init_SLAM(const geometry_msgs::PoseStamped& slam_msg)
+bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam_msg
+)
 {
     //match rotation matrix and translation vector to E,0.
-    auto q = slam_msg.pose.pose.orientation;//TODO
-    Eigen::Quaterniond q_();
+    auto slam_msg = this->pSLAM_Buffer->getLastMessage();
+    auto q = slam_msg.pose.orientation;//TODO
+    Eigen::Quaterniond q_;
     q_.w() = q.w;
     q_.x() = q.x;
     q_.y() = q.y;
     q_.z() = q.z;
-    auto t_slam = slam_msg.pose.pose.position;
+    auto t_slam = slam_msg.pose.position;
     Vector3d t_slam_(t_slam.x,t_slam.y,t_slam.z);
-    SLAM_to_UAV_coordinate_transfer.R() = q.toRotationMatrix().inverse() *this->ahrs_R_init;
+
+    SLAM_to_UAV_coordinate_transfer.R() = q_.toRotationMatrix().inverse() *this->ahrs_R_init;
     SLAM_to_UAV_coordinate_transfer.t() = -1 * SLAM_to_UAV_coordinate_transfer.R() * t_slam_;
 }
 
@@ -90,7 +93,7 @@ bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
     vari_lon = sqrt(vari_lon);
     vari_lat = sqrt(vari_lat);
     vari_alt = sqrt(vari_alt);
-	cout<<"GPS Initiated at LONGITUDE:"<<avg_lon<<",LATITUDE:"<<avg_lat<<",ALTITUDE:"<<avg_alt<<".VARIANCE:"<<vari_lon<<", "<<vari_lat<<", "<<vari_alt"."<<endl;
+	cout<<"GPS Initiated at LONGITUDE:"<<avg_lon<<",LATITUDE:"<<avg_lat<<",ALTITUDE:"<<avg_alt<<".VARIANCE:"<<vari_lon<<", "<<vari_lat<<", "<<vari_alt<<"."<<endl;
 	cout<<"Available count:"<<count<<"."<<endl;
 	
 	//expand at avg lon,lat.
@@ -104,11 +107,13 @@ bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
             <<GE.vari_km_per_lat_deg()*vari_lat*1000<<
             "m,ALTITUDE Variance:"<<vari_alt<<"m."<<endl;
     //check variance:
-    if(lon_variance_m> (*(this->pSettings))['GPS_INIT_VARIANCE_THRESHOLD_m'] || lat_variance_m > (*(this->pSettings))['GPS_INIT_VARIANCE_THRESHOLD_m']
-        || vari_alt>(*(this->pSettings))['GPS_INIT_ALT_VARIANCE_THRESHOLD_m'])
+    double gps_init_variance_thres = ((*(this->pSettings))["GPS_INIT_VARIANCE_THRESHOLD_m"]);
+    double gps_init_alt_variance_thres =  (*(this->pSettings))["GPS_INIT_ALT_VARIANCE_THRESHOLD_m"];
+    if(lon_variance_m> gps_init_variance_thres || lat_variance_m > gps_init_variance_thres
+        || vari_alt>gps_init_alt_variance_thres)
     {
         cout<<"WARNING:GPS init failed.VARIANCE out of threshold."<<endl;
-        cout<<"THRESHOLD(m):"<<(*(this->pSettings))['GPS_INIT_VARIANCE_THRESHOLD_m']<<endl;
+        cout<<"THRESHOLD(m):"<<gps_init_variance_thres<<endl;
         return false;
     }
 
@@ -384,12 +389,12 @@ void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
 {
     EdgeAttitude* pEdgeAttitude = new EdgeAttitude();
     auto q = AHRS_msg.pose.pose.orientation;//TODO
-    Eigen::Quaterniond q_();
+    Eigen::Quaterniond q_;
     q_.w() = q.w;
     q_.x() = q.x;
     q_.y() = q.y;
     q_.z() = q.z;
-    pEdgeAttitude->setMeasurement(q_);
+    //pEdgeAttitude->setMeasurement(q_);//TODO
     Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
     pEdgeAttitude->setInformation(info_mat);
     pEdgeAttitude->setLevel(!checkAHRSValid());
@@ -398,7 +403,7 @@ void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
     
     this->optimizer.addEdge(pEdgeAttitude);
 }
-void GlobalOptimizationGraph::addBlockGPS(const nav_msgs::NavSatFix& GPS_msg)
+void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
 {
   if(this->allow_gps_usage == false || this->gps_init_success == false)
   {
@@ -417,14 +422,17 @@ void GlobalOptimizationGraph::addBlockGPS(const nav_msgs::NavSatFix& GPS_msg)
   double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
 
   //since the quaternion is NED defined,we do not need any rotation here.
-  pEdgePRGPS->setMeasurement(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),
+  pEdgePRGPS->setMeasurement( Vector3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),
                                 delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),
-                                delta_alt);
+                                delta_alt)
+                            );
 
   double info_lon,info_lat,info_alt;
-  info_lon = min((1.0/this->gps_init_lon_variance),1.0/(*(this->pSettings))["GPS_MIN_VARIANCE_LONLAT_m"]);
-  info_lat = min((1.0/this->gps_init_lat_variance),1.0/(*(this->pSettings))["GPS_MIN_VARIANCE_LONLAT_m"]);
-  info_alt = min((1.0/this->gps_init_alt_variance),1.0/(*(this->pSettings))["GPS_MIN_VARIANCE_ALT_m"]);
+  double gps_min_variance_lonlat_m = (*(this->pSettings))["GPS_MIN_VARIANCE_LONLAT_m"];
+  double gps_min_variance_alt_m = (*(this->pSettings))["GPS_MIN_VARIANCE_ALT_m"];
+  info_lon = min((1.0/this->gps_init_lon_variance),1.0/gps_min_variance_lonlat_m);
+  info_lat = min((1.0/this->gps_init_lat_variance),1.0/gps_min_variance_lonlat_m);
+  info_alt = min((1.0/this->gps_init_alt_variance),1.0/gps_min_variance_alt_m);
 
   Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
   info_mat(0,0) = info_lon;
@@ -432,7 +440,7 @@ void GlobalOptimizationGraph::addBlockGPS(const nav_msgs::NavSatFix& GPS_msg)
   info_mat(2,2) = info_alt;
   pEdgePRGPS->setInformation(info_mat);//the inverse mat of covariance.
 
-  pEdgePRGPS->setLevel(!checkGPSValid());
+  //pEdgePRGPS->setLevel(!checkGPSValid());//TODO
   this->optimizer.addEdge(pEdgePRGPS);
 }
 
@@ -451,42 +459,45 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
 {
     //part<1> Rotation.
     auto pEdgeSlam = new EdgeAttitude();
-    shared_ptr<g2o::BaseEdge> ptr_slam(pEdgeSlam);
-    pEdgeSlam->setId(this->EdgeVec.size());
-    this->EdgeVec.push_back(ptr_slam);
+    //shared_ptr<g2o::OptimizableGraph::Edge *> ptr_slam(pEdgeSlam);
+    //pEdgeSlam->setId(this->EdgeVec.size());//TODO
+    //this->EdgeVec.push_back(ptr_slam);
     pEdgeSlam->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get()));
 
-    auto q = SLAM_msg.pose.pose.orientation;
-    Eigen::Quaterniond q_();
+    auto q = SLAM_msg.pose.orientation;
+    Eigen::Quaterniond q_;
     q_.w() = q.w;
     q_.x() = q.x;
     q_.y() = q.y;
     q_.z() = q.z;
     Eigen::Matrix<double,3,3> info_mat_slam_rotation = Eigen::Matrix<double,3,3>::Identity();
     
-    pEdgeSlam->setMeasurement(q_.toRotationMatrix());
+    pEdgeSlam->setMeasurement(q_.toRotationMatrix().topLeftCorner(3,3));
     pEdgeSlam->setInformation(info_mat_slam_rotation);
     optimizer.addEdge(pEdgeSlam);
     //part<2> Translation
     //Edge PRV.
+    /*//TODO:fill Edge SLAM PRV.
     if(this->historyStates.size()>0)
     {
         shared_ptr<Edge_SLAM_PRV>pEdge_SLAM_PRV(new Edge_SLAM_PRV());
         pEdge_SLAM_PRV->setId(this->EdgeVec.size());
         this->EdgeVec.push_back(pEdge_SLAM_PRV);
-        pEdge_SLAM_PRV->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>this->historyStates[this->historyStates.size()-1]);//old one.
-        pEdge_SLAM_PRV->setVertex(1,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get());
-        pEdge_SLAM_PRV->setVertex(2,dynamic_cast<g2o::OptimizableGraph::Vertex *>this->historySpeed[this->historySpeed.size()-1]);
-        pEdge_SLAM_PRV->setVertex(3,dynamic_cast<g2o::OptimizableGraph::Vertex *>this->currentSpeed);
-        pEdge_SLAM_PRV->setInformation(....);
+        //TODO:fit in type.
+        pEdge_SLAM_PRV->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>&(this->historyStates[this->historyStates.size()-1]));//old one.
+        pEdge_SLAM_PRV->setVertex(1,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get()));
+        pEdge_SLAM_PRV->setVertex(2,dynamic_cast<g2o::OptimizableGraph::Vertex *> (&(this->historySpeed[this->historySpeed.size()-1])));
+        pEdge_SLAM_PRV->setVertex(3,dynamic_cast<g2o::OptimizableGraph::Vertex *> (&this->currentSpeed));
+        g2o::OptimizableGraph::Vertex::
+        //pEdge_SLAM_PRV->setInformation(....);//TODO
     }
     else
     {//just add translation.
         shared_ptr<EdgePRGPS> pEdgePositionSLAM(new EdgePRGPS());
         pEdgePositionSLAM->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get());
         //calc infomation mat from multiple/single slam msg.May be it can be estimated from points num or quality.
-        pEdgePositionSLAM->setInformation(...);
-    }
+        //pEdgePositionSLAM->setInformation(...);TODO
+    }*/
 
 
     //TODO
@@ -505,12 +516,14 @@ void GlobalOptimizationGraph::addBlockSceneRetriever()
     //set infomation matrix that optimize Rotation and altitude.Do not change longitude and latitude.
     //pBlockSceneRetriever = 
 }
-void GlobalOptimizationGraph::addBlockFCAttitude()
+/*void GlobalOptimizationGraph::addBlockFCAttitude()
 {
     //just call addBlockAHRS.
     this->addBlockAHRS();
-}
-void GlobalOptimizationGraph::addBlockAHRS()
+}*/
+
+/*
+void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
 {
     pEdgeAHRS = new EdgeAttitude();
     shared_ptr<g2o::BaseEdge> ptr_ahrs(pEdgeAHRS);
@@ -528,11 +541,11 @@ void GlobalOptimizationGraph::addBlockAHRS()
         pEdgeAHRS->setLevel(1);
     }
 
-}
+}*/
 void GlobalOptimizationGraph::doOptimization()
 {
     this->optimizer.initializeOptimization();
     this->optimizer.optimize(10);
     this->historyStates.push_back(currentState);
-    this->historyStates.reserve();///...
+    //this->historyStates.reserve();///...
 }

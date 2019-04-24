@@ -1,10 +1,25 @@
 #include "G2OTypes.h"
-#include "ygz/Camera.h"
-#include "ygz/Frame.h"
+#include "Camera.h"
+//#include "Frame.h"
+#include <iostream>
+
+//#include <glogging.h>
 
 namespace ygz {
+    using namespace std;
 
-
+    Eigen::Matrix3d Rbc = [] {
+            Eigen::Matrix3d mat;
+            mat << 0.0148655429818, -0.999880929698, 0.00414029679422,
+                    0.999557249008, 0.0149672133247, 0.025715529948,
+                    -0.0257744366974, 0.00375618835797, 0.999660727178;
+            return mat;
+        }();
+    Eigen::Vector3d tbc(-0.0216401454975, -0.064676986768, 0.00981073058949);
+    Sophus::SE3d TBC(Rbc, tbc);
+    int imageHeight = 480;
+    int imageWidth = 752;
+    
     void EdgeIDPPrior::computeError() {
         const VertexPointInvDepth *vIDP = static_cast<const VertexPointInvDepth *>(_vertices[0]);
         _error.setZero();
@@ -36,7 +51,7 @@ namespace ygz {
         // point inverse depth in reference KF
         double rho = vIDP->estimate();
         if (rho < 1e-6) {
-            LOG(WARNING) << "Inv depth should not be negative: " << rho << endl;
+            cout << "Inv depth should not be negative: " << rho << endl;
         }
 
         // point coordinate in reference KF, body
@@ -70,7 +85,7 @@ namespace ygz {
         // point inverse depth in reference KF
         double rho = vIDP->estimate();
         if (rho < 1e-6) {
-            // LOG(WARNING) << "2. rho = " << rho << ", rho<1e-6" << std::endl;
+            //cout << "2. rho = " << rho << ", rho<1e-6" << std::endl;
         }
 
         // point coordinate in reference KF, body
@@ -339,16 +354,17 @@ namespace ygz {
         Matrix3d Rwb = vPR->R();
         Vector3d twb = vPR->t();
         SE3d Twb(Rwb, twb);
-        SE3d Tcb = setting::TBC.inverse();
+        SE3d Tcb = TBC.inverse();
         SE3d Tcw = Tcb * Twb.inverse();
         Vector3d pc = Tcw * pw;
         double invz = 1.0 / pc[2];
 
         if (invz < 0) {
             // 点在后面？
-            LOG(INFO) << "Error, invz = " << invz << endl;
+            //LOG(INFO) << "Error, invz = " << invz << endl;
+            cout<<"Error, invz = "<< invz <<endl;
             setLevel(1);
-            _error = Vector2d(setting::imageWidth, setting::imageHeight);
+            _error = Vector2d(imageWidth, imageHeight);
             return;
         }
 
@@ -365,7 +381,7 @@ namespace ygz {
         Vector3d Pwb = vPR->t();
 
         SE3d Twb(Rwb, Pwb);
-        SE3d Tcb = setting::TBC.inverse();
+        SE3d Tcb = TBC.inverse();
         Matrix3d Rcb = Tcb.rotationMatrix();
         Vector3d tcb = Tcb.translation();
 
@@ -413,7 +429,7 @@ namespace ygz {
 
         const Matrix3d Rwb0 = vPR0->R();
         const Vector3d twb0 = vPR0->t();
-        SE3d Twc = SE3d(Rwb0, twb0) * setting::TBC;
+        SE3d Twc = SE3d(Rwb0, twb0) * TBC;
         SE3d Tcw = Twc.inverse();
 
         Vector3d Pc = Tcw * v1->estimate();
@@ -434,13 +450,13 @@ namespace ygz {
         const Matrix3d Rwb = vPR0->R();
         const Vector3d Pwb = vPR0->t();
         SE3d Twb(Rwb, Pwb);
-        SE3d Tcb = setting::TBC.inverse();
+        SE3d Tcb = TBC.inverse();
         const Matrix3d Rcb = Tcb.rotationMatrix();
         const Vector3d Pcb = Tcb.translation();
         const Vector3d Pw = vXYZ->estimate();
 
         // point coordinate in reference KF, body
-        Vector3d Pc = (Twb * setting::TBC).inverse() * vXYZ->estimate();
+        Vector3d Pc = (Twb * TBC).inverse() * vXYZ->estimate();
 
         double x = Pc[0];
         double y = Pc[1];

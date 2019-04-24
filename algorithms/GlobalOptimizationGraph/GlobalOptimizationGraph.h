@@ -7,7 +7,9 @@
 #include <g2o/core/optimization_algorithm_levenberg.h>
 #include <g2o/solvers/linear_solver_eigen.h>
 #include <g2o/core/robust_kernel_impl.h>
+#include <g2o/core/optimizable_graph.h>
 #include "G2OTypes.h"
+#include <opencv2/core/persistence.hpp>
 #include <memory>
 #include <iostream>
 #include <ros/ros.h>
@@ -16,6 +18,7 @@
 #include <geometry_msgs/PoseStamped.h>
 
 #include "GPSExpand.h"
+#include "CallbacksBufferBlock.h"
 #include <cmath>
 #include <opencv2/opencv.hpp>
 using namespace std;
@@ -61,9 +64,15 @@ public:
     {
         return(this->allow_gps_usage&& this->gps_init_success);
     }
-    void addBlockAHRS(const nav_msgs::Odometry& AHRS_msg);
-    void addBlockSLAM(const geometry_msgs::PoseStamped& SLAM_msg);
-    void addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg);
+    void addBlockAHRS(const nav_msgs::Odometry& AHRS_msg
+        
+    );
+    void addBlockSLAM(const geometry_msgs::PoseStamped& SLAM_msg
+        
+    );
+    void addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg
+        
+    );
     void addBlockQRCode();
     void addBlockSceneRetriever();
     void addBlockFCAttitude();
@@ -76,8 +85,21 @@ public:
     }
     bool SpeedInitialization();
     bool estimateCurrentSpeed();
-
+    void initBuffers(CallbackBufferBlock<geometry_msgs::PoseStamped> & SLAMbuf,
+                     CallbackBufferBlock<sensor_msgs::NavSatFix>& GPSbuf,
+                     CallbackBufferBlock<nav_msgs::Odometry>& AHRSbuf
+    )
+    {
+        this->pSLAM_Buffer = &SLAMbuf;
+        this->pGPS_Buffer = &GPSbuf;
+        this->pAHRS_Buffer = &AHRSbuf;
+    }
+    shared_ptr<VertexPR> getpCurrentPR()
+    {
+        return this->pCurrentPR;
+    }
 private:
+    cv::FileStorage *pSettings;
     //status management.
     static const int STATUS_NO_GPS_NO_SCENE = 0; // a bit map.
     static const int STATUS_NO_GPS_WITH_SCENE = 1;
@@ -86,6 +108,12 @@ private:
     int GPS_AVAIL_MINIMUM;
     int status = STATUS_NO_GPS_NO_SCENE;
     void stateTransfer(int new_state);
+    
+    //message buffers.
+    
+    CallbackBufferBlock<geometry_msgs::PoseStamped> * pSLAM_Buffer;
+    CallbackBufferBlock<sensor_msgs::NavSatFix> * pGPS_Buffer;
+    CallbackBufferBlock<nav_msgs::Odometry> * pAHRS_Buffer;
     //uav location attitude info management.
     std::vector<State> historyStates;
     State currentState;
@@ -105,8 +133,8 @@ private:
     g2o::BlockSolverX* solver_ptr;
     g2o::OptimizationAlgorithmLevenberg *solver;
 
-    vector<shared_ptr<g2o::BaseVertex>> VertexVec;
-    vector<shared_ptr<g2o::BaseEdge>> EdgeVec;
+    //vector<shared_ptr<g2o::optimizable_graph::Vertex> > VertexVec;
+    //vector<shared_ptr<g2o::optimizable_graph::Edge> > EdgeVec;
 
     shared_ptr<VertexPR> pCurrentPR;
     //gps configuration and initiation.
