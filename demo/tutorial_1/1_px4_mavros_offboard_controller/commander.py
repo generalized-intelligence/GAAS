@@ -18,14 +18,15 @@ class Commander:
         self.custom_activity_pub = rospy.Publisher('gi/set_activity/type', String, queue_size=10)
 
 
-    def move(self, x, y, z, BODY_OFF_SET_ENU=True):
-        self.position_target_pub.publish(self.set_pose(x, y, z, BODY_OFF_SET_ENU))
+    def move(self, x, y, z, BODY_OFFSET_ENU=True):
+        self.position_target_pub.publish(self.set_pose(x, y, z, BODY_OFFSET_ENU))
+
 
     def turn(self, yaw_degree):
         self.yaw_target_pub.publish(yaw_degree)
 
     
-    # land in current position
+    # land at current position
     def land(self):
         self.custom_activity_pub.publish(String("LAND"))
 
@@ -35,20 +36,26 @@ class Commander:
         self.custom_activity_pub.publish(String("HOVER"))
 
 
-    def set_pose(self, x=0, y=0, z=2, BODY_OFF_SET_ENU = True):
+    # return to home position with defined height
+    def return_home(self, height):
+        self.position_target_pub.publish(self.set_pose(0, 0, height, False))
+
+
+    def set_pose(self, x=0, y=0, z=2, BODY_OFFSET_ENU = True):
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
 
-        if BODY_OFF_SET_ENU:
-            pose.header.frame_id = 'frame.body'
-            pose.pose.position.x = x
-            pose.pose.position.y = y
-            pose.pose.position.z = z
+        # ROS uses ENU internally, so we will stick to this convention
+
+        if BODY_OFFSET_ENU:
+            pose.header.frame_id = 'base_link'
+
         else:
-            pose.header.frame_id = 'frame.local_enu'
-            pose.pose.position.x = y
-            pose.pose.position.y = -x
-            pose.pose.position.z = z       
+            pose.header.frame_id = 'map'
+
+        pose.pose.position.x = x
+        pose.pose.position.y = y
+        pose.pose.position.z = z
 
         return pose
 
@@ -56,7 +63,7 @@ class Commander:
 if __name__ == "__main__":
     
     con = Commander()
-    con.move(1,0,0)
+    con.move(1, 0, 0)
     time.sleep(2)
     con.turn(90)
     time.sleep(2)

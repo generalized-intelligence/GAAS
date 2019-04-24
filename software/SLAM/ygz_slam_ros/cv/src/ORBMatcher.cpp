@@ -529,8 +529,11 @@ namespace ygz {
     }
 
     void ORBMatcher::ComputeStereoMatchesOptiFlow(shared_ptr<Frame> f, bool only2Dpoints) {
-        assert(!f->mFeaturesLeft.empty());
-        if (f->mPyramidLeft.empty() || f->mPyramidRight.empty())
+        //assert(!f->mFeaturesLeft.empty());
+       	if(f->mFeaturesLeft.empty())
+	    return;	
+
+	if (f->mPyramidLeft.empty() || f->mPyramidRight.empty())
             f->ComputeImagePyramid();
         // 对于那些未关联地图点的特征，或关联了未成熟地图点的特征，尝试通过双目估计其深度
         for (int i = 0; i < f->mFeaturesLeft.size(); i++) {

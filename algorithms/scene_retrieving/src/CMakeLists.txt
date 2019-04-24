@@ -50,6 +50,14 @@ target_link_libraries(multi_scene_retriever PRIVATE nlohmann_json::nlohmann_json
                        scene_retrieve
 			)
 
+
+add_library(scene_retrieving_ros scene_retrieving_ros.cpp)
+target_link_libraries(scene_retrieving_ros PRIVATE nlohmann_json::nlohmann_json
+                       ${REQUIRED_LIBRARIES}
+                       scene_retrieve
+			)
+
+
 #add_executable(demo_mono_multi_scene_retriever
 #               demo_mono_multi_scene_retriever.cpp)
 #target_link_libraries(demo_mono_multi_scene_retriever

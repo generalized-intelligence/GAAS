@@ -8,58 +8,92 @@
 using namespace std;
 int main(int argc,char** argv)
 {
-    
-    //NOTE simple test, for fast serialization test
-    std::shared_ptr<Scene> pSceneTest(new Scene());
-    string test_scene_path = "../../scene.scn";
-    pSceneTest->loadFile(test_scene_path);
-    pSceneTest->test();
-    
-    
-    if (argc!=4)
+    //ros init
+    ros::init(argc, argv, "scene_retrieve");
+
+    if (argc!=5)
     {
-        cout<<"Usage: demo [scene_file_path] [voc_path] [image_path] [camera_mat_file_path]"<<endl;
+        cout<<"Usage: demo [scene_file_path] [voc_file_path] [l_image_path] [r_image_path] [Q_mat_file_path]"<<endl;
     }
 
-    std::string scene_path(argv[1]), voc_file_path(argv[2]), img_path(argv[3]), Q_mat_path(argv[4]);
-    cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
-    
+    std::string scene_path(argv[1]), voc_file_path(argv[2]) , l_img_path(argv[3]), r_img_path(argv[4]), Q_mat_path(argv[5]);
+
     cout<<"scene path: "<<scene_path<<endl;
     cout<<"voc_file_path: "<<voc_file_path<<endl;
-    cout<<"img_path: "<<img_path<<endl;
+    cout<<"l_img_path: "<<l_img_path<<endl;
+    cout<<"r_img_path: "<<r_img_path<<endl;
     cout<<"Q_mat_path: "<<Q_mat_path<<endl;
-    
+
+    cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
     cv::Mat Q_mat;
     fsSettings["Q_mat"] >> Q_mat;
 
-    std::shared_ptr<Scene> pScene(new Scene());
-    pScene->loadFile(scene_path);
-    pScene->test();
-    
-    if(pScene->hasScale == false)
+    if (Q_mat.empty())
     {
-        cout <<"Scene has no scale info.Can not do matching."<<endl;
+        cout<<"Q mat empty, exit."<<endl;
         return -1;
     }
 
-    cv::Mat RT_mat;
+
+    cout<<"Q_mat: "<<endl<<Q_mat<<endl;
+
+    cv::Mat RT_mat = (cv::Mat_<float >(4,4) << 1, 0, 0, 0,
+            0, 1, 0, 1,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+
     bool match_success;
 
+    std::shared_ptr<SceneRetriever> pSceneRetriever(new SceneRetriever(voc_file_path, scene_path));
 
-    //NOTE define cameraMatrix
-    cv::Mat cameraMatrix;
+    int image_num = 5000;
+    vector<string> left_image_path, right_image_path;
+    for (int i=0; i<image_num; i++)
+    {
+        string left_path = "./image/left/" + to_string(i) + ".png";
+        left_image_path.push_back(left_path);
 
-    std::shared_ptr<SceneRetriever> pSceneRetriever(new SceneRetriever());
-    pSceneRetriever->retrieveSceneWithScaleFromMonoImage(cv::imread(img_path),cameraMatrix ,RT_mat, match_success);
-    if(match_success)
-    {
-        cout<<"Match success!\tRT mat:"<<RT_mat<<endl;
+        string right_path = "./image/right/" + to_string(i) + ".png";
+        right_image_path.push_back(right_path);
     }
-    else
+
+
+    pSceneRetriever->setImageVecPath(left_image_path, 1);
+    pSceneRetriever->setImageVecPath(right_image_path, 0);
+
+
+    int recalled_result=0;
+
+    // test case for mono case
+    recalled_result=0;
+    for (int i=0; i<image_num; i++)
     {
-        cout<<"Match failed!"<<endl;
+        cout<<"retrieveSceneFromStereoImage !"<<endl;
+        cv::Mat left_image = cv::imread(left_image_path[i]);
+
+        if(left_image.empty() && Q_mat.empty())
+        {
+            cout<<"left or Q_mat is empty!"<<endl;
+            continue;
+        }
+        else
+        {
+            int inliers = pSceneRetriever->retrieveSceneWithScaleFromMonoImage(left_image, Q_mat, RT_mat, match_success);
+
+            if(match_success)
+            {
+                cout<<to_string(i)<<" Match success!\tRT mat:"<<RT_mat<<endl;
+
+                recalled_result++;
+            }
+        }
+
+        cout<<"retrieveSceneFromStereoImage recalled result: "<<recalled_result<<endl;
+        cout<<"retrieveSceneFromStereoImage recall: "<<(recalled_result/image_num)<<endl;
     }
+
     return 0;
+
 }
 
 
