@@ -6,8 +6,10 @@
 
 
 # camera and imu topics
-Left: /gi/simulation/left/image_raw
-Right: /gi/simulation/right/image_raw
+Left: /mynteye/left/image_rect 
+        # /multisense_sl/camera/left/image_raw
+Right: /mynteye/right/image_rect 
+        # /multisense_sl/camera/right/image_raw
 
 # not used for now
 #Imu: /mavros/imu/data

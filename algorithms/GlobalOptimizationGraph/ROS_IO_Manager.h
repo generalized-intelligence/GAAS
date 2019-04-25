@@ -120,18 +120,19 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     //
     //SceneRetrieve_sub = pNH->subscribe("/..../,10,....")
 
-}/*
+}
 bool ROS_IO_Manager::initOptimizationGraph()
 {
     //step<1> init AHRS.Must success.
     bool ahrs_success = false;
-    if( this->AHRS_buffer.size() > (*(this->pSettings))["AHRS_AVAIL_MINIMUM"])
+    int ahrs_avail_minimum = (*(this->pSettings))["AHRS_AVAIL_MINIMUM"];
+    if( this->AHRS_buffer.size() > ahrs_avail_minimum)
     {
         ros::spinOnce(); //reduce timestamp error.
         this->start_time_us = micros();
         this->ros_start_time = this->AHRS_buffer.queryLastMessageTime();//align start time.
 	this->time_aligned = true;
-	ahrs_success = this->pGraph->init_AHRS();
+	ahrs_success = this->pGraph->init_AHRS(this->AHRS_buffer.getLastMessage());
 
     }
     if(!ahrs_success)
@@ -140,13 +141,14 @@ bool ROS_IO_Manager::initOptimizationGraph()
         return false;
     }
     //step<2> check gps status.
-    bool gps_success = (*(this->pSettings))["ENABLE_GPS"];
+    bool gps_success = string("true")==(*(this->pSettings))["ENABLE_GPS"];
     if(gps_success)
     {
         //set init gps position.
         //we do not need spinOnce for we have to match timestamp with AHRS.
         double gps_init_time = this->GPS_buffer.queryLastMessageTime();
-	if( abs(gps_init_time - this-ros_start_time) < (*(this->pSettings))["GPS_AHRS_MAX_TIME_DIFF_s"])
+	double gps_ahrs_max_time_diff_s = (*(this->pSettings))["GPS_AHRS_MAX_TIME_DIFF_s"];
+	if( abs(gps_init_time - this->ros_start_time) < gps_ahrs_max_time_diff_s)
 	{
 	    gps_success = this->pGraph->init_gps();
 	}	
@@ -158,10 +160,12 @@ bool ROS_IO_Manager::initOptimizationGraph()
     }
     //step<3> check slam,match coordinates.Must success.
     bool slam_success = false;
-    if(this->SLAM_buffer.size()>(*(this->pSettings))["SLAM_AVAIL_MINIMUM"])
+    int slam_avail_minimum = (*(this->pSettings))["SLAM_AVAIL_MINIMUM"];
+    if(this->SLAM_buffer.size()>slam_avail_minimum)
     {
         double slam_init_time = SLAM_buffer.queryLastMessageTime();
-        if(abs(slam_init_time-this->ros_start_time)< (*(this->pSettings))["SLAM_AHRS_MAX_TIME_DIFF_s"])
+	double slam_ahrs_max_time_diff_s = (*(this->pSettings))["SLAM_AHRS_MAX_TIME_DIFF_s"];
+        if(abs(slam_init_time-this->ros_start_time)< slam_ahrs_max_time_diff_s)
 	{
             slam_success = this->pGraph->init_SLAM();
 	}
@@ -208,7 +212,7 @@ bool ROS_IO_Manager::publishAll()
     auto pose = this->pGraph->getpCurrentPR()->estimate();
     //make a ros msg.
 }
-*/
+
 
 
 /*

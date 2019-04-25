@@ -9,7 +9,10 @@ template <typename T>
 class CallbackBufferBlock
 {
 public:
-    CallbackBufferBlock<T>();
+    CallbackBufferBlock<T>()
+    {
+	    ;
+    }
     void onCallbackBlock(const T& msg);
     double queryLastMessageTime();
     T getLastMessage();

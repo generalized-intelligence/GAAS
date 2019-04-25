@@ -11,17 +11,16 @@ int main(int argc,char** argv)
     //ros init
     ros::init(argc, argv, "scene_retrieve");
 
-    if (argc!=5)
+    if (argc!=4)
     {
-        cout<<"Usage: demo [scene_file_path] [voc_file_path] [l_image_path] [r_image_path] [Q_mat_file_path]"<<endl;
+        cout<<"Usage: demo [scene_file_path] [voc_file_path] [image_path] [Q_mat_file_path]"<<endl;
     }
 
-    std::string scene_path(argv[1]), voc_file_path(argv[2]) , l_img_path(argv[3]), r_img_path(argv[4]), Q_mat_path(argv[5]);
+    std::string scene_path(argv[1]), voc_file_path(argv[2]) , l_img_path(argv[3]), Q_mat_path(argv[4]);//l_img is the only image we need.
 
     cout<<"scene path: "<<scene_path<<endl;
     cout<<"voc_file_path: "<<voc_file_path<<endl;
     cout<<"l_img_path: "<<l_img_path<<endl;
-    cout<<"r_img_path: "<<r_img_path<<endl;
     cout<<"Q_mat_path: "<<Q_mat_path<<endl;
 
     cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);

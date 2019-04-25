@@ -31,6 +31,8 @@ include_directories(${PROJECT_SOURCE_DIR}
 set (THIRD_PARTY_LIBS
 	${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 	${EIGEN3_LIBS}
+	${OpenCV_LIBS}
+	${catkin_LIBRARIES}
 )
 add_library(G2OTypesLib G2OTypes.cpp)
 
@@ -38,15 +40,18 @@ add_library(ROS_IO_Manager ROS_IO_Manager.cpp)
 
 
 add_library(GlobalOptimizationGraph GlobalOptimizationGraph.cpp)
+target_link_libraries(GlobalOptimizationGraph
+	G2OTypesLib
+	${THIRD_PARTY_LIBS})
 
 add_executable(GlobalOptimizationGraph_main main.cpp)
 
-#target_link_libraries(GlobalOptimizationGraph_main
-#			G2OTypesLib
-#			ROS_IO_Manager
-#			GlobalOptimizationGraph
-#			${THIRD_PARTY_LIBS}
-#)
+target_link_libraries(GlobalOptimizationGraph_main
+			G2OTypesLib
+			ROS_IO_Manager
+			GlobalOptimizationGraph
+			${THIRD_PARTY_LIBS}
+)
 
 
 
