@@ -5,7 +5,8 @@
 
 GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
 {
-    cv::FileStorage fSettings(string(argv[1]),cv::FileStorage::READ);
+    cv::FileStorage fSettings;//(string(argv[1]),cv::FileStorage::READ);
+    fSettings.open(string(argv[1]),cv::FileStorage::READ);
     this->GPS_AVAIL_MINIMUM = fSettings["GPS_AVAIL_MINIMUM"];
     linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
     solver_ptr = new g2o::BlockSolverX(linearSolver);
@@ -29,6 +30,7 @@ bool GlobalOptimizationGraph::init_AHRS(const nav_msgs::Odometry& AHRS_msg)
     this->ahrs_R_init = R_init;
     //TODO:set R_init into graph state.
     this->currentState.R() = R_init;
+    return true;
 }
 bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam_msg
 )
@@ -46,6 +48,7 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
 
     SLAM_to_UAV_coordinate_transfer.R() = q_.toRotationMatrix().inverse() *this->ahrs_R_init;
     SLAM_to_UAV_coordinate_transfer.t() = -1 * SLAM_to_UAV_coordinate_transfer.R() * t_slam_;
+    return true;
 }
 
 bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.

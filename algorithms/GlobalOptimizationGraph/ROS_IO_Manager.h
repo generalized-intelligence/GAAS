@@ -27,6 +27,7 @@ unsigned long long micros()//instead of micros in Arduino.h
     struct timeval tp;
     gettimeofday(&tp, NULL);
     unsigned long long result = (unsigned long long)(tp.tv_sec * 1000000 + tp.tv_usec);
+    //cout<<"micros():"<<result<<endl;
     //std::cout<<"result:"<<result<<std::endl;
     return result;
 }
@@ -95,7 +96,8 @@ private:
 ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
 {
     //step<1> read config.
-    this->pSettings = shared_ptr<cv::FileStorage>(new cv::FileStorage (string(argv[1]),cv::FileStorage::READ));
+    this->pSettings = shared_ptr<cv::FileStorage>(new cv::FileStorage ());
+    pSettings->open(string(argv[1]),cv::FileStorage::READ);
     //step<2> init ros.
     ros::init(argc,argv,"GlobalOptimizationGraph_ROSNode");
     this->pNH = new ros::NodeHandle();
@@ -116,6 +118,7 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
     GPS_sub = pNH->subscribe("/mavros/global_position/global",10,gps_callback);
     SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
+    cout <<"callback function binding finished!"<<endl;
     //
     //
     //SceneRetrieve_sub = pNH->subscribe("/..../,10,....")
@@ -126,13 +129,16 @@ bool ROS_IO_Manager::initOptimizationGraph()
     //step<1> init AHRS.Must success.
     bool ahrs_success = false;
     int ahrs_avail_minimum = (*(this->pSettings))["AHRS_AVAIL_MINIMUM"];
+    ros::spinOnce();
+    cout<<"AHRS_buffer.size:"<<AHRS_buffer.size()<<endl;
     if( this->AHRS_buffer.size() > ahrs_avail_minimum)
     {
         ros::spinOnce(); //reduce timestamp error.
+        cout<<"AHRS_buffer.size:"<<AHRS_buffer.size()<<endl;
         this->start_time_us = micros();
         this->ros_start_time = this->AHRS_buffer.queryLastMessageTime();//align start time.
-	this->time_aligned = true;
-	ahrs_success = this->pGraph->init_AHRS(this->AHRS_buffer.getLastMessage());
+        this->time_aligned = true;
+        ahrs_success = this->pGraph->init_AHRS(this->AHRS_buffer.getLastMessage());
 
     }
     if(!ahrs_success)
@@ -141,7 +147,7 @@ bool ROS_IO_Manager::initOptimizationGraph()
         return false;
     }
     //step<2> check gps status.
-    bool gps_success = string("true")==(*(this->pSettings))["ENABLE_GPS"];
+    bool gps_success = string("true")==(*(this->pSettings))["ENABLE_GPS"] && (this->GPS_buffer.size()>0);
     if(gps_success)
     {
         //set init gps position.
@@ -169,6 +175,14 @@ bool ROS_IO_Manager::initOptimizationGraph()
 	{
             slam_success = this->pGraph->init_SLAM();
 	}
+        else
+        {
+            cout<<"SLAM info delay to high.Delay_s:"<<slam_init_time-this->ros_start_time<<endl;
+        }
+    }
+    else
+    {
+        cout<<"SLAM buffer size:"<<SLAM_buffer.size()<<endl;
     }
     if(!slam_success)
     {

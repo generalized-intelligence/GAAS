@@ -154,8 +154,16 @@ private:
     VertexPR relative_scene_to_UAV_body;
 };
 
-
-
+bool GlobalOptimizationGraph::tryInitVelocity()
+{
+    cout<<"Nothing to do now!!!"<<endl;
+    return false;//TODO :fill in this.
+}
+bool GlobalOptimizationGraph::checkAHRSValid()
+{
+    cout<<"Nothing to do now!!!"<<endl;
+    return false;//TODO: fill in this.
+}
 
 #endif
 

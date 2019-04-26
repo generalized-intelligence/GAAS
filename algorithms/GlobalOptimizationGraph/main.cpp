@@ -3,6 +3,9 @@
 #include "GlobalOptimizationGraph.h"
 #include "ROS_IO_Manager.h"
 #include <memory>
+#include <thread>
+#include <chrono>
+
 
 
 
@@ -11,7 +14,8 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
             int argc,char** argv)
 {
     //to start global optimization,first check all input topics.
-    cv::FileStorage fSettings(string(argv[1]),cv::FileStorage::READ);
+    cv::FileStorage fSettings;
+    fSettings.open(string(argv[1]),cv::FileStorage::READ);
     time_us_t t1 = micros();
     int init_spin_times = fSettings["INIT_SPIN_TIMES"];
     for(int i=0;i<init_spin_times;i++)
@@ -21,9 +25,16 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
         //So we do not worry about call block.
         time_us_t current_t = micros();
         int init_max_time_us = fSettings["INIT_MAX_TIME_us"];
-        if (current_t - t1 > init_max_time_us) // ensure this step shall be finished in time.
+        time_us_t init_max_time_us_time = (time_us_t)init_max_time_us;
+        if (current_t - t1 > init_max_time_us_time) // ensure this step shall be finished in time.
         {
+            cout <<"max time:"<<init_max_time_us_time<<endl;
+            cout <<"current time cost:"<<current_t - t1<<endl;
             break;
+        }
+        else
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));//sleep 1ms.
         }
     }
     pRIM->setOptimizationGraph(pGOG);

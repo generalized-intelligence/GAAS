@@ -4,7 +4,8 @@
 
 //#include <queue>
 #include <deque>
-
+#include <iostream>
+using namespace std;
 template <typename T>
 class CallbackBufferBlock
 {
@@ -41,7 +42,9 @@ void CallbackBufferBlock<T>::onCallbackBlock(const T& msg)
 template <typename T>
 double CallbackBufferBlock<T>::queryLastMessageTime()
 {
-    return this->msgBuffer.front().header.stamp.toSec();
+    double ret_time =  this->msgBuffer.front().header.stamp.toSec();
+    cout<<"MessageTime:"<<ret_time<<endl;
+    return ret_time;
 }
 template <typename T>
 T CallbackBufferBlock<T>::getLastMessage()

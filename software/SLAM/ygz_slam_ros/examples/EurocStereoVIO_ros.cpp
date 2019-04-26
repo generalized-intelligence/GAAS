@@ -763,6 +763,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
       final_pose.pose.position.x = EstimatedPose.pose.position.x * cos(pixhawk_heading_rad) + EstimatedPose.pose.position.y * sin(pixhawk_heading_rad);
       final_pose.pose.position.y = EstimatedPose.pose.position.y * cos(pixhawk_heading_rad) - EstimatedPose.pose.position.x * sin(pixhawk_heading_rad);
       final_pose.pose.position.z = EstimatedPose.pose.position.z;
+      final_pose.header.stamp =  msgLeft->header.stamp;
 
       pExternalEstimate->publish(final_pose);
       pFakeGPS->publish(EstimatedPose);
