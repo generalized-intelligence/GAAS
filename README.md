@@ -10,6 +10,8 @@
 
 ![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)
 
+[![](https://badge.juejin.im/entry/5cc2ce1ef265da038a147d2b/likes.svg?style=flat-square)](https://juejin.im/entry/5cc2ce1ef265da038a147d2b/detail)
+
 ![future](https://img.shields.io/badge/Let's%20go%20back%20to-the%20Future!-blue.svg)
 
 You Can Chat and Find Support at: [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
