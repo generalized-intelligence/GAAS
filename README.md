@@ -64,13 +64,9 @@ Or follow the lastest news about the project at our [Medium Publication](https:/
 
 <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
 
-> Generalized Autonomy Aviation System (GAAS, pronounciate as "gas") is an open source project dedicated to autonomous flight and operating control system for futuristic aerial vehicles.
+> GAAS (Generalized Autonomy Aviation System) is an open source software platform for autonomous drones and VTOLs. GAAS was built to provide a common infrastructure for computer-vision based drone intelligence, and in the long term, to accelerate the coming of autonomous VTOLs. Being a BSD-licensed product, GAAS makes it easy for enterprises, researches, and drone enthusiasts to modify the code to suit specific use cases. 
 
-> Imagine commuting with "flying car", having food and packages delivered by drones to your door. To contribute to the described future, we would like to get the two most fundamental issues out of the way: the safety of aerial vehicles, and the demand for skilled pilots. 
-
-> Our long-term vision is to implement GAAS in passenger carrying aerial vehicles (could be "flying car"). The first step of this vision is to make Unmanned Aerial Vehicles truly "unmanned", so drones can be better utilized. We also just want to provide an easy-to-use infrastructure for programmers and engineers to program and build drone products.
-
-> The current version of GAAS includes Simultaneous Localization and Mapping (SLAM), obstacle avoidance, navigation and flight control, supporting manned and unmanned multi-rotor drones and helicopters. Next step, we will also be supporting VTOL and eVTOL.
+> Our long-term vision is to implement GAAS in autonomous passenger carrying VTOLs (or "flying cars"). The first step of this vision is to make Unmanned Aerial Vehicles truly "unmanned", and thus make drones ubiquitous. We currently support manned and unmanned multi-rotor drones and helicopters. Our next step is to support VTOLs and eVTOLs.
 
 <p align="center">
 <img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" width="300px">
@@ -239,13 +235,9 @@ Il Vole
 # GAAS 是什么？
 <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
 
-> 泛化自动驾驶飞行器系统 Generalized Autonomy Aviation System（以下简称 GAAS）是一个面向未来飞行器设计的开源驾驶以及运行管理系统。
+> GAAS (Generalized Autonomy Aviation System) 是一套开源的无人机自主飞行软件平台。GAAS 致力于为无人机智能应用提供一个泛用的开发架构，以此加速自动驾驶载人 VTOL 的到来。作为一个受 BSD 协议保护的项目，任何企业、研究人员、无人机爱好者都可以合法合规地改动我们的代码来满足其客制化的需求。
 
-> 想象一个每天用飞行汽车出门，无人机送餐和快递的未来。我们希望为这样的未来解决一些基础性的问题：满足对安全性的高要求并消除飞行员以及飞手的需求。
-
-> 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作。并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人飞行器上（也许是飞行汽车）。
-
-> 当前版本的 GAAS 包含 SLAM、避障路径规划、飞行控制模块；用于支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
+> 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作，并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人 VTOL 上（也许是飞行汽车）。我们现在支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
 
 <p align="center">
 <img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" width="300px">
