@@ -10,7 +10,6 @@
 
 ![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)
 
-[![](https://badge.juejin.im/entry/5cc2ce1ef265da038a147d2b/likes.svg?style=flat-square)](https://juejin.im/entry/5cc2ce1ef265da038a147d2b/detail)
 
 ![future](https://img.shields.io/badge/Let's%20go%20back%20to-the%20Future!-blue.svg)
 
