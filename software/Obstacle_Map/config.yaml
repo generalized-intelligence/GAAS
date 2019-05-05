@@ -1,0 +1,80 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+
+# camera topics
+left_img_topic: /gi/simulation/left/image_raw
+right_img_topic: /gi/simulation/right/image_raw
+
+# Stereo calibration file name
+calib_file_name: calibration/mynteye_sim2.yml
+
+# Calibration image width and height
+calib_width: 752
+calib_height: 480
+
+# Rectified image width and height
+out_width: 752
+out_height: 480
+
+# Set d=1 for cam to robot frame calibration
+debug: 0
+
+# display image?
+displayImage: 0
+
+# disparity maximum and minimum
+disparityMax: 20
+disparityMin: 1
+
+# maximum point distance (z)
+distanceMax: 200
+distanceMin: 1
+
+
+# disparity map generation method
+method: 0 # 0 for StereoBM, 1 for StereoSGBM
+
+# common params for both methods:
+SADWindowSize: 9             #Matched block size. It must be an odd number >=1
+MinDisparity: 3              #Minimum possible disparity value.
+NumDisparities: 80
+PreFilterCap: 7
+UniquenessRatio: 10
+SpeckleWindowSize: 7
+#MinDisparity: 3
+#NumDisparities: 32
+#PreFilterCap: 11
+#UniquenessRatio: 10
+#SpeckleWindowSize: 11
+
+# for StereoBM (Block Matching) matcher params
+RangeOfDisparity: 80 # dividable by 16
+SizeOfBlockWindow: 31 # must be odd
+PreFilterSize: 7
+SmallerBlockSize: 7
+TextureThreshold: 5
+
+#RangeOfDisparity: 32 # dividable by 16
+#SizeOfBlockWindow: 31 # must be odd
+#PreFilterSize: 7
+#SmallerBlockSize: 11
+#TextureThreshold: 5
+
+# for StereoSGBM (Semi-Global Block Matching) matcher params
+P1: 700
+P2: 2800
+disp12MaxDiff: 10
+speckleRange: 2
+fullDP: 0
+
+
+# use WLS filter？
+UseWLSfilter: 1
+Lambda: 0
+SigmaColor: 10
+
+# use PCL filtering? be carefull with this option!
+UsePCLfiltering: 0
