@@ -44,11 +44,6 @@ NumDisparities: 80
 PreFilterCap: 7
 UniquenessRatio: 10
 SpeckleWindowSize: 7
-#MinDisparity: 3
-#NumDisparities: 32
-#PreFilterCap: 11
-#UniquenessRatio: 10
-#SpeckleWindowSize: 11
 
 # for StereoBM (Block Matching) matcher params
 RangeOfDisparity: 80 # dividable by 16
@@ -57,19 +52,12 @@ PreFilterSize: 7
 SmallerBlockSize: 7
 TextureThreshold: 5
 
-#RangeOfDisparity: 32 # dividable by 16
-#SizeOfBlockWindow: 31 # must be odd
-#PreFilterSize: 7
-#SmallerBlockSize: 11
-#TextureThreshold: 5
-
 # for StereoSGBM (Semi-Global Block Matching) matcher params
 P1: 700
 P2: 2800
 disp12MaxDiff: 10
 speckleRange: 2
 fullDP: 0
-
 
 # use WLS filter？
 UseWLSfilter: 1
