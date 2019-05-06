@@ -3,7 +3,7 @@
 */*/*/build/
 */*/*/*/build/
 */build/*
-*/.idea/
+.idea
 */.idea/*
 */.kdev4
 */.kdev4/*
@@ -12,8 +12,8 @@
 *.jpg
 *.log
 *.bag
-*/*/build/*
 *.kdev*
+bin
 software/SLAM/ygz_slam_ros/bin/*
 software/SLAM/ygz_slam_ros/build/*
 *.pyc

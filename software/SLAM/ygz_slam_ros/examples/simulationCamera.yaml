@@ -6,9 +6,9 @@
 
 
 # camera and imu topics
-Left: /mynteye/left/image_rect 
+Left: /gi/simulation/left/image_raw 
         # /multisense_sl/camera/left/image_raw
-Right: /mynteye/right/image_rect 
+Right: /gi/simulation/right/image_raw 
         # /multisense_sl/camera/right/image_raw
 
 # not used for now
