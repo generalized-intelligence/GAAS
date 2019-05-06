@@ -8,7 +8,7 @@ In the previous tutorials, we have talked about how to control your drone with p
 
 Again, I have to stress that you will need some extra work before going to the field test and the algorithms mentioned here are far from optimal. 
 
-To ensure optimal reading experience, [continue reading](https://gaas.gitbook.io/guide/build-your-own-autonomous-drone-part-4-stereo-depth-estimation-octomap-and-path-planning) this tutorial at our dedicated GitBook 
+To ensure optimal reading experience, [continue reading](https://gaas.gitbook.io/guide/build-your-own-autonomous-drone-part-4-stereo-depth-estimation-octomap-and-path-planning) this tutorial at our dedicated GitBook.
 
 ---
 
