@@ -510,24 +510,20 @@ namespace ygz {
 //     }
       void EdgeAttitude::computeError()
       {
-	const VertexPR* vPR = dynamic_cast<VertexPR *>(_vertices[0]);
-	//const Quaterniond R_atti = _vertices[1];
-	//const VertexPR* vPR_r_only = dynamic_cast<VertexPR*>(_vertices[1]);
-	const Vector3d so3_atti = _measurement; //here.
-	
-	
-	const Matrix3d Rwb0 = vPR->R();
-	const Vector3d twb0 = vPR->t();
-	const Matrix3d R_atti = SO3d::exp(so3_atti).matrix();
-	
-	const Matrix3d err_mat = R_atti * (vPR->R().transpose());
-	const Vector3d rPhiij = SO3d::log(err_mat);
-	_error = rPhiij;
-	
-	
-	/*
-	
-	const VertexPR *vPRi = static_cast<const VertexPR *>(_vertices[0]);
+        const VertexPR* vPR = dynamic_cast<VertexPR *>(_vertices[0]);
+        //const Quaterniond R_atti = _vertices[1];
+        //const VertexPR* vPR_r_only = dynamic_cast<VertexPR*>(_vertices[1]);
+        const Vector3d so3_atti = _measurement; //here.
+        const Matrix3d Rwb0 = vPR->R();
+        const Vector3d twb0 = vPR->t();
+        const Matrix3d R_atti = SO3d::exp(so3_atti).matrix();
+        const Matrix3d err_mat = R_atti * (vPR->R().transpose());
+        const Vector3d rPhiij = SO3d::log(err_mat);
+        _error = rPhiij;
+        
+        /*
+         *	
+         *	const VertexPR *vPRi = static_cast<const VertexPR *>(_vertices[0]);
         const VertexPR *vPRj = static_cast<const VertexPR *>(_vertices[1]);
         const VertexSpeed *vVi = static_cast<const VertexSpeed *>(_vertices[2]);
         const VertexSpeed *vVj = static_cast<const VertexSpeed *>(_vertices[3]);
@@ -586,21 +582,14 @@ namespace ygz {
       }
       void EdgeAttitude::linearizeOplus()
       {
-	
-	  Vector3d rPhiij = _error; // residual of rotation, rPhiij
-
-	  Matrix3d JrInv_rPhi = SO3d::JacobianRInv(rPhiij);
-	  
-	  Matrix<double, 3, 6> JPR = Matrix<double, 3, 6>::Zero();
+          Vector3d rPhiij = _error; // residual of rotation, rPhiij
+          Matrix3d JrInv_rPhi = SO3d::JacobianRInv(rPhiij);
+          
+          Matrix<double, 3, 6> JPR = Matrix<double, 3, 6>::Zero();
           //JPR.block<3, 3>(0, 0) = ;
           JPR.block<3, 3>(0, 3) = JrInv_rPhi;
-	  _jacobianOplusXi = JPR;
-	  
-	  
-	  
-	 
-	  
-//	  g2o::BaseUnaryEdge< int(3), Eigen::Vector3d, ygz::VertexPR >::linearizeOplus();
+          _jacobianOplusXi = JPR;
+          //	  g2o::BaseUnaryEdge< int(3), Eigen::Vector3d, ygz::VertexPR >::linearizeOplus();
 	  /*
 	  VertexPR* vPR = dynamic_cast<VertexPR *>(_vertices[0]);
 	  const Matrix3d rRij = (  SO3d(_measurement) * (vPR->R().transpose())  )

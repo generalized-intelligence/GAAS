@@ -21,6 +21,7 @@
 #include <sys/time.h>
 
 #include <iostream>
+#include <thread>
 using namespace std;
 unsigned long long micros()//instead of micros in Arduino.h
 {
@@ -50,7 +51,7 @@ public:
         this->pGraph = pG;
         this->pGraph->initBuffers(this->SLAM_buffer,this->GPS_buffer,this->AHRS_buffer);
     }
-    bool loopFunc()
+    bool loopFunc()//return true if updated.
     {
         ros::spinOnce();//Handle all callbacks.
         //一个简单实现:如果两种消息都凑齐至少一个,送一次.GPS有没有无所谓.
@@ -58,7 +59,18 @@ public:
         {
             this->doUpdateOptimizationGraph();
             this->publishAll();
+            //clear buffers.
+            this->SLAM_buffer.clear();
+            this->AHRS_buffer.clear();
+            this->GPS_buffer.clear();
+            return true;
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));//sleep 1ms to avoid waste of CPU period.
+        return false;
+    }
+    inline shared_ptr<GlobalOptimizationGraph> getGraph()
+    {
+        return this->pGraph;
     }
 private:
     time_us_t start_time_us;
@@ -114,7 +126,9 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     boost::function<void(const boost::shared_ptr<sensor_msgs::NavSatFix const>&
 		   )> gps_callback(boost::bind(&gps_buffer_helper,boost::ref(this->GPS_buffer),_1));
     boost::function<void(const boost::shared_ptr<geometry_msgs::PoseStamped const>&
-		   )> slam_callback(boost::bind(&slam_buffer_helper,boost::ref(this->SLAM_buffer),_1));
+		   )> slam_callback(
+                                     boost::bind(&slam_buffer_helper,this,boost::ref(this->SLAM_buffer),_1)
+                           );
     AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
     GPS_sub = pNH->subscribe("/mavros/global_position/global",10,gps_callback);
     SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
@@ -136,10 +150,12 @@ bool ROS_IO_Manager::initOptimizationGraph()
         ros::spinOnce(); //reduce timestamp error.
         cout<<"AHRS_buffer.size:"<<AHRS_buffer.size()<<endl;
         this->start_time_us = micros();
-        this->ros_start_time = this->AHRS_buffer.queryLastMessageTime();//align start time.
+
+        //TODO: when running live,select next line.
+        //this->ros_start_time = this->AHRS_buffer.queryLastMessageTime();//align start time.
+        this->ros_start_time = ros::Time::now().toSec();
         this->time_aligned = true;
         ahrs_success = this->pGraph->init_AHRS(this->AHRS_buffer.getLastMessage());
-
     }
     if(!ahrs_success)
     {
@@ -152,29 +168,40 @@ bool ROS_IO_Manager::initOptimizationGraph()
     {
         //set init gps position.
         //we do not need spinOnce for we have to match timestamp with AHRS.
-        double gps_init_time = this->GPS_buffer.queryLastMessageTime();
-	double gps_ahrs_max_time_diff_s = (*(this->pSettings))["GPS_AHRS_MAX_TIME_DIFF_s"];
-	if( abs(gps_init_time - this->ros_start_time) < gps_ahrs_max_time_diff_s)
-	{
-	    gps_success = this->pGraph->init_gps();
-	}	
+        
+
+        //TODO: when running live,select next line.
+        //double gps_init_time = this->GPS_buffer.queryLastMessageTime();
+        double gps_init_time = ros::Time::now().toSec();
+
+
+        double gps_ahrs_max_time_diff_s = (*(this->pSettings))["GPS_AHRS_MAX_TIME_DIFF_s"];
+        if( abs(gps_init_time - this->ros_start_time) < gps_ahrs_max_time_diff_s)
+        {
+            gps_success = this->pGraph->init_gps();
+        }
     }
     if(!gps_success)
     {//still can we go on.set status first.
         cout<<"Warning:GPS init failed.Will continue."<<endl;
-	this->gps_avail = false;	  
+        this->gps_avail = false;	  
     }
     //step<3> check slam,match coordinates.Must success.
     bool slam_success = false;
     int slam_avail_minimum = (*(this->pSettings))["SLAM_AVAIL_MINIMUM"];
     if(this->SLAM_buffer.size()>slam_avail_minimum)
     {
-        double slam_init_time = SLAM_buffer.queryLastMessageTime();
-	double slam_ahrs_max_time_diff_s = (*(this->pSettings))["SLAM_AHRS_MAX_TIME_DIFF_s"];
+
+        //TODO: when running live,select next line.
+        //double slam_init_time = SLAM_buffer.queryLastMessageTime();
+        double slam_init_time = ros::Time::now().toSec();
+
+
+        double slam_ahrs_max_time_diff_s = (*(this->pSettings))["SLAM_AHRS_MAX_TIME_DIFF_s"];
         if(abs(slam_init_time-this->ros_start_time)< slam_ahrs_max_time_diff_s)
-	{
+        {
             slam_success = this->pGraph->init_SLAM();
-	}
+        }
         else
         {
             cout<<"SLAM info delay to high.Delay_s:"<<slam_init_time-this->ros_start_time<<endl;
@@ -187,7 +214,7 @@ bool ROS_IO_Manager::initOptimizationGraph()
     if(!slam_success)
     {
         cout<<"Fatal error:SLAM init faied.Exit."<<endl;
-	return false;
+        return false;
     }
     cout<<"OptimizationGraph init success!"<<endl;
     ros::spinOnce();//get latest msg.
@@ -205,9 +232,11 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
             this->pGraph->addBlockGPS(this->GPS_buffer.getLastMessage());//do update.
         }
         this->pGraph->addBlockAHRS(this->AHRS_buffer.getLastMessage());
+        cout <<"add ahrs finished!"<<endl;
         this->pGraph->addBlockSLAM(this->SLAM_buffer.getLastMessage());
+        cout <<"add block slam finished!"<<endl;
     }
-
+    return true;
 
 }
 
@@ -223,7 +252,8 @@ void ROS_IO_Manager::SLAM_callback(const geometry_msgs::PoseStamped& SLAM_msg)
 }
 bool ROS_IO_Manager::publishAll()
 {
-    auto pose = this->pGraph->getpCurrentPR()->estimate();
+    cout<<"WARNING: RIM::publishAll not implemented!"<<endl;//TODO:fill this.
+    //auto pose = this->pGraph->getpCurrentPR()->estimate();
     //make a ros msg.
 }
 

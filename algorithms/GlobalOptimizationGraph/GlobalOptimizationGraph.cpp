@@ -11,12 +11,14 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
     solver_ptr = new g2o::BlockSolverX(linearSolver);
     solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+    //this->optimizer = g2o::SparseOptimizer();
     optimizer.setAlgorithm(solver);
     optimizer.setVerbose(true);
-
+    //optimizer.setVertex();
     /*currentState.setEstimate(currentState);
-    currentState.setId(0);//vertex 0 in optimization graph.
-    optimizer.addVertex(&currentState);*/
+    currentState.setId(0);//vertex 0 in optimization graph.*/
+    //currentState.setId(0);
+    //optimizer.addVertex(&currentState);
 }
 bool GlobalOptimizationGraph::init_AHRS(const nav_msgs::Odometry& AHRS_msg)
 {
@@ -48,6 +50,18 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
 
     SLAM_to_UAV_coordinate_transfer.R() = q_.toRotationMatrix().inverse() *this->ahrs_R_init;
     SLAM_to_UAV_coordinate_transfer.t() = -1 * SLAM_to_UAV_coordinate_transfer.R() * t_slam_;
+    
+    int vinit_pr_id = this->iterateNewestVertexPRID();
+    if(vinit_pr_id!=0)
+    {
+        cout<<"ERROR:vinit_pr_id!=0!"<<endl;
+        return false;
+    }
+    this->currentState.R() = this->ahrs_R_init;
+    this->currentState.t() = Vector3d(0,0,0);
+    this->currentState.setId(vinit_pr_id);
+    this->currentState.setFixed(true);
+    this->optimizer.addVertex(&this->currentState);
     return true;
 }
 
@@ -390,6 +404,7 @@ bool GlobalOptimizationGraph::inputGPS(const sensor_msgs::NavSatFix& gps)
 }*/
 void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
 {
+    cout<<"Adding AHRS block to Optimization Graph!"<<endl;
     EdgeAttitude* pEdgeAttitude = new EdgeAttitude();
     auto q = AHRS_msg.pose.pose.orientation;//TODO
     Eigen::Quaterniond q_;
@@ -401,18 +416,27 @@ void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
     Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
     pEdgeAttitude->setInformation(info_mat);
     pEdgeAttitude->setLevel(!checkAHRSValid());
-    pEdgeAttitude->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get()));
-
+    cout<<"adding vertex ahrs."<<endl;
     
+    //pEdgeAttitude->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get()));
+    int newest_vpr_id = this->newestVertexPR_id;
+    if(this->optimizer.vertex(newest_vpr_id) == NULL)
+    {
+        cout<<"error:(in addBlockAHRS() ) optimizer.vertex("<<newest_vpr_id<<") is NULL!"<<endl;
+    }
+    pEdgeAttitude->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *> (this->optimizer.vertex(newest_vpr_id)) );
+    cout<<"added vertex ahrs."<<endl;
     this->optimizer.addEdge(pEdgeAttitude);
+    cout<<"AHRS EDGE ADDED!"<<endl;
 }
 void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
 {
-  if(this->allow_gps_usage == false || this->gps_init_success == false)
-  {
-    cout<<"[WARNING] Unable to add GPS edge.GPS usage is forbidden in config file."<<endl;
-    return;
-  }
+    cout <<"Adding GPS block to Optimization Graph!"<<endl;
+    if(this->allow_gps_usage == false || this->gps_init_success == false)
+    {
+        cout<<"[WARNING] Unable to add GPS edge.GPS usage is forbidden in config file."<<endl;
+        return;
+    }
   /*//state shall be put into state tranfer module.
   if(!(this->status&this->STATUS_WITH_GPS_NO_SCENE))
   {
@@ -461,33 +485,49 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
 //for multiple msgs.
 {
     //part<1> Rotation.
+    cout<<"addBlockSLAM() : part 1."<<endl;
     auto pEdgeSlam = new EdgeAttitude();
     //shared_ptr<g2o::OptimizableGraph::Edge *> ptr_slam(pEdgeSlam);
     //pEdgeSlam->setId(this->EdgeVec.size());//TODO
     //this->EdgeVec.push_back(ptr_slam);
-    pEdgeSlam->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get()));
-
+    int newest_vpr_id = this->newestVertexPR_id;
+    
+    if(this->optimizer.vertex(newest_vpr_id) == NULL)
+    {
+        cout<<"error:(in addBlockSLAM() ) optimizer.vertex(0) is NULL!"<<endl;
+    }
+    pEdgeSlam->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(newest_vpr_id)));
     auto q = SLAM_msg.pose.orientation;
+    cout<<"addBlockSLAM():setting quaternion"<<endl;
     Eigen::Quaterniond q_;
     q_.w() = q.w;
     q_.x() = q.x;
     q_.y() = q.y;
     q_.z() = q.z;
     Eigen::Matrix<double,3,3> info_mat_slam_rotation = Eigen::Matrix<double,3,3>::Identity();
+    cout<<"addBlockSLAM():part 3"<<endl;
     
-    pEdgeSlam->setMeasurement(q_.toRotationMatrix().topLeftCorner(3,3));
+    //VertexPR slam_pr_R_only;
+    
+    //slam_pr_R_only.R() = q_.toRotationMatrix().topLeftCorner(3,3);
+    auto se3_slam = SO3d::log(q_.toRotationMatrix() );
+    pEdgeSlam->setMeasurement(se3_slam);
     pEdgeSlam->setInformation(info_mat_slam_rotation);
-    optimizer.addEdge(pEdgeSlam);
+    cout <<"Measurement,information mat set.Adding edge slam!!!"<<endl;
+    
+    this->optimizer.addEdge(pEdgeSlam);
+    cout<<"Edge SLAM added successfully."<<endl;
     //part<2> Translation
+    this->autoInsertSpeedVertexAfterInsertCurrentVertexPR();
     //Edge PRV.
     /*//TODO:fill Edge SLAM PRV.
-    if(this->historyStates.size()>0)
+    if(this->historyStatesWindow.size()>0)
     {
         shared_ptr<Edge_SLAM_PRV>pEdge_SLAM_PRV(new Edge_SLAM_PRV());
         pEdge_SLAM_PRV->setId(this->EdgeVec.size());
         this->EdgeVec.push_back(pEdge_SLAM_PRV);
         //TODO:fit in type.
-        pEdge_SLAM_PRV->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>&(this->historyStates[this->historyStates.size()-1]));//old one.
+        pEdge_SLAM_PRV->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>&(this->historyStatesWindow[this->historyStatesWindow.size()-1]));//old one.
         pEdge_SLAM_PRV->setVertex(1,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->pCurrentPR.get()));
         pEdge_SLAM_PRV->setVertex(2,dynamic_cast<g2o::OptimizableGraph::Vertex *> (&(this->historySpeed[this->historySpeed.size()-1])));
         pEdge_SLAM_PRV->setVertex(3,dynamic_cast<g2o::OptimizableGraph::Vertex *> (&this->currentSpeed));
@@ -504,6 +544,21 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
 
 
     //TODO
+}
+void GlobalOptimizationGraph::addSLAM_edgeprv(const geometry_msgs::PoseStamped& SLAM_msg)
+{
+    //step<1>.Form a IMU_Preintegration like object so we can form edgeprv.
+    //TODO:set DV.
+    ygz::IMUPreIntegration preintv;
+    //preintv.setDP(SLAM_msg.pose-init_pose....);
+    //preintv.setDV();
+    /*
+    ygz::EdgeSLAMPRV * pPRV = new EdgeSLAMPRV();
+    pPRV->setVertex(0,....);//vertex pr1
+    pPRV->setVertex(1,....);//vertex pr2
+    pPRV->setVertex(...)//vertex speed1
+    pPRV->setVertex(...)//vertex speed2
+    */
 }
 void GlobalOptimizationGraph::addBlockQRCode()
 {
@@ -549,6 +604,6 @@ void GlobalOptimizationGraph::doOptimization()
 {
     this->optimizer.initializeOptimization();
     this->optimizer.optimize(10);
-    this->historyStates.push_back(currentState);
-    //this->historyStates.reserve();///...
+    this->historyStatesWindow.push_front(currentState);
+    //this->historyStatesWindow.reserve();///...
 }

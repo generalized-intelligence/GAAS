@@ -20,6 +20,7 @@
 #include "GPSExpand.h"
 #include "CallbacksBufferBlock.h"
 #include <cmath>
+#include <deque>
 #include <opencv2/opencv.hpp>
 using namespace std;
 using namespace ygz;
@@ -39,7 +40,7 @@ using namespace ygz;
 //    
 //};
 typedef VertexPR State;
-typedef VertexPR Speed;
+typedef VertexSpeed Speed;
 const int GPS_INIT_BUFFER_SIZE = 100;
 using namespace ygz;
 class GlobalOptimizationGraph
@@ -67,12 +68,9 @@ public:
     void addBlockAHRS(const nav_msgs::Odometry& AHRS_msg
         
     );
-    void addBlockSLAM(const geometry_msgs::PoseStamped& SLAM_msg
-        
-    );
-    void addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg
-        
-    );
+    void addBlockSLAM(const geometry_msgs::PoseStamped& SLAM_msg);
+    void addSLAM_edgeprv(const geometry_msgs::PoseStamped& SLAM_msg);
+    void addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg);
     void addBlockQRCode();
     void addBlockSceneRetriever();
     void addBlockFCAttitude();
@@ -115,12 +113,59 @@ private:
     CallbackBufferBlock<sensor_msgs::NavSatFix> * pGPS_Buffer;
     CallbackBufferBlock<nav_msgs::Odometry> * pAHRS_Buffer;
     //uav location attitude info management.
-    std::vector<State> historyStates;
+    
+
+    
+    std::deque<State> historyStatesWindow;
     State currentState;
 
     Speed currentSpeed;
-    std::vector<Speed> historySpeed;
+    std::deque<Speed> historySpeed;
     void resetSpeed();
+    void marginalizeAndAddCurrentFrameToHistoryState()
+    {
+        int max_window_size = (*(this->pSettings))["OPTIMIZATION_GRAPH_KF_WIND_LEN"];
+        if(this->historyStatesWindow.size() > max_window_size)
+        {
+            State p = historyStatesWindow.back();
+            p.setFixed(1);//set this fixed. remove it from optimizable graph.
+            this->historyStatesWindow.pop_back();//delete last one.
+        }
+        //TODO:fix speed window. the length of speed window shall be ( len(position) - 1).
+        this->historyStatesWindow.push_front(this->currentState);
+        //TODO: how do we set new state?
+        State new_state;
+        this->currentState = new_state;
+    }
+    void autoInsertSpeedVertexAfterInsertCurrentVertexPR()
+    {
+        if(this->historyStatesWindow.size()<2)
+        {
+            return;//nothing to do.
+        }
+        Speed* pNewSpeed = new Speed();
+        State s = currentState;
+        
+        pNewSpeed->setEstimate(s.t() - this->historyStatesWindow[1].t());
+        //ygz::EdgePRV* pNewEdgePRV = new ygz::EdgePRV();
+        //pEdgePRV->setMeasurement();//TODO:set slam info into this edge.
+    }
+    int vertexID = 0;
+    int newestVertexPR_id = 0;
+    int iterateNewestVertexPRID()
+    {
+        int retval = this->vertexID;
+        this->vertexID++;
+        this->newestVertexPR_id = retval;
+        return retval;
+    }
+    int getNewestVertexSpeedID()
+    {
+        int retval = this->vertexID;
+        this->vertexID++;
+        return retval;
+    }
+    
     //SLAM
     VertexPR SLAM_to_UAV_coordinate_transfer;
     //AHRS

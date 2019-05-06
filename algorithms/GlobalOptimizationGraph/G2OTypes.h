@@ -375,7 +375,7 @@ namespace ygz {
             _jacobianOplusXi = -Jlinv * J_dR_bg;
         }
     };
-
+#include "G2OTypes_EdgeSLAMPRV.h"
 }
 
 #endif

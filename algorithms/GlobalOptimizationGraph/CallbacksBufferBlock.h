@@ -17,6 +17,10 @@ public:
     void onCallbackBlock(const T& msg);
     double queryLastMessageTime();
     T getLastMessage();
+    void clear()
+    {
+        this->msgBuffer.clear();
+    }
     inline int size()
     {
         return this->msgBuffer.size();
