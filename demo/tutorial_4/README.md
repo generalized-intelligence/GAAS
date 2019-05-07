@@ -1,4 +1,6 @@
 <img width="300px" src="https://blobscdn.gitbook.com/v0/b/gitbook-28427.appspot.com/o/assets%2F-LYUhlGdK9Y1iLhupMFC%2F-Le-pbmWyVALS-76fVNx%2F-Le-pgaHG2WlZufxbZO3%2Ft4-A*-1.png?alt=media&token=cd0b31ea-645d-48e1-830b-535001f1fae8"/>
+
+
 ## Depth Estimation, Octomap and Path Planning
 In the previous tutorials, we have talked about how to control your drone with python and enable your drone to fly in GPS denied environments, which is a big step towards autonomous drone. Now, we will talk about how to enable your drone to fly in an unknown environment from point A to point B, with the help of a pair of stereo camera only, in Gazebo simulator. This tutorial can be organized as follow:
 1. Obstacle distance estimation with Stereo Camera;
