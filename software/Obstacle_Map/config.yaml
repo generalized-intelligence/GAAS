@@ -39,18 +39,18 @@ method: 0 # 0 for StereoBM, 1 for StereoSGBM
 
 # common params for both methods:
 SADWindowSize: 9             #Matched block size. It must be an odd number >=1
-MinDisparity: 3              #Minimum possible disparity value.
-NumDisparities: 80
-PreFilterCap: 7
-UniquenessRatio: 10
-SpeckleWindowSize: 7
+MinDisparity: 1              #Minimum possible disparity value.
+NumDisparities: 256
+PreFilterCap: 63
+UniquenessRatio: 20
+SpeckleWindowSize: 0
 
 # for StereoBM (Block Matching) matcher params
 RangeOfDisparity: 80 # dividable by 16
 SizeOfBlockWindow: 31 # must be odd
 PreFilterSize: 7
 SmallerBlockSize: 7
-TextureThreshold: 5
+TextureThreshold: 0
 
 # for StereoSGBM (Semi-Global Block Matching) matcher params
 P1: 700
