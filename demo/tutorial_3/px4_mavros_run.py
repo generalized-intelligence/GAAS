@@ -72,6 +72,7 @@ class Px4Controller:
             self.local_target_pub.publish(self.cur_target_pose)
             self.arm_state = self.arm()
             self.offboard_state = self.offboard()
+            time.sleep(0.2)
 
 
         if self.takeoff_detection():
@@ -79,7 +80,7 @@ class Px4Controller:
 
         else:
             print("Vehicle Took Off Failed!")
-
+            return
 
         '''
         main ROS thread
@@ -304,7 +305,7 @@ class Px4Controller:
                                                      self.current_heading)
 
     def takeoff_detection(self):
-        if self.local_pose.pose.position.z > 0.1:
+        if self.local_pose.pose.position.z > 0.1 and self.offboard_state and self.arm_state:
             return True
         else:
             return False
