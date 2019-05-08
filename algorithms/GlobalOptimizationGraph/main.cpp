@@ -16,6 +16,8 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
     //to start global optimization,first check all input topics.
     cv::FileStorage fSettings;
     fSettings.open(string(argv[1]),cv::FileStorage::READ);
+    
+    pRIM->setOptimizationGraph(pGOG);
     time_us_t t1 = micros();
     int init_spin_times = fSettings["INIT_SPIN_TIMES"];
     for(int i=0;i<init_spin_times;i++)
@@ -37,7 +39,7 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
             std::this_thread::sleep_for(std::chrono::milliseconds(1));//sleep 1ms.
         }
     }
-    pRIM->setOptimizationGraph(pGOG);
+    
     /*
     if (fSettings["ENABLE_GPS"])
     {
@@ -65,7 +67,7 @@ void loop(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
         }
         else
         {
-            cout<<"RIM Idling."<<endl;
+            //cout<<"RIM Idling."<<endl;
         }
     }
 }

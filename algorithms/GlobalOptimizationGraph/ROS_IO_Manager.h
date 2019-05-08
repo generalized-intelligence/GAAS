@@ -93,7 +93,7 @@ private:
     CallbackBufferBlock<geometry_msgs::PoseStamped> SLAM_buffer;
     ros::Subscriber SLAM_sub;
 
-    shared_ptr<GlobalOptimizationGraph> pGraph;
+    shared_ptr<GlobalOptimizationGraph> pGraph = nullptr;
     shared_ptr<cv::FileStorage> pSettings;
 
     //CallbackBufferBlock<xxx_msgs::SceneRetrieveInfo> SceneRetrieve_Buffer;
@@ -130,7 +130,7 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
                                      boost::bind(&slam_buffer_helper,this,boost::ref(this->SLAM_buffer),_1)
                            );
     AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
-    GPS_sub = pNH->subscribe("/mavros/global_position/global",10,gps_callback);
+    GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix",10,gps_callback);
     SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
     cout <<"callback function binding finished!"<<endl;
     //
@@ -166,6 +166,7 @@ bool ROS_IO_Manager::initOptimizationGraph()
     bool gps_success = string("true")==(*(this->pSettings))["ENABLE_GPS"] && (this->GPS_buffer.size()>0);
     if(gps_success)
     {
+        cout<<"Trying to init gps in RIM::initOptimizationGraph()!"<<endl;
         //set init gps position.
         //we do not need spinOnce for we have to match timestamp with AHRS.
         
@@ -184,7 +185,15 @@ bool ROS_IO_Manager::initOptimizationGraph()
     if(!gps_success)
     {//still can we go on.set status first.
         cout<<"Warning:GPS init failed.Will continue."<<endl;
-        this->gps_avail = false;	  
+        this->gps_avail = false;
+        
+        //TODO:delete this.debug only.
+        //  /*
+        cout<<"DEBUG ONLY:check GPS FAILED.EXIT!"<<endl;
+        return false;
+        //  */
+        
+        
     }
     //step<3> check slam,match coordinates.Must success.
     bool slam_success = false;

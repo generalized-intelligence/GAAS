@@ -3,6 +3,7 @@
 
 
 //#include <queue>
+#include <vector>
 #include <deque>
 #include <iostream>
 using namespace std;
@@ -25,6 +26,20 @@ public:
     {
         return this->msgBuffer.size();
     }
+    std::vector<T> getCopyVec()
+    {
+        std::vector<T> vec;
+        int size = this->msgBuffer.size();
+        for(int i=0;i<size;i++)
+        {
+            vec.push_back(this->msgBuffer.at(i));
+        }
+        return vec;
+    }
+    /*inline std::deque<T>& getBuffer()//NOT recommended!
+    {
+        return this->msgBuffer;
+    }*/
 private:
     //std::queue<T> msgBuffer;
     std::deque<T> msgBuffer;

@@ -12,10 +12,27 @@ void gps_buffer_helper(CallbackBufferBlock<sensor_msgs::NavSatFix>& nav_buffer,
 void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::PoseStamped>& slam_buffer,
 		const boost::shared_ptr<geometry_msgs::PoseStamped const>& slam_msg)
 {
+    if (pRIM->getGraph() == nullptr)
+    {
+        cout<<"waiting for gog init.pass this msg."<<endl;
+        return;
+    }
     cout<<"SLAM message received!"<<endl;
+    bool state = ( pRIM->getGraph()->getStatus() & 1 );
+    cout<<"Is running with gps:"<<state<<endl;
     slam_buffer.onCallbackBlock(*slam_msg);
+    
+    
+    if(state)//running with gps.SLAM work as edge PRV.
+    {
+        (pRIM->getGraph())->addSLAM_edgeprv(*slam_msg);
+    }
     //TODO:add 
-    (pRIM->getGraph())->addSLAM_edgeprv(*slam_msg);
+    else
+    {
+        ;//(pRIM->getGraph())->addBlockSLAM(*slam_msg);
+    }
+    
 }
 
 void ahrs_buffer_helper(CallbackBufferBlock<nav_msgs::Odometry>& ahrs_buffer,

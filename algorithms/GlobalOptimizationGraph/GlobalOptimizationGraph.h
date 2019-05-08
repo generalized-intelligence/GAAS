@@ -91,15 +91,21 @@ public:
         //When DEBUG:
         this->debug_show_optimization_graph();//just show how this optimizable_graph looks like.
         
-        /* //TODO
+         //TODO
         this->optimizer.initializeOptimization();
         this->optimizer.optimize(10);
-        this->historyStatesWindow.push_front(currentState);
+        /*this->historyStatesWindow.push_front(currentState);
         //this->historyStatesWindow.reserve();///...
         */
         //clear optimizer and reset!
+        this->resetOptimizationGraph();
+        cout<<"DEBUG:end of do optimization():"<<endl;
+        this->debug_show_optimization_graph();
+    }
+
+    void resetOptimizationGraph()
+    {
         this->optimizer.clear();
-        
         this->resetNewestVertexPRID();
         //this->optimizer = g2o::SparseOptimizer();
         linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
@@ -111,16 +117,6 @@ public:
         VertexPR* pcurrent_state = new VertexPR;
         pcurrent_state->setId(this->getNewestVertexSpeedID());
         optimizer.addVertex(pcurrent_state);
-        cout<<"DEBUG:end of do optimization():"<<endl;
-        this->debug_show_optimization_graph();
-        
-        
-        
-    }
-
-    void resetOptimizationGraph()
-    {
-        this->optimizer.clear();
     }
     bool SpeedInitialization();
     bool estimateCurrentSpeed();
@@ -143,15 +139,23 @@ private:
         cout<<"Size of vertices:"<<this->optimizer.vertices().size()<<endl;//size of vertices.
         cout<<"Size of Edges:"<<this->optimizer.edges().size()<<endl;//size of edges.
     }
-    cv::FileStorage *pSettings;
+    cv::FileStorage fSettings;
     //status management.
+    
+
+public:
     static const int STATUS_NO_GPS_NO_SCENE = 0; // a bit map.
     static const int STATUS_NO_GPS_WITH_SCENE = 1;
     static const int STATUS_WITH_GPS_NO_SCENE = 2;
     static const int STATUS_GPS_SCENE = 3;
     int GPS_AVAIL_MINIMUM;
-    int status = STATUS_NO_GPS_NO_SCENE;
+    inline int getStatus()
+    {
+        return this->status;
+    }
     void stateTransfer(int new_state);
+private:
+    int status = STATUS_NO_GPS_NO_SCENE;
     
     //message buffers.
     
@@ -170,7 +174,7 @@ private:
     void resetSpeed();
     void marginalizeAndAddCurrentFrameToHistoryState()
     {
-        int max_window_size = (*(this->pSettings))["OPTIMIZATION_GRAPH_KF_WIND_LEN"];
+        int max_window_size = (this->fSettings)["OPTIMIZATION_GRAPH_KF_WIND_LEN"];
         if(this->historyStatesWindow.size() > max_window_size)
         {
             State p = historyStatesWindow.back();
@@ -253,8 +257,8 @@ private:
 
 GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
 {
-    cv::FileStorage fSettings;//(string(argv[1]),cv::FileStorage::READ);
-    fSettings.open(string(argv[1]),cv::FileStorage::READ);
+    //cv::FileStorage fSettings;//(string(argv[1]),cv::FileStorage::READ);
+    this->fSettings.open(string(argv[1]),cv::FileStorage::READ);
     this->GPS_AVAIL_MINIMUM = fSettings["GPS_AVAIL_MINIMUM"];
     linearSolver = new g2o::LinearSolverEigen<g2o::BlockSolverX::PoseMatrixType>();
     solver_ptr = new g2o::BlockSolverX(linearSolver);
@@ -323,6 +327,7 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
 bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
     //TODO:Init a GPS callback buffer block class,inherit callback buffer base,implement init and check avail.
 {
+    cout<<"In GOG::init_gps(): trying to init gps."<<endl;
     double avg_lon,avg_lat,avg_alt;
 	avg_lon = 0;
 	avg_lat = 0;
@@ -333,27 +338,45 @@ bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
 	vari_lon=0;
 	vari_lat=0;
 	vari_alt=0;
-    for(auto g:this->gps_info_buffer)
-	{
-	    if(g.status.status>=g.status.STATUS_FIX) //which means gps available.
-	    {
-			avg_lon+=g.longitude;
-			avg_lat+=g.latitude;
-			avg_alt+=g.altitude;
-			count++;
-	    }
-	}
+    
+    //for(auto g:*(this->pGPS_Buffer))
+    auto buf = this->pGPS_Buffer->getCopyVec();
+    for(auto g: buf)
+    {
+        if(g.status.status>=g.status.STATUS_FIX) //which means gps available.
+        {
+            avg_lon+=g.longitude;
+            avg_lat+=g.latitude;
+            avg_alt+=g.altitude;
+            count++;
+            
+        }
+        else
+        {
+            cout<<"MSG status:"<<(int)g.status.status<<" is smaller than g.status.STATUS_FIX."<<endl;
+            cout<<"info: lon lat alt:"<<g.longitude<<","<<g.latitude<<","<<g.altitude<<endl;
+            
+            //TODO:remove this.DEBUG ONLY!!!
+            cout<<"WARNING: NO CHECK ON gps status!"<<endl;
+            avg_lon+=g.longitude;
+            avg_lat+=g.latitude;
+            avg_alt+=g.altitude;
+            count++;
+        }
+    }
 	if(count<GPS_AVAIL_MINIMUM)
 	{
+        cout<<"In GOG::init_gps(): count < GPS_AVAIL_MINIMUM.count:"<<count<<"."<<endl;
 	    return false;
 	}
 	avg_lon = avg_lon/count;
 	avg_lat = avg_lat/count;
 	avg_alt = avg_alt/count;
-	for(auto g:this->gps_info_buffer)
+	for(auto g:buf)
 	{
-	    if(g.status.status>=g.status.STATUS_FIX)
-	    {
+	    //if(g.status.status>=g.status.STATUS_FIX)
+	    if(true)//TODO:debug only!
+        {
 	        vari_lon+=pow(g.longitude-avg_lon,2);
 			vari_lat+=pow(g.latitude-avg_lat,2);
 			vari_alt+=pow(g.altitude-avg_alt,2);
@@ -375,12 +398,13 @@ bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
     lon_variance_m = GE.vari_km_per_lon_deg()*vari_lon*1000;
     lat_variance_m = GE.vari_km_per_lat_deg()*vari_lat*1000;
 
-	cout<<"X variance:"<<GE.vari_km_per_lon_deg()*vari_lon*1000<<"m;Y Variance:"
+	cout<<"X variance:"<<GE.vari_km_per_lon_deg()*vari_lon*1000<<"m;Y variance:"
             <<GE.vari_km_per_lat_deg()*vari_lat*1000<<
-            "m,ALTITUDE Variance:"<<vari_alt<<"m."<<endl;
+            "m,ALTITUDE variance:"<<vari_alt<<"m."<<endl;
     //check variance:
-    double gps_init_variance_thres = ((*(this->pSettings))["GPS_INIT_VARIANCE_THRESHOLD_m"]);
-    double gps_init_alt_variance_thres =  (*(this->pSettings))["GPS_INIT_ALT_VARIANCE_THRESHOLD_m"];
+    double gps_init_variance_thres = (this->fSettings)["GPS_INIT_VARIANCE_THRESHOLD_m"];
+    double gps_init_alt_variance_thres =  (this->fSettings)["GPS_INIT_ALT_VARIANCE_THRESHOLD_m"];
+    cout<<"Config file read."<<endl;
     if(lon_variance_m> gps_init_variance_thres || lat_variance_m > gps_init_variance_thres
         || vari_alt>gps_init_alt_variance_thres)
     {
@@ -388,7 +412,10 @@ bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
         cout<<"THRESHOLD(m):"<<gps_init_variance_thres<<endl;
         return false;
     }
-
+    else
+    {
+        cout<<"gps variance check passed!"<<endl;
+    }
     this->gps_init_longitude = avg_lon;
     this->gps_init_latitude = avg_lat;
     this->gps_init_altitude = avg_alt;
@@ -397,6 +424,11 @@ bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
     this->gps_init_lat_variance = vari_lat;
     this->gps_init_alt_variance = vari_alt;
 
+    gps_init_success = true;
+    if ( !(this->status&1)) // gps_avail 
+    {
+        this->status |= 1;//set status.
+    }
 	return true;
 }
 void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
@@ -444,6 +476,7 @@ void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
   double delta_lon = GPS_msg.longitude - GPS_coord.getLon();
   double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
   double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
+  cout <<"setting gps measurement!"<<endl;
 
   //since the quaternion is NED defined,we do not need any rotation here.
   pEdgePRGPS->setMeasurement( Vector3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),
@@ -452,8 +485,9 @@ void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
                             );
 
   double info_lon,info_lat,info_alt;
-  double gps_min_variance_lonlat_m = (*(this->pSettings))["GPS_MIN_VARIANCE_LONLAT_m"];
-  double gps_min_variance_alt_m = (*(this->pSettings))["GPS_MIN_VARIANCE_ALT_m"];
+  double gps_min_variance_lonlat_m = (this->fSettings)["GPS_MIN_VARIANCE_LONLAT_m"];
+  double gps_min_variance_alt_m = (this->fSettings)["GPS_MIN_VARIANCE_ALT_m"];
+  cout <<"in addGPSBlock(): calc info mat!"<<endl;
   info_lon = min((1.0/this->gps_init_lon_variance),1.0/gps_min_variance_lonlat_m);
   info_lat = min((1.0/this->gps_init_lat_variance),1.0/gps_min_variance_lonlat_m);
   info_alt = min((1.0/this->gps_init_alt_variance),1.0/gps_min_variance_alt_m);
@@ -463,8 +497,17 @@ void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
   info_mat(1,1) = info_lat;
   info_mat(2,2) = info_alt;
   pEdgePRGPS->setInformation(info_mat);//the inverse mat of covariance.
+  int gps_valid = (GPS_msg.status.status >= GPS_msg.status.STATUS_FIX?1:0);
+  pEdgePRGPS->setLevel(gps_valid);
+  cout<<"adding edge gps!"<<endl;
+  
+  int newest_vpr_id = this->newestVertexPR_id;
+  if(this->optimizer.vertex(newest_vpr_id) == NULL)
+  {
+      cout<<"error:(in addBlockGPS() ) optimizer.vertex("<<newest_vpr_id<<") is NULL!"<<endl;
+  }
+  pEdgePRGPS->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(newest_vpr_id)));
 
-  //pEdgePRGPS->setLevel(!checkGPSValid());//TODO
   this->optimizer.addEdge(pEdgePRGPS);
 }
 
