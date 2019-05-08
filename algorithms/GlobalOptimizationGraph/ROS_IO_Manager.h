@@ -235,6 +235,7 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
         cout <<"add ahrs finished!"<<endl;
         this->pGraph->addBlockSLAM(this->SLAM_buffer.getLastMessage());
         cout <<"add block slam finished!"<<endl;
+        this->pGraph->doOptimization();
     }
     return true;
 
