@@ -118,7 +118,7 @@ We recommend installing ros-kinetic-desktop-full from the following address:
     http://wiki.ros.org/kinetic/Installation/Ubuntu
 
 ### 2. Install Octomap-Server and mavros
-    sudo apt install python-catkin-tools ros-kinetic-mavlink ros-kinetic-geographic-msgs ros-kinetic-octomap-ros libgeographic-dev geographiclib-tools ros-kinetic-control-toolbox
+    sudo apt install python-catkin-tools ros-kinetic-mavlink ros-kinetic-geographic-msgs ros-kinetic-octomap-ros libgeographic-dev geographiclib-tools ros-kinetic-control-toolbox libpopt-dev
     cd ~/catkin_ws/src
     git clone https://github.com/OctoMap/octomap_mapping.git
     git clone https://github.com/mavlink/mavros.git
