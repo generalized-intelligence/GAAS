@@ -38,25 +38,25 @@ Please note we have a code of conduct, please follow it in all your interactions
 
 1. Ensure any install or build dependencies are removed before the end of the layer when doing a build.
 
-1.请确保提交的部分代码的依赖项已经完善处理。
+1. 请确保提交的部分代码的依赖项已经完善处理。
 
 2. Update the README.md with details of changes to the interface, this includes new environment variables, **exposed ports**, useful file locations and container parameters.
 
-2.请确保更新对应模块的README，表述清楚**接口的变更**，新引入的全局变量/环境变量等对外部有影响的量，暴露的端口，文件路径和配置项。
+2. 请确保更新对应模块的README，表述清楚**接口的变更**，新引入的全局变量/环境变量等对外部有影响的量，暴露的端口，文件路径和配置项。
 
 3. Increase the version numbers in any examples files and the README.md to the new version that this Pull Request would represent.
 
-3.请确保更新依赖本次变更的示例文件版本号，并在 README 中指出版本变更。
+3. 请确保更新依赖本次变更的示例文件版本号，并在 README 中指出版本变更。
 
 4. If you do not have permission to merge your pull request directly, you may request the reviewer to merge it for you.
 
-4.如果你没有直接合并 pull request 的权限,你可能需要联系我们帮你合并。
+4. 如果你没有直接合并 pull request 的权限,你可能需要联系我们帮你合并。
 
 ### Our Pledge
 
 **We respect all developers who have put in efforts to make autonomous flight possible.**
 
-**We hereby promise that any issue, pull request and suggestions in any form will be taken and treated seriously.**
+**We hereby promise that any issue, pull request and suggestions in any form will be treated seriously.**
 
 **Special thanks to all contributors and developers of the project, not only as an ode to your passion towards the project, but also as an ode to what mankind has always yearned.**
 
