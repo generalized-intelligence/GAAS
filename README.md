@@ -1,23 +1,16 @@
 # Generalized Autonomy Aviation System
 
+![future](https://img.shields.io/badge/Let's%20go%20back%20to-the%20Future!-blue.svg)
 
 ![lisence](https://img.shields.io/github/license/generalized-intelligence/GAAS.svg?style=for-the-badge)
 ![issues](https://img.shields.io/github/issues-raw/generalized-intelligence/GAAS.svg?style=for-the-badge)
 
+![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social) [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-![star](https://img.shields.io/github/stars/generalized-intelligence/GAAS.svg?style=social)
+Watch the step-by-step [tutorial](https://github.com/generalized-intelligence/GAAS/blob/master/demo/tutorial_1/README.MD)
 
-![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)
-
-
-![future](https://img.shields.io/badge/Let's%20go%20back%20to-the%20Future!-blue.svg)
-
-You Can Chat and Find Support at: [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-Or watch the step-by-step [tutorial](https://github.com/generalized-intelligence/GAAS/blob/master/demo/tutorial_1/README.MD)
-
-Or follow the lastest news about the project at our [Medium Publication](https://medium.com/generalized-intelligence)
+Follow the lastest news about the project at our [Medium Publication](https://medium.com/generalized-intelligence)
 
 扫码加入 GAAS 微信讨论群（由于现有的群人数都超过 100 人，需要先加 GAAS 管理员，由管理员发送入群邀请）：
 
