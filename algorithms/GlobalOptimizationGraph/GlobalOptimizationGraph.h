@@ -252,6 +252,10 @@ private:
     void fix_scene_Rotation_with_AHRS();
     void remap_scene_coordinate_with_GPS_coordinate();
     void remap_scene_coordinate_with_UAV_coordinate();
+    void try_reinit_gps()
+    {
+        ;
+    }
     VertexPR relative_scene_to_UAV_body;
 };
 
@@ -388,17 +392,18 @@ bool GlobalOptimizationGraph::init_gps()//init longitude,latitude,altitude.
     vari_lon = sqrt(vari_lon);
     vari_lat = sqrt(vari_lat);
     vari_alt = sqrt(vari_alt);
-	cout<<"GPS Initiated at LONGITUDE:"<<avg_lon<<",LATITUDE:"<<avg_lat<<",ALTITUDE:"<<avg_alt<<".VARIANCE:"<<vari_lon<<", "<<vari_lat<<", "<<vari_alt<<"."<<endl;
+	cout<<"[GPS_INFO]GPS Initiated at LONGITUDE:"<<avg_lon<<",LATITUDE:"<<avg_lat<<",ALTITUDE:"<<avg_alt<<".VARIANCE:"<<vari_lon<<", "<<vari_lat<<", "<<vari_alt<<"."<<endl;
 	cout<<"Available count:"<<count<<"."<<endl;
 	
 	//expand at avg lon,lat.
 	GPSExpand GE;
 	GE.expandAt(avg_lon,avg_lat,avg_alt);
+    this->GPS_coord.expandAt(avg_lon,avg_lat,avg_alt);
     double lon_variance_m,lat_variance_m;
     lon_variance_m = GE.vari_km_per_lon_deg()*vari_lon*1000;
     lat_variance_m = GE.vari_km_per_lat_deg()*vari_lat*1000;
 
-	cout<<"X variance:"<<GE.vari_km_per_lon_deg()*vari_lon*1000<<"m;Y variance:"
+	cout<<"[GPS_INFO] X variance:"<<GE.vari_km_per_lon_deg()*vari_lon*1000<<"m;Y variance:"
             <<GE.vari_km_per_lat_deg()*vari_lat*1000<<
             "m,ALTITUDE variance:"<<vari_alt<<"m."<<endl;
     //check variance:
@@ -461,33 +466,53 @@ void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
 void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
 {
     cout <<"Adding GPS block to Optimization Graph!"<<endl;
-    if(this->allow_gps_usage == false || this->gps_init_success == false)
+    
+    double gps_max_delay_sec = this->fSettings["GPS_MAX_DELAY_SEC"];
+    double delay_sec = this->pGPS_Buffer->queryLastMessageTime() - GPS_msg.header.stamp.toSec();
+    if(this->pGPS_Buffer->queryLastMessageTime() - GPS_msg.header.stamp.toSec() > gps_max_delay_sec)
+    {
+        cout<<"[INFO]GPS msg time out.Delay:"<<delay_sec<<"s."<<endl;
+        
+        //set gps invalid. if possible,try reinit.
+        this->status&=(0x02);
+        //this->gps_init_success = false;
+    }
+
+    if(this->allow_gps_usage == false || this->gps_init_success == false||  !(this->status&0x01)  )//check if GPS valid.
     {
         cout<<"[WARNING] Unable to add GPS edge.GPS usage is forbidden in config file."<<endl;
+        if(this->allow_gps_usage)
+        {
+            cout<<"trying to reinit gps:"<<endl;
+            this->try_reinit_gps();
+        }
         return;
     }
-  /*//state shall be put into state tranfer module.
-  if(!(this->status&this->STATUS_WITH_GPS_NO_SCENE))
-  {
-      //match with new coordinate
-      this->GPS_coord.init_at(xxx_msg);
-  }*/
-  EdgePRGPS* pEdgePRGPS = new EdgePRGPS();
-  double delta_lon = GPS_msg.longitude - GPS_coord.getLon();
-  double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
-  double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
-  cout <<"setting gps measurement!"<<endl;
+    /*//state shall be put into state tranfer module.
+    if(!(this->status&this->STATUS_WITH_GPS_NO_SCENE))
+    {
+        //match with new coordinate
+        this->GPS_coord.init_at(xxx_msg);
+    }*/
 
-  //since the quaternion is NED defined,we do not need any rotation here.
-  pEdgePRGPS->setMeasurement( Vector3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),
+
+  
+    EdgePRGPS* pEdgePRGPS = new EdgePRGPS();
+    double delta_lon = GPS_msg.longitude - GPS_coord.getLon();
+    double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
+    double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
+    cout <<"setting gps measurement!"<<endl;
+
+    //since the quaternion is NED defined,we do not need any rotation here.
+    pEdgePRGPS->setMeasurement( Vector3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),
                                 delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),
                                 delta_alt)
                             );
 
-  double info_lon,info_lat,info_alt;
-  double gps_min_variance_lonlat_m = (this->fSettings)["GPS_MIN_VARIANCE_LONLAT_m"];
-  double gps_min_variance_alt_m = (this->fSettings)["GPS_MIN_VARIANCE_ALT_m"];
-  cout <<"in addGPSBlock(): calc info mat!"<<endl;
+    double info_lon,info_lat,info_alt;
+    double gps_min_variance_lonlat_m = (this->fSettings)["GPS_MIN_VARIANCE_LONLAT_m"];
+    double gps_min_variance_alt_m = (this->fSettings)["GPS_MIN_VARIANCE_ALT_m"];
+    cout <<"in addGPSBlock(): calc info mat!"<<endl;
   info_lon = min((1.0/this->gps_init_lon_variance),1.0/gps_min_variance_lonlat_m);
   info_lat = min((1.0/this->gps_init_lat_variance),1.0/gps_min_variance_lonlat_m);
   info_alt = min((1.0/this->gps_init_alt_variance),1.0/gps_min_variance_alt_m);
@@ -500,6 +525,10 @@ void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
   int gps_valid = (GPS_msg.status.status >= GPS_msg.status.STATUS_FIX?1:0);
   pEdgePRGPS->setLevel(gps_valid);
   cout<<"adding edge gps!"<<endl;
+  cout<<"[GPS_INFO]GPS_relative_pos:"<<
+            delta_lon*1000*GPS_coord.vari_km_per_lon_deg()<<","<<
+            delta_lat*1000*GPS_coord.vari_km_per_lat_deg()<<","<<
+            delta_alt<<endl;
   
   int newest_vpr_id = this->newestVertexPR_id;
   if(this->optimizer.vertex(newest_vpr_id) == NULL)
