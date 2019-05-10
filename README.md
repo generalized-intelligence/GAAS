@@ -63,7 +63,7 @@ Or follow the lastest news about the project at our [Medium Publication](https:/
 
 <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
 
-> GAAS (Generalized Autonomy Aviation System) is an open source software platform for autonomous drones and VTOLs. GAAS was built to provide a common infrastructure for computer-vision based drone intelligence, and in the long term, to accelerate the coming of autonomous VTOLs. Being a BSD-licensed product, GAAS makes it easy for enterprises, researches, and drone enthusiasts to modify the code to suit specific use cases. 
+> GAAS (Generalized Autonomy Aviation System) is an open source software platform for autonomous drones and VTOLs. GAAS was built to provide a common infrastructure for computer-vision based drone intelligence. In the long term, GAAS aims to accelerate the coming of autonomous VTOLs. Being a BSD-licensed product, GAAS makes it easy for enterprises, researches, and drone enthusiasts to modify the code to suit specific use cases. 
 
 > Our long-term vision is to implement GAAS in autonomous passenger carrying VTOLs (or "flying cars"). The first step of this vision is to make Unmanned Aerial Vehicles truly "unmanned", and thus make drones ubiquitous. We currently support manned and unmanned multi-rotor drones and helicopters. Our next step is to support VTOLs and eVTOLs.
 
@@ -118,7 +118,7 @@ We recommend installing ros-kinetic-desktop-full from the following address:
     http://wiki.ros.org/kinetic/Installation/Ubuntu
 
 ### 2. Install Octomap-Server and mavros
-    sudo apt install python-catkin-tools ros-kinetic-mavlink ros-kinetic-geographic-msgs ros-kinetic-octomap-ros libgeographic-dev geographiclib-tools ros-kinetic-control-toolbox
+    sudo apt install python-catkin-tools ros-kinetic-mavlink ros-kinetic-geographic-msgs ros-kinetic-octomap-ros libgeographic-dev geographiclib-tools ros-kinetic-control-toolbox libpopt-dev
     cd ~/catkin_ws/src
     git clone https://github.com/OctoMap/octomap_mapping.git
     git clone https://github.com/mavlink/mavros.git
