@@ -1,7 +1,4 @@
 # Generalized Autonomy Aviation System
-
-![future](https://img.shields.io/badge/Let's%20go%20back%20to-the%20Future!-blue.svg)
-
 ![lisence](https://img.shields.io/github/license/generalized-intelligence/GAAS.svg?style=for-the-badge)
 ![issues](https://img.shields.io/github/issues-raw/generalized-intelligence/GAAS.svg?style=for-the-badge)
 
