@@ -131,7 +131,8 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
                            );
     AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
     GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix",10,gps_callback);
-    SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
+    //SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
+    SLAM_sub = pNH->subscribe("/mavros/vision_pose/pose",10,slam_callback);
     cout <<"callback function binding finished!"<<endl;
     //
     //
