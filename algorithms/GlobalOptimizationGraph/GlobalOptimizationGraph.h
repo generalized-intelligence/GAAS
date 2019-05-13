@@ -305,15 +305,27 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
     q_.z() = q.z;
     auto t_slam = slam_msg.pose.position;
     Vector3d t_slam_(t_slam.x,t_slam.y,t_slam.z);
-    Matrix3d flu_to_enu1,flu_to_enu2;
-    flu_to_enu1 << 0,1,0,-1,0,0,0,0,1;
-    flu_to_enu2 << 1,0,0,0,0,1,0,-1,0;
+    //Matrix3d flu_to_enu1,flu_to_enu2;
+    //flu_to_enu1 << 0,1,0,-1,0,0,0,0,1;
+    //flu_to_enu2 << 1,0,0,0,0,1,0,-1,0;
     
     
     //SLAM_to_UAV_coordinate_transfer_R = (q_.toRotationMatrix()*flu_to_enu1*flu_to_enu2).inverse() *this->ahrs_R_init;
-    SLAM_to_UAV_coordinate_transfer_R = (q_.toRotationMatrix()*flu_to_enu1*flu_to_enu2)* (this->ahrs_R_init.inverse());
+    Matrix3d prev_transform;
+    //prev_transform<<1,0,0,0,-1,0,0,0,-1;
+    //prev_transform<<1,0,0,0,1,0,0,0,-1;
+    //prev_transform<<-1,0,0,0,1,0,0,0,1;
+    SLAM_to_UAV_coordinate_transfer_R = (q_.toRotationMatrix()).inverse()* (this->ahrs_R_init);
     Matrix3d finaltransform;
-    finaltransform<<0,0,-1,0,1,0,-1,0,0;
+    //finaltransform<<0,0,1,1,0,0,0,-1,0;
+    
+    
+    //finaltransform<<0,0,1,-1,0,0,0,1,0;
+    //finaltransform<<-1,0,0, 0,0,-1, 0,1,0;//rotate 90deg y.
+    finaltransform<<0,0,-1,1,0,0,0,1,0;
+    
+    
+    //finaltransform<<0,0,-1,-1,0,0,0,-1,0;
     SLAM_to_UAV_coordinate_transfer_R = SLAM_to_UAV_coordinate_transfer_R*finaltransform;
     
     
@@ -338,7 +350,7 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
     pcurrent_state->setFixed(true);
     this->optimizer.addVertex(pcurrent_state);
     cout<<"[SLAM_INFO] SLAM_init_R:\n"<<q_.toRotationMatrix()<<endl;
-    cout<<"[SLAM_INFO] flu_to_enu: \n"<<flu_to_enu1*flu_to_enu2<<endl;
+    //cout<<"[SLAM_INFO] flu_to_enu: \n"<<flu_to_enu1*flu_to_enu2<<endl;
     cout<<"[SLAM_INFO] ahrs_R:\n"<<this->ahrs_R_init<<endl;
     cout<<"[SLAM_INFO] SLAM_to_UAV_coordinate_transfer R:\n"<<SLAM_to_UAV_coordinate_transfer_R<<endl;
     cout<<"[SLAM_INFO] slam init finished!!!"<<endl;
@@ -598,7 +610,8 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     auto R_ = q_.toRotationMatrix();
     R_ = R_* this->SLAM_to_UAV_coordinate_transfer_R;
     Vector3d t_(p.x,p.y,p.z);
-    t_ = this->SLAM_to_UAV_coordinate_transfer_R*t_ + this->SLAM_to_UAV_coordinate_transfer_t;
+    cout<<"TODO:fix +t!!!"<<endl;
+    t_ = this->SLAM_to_UAV_coordinate_transfer_R*t_ ;//+ this->SLAM_to_UAV_coordinate_transfer_t;
     cout <<"[SLAM_INFO] slam position:"<<t_[0]<<","<<t_[1]<<","<<t_[2]<<endl;
     Eigen::Matrix<double,3,3> info_mat_slam_rotation = Eigen::Matrix<double,3,3>::Identity();
     cout<<"addBlockSLAM():part 3"<<endl;

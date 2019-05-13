@@ -86,6 +86,8 @@ void FetchHeightCallback(const double);
 
 ros::Publisher* pVisualOdomPublisher;
 ros::Publisher* pExternalEstimate;
+ros::Publisher* pGAAS_SLAM_pose_pub;
+
 ros::Publisher* SLAMpose;
 ros::Publisher* pFakeGPS;
 
@@ -766,6 +768,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
       final_pose.header.stamp =  msgLeft->header.stamp;
 
       pExternalEstimate->publish(final_pose);
+      pGAAS_SLAM_pose_pub->publish(final_pose);
       pFakeGPS->publish(EstimatedPose);
     }
 
@@ -903,6 +906,9 @@ int main(int argc, char **argv) {
     //NOTE For px4's external pose estimate
     ros::Publisher px4_external_pose_estimate = nh.advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",10);
     pExternalEstimate = &px4_external_pose_estimate;
+
+    ros::Publisher vision_pose_publisher_ext = nh.advertise<geometry_msgs::PoseStamped>("/gaas/slam/pose",10);
+    pGAAS_SLAM_pose_pub = &vision_pose_publisher_ext;
     
     //NOTE px4 state 
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("mavros/state", 10, state_cb);
