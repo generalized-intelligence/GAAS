@@ -1,4 +1,4 @@
-## Click below to watch the first step-by-step tutorial!
+## OFFBOARD Control and Gazebo Simulation
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=NrxKOEnidOo
 " target="_blank"><img src="http://img.youtube.com/vi/NrxKOEnidOo/0.jpg" 
 alt="IMAGE ALT TEXT HERE" width="480" height="360" border="10" /></a>
@@ -52,9 +52,9 @@ you can use :
 to check the connection between PX4 and mavros.
 
 
+-----
 
-
-## 中文使用指南
+## OFFBOARD控制以及Gazebo仿真
 
 详细版点此查看：https://www.yuque.com/docs/share/c58215c6-e582-4854-95bf-c395953ada8b
 
