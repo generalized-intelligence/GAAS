@@ -44,7 +44,7 @@ Currently the project provides the following ten funcitons:
 10. A list of control API based on MAVROS, and a series of tutorials can be found in GAAS/demo.
 
 ## Tutorial for GAAS:
-https://gaas.gitbook.io/guide/
+See the [repo](https://github.com/generalized-intelligence/GAAS/tree/master/demo) and the [documentation](https://gaas.gitbook.io/guide/)
 
 
 ## Installation
@@ -93,51 +93,30 @@ Il Vole
 ---
 
 # GAAS 是什么？
-<img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
+<img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" align="right" width="300px" alt="hardware">
 
 > GAAS (Generalized Autonomy Aviation System) 是一套开源的无人机自主飞行软件平台。GAAS 致力于为无人机智能应用提供一个泛用的开发架构，以此加速自动驾驶载人 VTOL 的到来。作为一个受 BSD 协议保护的项目，任何企业、研究人员、无人机爱好者都可以合法合规地改动我们的代码来满足其客制化的需求。
 
 > 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作，并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人 VTOL 上（也许是飞行汽车）。我们现在支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
 
-<p align="center">
-<img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" width="300px">
-</p>
-
 ## 项目总览
-当前无人机可以实现自动启飞，降落，无 GPS 环境下自主飞行，基于双目视觉的避障以及路径规划，场景重识别，3D 建模， 物体跟踪，物体检测, 语义分割等功能，同时还提供了一系列基于python的无人机控制API以及中英文教程。
-
+当前 GAAS 可为无人机提供以下十大功能
+<p align="center">
+<img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
+</p>
 1. 其中自动启飞，降落等功能实现在 software/px4_mavros_scripts；
 2. 无 GPS 环境下自主飞行功能的实现在 software/SLAM/ygz_slam_ros, 目前使用的是基于双目光流的 SLAM；
 3. 基于双目视觉的避障的实现在 software/Obstacle_Map；
 4. 路径规划的实现在 software/Navigator；
 5. 场景重识别，即给定一张图片，恢复出当前图片在给定环境中的位置，具体实现在 algorithms/scene_retrieving；
 6. 3D 建模，具体实现在 algorithms/sfm；
-
-<p align="center">
-<img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
-</p>
-
-<p align="center">
-3D 还原重建
-</p>
-
-7. 物体跟踪，具体实现在 algorithms/object_trace_tracking；
-
-[![Object Following](https://s2.ax1x.com/2019/04/01/AsvuCT.png)](https://youtu.be/C6902HKUVR8)
-
+7. [物体跟踪](https://s2.ax1x.com/2019/04/01/AsvuCT.png)](https://youtu.be/C6902HKUVR8)，具体实现在 algorithms/object_trace_tracking；
 8. 物体检测，具体实现在 algorithms/image_detection；
-
-<p align="center">
-<img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/AsOyV0.jpg"/>
-</p>
-
 9. 语义分割，具体实现在 algorithms/image_segmentation；
 10. 无人机控制 API 及中英文教程，具体在 demo 文件夹。
 
 ## 这里是 GAAS 的详细教程：
 https://github.com/generalized-intelligence/GAAS/tree/master/demo
-
-文字教程所在的 Yuque 并不是一个很好的分享平台，如果你有更合适的选择，欢迎告诉我们！
 
 ## 安装
 参见 [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
@@ -148,24 +127,6 @@ https://github.com/generalized-intelligence/GAAS/tree/master/demo
 但如果你希望快速上手，直接开始写代码的话，你也可以购买 GAAS 团队内部自己使用的开发套件：
 
 https://item.taobao.com/item.htm?id=591140560551
-
-
-## Meta
-
-泛化智能 Generalized Intelligence 出品。
-
-本项目受 BSD 3-Clause 协议保护。点击``LICENSE`` 了解更多
-[GAAS GitHub](https://github.com/generalized-intelligence/GAAS)
-
-## 特别感谢
-
-我们的项目并不是从零开始，而是站在了过去十余年无人机行业先驱的肩膀上。非常感谢 PX4 与 Dronecode 等组织对无人机行业发展的推动，让我们今天得以有机会制作 GAAS!
-
-同时我们也十分感谢本项目的贡献者，你们可以在 [AUTHORS.md](https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md) 中认识他们。
-
-感谢地面站社区在中文互联网上为 GAAS 提供的支持。如果你也对中文无人机社区感兴趣，欢迎访问：
-
-http://shequ.dimianzhan.com/topics
 
 ## 为项目做贡献
 ### 我想造一台自动驾驶无人机
@@ -187,5 +148,20 @@ http://shequ.dimianzhan.com/topics
 [Open Issues](https://github.com/generalized-intelligence/GAAS/issues) 页面是一个好的开始。你可以看看有哪些已知的问题是你感兴趣的，或者你也可以新建一个 Issue 来告诉我们你的看法和有哪些想提高的地方。
 
 另外，帮助项目运营最好的方式之一是帮助那些刚刚接触无人飞行的伙伴们快速上手这套系统。关注 Issues 页面中带有 “Configuration” 标注的 Issue 来帮助别的伙伴上手系统。具体细节请参阅 [CONTRIBUTING.md](https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md)
+
+## Meta
+
+泛化智能 Generalized Intelligence 出品。
+本项目受 BSD 3-Clause 协议保护。点击``LICENSE`` 了解更多
+
+## 特别感谢
+
+我们的项目并不是从零开始，而是站在了过去十余年无人机行业先驱的肩膀上。非常感谢 PX4 与 Dronecode 等组织对无人机行业发展的推动，让我们今天得以有机会制作 GAAS!
+
+同时我们也十分感谢本项目的贡献者，你们可以在 [AUTHORS.md](https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md) 中认识他们。
+
+感谢地面站社区在中文互联网上为 GAAS 提供的支持。如果你也对中文无人机社区感兴趣，欢迎访问：
+
+http://shequ.dimianzhan.com/topics
 
 Il Vole
