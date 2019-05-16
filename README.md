@@ -103,6 +103,7 @@ Il Vole
 
 ## 项目总览
 当前 GAAS 可为无人机提供以下十大功能，其中一些功能仍有待优化：
+注意：GAAS beta 版部分功能尚不稳定，请在模拟器中确保稳定性后再在实机操作。
 <p align="center">
 <img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
 </p>
