@@ -49,7 +49,7 @@ NOTE: Tested on px4 v1.8.0
 -----
 ## 安装
 
-NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。如需对 GAAS 进行二次开发，以下安装步骤中所有想要更改的组件源码安装在 ROS 的对应接口进行替换即可。
+NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。如需对 GAAS 进行二次开发，以下安装步骤中所有想要更改的组件源码安装，并在 ROS 的对应接口进行替换即可。
 
 ### 1. 安装 ROS-Kinetic
 
@@ -90,13 +90,6 @@ NOTE: 目前只在 Ubuntu 16.04 以及 ros-kinetic 环境下测试通过。如�
 
 ### 6. PX4
 NOTE:  仅在 px4 v1.8.0 上进行过测试。
-    
-    mkdir ~/px4 && cd ~/px4
-    git clone https://github.com/PX4/Firmware.git
-    cd Firmware
-    git checkout v1.8.0
-
-NOTE: Tested on px4 v1.8.0
     
     mkdir ~/px4 && cd ~/px4
     git clone https://github.com/PX4/Firmware.git
