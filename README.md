@@ -27,8 +27,10 @@
 
 
 ## Project Overview
-
-Currently the project provides the following funcitons: automatic taking off and landing, navigation in GPS denied environment, obstacle avoidance and path planning based on stereo vision, scene recoginition, 3D model generation, object following, object detection, instance segmentation, and a number of python based API as well as a series of tutorials.
+Currently the project provides the following ten funcitons: 
+<p align="center">
+<img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
+</p>
 
 1. Details about automatic taking off and landing can be found in: software/px4_mavros_scripts;
 2. Navigation in GPS denied environment can be found in: software/SLAM/ygz_slam_ros, currently we are using stereo optical flow;
@@ -36,22 +38,9 @@ Currently the project provides the following funcitons: automatic taking off and
 4. Path planning can be found in software/Navigator;
 5. Scene recoginition, given an image, recover its position in terms of given environment, details can be found in algorithms/scene_retrieving;
 6. 3D modeling, details can be found in algorithms/sfm;
-<p align="center">
-<img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
-</p>
-
-7. Object tracking, details can be found in algorithms/object_trace_tracking;
-
-[![Object Following](https://s2.ax1x.com/2019/04/01/AsvuCT.png)](https://youtu.be/C6902HKUVR8)
-
+7. [Object tracking](https://youtu.be/C6902HKUVR8), details can be found in algorithms/object_trace_tracking;
 8. Object detection, details can be found in algorithms/image_detection;
-
-<p align="center">
-<img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/AsOyV0.jpg"/>
-</p>
-
 9. Instance segmentation, details can be found in algorithms/image_detection;
-
 10. A list of control API based on MAVROS, and a series of tutorials can be found in GAAS/demo.
 
 ## Tutorial for GAAS:
@@ -60,20 +49,6 @@ https://gaas.gitbook.io/guide/
 
 ## Installation
 Please see [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
-
-## Meta
-
-Project initialized by Generalized Intelligence
-
-Distributed under the BSD 3-Clause license. See ``LICENSE`` for more information.
-
-[GAAS GitHub](https://github.com/generalized-intelligence/GAAS)
-
-## Special Thanks
-
-It is worth mentioning that we did not build everything from scratch, but on top of the solid foundations built by pioneers in the field. We would like to thank communities such as [PX4](https://px4.io) and [Dronecode](https://www.dronecode.org) for constantly pushing the industry foward. What they have built are what allowed us to build GAAS!
-
-We are also very grateful for our contributors. You may be able to find them at [AUTHORS.md](https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md).
 
 ## Contribute
 ### I just want to build an autonomous drone
@@ -98,6 +73,20 @@ A good place to start is to look at the [open issues](https://github.com/general
 
 PS: One of the best ways to contribute is to help others to kick off their autonomous drone journey. Pay attention to the “Configuration” label in issues page to help others get started.
 For more details, please follow [CONTRIBUTING.md](https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md)
+
+## Meta
+
+Project initialized by Generalized Intelligence
+
+Distributed under the BSD 3-Clause license. See ``LICENSE`` for more information.
+
+[GAAS GitHub](https://github.com/generalized-intelligence/GAAS)
+
+## Special Thanks
+
+It is worth mentioning that we did not build everything from scratch, but on top of the solid foundations built by pioneers in the field. We would like to thank communities such as [PX4](https://px4.io) and [Dronecode](https://www.dronecode.org) for constantly pushing the industry foward. What they have built are what allowed us to build GAAS!
+
+We are also very grateful for our contributors. You may be able to find them at [AUTHORS.md](https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md).
 
 Il Vole
 
