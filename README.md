@@ -1,8 +1,9 @@
 <a href="">
-    <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" alt="gaas logo" title="gaas" align="right" height="150" />
+    <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" alt="gaas logo" title="gaas" align="right" height="180" />
 </a>
 
 # Generalized Autonomy Aviation System
+
 :star: Star us on GitHub — it helps!
 
 ![lisence](https://img.shields.io/github/license/generalized-intelligence/GAAS.svg?style=for-the-badge)
@@ -15,42 +16,6 @@
 扫码加入 GAAS 微信讨论群（由于现有的群人数都超过 100 人，需要先加 GAAS 管理员，由管理员发送入群邀请）：
 
 <img width="200" height="200" src="https://s2.ax1x.com/2019/04/12/AbWeyV.jpg"/>
-
-- [What is GAAS?](#what-is-gaas)
-  * [Project Overview](#project-overview)
-  * [Tutorial for GAAS:](#tutorial-for-gaas)
-  * [Setup](#setup)
-    + [1. Install ROS-Kinetic](#1-install-ros-kinetic)
-    + [2. Install Octomap-Server and mavros](#2-install-octomap-server-and-mavros)
-    + [3. Gazebo](#3-gazebo)
-    + [4. PCL](#4-pcl)
-    + [5. YGZ-slam](#5-ygz-slam)
-    + [6. PX4](#6-px4)
-  * [Sample Use Case](#sample-use-case)
-  * [Development Setup](#development-setup)
-  * [Meta](#meta)
-  * [Special Thanks](#special-thanks)
-  * [Contribute](#contribute)
-    + [I just want to build an autonomous drone](#i-just-want-to-build-an-autonomous-drone)
-    + [I want to contribute to the project](#i-want-to-contribute-to-the-project)
-    
-- [GAAS 是什么？](#gaas-是什么)
-  * [项目总览](#项目总览)
-  * [这里是 GAAS 的详细教程：](#这里是-gaas-的详细教程)
-  * [安装](#安装)
-    + [1. 安装 ROS-Kinetic](#1-安装-ros-kinetic)
-    + [2. 安装 Octomap-Server 以及 mavros](#2-安装-octomap-server-以及-mavros)
-    + [3. Gazebo](#3-gazebo-1)
-    + [4. PCL](#4-pcl-1)
-    + [5. YGZ-slam](#5-ygz-slam-1)
-    + [6. PX4](#6-px4-1)
-  * [使用案例](#使用案例)
-  * [开发配置](#开发配置)
-  * [Meta](#meta-1)
-  * [特别感谢](#特别感谢)
-  * [为项目做贡献](#为项目做贡献)
-    + [我想造一台自动驾驶无人机](#我想造一台自动驾驶无人机)
-    + [我想为项目做贡献](#我想为项目做贡献)
 
 # What is GAAS?
 
@@ -75,7 +40,7 @@ Currently the project provides the following funcitons: automatic taking off and
 <img width="300" height="300" src="https://s2.ax1x.com/2019/04/01/Asv6at.png"/>
 </p>
 
-7. Object following, details can be found in algorithms/object_trace_tracking;
+7. Object tracking, details can be found in algorithms/object_trace_tracking;
 
 [![Object Following](https://s2.ax1x.com/2019/04/01/AsvuCT.png)](https://youtu.be/C6902HKUVR8)
 
