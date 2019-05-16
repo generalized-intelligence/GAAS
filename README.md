@@ -27,7 +27,9 @@
 
 
 ## Project Overview
-Currently the project provides the following ten funcitons,some of which may need to be further optimized: 
+Currently the project provides the following ten funcitons, some of which may need to be further optimized: 
+NOTE: This is a beta version of the software. Please re-ensure the stability of each feature before implementing on real drones.
+
 <p align="center">
 <img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
 </p>
@@ -100,7 +102,7 @@ Il Vole
 > 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作，并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人 VTOL 上（也许是飞行汽车）。我们现在支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
 
 ## 项目总览
-当前 GAAS 可为无人机提供以下十大功能
+当前 GAAS 可为无人机提供以下十大功能，其中一些功能仍有待优化：
 <p align="center">
 <img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
 </p>
