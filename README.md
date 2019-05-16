@@ -1,13 +1,16 @@
+<a href="">
+    <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" alt="gaas logo" title="gaas" align="right" height="150" />
+</a>
+
 # Generalized Autonomy Aviation System
+:star: Star us on GitHub — it helps!
+
 ![lisence](https://img.shields.io/github/license/generalized-intelligence/GAAS.svg?style=for-the-badge)
 ![issues](https://img.shields.io/github/issues-raw/generalized-intelligence/GAAS.svg?style=for-the-badge)
 
-
-
 [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Join Facebook Group](https://img.shields.io/badge/Group-Facebook-blue.svg)](https://www.facebook.com/groups/300340454189266/?ref=bookmarks) ![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social) 
+  [![Join Facebook Group at https://www.facebook.com/groups/300340454189266/?ref=bookmarks](https://img.shields.io/badge/Group-Facebook-blue.svg)](https://www.facebook.com/groups/300340454189266/?ref=bookmarks) ![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)   [![Follow Medium at https://medium.com/generalized-intelligence](https://img.shields.io/badge/Medium-Blogs-black.svg)](https://medium.com/generalized-intelligence)
 
-Follow the lastest news about the project at our [Medium Publication](https://medium.com/generalized-intelligence)
 
 扫码加入 GAAS 微信讨论群（由于现有的群人数都超过 100 人，需要先加 GAAS 管理员，由管理员发送入群邀请）：
 
@@ -51,19 +54,11 @@ Follow the lastest news about the project at our [Medium Publication](https://me
 
 # What is GAAS?
 
-<img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" align="right" width="300px" alt="GA">
+<img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" align="right" width="300px" alt="hardware">
 
 > GAAS (Generalized Autonomy Aviation System) is an open source software platform for autonomous drones and VTOLs. GAAS was built to provide a common infrastructure for computer-vision based drone intelligence. In the long term, GAAS aims to accelerate the coming of autonomous VTOLs. Being a BSD-licensed product, GAAS makes it easy for enterprises, researches, and drone enthusiasts to modify the code to suit specific use cases. 
 
 > Our long-term vision is to implement GAAS in autonomous passenger carrying VTOLs (or "flying cars"). The first step of this vision is to make Unmanned Aerial Vehicles truly "unmanned", and thus make drones ubiquitous. We currently support manned and unmanned multi-rotor drones and helicopters. Our next step is to support VTOLs and eVTOLs.
-
-<p align="center">
-<img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" width="300px">
-</p>
-
-<p align="center">
-An Example of Assembled Hardware
-</p>
 
 
 ## Project Overview
