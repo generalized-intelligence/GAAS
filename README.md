@@ -27,7 +27,7 @@
 
 
 ## Project Overview
-Currently the project provides the following ten funcitons: 
+Currently the project provides the following ten funcitons,some of which may need to be further optimized: 
 <p align="center">
 <img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
 </p>
@@ -104,6 +104,7 @@ Il Vole
 <p align="center">
 <img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
 </p>
+
 1. 其中自动启飞，降落等功能实现在 software/px4_mavros_scripts；
 2. 无 GPS 环境下自主飞行功能的实现在 software/SLAM/ygz_slam_ros, 目前使用的是基于双目光流的 SLAM；
 3. 基于双目视觉的避障的实现在 software/Obstacle_Map；
