@@ -7,9 +7,6 @@
 [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Join Facebook Group](https://img.shields.io/badge/Group-Facebook-blue.svg)](https://www.facebook.com/groups/300340454189266/?ref=bookmarks) ![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social) 
 
-
-Watch the step-by-step [tutorial](https://github.com/generalized-intelligence/GAAS/blob/master/demo/tutorial_1/README.MD)
-
 Follow the lastest news about the project at our [Medium Publication](https://medium.com/generalized-intelligence)
 
 扫码加入 GAAS 微信讨论群（由于现有的群人数都超过 100 人，需要先加 GAAS 管理员，由管理员发送入群邀请）：
