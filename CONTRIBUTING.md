@@ -1,26 +1,36 @@
-# CONTRIBUTING for GAAS
+# Contributing to GAAS
+We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
 
-## Structure
-
-The software component contains modules for autonomous flight, such as flight control, Simultaneous Localization and Mapping, Obstacle Avoidance, Navigation, support for upper layers, and flight simulation.
-
-The hardware component contains a budget-friendly drone construction plan, the onboard processing unit, and sensors with complementary configuration documentation.
+- Reporting a bug
+- Discussing the current state of the code
+- Submitting a fix
+- Proposing new features
+- Helping others with their issues/questions
 
 Communication between modules in the software is based on ROS. Each module can be replaced if needed. While replacing modules, the new module must have the same corresponding ROS topic/service pub sub. The project has provided a considerably more stable, but less optimized implementation. We look forward to working with developers around the world to improve the overall project.
 
-## Pull Request Process
+## We Use [Github Flow](https://guides.github.com/introduction/flow/index.html), So All Code Changes Happen Through Pull Requests
+Pull requests are the best way to propose changes to the codebase (we use [Github Flow](https://guides.github.com/introduction/flow/index.html)). We actively welcome your pull requests:
 
-1. Ensure any install or build dependencies are removed before the end of the layer when doing a build.
+0. Please ensure you are using the latest version of GAAS with all dependencies installed.
+1. Fork the repo and create your branch from `master`.
+2. If you've added code that should be tested, add tests.
+3. If you've changed APIs, update the documentation.
+4. Ensure the test suite passes.
+5. Make sure your code lints.
+6. Issue that pull request!
 
-2. Update the README.md with details of changes to the interface, this includes new environment variables, **exposed ports**, useful file locations and container parameters.
+NOTE: If you have decided to change the API, please update the corresponding README.md with details of changes to the API, including new environment variables, the API itself, relevant file locations and container parameters.
 
-3. Increase the version numbers in any examples files and the README.md to the new version that this Pull Request would represent.
+## Any contributions you make will be under the BSD 3-Clause
+In short, when you submit code changes, your submissions are understood to be under the same [BSD 3-Clause](https://github.com/ninawrong/GAAS/blob/master/LICENSE) that covers the project. Feel free to contact the maintainers if that's a concern.
 
-4. If you do not have permission to merge your pull request directly, you may request the reviewer to merge it for you.
+## Report bugs using one of our pre-designed [issues template](https://github.com/briandk/transcriptase-atom/issues) 
 
 ---------
 
 ## 项目结构
+
 
 软件部分，包括各个飞行器自动驾驶必要的模块。飞控、SLAM、避障、路径规划、高层应用支持、飞行模拟等。
 
@@ -30,13 +40,7 @@ Communication between modules in the software is based on ROS. Each module can b
 
 ## Pull Request Process
 
-1. 请确保提交的部分代码的依赖项已经完善处理。
-
 2. 请确保更新对应模块的README，表述清楚**接口的变更**，新引入的全局变量/环境变量等对外部有影响的量，暴露的端口，文件路径和配置项。
-
-3. 请确保更新依赖本次变更的示例文件版本号，并在 README 中指出版本变更。
-
-4. 如果你没有直接合并 pull request 的权限,你可能需要联系我们帮你合并。
 
 
 ### Our Pledge
