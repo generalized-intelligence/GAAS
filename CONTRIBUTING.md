@@ -27,6 +27,7 @@ NOTE: If you have decided to change the API, please update the corresponding REA
 ## Any contributions you make will be under the BSD 3-Clause
 In short, when you submit code changes, your submissions are understood to be under the same [BSD 3-Clause](https://github.com/ninawrong/GAAS/blob/master/LICENSE) that covers the project. Feel free to contact the maintainers if that's a concern.
 
+## Pledge
 **We respect all developers who have put in efforts to make autonomous flight possible.**
 
 **We hereby promise that any issue, pull request and suggestions in any form will be treated seriously.**
@@ -62,6 +63,8 @@ NOTE：请确保更新对应模块的README，表述清楚**接口的变更**，
 
 ## 您做的所有贡献将受到 BSD 3-Clause 协议保护
 当您在提交代码的时候，您的代码将默认受到 [BSD 3-Clause](https://github.com/ninawrong/GAAS/blob/master/LICENSE)协议保护。BSD 3-Clause 也是 GAAS 项目整个项目的开源协议。如果您有任何问题，请联系 GAAS 管理员。
+
+## 项目宣言
 
 **我们尊重所有致力于为飞行器自动驾驶事业做出贡献的开发者。**
 
