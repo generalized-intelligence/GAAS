@@ -25,8 +25,15 @@
 
 > Our long-term vision is to implement GAAS in autonomous passenger carrying VTOLs (or "flying cars"). The first step of this vision is to make Unmanned Aerial Vehicles truly "unmanned", and thus make drones ubiquitous. We currently support manned and unmanned multi-rotor drones and helicopters. Our next step is to support VTOLs and eVTOLs.
 
+## Tutorial for GAAS:
+See the [repo](https://github.com/generalized-intelligence/GAAS/tree/master/demo) and the [documentation](https://gaas.gitbook.io/guide/)
 
-## Project Overview
+
+## Installation
+Please see [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
+
+
+## Overview
 Currently the project provides the following ten funcitons, some of which may need to be further optimized: 
 
 NOTE: This is a beta version of the software. Please re-ensure the stability of each feature before implementing on real drones.
@@ -45,13 +52,11 @@ NOTE: This is a beta version of the software. Please re-ensure the stability of 
 8. Object detection, details can be found in algorithms/image_detection;
 9. Instance segmentation, details can be found in algorithms/image_detection;
 10. A list of control API based on MAVROS, and a series of tutorials can be found in GAAS/demo.
+11. A list of hardware that we use is at ./hardware
 
-## Tutorial for GAAS:
-See the [repo](https://github.com/generalized-intelligence/GAAS/tree/master/demo) and the [documentation](https://gaas.gitbook.io/guide/)
-
-
-## Installation
-Please see [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
+<p align="center">
+<img src="https://s2.ax1x.com/2019/05/17/Eq4TBD.png"/>
+</p>
 
 ## Contribute
 ### I just want to build an autonomous drone
@@ -100,6 +105,12 @@ Il Vole
 
 > 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作，并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人 VTOL 上（也许是飞行汽车）。我们现在支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
 
+## 使用教程：
+https://github.com/generalized-intelligence/GAAS/tree/master/demo
+
+## 安装
+参见 [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
+
 ## 项目总览
 当前 GAAS 可为无人机提供以下十大功能，其中一些功能仍有待优化：
 
@@ -118,12 +129,6 @@ Il Vole
 8. 物体检测，具体实现在 algorithms/image_detection；
 9. 语义分割，具体实现在 algorithms/image_segmentation；
 10. 无人机控制 API 及中英文教程，具体在 demo 文件夹。
-
-## 这里是 GAAS 的详细教程：
-https://github.com/generalized-intelligence/GAAS/tree/master/demo
-
-## 安装
-参见 [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
 
 ## 相关硬件
 我们的项目完全开源，你可以用任何你希望使用的开发方式来开发 GAAS。
@@ -153,7 +158,7 @@ https://item.taobao.com/item.htm?id=591140560551
 
 另外，帮助项目运营最好的方式之一是帮助那些刚刚接触无人飞行的伙伴们快速上手这套系统。关注 Issues 页面中带有 “Configuration” 标注的 Issue 来帮助别的伙伴上手系统。具体细节请参阅 [CONTRIBUTING.md](https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md)
 
-## Meta
+## 其它
 
 泛化智能 Generalized Intelligence 出品。
 本项目受 BSD 3-Clause 协议保护。点击``LICENSE`` 了解更多
