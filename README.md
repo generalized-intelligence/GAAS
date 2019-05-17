@@ -22,8 +22,6 @@
   * [Installation](#installation)
   * [Overview](#overview)
   * [Contribute](#contribute)
-    + [I just want to build an autonomous drone](#i-just-want-to-build-an-autonomous-drone)
-    + [I want to contribute](#i-want-to-contribute)
   * [Meta](#meta)
   * [Special Thanks](#special-thanks)
 - [GAAS 是什么？](#gaas-是什么)
@@ -32,8 +30,6 @@
   * [项目总览](#项目总览)
   * [相关硬件](#相关硬件)
   * [为项目做贡献](#为项目做贡献)
-    + [我想造一台自动驾驶无人机](#我想造一台自动驾驶无人机)
-    + [我想为项目做贡献](#我想为项目做贡献)
   * [其它](#其它)
   * [特别感谢](#特别感谢)
 
