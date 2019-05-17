@@ -106,7 +106,7 @@ Il Vole
 > 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作，并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人 VTOL 上（也许是飞行汽车）。我们现在支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
 
 ## 使用教程：
-详情请见[教程课件](https://github.com/generalized-intelligence/GAAS/tree/master/demo) 和 [教程文档](https://gaas.gitbook.io/guide/)
+详情请见[教程课件](https://github.com/generalized-intelligence/GAAS/tree/master/demo)和[教程文档](https://gaas.gitbook.io/guide/)
 
 ## 安装
 参见 [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
@@ -130,6 +130,10 @@ Il Vole
 9. 语义分割，具体实现在 algorithms/image_segmentation；
 10. 无人机控制 API 及中英文教程，具体在 demo 文件夹。
 
+<p align="center">
+<img src="https://s2.ax1x.com/2019/05/17/EqXAdx.png"/>
+</p>
+
 ## 相关硬件
 我们的项目完全开源，你可以用任何你希望使用的开发方式来开发 GAAS。
 
@@ -148,7 +152,6 @@ https://item.taobao.com/item.htm?id=591140560551
 3. 如果前两步都无法帮助你，你可以提交一个新的 Issue 并加上 "Configuration" 的标签，寻求社区力量的帮助。
 
 如果你已经可以熟练的运用这套系统，你也可以在社区里帮助新手上路，解决一些 Issue，或者在微信群里将你的项目进展分享给我们。
-
 
 ### 我想为项目做贡献
 我们非常感激您对项目做贡献的意愿。
