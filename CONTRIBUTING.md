@@ -46,7 +46,7 @@ In short, when you submit code changes, your submissions are understood to be un
 - 为原有功能做性能提升
 
 ## 通过我们预先设计好的[issues 模板](https://github.com/briandk/transcriptase-atom/issues)提交 Bug
-这个模板可以帮助我们更快速准确地定位问题所在的位置
+这个模板可以帮助我们更快速准确地定位问题所在的位置。
 
 ## 我们使用 [Github Flow](https://guides.github.com/introduction/flow/index.html)对 GAAS 进行迭代, 因为所有代码更新都经过 Pull Request 流程
 Pull requests 是管理代码变动最好的方法 (我们使用[Github Flow](https://guides.github.com/introduction/flow/index.html))。我们随时欢迎给我们提 PR：
@@ -70,7 +70,7 @@ NOTE：请确保更新对应模块的README，表述清楚**接口的变更**，
 
 **在此保证：你的 issue、pull request 或其他形式给出的建议会被严肃且详细的考虑。**
 
-**感谢一切为此项目做出有益建议和贡献的开发者。不只是为了赞美对项目的热情，而是对人类一直向往的想法所作的礼赞**
+**感谢一切为此项目做出有益建议和贡献的开发者。不只是为了赞美对项目的热情，而是对人类一直向往的想法所作的礼赞。**
 
 
 
