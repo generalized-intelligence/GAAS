@@ -17,6 +17,23 @@
 
 <img width="200" height="200" src="https://s2.ax1x.com/2019/04/12/AbWeyV.jpg"/>
 
+- [What is GAAS?](#what-is-gaas)
+  * [Tutorial for GAAS](#tutorial-for-gaas)
+  * [Installation](#installation)
+  * [Overview](#overview)
+  * [Contribute](#contribute)
+  * [Meta](#meta)
+  * [Special Thanks](#special-thanks)
+- [GAAS 是什么？](#gaas-是什么)
+  * [使用教程：](#使用教程)
+  * [安装](#安装)
+  * [项目总览](#项目总览)
+  * [相关硬件](#相关硬件)
+  * [为项目做贡献](#为项目做贡献)
+  * [其它](#其它)
+  * [特别感谢](#特别感谢)
+
+
 # What is GAAS?
 
 <img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" align="right" width="300px" alt="hardware">
@@ -25,8 +42,15 @@
 
 > Our long-term vision is to implement GAAS in autonomous passenger carrying VTOLs (or "flying cars"). The first step of this vision is to make Unmanned Aerial Vehicles truly "unmanned", and thus make drones ubiquitous. We currently support manned and unmanned multi-rotor drones and helicopters. Our next step is to support VTOLs and eVTOLs.
 
+## Tutorial for GAAS
+See the [repo](https://github.com/generalized-intelligence/GAAS/tree/master/demo) and the [documentation](https://gaas.gitbook.io/guide/)
 
-## Project Overview
+
+## Installation
+Please see [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
+
+
+## Overview
 Currently the project provides the following ten funcitons, some of which may need to be further optimized: 
 
 NOTE: This is a beta version of the software. Please re-ensure the stability of each feature before implementing on real drones.
@@ -35,23 +59,21 @@ NOTE: This is a beta version of the software. Please re-ensure the stability of 
 <img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
 </p>
 
-1. Details about automatic taking off and landing can be found in: software/px4_mavros_scripts;
-2. Navigation in GPS denied environment can be found in: software/SLAM/ygz_slam_ros, currently we are using stereo optical flow;
-3. Obstacle avoidance based on stereo vision can be found in: software/Obstacle_Map;
-4. Path planning can be found in software/Navigator;
+1. Details about automatic taking off and landing can be found in: ```software/px4_mavros_scripts```;
+2. Navigation in GPS denied environment can be found in: ```software/SLAM/ygz_slam_ros```, currently we are using stereo optical flow;
+3. Obstacle avoidance based on stereo vision can be found in: ```software/Obstacle_Map```;
+4. Path planning can be found in ```software/Navigator```;
 5. Scene recoginition, given an image, recover its position in terms of given environment, details can be found in algorithms/scene_retrieving;
-6. 3D modeling, details can be found in algorithms/sfm;
-7. [Object tracking](https://youtu.be/C6902HKUVR8), details can be found in algorithms/object_trace_tracking;
-8. Object detection, details can be found in algorithms/image_detection;
-9. Instance segmentation, details can be found in algorithms/image_detection;
-10. A list of control API based on MAVROS, and a series of tutorials can be found in GAAS/demo.
+6. 3D modeling, details can be found in ```algorithms/sfm```;
+7. [Object tracking](https://youtu.be/C6902HKUVR8), details can be found in ```algorithms/object_trace_tracking```;
+8. Object detection, details can be found in ```algorithms/image_detection```;
+9. Instance segmentation, details can be found in ```algorithms/image_detection```;
+10. A list of control API based on MAVROS, and a series of tutorials can be found in ```GAAS/demo```;
+11. A list of hardware that we use is at ```GAAS/hardware```.
 
-## Tutorial for GAAS:
-See the [repo](https://github.com/generalized-intelligence/GAAS/tree/master/demo) and the [documentation](https://gaas.gitbook.io/guide/)
-
-
-## Installation
-Please see [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
+<p align="center">
+<img src="https://s2.ax1x.com/2019/05/17/Eq4TBD.png"/>
+</p>
 
 ## Contribute
 ### I just want to build an autonomous drone
@@ -66,7 +88,7 @@ If you are stuck with configuration, you may:
 
 If you are an advanced user, feel free to help others to get started, contribute by solving issues, or share with us about your project on our [Gitter group chat](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge). 
 
-### I want to contribute to the project
+### I want to contribute
 
 We are so grateful for your interest in contributing!
 
@@ -100,6 +122,12 @@ Il Vole
 
 > 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作，并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人 VTOL 上（也许是飞行汽车）。我们现在支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
 
+## 使用教程：
+详情请见[教程课件](https://github.com/generalized-intelligence/GAAS/tree/master/demo)和[教程文档](https://gaas.gitbook.io/guide/)
+
+## 安装
+参见 [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
+
 ## 项目总览
 当前 GAAS 可为无人机提供以下十大功能，其中一些功能仍有待优化：
 
@@ -108,22 +136,21 @@ Il Vole
 <img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
 </p>
 
-1. 其中自动启飞，降落等功能实现在 software/px4_mavros_scripts；
-2. 无 GPS 环境下自主飞行功能的实现在 software/SLAM/ygz_slam_ros, 目前使用的是基于双目光流的 SLAM；
-3. 基于双目视觉的避障的实现在 software/Obstacle_Map；
-4. 路径规划的实现在 software/Navigator；
-5. 场景重识别，即给定一张图片，恢复出当前图片在给定环境中的位置，具体实现在 algorithms/scene_retrieving；
-6. 3D 建模，具体实现在 algorithms/sfm；
-7. [物体跟踪](https://youtu.be/C6902HKUVR8)，具体实现在 algorithms/object_trace_tracking；
-8. 物体检测，具体实现在 algorithms/image_detection；
-9. 语义分割，具体实现在 algorithms/image_segmentation；
-10. 无人机控制 API 及中英文教程，具体在 demo 文件夹。
+1. 其中自动启飞，降落等功能实现在 ```software/px4_mavros_scripts```；
+2. 无 GPS 环境下自主飞行功能的实现在 ```software/SLAM/ygz_slam_ros```, 目前使用的是基于双目光流的 SLAM；
+3. 基于双目视觉的避障的实现在 ```software/Obstacle_Map```；
+4. 路径规划的实现在 ```software/Navigator```；
+5. 场景重识别，即给定一张图片，恢复出当前图片在给定环境中的位置，具体实现在 ```algorithms/scene_retrieving```；
+6. 3D 建模，具体实现在 ```algorithms/sfm```；
+7. [物体跟踪](https://youtu.be/C6902HKUVR8)，具体实现在 ```algorithms/object_trace_tracking```；
+8. 物体检测，具体实现在 ```algorithms/image_detection```；
+9. 语义分割，具体实现在 ```algorithms/image_segmentation```；
+10. 无人机控制 API 及中英文教程，具体在 ```GAAS/demo``` 文件夹。
+11. 我们所用的硬件清单在 ```GAAS/hardware```
 
-## 这里是 GAAS 的详细教程：
-https://github.com/generalized-intelligence/GAAS/tree/master/demo
-
-## 安装
-参见 [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
+<p align="center">
+<img src="https://s2.ax1x.com/2019/05/17/EqXAdx.png"/>
+</p>
 
 ## 相关硬件
 我们的项目完全开源，你可以用任何你希望使用的开发方式来开发 GAAS。
@@ -144,7 +171,6 @@ https://item.taobao.com/item.htm?id=591140560551
 
 如果你已经可以熟练的运用这套系统，你也可以在社区里帮助新手上路，解决一些 Issue，或者在微信群里将你的项目进展分享给我们。
 
-
 ### 我想为项目做贡献
 我们非常感激您对项目做贡献的意愿。
 首先，你需要对 PX4, MavROS 和 Gazebo 有一定的熟悉程度，并且熟悉 [GitHub 的工作流程](https://git-scm.com/book/zh/v2/GitHub-对项目做出贡献)。
@@ -153,7 +179,7 @@ https://item.taobao.com/item.htm?id=591140560551
 
 另外，帮助项目运营最好的方式之一是帮助那些刚刚接触无人飞行的伙伴们快速上手这套系统。关注 Issues 页面中带有 “Configuration” 标注的 Issue 来帮助别的伙伴上手系统。具体细节请参阅 [CONTRIBUTING.md](https://github.com/generalized-intelligence/GAAS/blob/master/CONTRIBUTING.md)
 
-## Meta
+## 其它
 
 泛化智能 Generalized Intelligence 出品。
 本项目受 BSD 3-Clause 协议保护。点击``LICENSE`` 了解更多
