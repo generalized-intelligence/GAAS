@@ -1,10 +1,6 @@
-CONTRIBUTING for GAAS
+# CONTRIBUTING for GAAS
 
-# Roadmap
-
-Our goal is to accelerate the implementation of autonomous flight, including in the widely used Unmanned Aerial Vehicles (UAV), and the passenger-carrying aerial vehicles. 
-
-The primary objective of the project is to provide an easy-to-use and stable autonomous flight solution. The solution contains both software and hardware components.
+## Structure
 
 The software component contains modules for autonomous flight, such as flight control, Simultaneous Localization and Mapping, Obstacle Avoidance, Navigation, support for upper layers, and flight simulation.
 
@@ -24,7 +20,7 @@ Communication between modules in the software is based on ROS. Each module can b
 软件部分各个模块之间的通信使用 ROS 实现。每个模块皆可替换的。进行替换时，只需新模块实现原有对应的 ROS topic/service 的 pub sub 即可。项目中会提供一个较为可靠的实现，但可能不是最优的。我们欢迎开发者提供已有模块的更优实现。
 
 
-# Contributing
+## Contributing
 
 When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change. hi@giai.tech
 
