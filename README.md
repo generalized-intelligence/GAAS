@@ -28,6 +28,7 @@
 
 ## Project Overview
 Currently the project provides the following ten funcitons, some of which may need to be further optimized: 
+
 NOTE: This is a beta version of the software. Please re-ensure the stability of each feature before implementing on real drones.
 
 <p align="center">
@@ -82,8 +83,6 @@ Project initialized by Generalized Intelligence
 
 Distributed under the BSD 3-Clause license. See ``LICENSE`` for more information.
 
-[GAAS GitHub](https://github.com/generalized-intelligence/GAAS)
-
 ## Special Thanks
 
 It is worth mentioning that we did not build everything from scratch, but on top of the solid foundations built by pioneers in the field. We would like to thank communities such as [PX4](https://px4.io) and [Dronecode](https://www.dronecode.org) for constantly pushing the industry foward. What they have built are what allowed us to build GAAS!
@@ -103,6 +102,7 @@ Il Vole
 
 ## 项目总览
 当前 GAAS 可为无人机提供以下十大功能，其中一些功能仍有待优化：
+
 注意：GAAS beta 版部分功能尚不稳定，请在模拟器中确保稳定性后再在实机操作。
 <p align="center">
 <img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
@@ -114,7 +114,7 @@ Il Vole
 4. 路径规划的实现在 software/Navigator；
 5. 场景重识别，即给定一张图片，恢复出当前图片在给定环境中的位置，具体实现在 algorithms/scene_retrieving；
 6. 3D 建模，具体实现在 algorithms/sfm；
-7. [物体跟踪](https://s2.ax1x.com/2019/04/01/AsvuCT.png)](https://youtu.be/C6902HKUVR8)，具体实现在 algorithms/object_trace_tracking；
+7. [物体跟踪](https://youtu.be/C6902HKUVR8)，具体实现在 algorithms/object_trace_tracking；
 8. 物体检测，具体实现在 algorithms/image_detection；
 9. 语义分割，具体实现在 algorithms/image_segmentation；
 10. 无人机控制 API 及中英文教程，具体在 demo 文件夹。
