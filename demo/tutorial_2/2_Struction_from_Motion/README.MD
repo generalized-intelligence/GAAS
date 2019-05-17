@@ -2,7 +2,7 @@
 
 In this tutorial, we will talk about a real world use case on how to build a 3D model of a building based on what we have learned in the last tutorial.
 
-## User Guide
+## Build a 3D Model with Your Drone
 Steps required to build a 3D model with drones are:
 1. launch Gazebo simulation environment;
 2. takeoff the drone and record a rosbag;
@@ -18,7 +18,7 @@ See step-by-step guide at: https://gaas.gitbook.io/guide/build-your-own-autonomo
 
 本讲中，我们将会介绍一个真实世界的无人机使用案例: 通过无人机机载摄像头构建建筑物3D模型。在接下来的部分里，我们会讲解如何基于上一讲的内容实现这一目的。
 
-## 中文使用指南
+## 通过无人机机载摄像头构建建筑物 3D 模型
 1. 实现无人机 3D 建模包括以下5个步骤：
 2. 启动 Gazebo 模拟器；
 3. 起飞无人机并开始录制一个 rosbag;
