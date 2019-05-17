@@ -106,7 +106,7 @@ Il Vole
 > 我们第一步的目标是让无人机做到真正无人，从而能够为人类进行更多的工作，并且可以让更多程序员和工程师更简单的为无人机编写程序和制作产品。长期目标是将 GAAS 应用在载人 VTOL 上（也许是飞行汽车）。我们现在支持无人和有人的旋翼和直升机驾驶。下一步计划支持 VTOL 和 eVTOL。
 
 ## 使用教程：
-https://github.com/generalized-intelligence/GAAS/tree/master/demo
+详情请见[教程课件](https://github.com/generalized-intelligence/GAAS/tree/master/demo) 和 [教程文档](https://gaas.gitbook.io/guide/)
 
 ## 安装
 参见 [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
