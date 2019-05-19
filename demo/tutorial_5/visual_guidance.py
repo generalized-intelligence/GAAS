@@ -64,11 +64,9 @@ class visual_guidance:
         self.train_image_kp = cv.drawKeypoints(self.train_image, self.train_features, self.train_image_kp, color=(255, 0, 0))
 
         cv.imshow("train_image", self.train_image_kp)
-        # cv.imshow("query_image", self.query_image_kp.resize(752, 480))
         cv.waitKey(20)
 
         raw_matches = self.bf_matcher.match(self.query_descriptors, self.train_descriptors)
-
         # raw_matches = sorted(raw_matches, key=lambda x: x.distance)
 
         good_matches = []
@@ -128,9 +126,6 @@ if __name__ == '__main__':
     camera_intrinstics = np.array([[376.0, 0.0, 376],
                                    [0.0, 376.0, 0.0],
                                    [0.0, 0.0, 1.0]])
-
-    #vg = visual_guidance("green_target.png", k=camera_intrinstics)
-    #image = cv.imread("query_image.png")
 
     vg = visual_guidance("calibration_board.png", k=camera_intrinstics)
     image = cv.imread("calibration_board.png")

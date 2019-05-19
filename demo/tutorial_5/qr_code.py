@@ -21,7 +21,10 @@ class QRdetect:
         # B-------C
 
         self.query_image_position = self.QRcode_Position(self.query_image)
-        print("default QRcode position: \n", self.query_image_position)
+        print("query QRcode position: \n", self.query_image_position)
+
+        query_image = self.drawPoints(self.query_image.copy(), self.query_image_position)
+        cv2.imwrite("query_detected.png", query_image)
 
         self.found_QRcode = False
 
@@ -29,8 +32,6 @@ class QRdetect:
     def decode(self, image):
 
         decodedObjects = pyzbar.decode(image)
-
-        print(decodedObjects)
 
         if not decodedObjects:
             return None
@@ -67,7 +68,7 @@ class QRdetect:
                 cv2.line(image, hull[j], hull[(j + 1) % n], (255, 0, 0), 3)
 
         # Display results
-        image = cv2.resize(image, (np.shape(image)[1] / 3, np.shape(image)[0] / 3), interpolation=cv2.INTER_CUBIC)
+        # image = cv2.resize(image, (np.shape(image)[1] / 3, np.shape(image)[0] / 3), interpolation=cv2.INTER_CUBIC)
         # cv2.imshow("Results", image)
         # cv2.waitKey(5000)
 
@@ -102,25 +103,23 @@ class QRdetect:
 
     def drawPoints(self, image, target_qrcode_position):
         for p in target_qrcode_position:
-            image = cv2.circle(image, (p[0], p[1]), 25, (0, 255, 0))
-            image = cv2.putText(image, str(p[0]) + ", " + str(p[1]), (p[0], p[1]), cv2.FONT_HERSHEY_SIMPLEX, 1,
+            image = cv2.circle(image, (p[0], p[1]), 10, (0, 255, 0))
+            image = cv2.putText(image,
+                                str(p[0]) + ", " + str(p[1]),
+                                (p[0], p[1]),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1,
                                 (0, 0, 255), 2, cv2.LINE_AA)
         return image
 
 
     def getPerspectiveTransformaAndWarpedImage(self, train_qrcode_image):
 
-        target_qrcode_position = self.QRcode_Position(train_qrcode_image)
-        print("target_qrcode_position: \n", target_qrcode_position)
+        train_qrcode_position = self.QRcode_Position(train_qrcode_image)
+        train_image = self.drawPoints(train_qrcode_image.copy(), train_qrcode_position)
+        print("train_qrcode_position: \n", train_qrcode_position)
+        cv2.imwrite("train_detected.png", train_image)
 
-        train_image = self.drawPoints(train_qrcode_image.copy(), target_qrcode_position)
-        cv2.imwrite("train_qr_image_with_points.png", train_image)
-
-        query_image = cv2.resize(self.query_image.copy(), (600, 600))
-        query_image = self.drawPoints(query_image, self.query_image_position)
-        cv2.imwrite("query_qr_image_with_points.png", query_image)
-
-        H = cv2.getPerspectiveTransform(target_qrcode_position, self.query_image_position)
+        H = cv2.getPerspectiveTransform(train_qrcode_position, self.query_image_position)
 
         (h, w, c) = train_qrcode_image.shape
         warped_image = cv2.warpPerspective(train_qrcode_image, H, (w, h))
@@ -136,9 +135,6 @@ class QRdetect:
 
     def process_image(self, image):
 
-        if image is None:
-            return None, None
-
         H, warped_image = self.getPerspectiveTransformaAndWarpedImage(image)
 
         R, t = self.recoverRTfromHomographyMat(H)
@@ -146,10 +142,8 @@ class QRdetect:
         return R, t
 
 
-# Main 
 if __name__ == '__main__':
 
-    # Read image
     train_image = cv2.imread('1.png')
     query_image = cv2.imread('1.png')
 
