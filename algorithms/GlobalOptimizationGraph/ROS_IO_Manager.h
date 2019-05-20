@@ -57,13 +57,16 @@ public:
         //一个简单实现:如果两种消息都凑齐至少一个,送一次.GPS有没有无所谓.
         if(this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0)
         {
-            this->doUpdateOptimizationGraph();
-            this->publishAll();
-            //clear buffers.
-            this->SLAM_buffer.clear();
-            this->AHRS_buffer.clear();
-            this->GPS_buffer.clear();
-            return true;
+            bool result = this->doUpdateOptimizationGraph();
+            if(result)
+            {
+                this->publishAll();
+                //clear buffers.
+                this->SLAM_buffer.clear();
+                this->AHRS_buffer.clear();
+                this->GPS_buffer.clear();
+                return true;
+            }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(1));//sleep 1ms to avoid waste of CPU period.
         return false;
@@ -235,6 +238,8 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
 {
     //here we do update the graph.ros::spinOnce has been called.
     //check if we have necessary msgs.
+    //return true if optimize success.
+    bool retval = false;
     if(this->AHRS_buffer.size()>=1 && this->SLAM_buffer.size()>=1)
     {
         if(this->GPS_buffer.size()>=1)
@@ -245,9 +250,10 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
         cout <<"add ahrs finished!"<<endl;
         this->pGraph->addBlockSLAM(this->SLAM_buffer.getLastMessage());
         cout <<"add block slam finished!"<<endl;
-        this->pGraph->doOptimization();
+        retval = this->pGraph->doOptimization();
+        this->pGraph->updateSLAM_AHRS_relative_rotation_translation();
     }
-    return true;
+    return retval;
 
 }
 

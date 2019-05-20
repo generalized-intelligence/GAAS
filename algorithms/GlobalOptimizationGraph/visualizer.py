@@ -20,6 +20,12 @@ def get_slam_position_by_lines(line):
         return map(float,line.split(':')[-1].split(',')[-4:])
     return None
 
+def get_optimized_position_by_lines(line):
+    if line.find('[OPTIMIZER_INFO]')>=0 and line.find("Last_pos_of_optimizer")>=0:
+        print line
+        print line.split(':')[-1].split(',')
+        return map(float,line.split(':')[-1].split(',')[-4:])
+    return None
 
 
 def get_checkfile(check_file_name):
@@ -55,7 +61,6 @@ def get_check_slam_data(check_file):
 
 
 
-
 def get_check_gps_data(check_file):
     xs = []
     ys = []
@@ -70,6 +75,19 @@ def get_check_gps_data(check_file):
     return xs,ys,zs,ts
 
 
+def get_check_optimized_pos_data(check_file):
+    xs = []
+    ys = []
+    zs = []
+    ts = []
+    for line in check_file:
+        res = get_optimized_position_by_lines(line)
+        if res:
+            xs.append(res[0])
+            ys.append(res[1])
+            zs.append(res[2])
+    return xs,ys,zs
+
 
 #check_file_without_gps = get_checkfile('standard.log')
     
@@ -81,15 +99,15 @@ check_file_with_gps = get_checkfile('./log.log') # read gps and visualize.
 xs,ys,zs = get_check_data(check_file_with_gps)
 
 xslam,yslam,zslam = get_check_slam_data(check_file_with_gps)
-print ('len x_gps:',len(xs),'len x_slam:',len(xslam))
-
-
+x_opt,y_opt,z_opt = get_check_optimized_pos_data(check_file_with_gps)
 #x, y, z = data[0], data[1], data[2]
+print ('len x_gps:',len(xs),'len x_slam:',len(xslam),'len x_opt:',len(x_opt))
 ax = plt.subplot(111, projection='3d') # 创建一个三维的绘图工程 
 
 
 ax.scatter(xs, ys, zs, c='y') 
 ax.scatter(yslam,zslam,xslam,c = 'b')
+ax.scatter(x_opt,y_opt,z_opt,c='r')
 # 绘制数据点 
 ax.set_xlabel('X') 
 ax.set_ylabel('Y') 
@@ -97,7 +115,6 @@ ax.set_zlabel('Z') # 坐标轴
 ax.set_xlim3d(-20,20)
 ax.set_ylim3d(-20,20)
 ax.set_zlim3d(-20,20)
-
 plt.show()
 '''
 plt.scatter(xs,ys,alpha=0.6)  # 绘制散点图，透明度为0.6（这样颜色浅一点，比较好看）

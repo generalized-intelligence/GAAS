@@ -86,21 +86,42 @@ public:
     }
     
     
-    void doOptimization()
+    bool doOptimization()
     {
         //When DEBUG:
+        bool retval = false;//if optimize success(edge >=3).
         this->debug_show_optimization_graph();//just show how this optimizable_graph looks like.
         
          //TODO
+        if(this->optimizer.edges().size()<3)
+        {
+            retval = false;
+            this->resetOptimizationGraph();
+            return retval;
+        }
+        retval = true;
         this->optimizer.initializeOptimization();
         this->optimizer.optimize(10);
         /*this->historyStatesWindow.push_front(currentState);
         //this->historyStatesWindow.reserve();///...
         */
         //clear optimizer and reset!
+        if(this->optimizer.vertex(this->newestVertexPR_id) == NULL)
+        {
+            cout<<"[OPTIMIZER_INFO] Error.Position vertex is NULL!"<<endl;
+        }
+        
+        this->last_position = dynamic_cast<ygz::VertexPR *>(this->optimizer.vertex(this->newestVertexPR_id))->t();
+        cout<<"[OPTIMIZER_INFO] Last_pos_of_optimizer:"<<this->last_position[0]<<","<<this->last_position[1]
+                                                        <<","<<this->last_position[2]<<endl;
+        /*
+        //this->last_orientation = dynamic_cast<ygz::VertexPR *>(this->optimizer.vertex(this->newestVertexPR_id))->R();
+        //cout<<"[OPTIMIZER_INFO] Last_orientation_of_optimizer:\n"<<this->last_orientation<<endl;
+        */
         this->resetOptimizationGraph();
         cout<<"DEBUG:end of do optimization():"<<endl;
         this->debug_show_optimization_graph();
+        return retval;
     }
 
     void resetOptimizationGraph()
@@ -132,6 +153,47 @@ public:
     shared_ptr<VertexPR> getpCurrentPR()
     {
         return this->pCurrentPR;
+    }
+    void updateSLAM_AHRS_relative_rotation_translation()
+    {
+        if(this->pSLAM_Buffer->size()<1 || this->pAHRS_Buffer->size()<1)
+        {
+            cout<<"[RELATIVE_ROTATION_INFO] SLAM or AHRS buffer size <1.Cannot match rotation mat."<<endl;
+            return;
+        }
+        //match rotation.
+            //1.get slam msg.
+        auto slam_msg = this->pSLAM_Buffer->getLastMessage();
+        auto q = slam_msg.pose.orientation;//TODO
+        Eigen::Quaterniond q_;
+        q_.w() = q.w;
+        q_.x() = q.x;
+        q_.y() = q.y;
+        q_.z() = q.z;
+        auto t_slam = slam_msg.pose.position;
+        Vector3d t_slam_(t_slam.x,t_slam.y,t_slam.z);
+
+        Matrix3d prev_transform_inv;
+        //prev_transform_inv << 0,0,-1,1,0,0,0,1,0;
+        prev_transform_inv << 0,0,-1,1,0,0,0,-1,0;
+        //prev_transform = prev_transform.inverse();
+        Matrix3d prev_t = prev_transform_inv.inverse();
+            //2.get ahrs msg.
+        /*auto AHRS_msg = this->pAHRS_Buffer->getLastMessage();//直接计算 SLAM和AHRS差距太大，怀疑是AHRS漂移。。。。
+        auto q2 = AHRS_msg.pose.pose.orientation;
+        auto q2;
+        Eigen::Quaterniond q_ahrs;
+        q_ahrs.w() = q2.w;
+        q_ahrs.x() = q2.x;
+        q_ahrs.y() = q2.y;
+        q_ahrs.z() = q2.z;
+        Matrix3d R_ahrs = q_ahrs.toRotationMatrix();
+        */
+        
+        //Matrix3d R_ahrs = this->last_orientation;//迭代求解
+        //SLAM_to_UAV_coordinate_transfer_R = (q_.toRotationMatrix()*prev_t).inverse()* (R_ahrs);
+        //match translation.//TODO.
+        //SLAM_to_UAV_coordinate_transfer_t =  -1* (this->SLAM_to_UAV_coordinate_transfer_R* t_slam_) + this->last_position;
     }
 private:
     void debug_show_optimization_graph()
@@ -229,6 +291,11 @@ private:
     //AHRS
     Matrix3d ahrs_R_init;
 
+    //history:
+    Matrix3d last_orientation;
+    Vector3d last_position;
+
+
     //optimization graph.
     //G2OOptimizationGraph graph;
     g2o::SparseOptimizer optimizer;
@@ -272,6 +339,12 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     //this->optimizer = g2o::SparseOptimizer();
     optimizer.setAlgorithm(solver);
     optimizer.setVerbose(true);
+
+
+    this->last_position[0] = 0;
+    this->last_position[1] = 0;
+    this->last_position[2] = 0;
+    this->last_orientation = Eigen::Matrix<double,3,3>::Identity();
     //optimizer.setVertex();
     /*currentState.setEstimate(currentState);
     currentState.setId(0);//vertex 0 in optimization graph.*/
@@ -290,6 +363,7 @@ bool GlobalOptimizationGraph::init_AHRS(const nav_msgs::Odometry& AHRS_msg)
     this->ahrs_R_init = R_init;
     //TODO:set R_init into graph state.
     this->currentState.R() = R_init;
+    this->last_orientation = R_init;
     return true;
 }
 bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam_msg
@@ -315,7 +389,13 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
     //prev_transform<<1,0,0,0,-1,0,0,0,-1;
     //prev_transform<<1,0,0,0,1,0,0,0,-1;
     //prev_transform<<-1,0,0,0,1,0,0,0,1;
-    SLAM_to_UAV_coordinate_transfer_R = (q_.toRotationMatrix()).inverse()* (this->ahrs_R_init);
+
+    prev_transform << 0,0,-1,1,0,0,0,1,0;
+    //prev_transform << 0,0,-1,1,0,0,0,-1,0;
+    //prev_transform = prev_transform.inverse();
+    Matrix3d prev_t = prev_transform.inverse();
+
+    SLAM_to_UAV_coordinate_transfer_R = (q_.toRotationMatrix()*prev_t).inverse()* (this->ahrs_R_init);
     Matrix3d finaltransform;
     //finaltransform<<0,0,1,1,0,0,0,-1,0;
     
@@ -326,7 +406,7 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
     
     
     //finaltransform<<0,0,-1,-1,0,0,0,-1,0;
-    SLAM_to_UAV_coordinate_transfer_R = SLAM_to_UAV_coordinate_transfer_R*finaltransform;
+    //SLAM_to_UAV_coordinate_transfer_R = SLAM_to_UAV_coordinate_transfer_R*finaltransform;
     
     
     SLAM_to_UAV_coordinate_transfer_t = -1 * SLAM_to_UAV_coordinate_transfer_R * t_slam_;
@@ -350,7 +430,6 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
     pcurrent_state->setFixed(true);
     this->optimizer.addVertex(pcurrent_state);
     cout<<"[SLAM_INFO] SLAM_init_R:\n"<<q_.toRotationMatrix()<<endl;
-    //cout<<"[SLAM_INFO] flu_to_enu: \n"<<flu_to_enu1*flu_to_enu2<<endl;
     cout<<"[SLAM_INFO] ahrs_R:\n"<<this->ahrs_R_init<<endl;
     cout<<"[SLAM_INFO] SLAM_to_UAV_coordinate_transfer R:\n"<<SLAM_to_UAV_coordinate_transfer_R<<endl;
     cout<<"[SLAM_INFO] slam init finished!!!"<<endl;
@@ -476,7 +555,8 @@ void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
     q_.y() = q.y;
     q_.z() = q.z;
     //pEdgeAttitude->setMeasurement(q_);//TODO
-    Eigen::Matrix<double,3,3> info_mat = Eigen::Matrix<double,3,3>::Identity();
+    const double weight_ahrs = 0.01;
+    Eigen::Matrix<double,3,3> info_mat = weight_ahrs * Eigen::Matrix<double,3,3>::Identity();
     pEdgeAttitude->setInformation(info_mat);
     pEdgeAttitude->setLevel(!checkAHRSValid());
     cout<<"adding vertex ahrs."<<endl;
@@ -551,13 +631,14 @@ void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
   info_mat(1,1) = info_lat;
   info_mat(2,2) = info_alt;
   pEdgePRGPS->setInformation(info_mat);//the inverse mat of covariance.
-  int gps_valid = (GPS_msg.status.status >= GPS_msg.status.STATUS_FIX?1:0);
+  int gps_valid = (GPS_msg.status.status >= GPS_msg.status.STATUS_FIX?0:1);
   pEdgePRGPS->setLevel(gps_valid);
-  cout<<"adding edge gps!"<<endl;
+  cout<<"adding edge gps!state:"<<bool(gps_valid==0)<<endl;
   cout<<"[GPS_INFO]GPS_relative_pos:"<<
             delta_lon*1000*GPS_coord.vari_km_per_lon_deg()<<","<<
             delta_lat*1000*GPS_coord.vari_km_per_lat_deg()<<","<<
             delta_alt<<endl;
+  cout<<"[GPS_INFO] info mat:\n"<<info_mat<<endl;
   
   int newest_vpr_id = this->newestVertexPR_id;
   if(this->optimizer.vertex(newest_vpr_id) == NULL)
@@ -584,7 +665,7 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
 {
     //part<1> Rotation.
     cout<<"addBlockSLAM() : part 1."<<endl;
-    auto pEdgeSlam = new EdgeAttitude();
+    auto pEdgeSlamRotation = new EdgeAttitude();
     //shared_ptr<g2o::OptimizableGraph::Edge *> ptr_slam(pEdgeSlam);
     //pEdgeSlam->setId(this->EdgeVec.size());//TODO
     //this->EdgeVec.push_back(ptr_slam);
@@ -594,7 +675,7 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     {
         cout<<"error:(in addBlockSLAM() ) optimizer.vertex(0) is NULL!"<<endl;
     }
-    pEdgeSlam->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(newest_vpr_id)));
+    pEdgeSlamRotation->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(newest_vpr_id)));
     auto q = SLAM_msg.pose.orientation;
     
     auto p = SLAM_msg.pose.position;
@@ -611,7 +692,9 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     R_ = R_* this->SLAM_to_UAV_coordinate_transfer_R;
     Vector3d t_(p.x,p.y,p.z);
     cout<<"TODO:fix +t!!!"<<endl;
-    t_ = this->SLAM_to_UAV_coordinate_transfer_R*t_ ;//+ this->SLAM_to_UAV_coordinate_transfer_t;
+    t_ = this->SLAM_to_UAV_coordinate_transfer_R*t_ + this->SLAM_to_UAV_coordinate_transfer_t;
+    cout<<"[SLAM_INFO] slam_original_pose: "<<p.x<<","<<p.y<<","<<p.z<<endl;
+    cout<<"[SLAM_INFO] SLAM_to_UAV_coordinate_transfer_R:\n"<<SLAM_to_UAV_coordinate_transfer_R<<endl;
     cout <<"[SLAM_INFO] slam position:"<<t_[0]<<","<<t_[1]<<","<<t_[2]<<endl;
     Eigen::Matrix<double,3,3> info_mat_slam_rotation = Eigen::Matrix<double,3,3>::Identity();
     cout<<"addBlockSLAM():part 3"<<endl;
@@ -620,14 +703,23 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     
     //slam_pr_R_only.R() = q_.toRotationMatrix().topLeftCorner(3,3);
     auto se3_slam = SO3d::log(q_.toRotationMatrix() );
-    pEdgeSlam->setMeasurement(se3_slam);
-    pEdgeSlam->setInformation(info_mat_slam_rotation);
+    pEdgeSlamRotation->setMeasurement(se3_slam);
+    pEdgeSlamRotation->setInformation(info_mat_slam_rotation);
     cout <<"Measurement,information mat set.Adding edge slam!!!"<<endl;
     
-    this->optimizer.addEdge(pEdgeSlam);
+    this->optimizer.addEdge(pEdgeSlamRotation);
     cout<<"Edge SLAM added successfully."<<endl;
     //part<2> Translation
+    
+    
     this->autoInsertSpeedVertexAfterInsertCurrentVertexPR();
+    auto pEdgeSlamTranslation = new EdgePRGPS();
+    auto slam_t_measurement = t_;
+    pEdgeSlamTranslation->setMeasurement(slam_t_measurement);
+    Eigen::Matrix<double,3,3> t_info_mat = Eigen::Matrix<double,3,3>::Identity();
+    pEdgeSlamTranslation->setInformation(t_info_mat*0.1);
+    pEdgeSlamTranslation->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(newest_vpr_id)));
+    this->optimizer.addEdge(pEdgeSlamTranslation);
     //Edge PRV.
     /*//TODO:fill Edge SLAM PRV.
     if(this->historyStatesWindow.size()>0)
