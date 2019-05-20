@@ -26,6 +26,7 @@ SLAM_AVAIL_MINIMUM : 50
 
 #SLAM_AHRS_MAX_TIME_DIFF_s : 0.08
 SLAM_AHRS_MAX_TIME_DIFF_s : 0.8
+SLAM_T_INFO_WEIGHT : 0.5
 
 SCENE_RETREVE_GPS_AVAIL : false # use scene model gps info?do not recommend.
 

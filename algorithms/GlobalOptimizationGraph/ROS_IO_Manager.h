@@ -55,7 +55,9 @@ public:
     {
         ros::spinOnce();//Handle all callbacks.
         //一个简单实现:如果两种消息都凑齐至少一个,送一次.GPS有没有无所谓.
-        if(this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0)
+        //TODO:delete check gps in this ().
+        if  (this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0//&&this->GPS_buffer.size()>0
+            )
         {
             bool result = this->doUpdateOptimizationGraph();
             if(result)

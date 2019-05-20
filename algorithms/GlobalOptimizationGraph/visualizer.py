@@ -106,7 +106,8 @@ ax = plt.subplot(111, projection='3d') # 创建一个三维的绘图工程
 
 
 ax.scatter(xs, ys, zs, c='y') 
-ax.scatter(yslam,zslam,xslam,c = 'b')
+#ax.scatter(yslam,zslam,xslam,c = 'b')
+ax.scatter(xslam,yslam,zslam,c='b')
 ax.scatter(x_opt,y_opt,z_opt,c='r')
 # 绘制数据点 
 ax.set_xlabel('X') 

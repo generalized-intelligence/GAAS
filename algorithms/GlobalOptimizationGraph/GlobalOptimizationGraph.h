@@ -92,8 +92,8 @@ public:
         bool retval = false;//if optimize success(edge >=3).
         this->debug_show_optimization_graph();//just show how this optimizable_graph looks like.
         
-         //TODO
-        if(this->optimizer.edges().size()<3)
+         //TODO change to <3 for gps-denied condition.
+        if(this->optimizer.edges().size()<=3)
         {
             retval = false;
             this->resetOptimizationGraph();
@@ -395,7 +395,9 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
     //prev_transform = prev_transform.inverse();
     Matrix3d prev_t = prev_transform.inverse();
 
-    SLAM_to_UAV_coordinate_transfer_R = (q_.toRotationMatrix()*prev_t).inverse()* (this->ahrs_R_init);
+    SLAM_to_UAV_coordinate_transfer_R = (q_.toRotationMatrix()
+                                                //*prev_t
+                                            ).inverse()* (this->ahrs_R_init);
     Matrix3d finaltransform;
     //finaltransform<<0,0,1,1,0,0,0,-1,0;
     
@@ -717,7 +719,8 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     auto slam_t_measurement = t_;
     pEdgeSlamTranslation->setMeasurement(slam_t_measurement);
     Eigen::Matrix<double,3,3> t_info_mat = Eigen::Matrix<double,3,3>::Identity();
-    pEdgeSlamTranslation->setInformation(t_info_mat*0.1);
+    double slam_t_info_weight = (this->fSettings)["SLAM_T_INFO_WEIGHT"];
+    pEdgeSlamTranslation->setInformation(t_info_mat*slam_t_info_weight);
     pEdgeSlamTranslation->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(newest_vpr_id)));
     this->optimizer.addEdge(pEdgeSlamTranslation);
     //Edge PRV.
