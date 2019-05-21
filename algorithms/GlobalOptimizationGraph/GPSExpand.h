@@ -1,4 +1,5 @@
-
+#ifndef GPS_EXPAND_H
+#define GPS_EXPAND_H
 
 class GPSExpand
 {
@@ -37,3 +38,4 @@ private:
     const double pi_ = 3.1415926535;
 
 };
+#endif

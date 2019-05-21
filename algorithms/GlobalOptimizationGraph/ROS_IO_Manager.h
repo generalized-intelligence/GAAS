@@ -244,6 +244,9 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
     bool retval = false;
     if(this->AHRS_buffer.size()>=1 && this->SLAM_buffer.size()>=1)
     {
+        //step<1> add vertex.
+        this->pGraph->addGOGFrame();
+        //step<2> add edges.
         if(this->GPS_buffer.size()>=1)
         {
             this->pGraph->addBlockGPS(this->GPS_buffer.getLastMessage());//do update.

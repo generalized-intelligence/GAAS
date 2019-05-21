@@ -1,3 +1,5 @@
+#ifndef G2OTYPES_EDGESLAMPRV_H
+#define G2OTYPES_EDGESLAMPRV_H
 //Part1. IMUPreIntegration structure declaration.
 class IMUPreIntegration {
     public:
@@ -403,3 +405,4 @@ class IMUPreIntegration {
         //_jacobianOplus[4] = JBiasG;
         //_jacobianOplus[5] = JBiasA;
     }
+#endif
