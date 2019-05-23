@@ -113,6 +113,13 @@ public:
         this->optimizer.addVertex(pF->pPRVertex);
         this->optimizer.addVertex(pF->pSpeedVertex);
         this->SlidingWindow.push_front(*pF);
+        const int MAX_WIND_SIZE = 10;
+        if(this->SlidingWindow.size()>MAX_WIND_SIZE)
+        {//window management
+            this->SlidingWindow.back().pPRVertex->setFixed(1);
+            this->SlidingWindow.back().pSpeedVertex->setFixed(1);
+            this->SlidingWindow.pop_back();
+        }
         
     }
     bool doOptimization()
@@ -126,6 +133,7 @@ public:
         {
             retval = false;
             this->resetOptimizationGraph();
+            cout<<"[OPTIMIZER_INFO] error in doOptimization.quit."<<endl;
             return retval;
         }
         retval = true;
@@ -147,7 +155,8 @@ public:
         //this->last_orientation = dynamic_cast<ygz::VertexPR *>(this->optimizer.vertex(this->newest_frame_id+0))->R();
         //cout<<"[OPTIMIZER_INFO] Last_orientation_of_optimizer:\n"<<this->last_orientation<<endl;
         */
-        this->resetOptimizationGraph();
+        
+        //this->resetOptimizationGraph();
         cout<<"DEBUG:end of do optimization():"<<endl;
         this->debug_show_optimization_graph();
         return retval;
@@ -318,7 +327,7 @@ private:
     int getNewestVertexSpeedID()
     {
         int retval = this->frameID;
-        this->frameID++;
+        this->frameID+=2;
         return retval;
     }
     
@@ -407,6 +416,7 @@ bool GlobalOptimizationGraph::init_AHRS(const nav_msgs::Odometry& AHRS_msg)
 bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam_msg
 )
 {
+    cout<<"In init_SLAM()."<<endl;
     //match rotation matrix and translation vector to E,0.
     auto slam_msg = this->pSLAM_Buffer->getLastMessage();
     auto q = slam_msg.pose.orientation;//TODO
@@ -464,12 +474,14 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
     this->currentState.setFixed(true);
     */
     //VertexPR* pcurrent_state = new VertexPR();
+    cout<<"operate SlidingWindow.front()."<<endl;
+    addGOGFrame();
     VertexPR* pcurrent_state = this->SlidingWindow.front().pPRVertex;
     pcurrent_state->R() = this->ahrs_R_init;
     pcurrent_state->t() = Vector3d(0,0,0);
     //pcurrent_state->setId(0);
     pcurrent_state->setFixed(true);
-    this->optimizer.addVertex(pcurrent_state);
+    //this->optimizer.addVertex(pcurrent_state);
     cout<<"[SLAM_INFO] SLAM_init_R:\n"<<q_.toRotationMatrix()<<endl;
     cout<<"[SLAM_INFO] ahrs_R:\n"<<this->ahrs_R_init<<endl;
     cout<<"[SLAM_INFO] SLAM_to_UAV_coordinate_transfer R:\n"<<SLAM_to_UAV_coordinate_transfer_R<<endl;
