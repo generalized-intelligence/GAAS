@@ -136,7 +136,7 @@ Il Vole
 <img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
 </p>
 
-1. 其中自动启飞，降落等功能实现在 ```software/px4_mavros_scripts```；
+1. 其中自动起飞，降落等功能实现在 ```software/px4_mavros_scripts```；
 2. 无 GPS 环境下自主飞行功能的实现在 ```software/SLAM/ygz_slam_ros```, 目前使用的是基于双目光流的 SLAM；
 3. 基于双目视觉的避障的实现在 ```software/Obstacle_Map```；
 4. 路径规划的实现在 ```software/Navigator```；
@@ -146,7 +146,7 @@ Il Vole
 8. 物体检测，具体实现在 ```algorithms/image_detection```；
 9. 语义分割，具体实现在 ```algorithms/image_segmentation```；
 10. 无人机控制 API 及中英文教程，具体在 ```GAAS/demo``` 文件夹。
-11. 我们所用的硬件清单在 ```GAAS/hardware```
+我们所用的硬件清单在 ```GAAS/hardware```
 
 <p align="center">
 <img src="https://s2.ax1x.com/2019/05/17/EqXAdx.png"/>
