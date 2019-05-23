@@ -56,7 +56,7 @@ Currently the project provides the following ten funcitons, some of which may ne
 NOTE: This is a beta version of the software. Please re-ensure the stability of each feature before implementing on real drones.
 
 <p align="center">
-<img src="https://s2.ax1x.com/2019/05/23/VP9CTI.gif"/>
+<img src="https://github.com/generalized-intelligence/GAAS/blob/master/demo/gaaspole.gif"/>
     
     VISION BASED POLE AVOIDANCE BY GAAS
 </p>
@@ -136,7 +136,7 @@ Il Vole
 注意：GAAS beta 版部分功能尚不稳定，请在模拟器中确保稳定性后再在实机操作。
 
 <p align="center">
-<img src="https://s2.ax1x.com/2019/05/23/VP9CTI.gif"/>
+<img src="https://github.com/generalized-intelligence/GAAS/blob/master/demo/gaaspole.gif"/>
     
     无人机纯视觉双目躲避室内细杆（无光流）
 </p>
