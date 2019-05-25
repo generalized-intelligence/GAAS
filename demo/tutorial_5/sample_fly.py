@@ -67,9 +67,9 @@ def image_callback(image):
 
         if(found_target):
             print("current height is: ", local_pose.z)
-            print("Moving in body(FLU) frame: ", (suitable_translation[2], -suitable_translation[0], suitable_translation[1]))
+            print("Moving in body(FLU) frame: ", (suitable_translation[2], -suitable_translation[0], - (local_pose.z - 1)))
 
-            com.move(suitable_translation[2], -suitable_translation[0], - local_pose.z - 1)
+            com.move(suitable_translation[0], -suitable_translation[2], - (local_pose.z - 1))
             time.sleep(30)
             found_target = False
 
