@@ -19,7 +19,6 @@ class QRdetect:
         # |       |
         # |       |
         # B-------C
-
         self.query_image_position = self.QRcode_Position(self.query_image)
         print("query QRcode position: ", self.query_image_position)
 
@@ -33,7 +32,6 @@ class QRdetect:
     def decode(self, image):
 
         decodedObjects = pyzbar.decode(image)
-
         if not decodedObjects:
             return None
 
@@ -78,7 +76,6 @@ class QRdetect:
     def QRcode_Position(self, image):
 
         qrcode_results = self.decode(image)
-
         if not qrcode_results:
             return None
 
@@ -132,7 +129,7 @@ class QRdetect:
         # train_qrcode_position: current incoming image
         # query_image_position: pre-set target qrcode image
         #H = cv2.getPerspectiveTransform(train_qrcode_position, self.query_image_position)
-        H = cv2.getPerspectiveTransform(self.query_image_position, train_qrcode_position)
+        H = cv2.getPerspectiveTransform(train_qrcode_position, self.query_image_position)
 
         self.train_qrcode_position = train_qrcode_position
 
@@ -149,6 +146,40 @@ class QRdetect:
         return Rotations, translations, normals
 
 
+    # def process_image(self, image):
+    #
+    #     H, warped_image = self.getPerspectiveTransformaAndWarpedImage(image)
+    #
+    #     if H is None:
+    #         self.found_QRcode = False
+    #         return None, None, None
+    #
+    #     Rs, ts, ns = self.recoverRTfromHomographyMat(H)
+    #     self.found_QRcode = True
+    #
+    #     train_image_camera_points = self.pixel2cameraWithoutScale(self.train_qrcode_position)
+    #
+    #     # return Rs, ts, ns
+    #     new_Rs = []
+    #     new_ts = []
+    #     new_normals = []
+    #     idxs = []
+    #     for index, normal in enumerate(ns):
+    #         for pt in train_image_camera_points:
+    #             result = np.dot(normal.T, np.array(pt))
+    #             if result < 0:
+    #                 continue
+    #             else:
+    #                 idxs.append(index)
+    #
+    #     idxs = set(idxs)
+    #     for idx in idxs:
+    #         new_Rs.append(Rs[idx])
+    #         new_ts.append(ts[idx])
+    #         new_normals.append(ns[idx])
+    #
+    #     return new_Rs, new_ts, new_normals
+
     def process_image(self, image):
 
         H, warped_image = self.getPerspectiveTransformaAndWarpedImage(image)
@@ -160,32 +191,7 @@ class QRdetect:
         Rs, ts, ns = self.recoverRTfromHomographyMat(H)
         self.found_QRcode = True
 
-        train_image_camera_points = self.pixel2cameraWithoutScale(self.train_qrcode_position)
-
-        # return Rs, ts, ns
-
-        new_Rs = []
-        new_ts = []
-        new_normals = []
-        idxs = []
-        for index, normal in enumerate(ns):
-            for pt in train_image_camera_points:
-                result = np.dot(normal.T, np.array(pt))
-                # print("normal: ", normal.T)
-                # print("pt: ", np.array(pt), type(np.array(pt)))
-                # print("result: ", result, type(result))
-                if result < 0:
-                    continue
-                else:
-                    idxs.append(index)
-
-        idxs = set(idxs)
-        for idx in idxs:
-            new_Rs.append(Rs[idx])
-            new_ts.append(ts[idx])
-            new_normals.append(ns[idx])
-
-        return new_Rs, new_ts, new_normals
+        return Rs, ts, ns
 
 
     def pixel2cameraWithoutScale(self, pixel_points):
@@ -208,8 +214,8 @@ class QRdetect:
 
 if __name__ == '__main__':
 
-    train_image = cv2.imread('1.png')
-    query_image = cv2.imread('1.png')
+    train_image = cv2.imread('target.png')
+    query_image = cv2.imread('target.png')
 
     cv2.imwrite("train_image.png", train_image)
 

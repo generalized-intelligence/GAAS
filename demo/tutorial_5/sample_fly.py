@@ -7,6 +7,7 @@ from commander import Commander
 import rospy
 import cv2
 import time
+import numpy as np
 
 #vg = visual_guidance("target.png")
 image = cv2.imread("target.png")
@@ -40,39 +41,40 @@ def image_callback(image):
             print("Target not detected!")
             return
 
+        for translation in translations:
+            print("translation: ", translation)
+
         # Here we only use translation and neglect the rotation.
         for idxs, normal in enumerate(normals):
             print("normal: ", normal)
 
-            if normals[0][2] > normals[1][2]:
-                suitable_normal = normals[0]
-                idx = 0
-            else:
-                suitable_normal = normals[1]
-                idx = 1
-
-            print("suitable normal is: ", suitable_normal)
+            # target normal should be (0, -1, 0) as it is on the ground and drone camera is facing forward
+            if normals[idxs][1] + 1 < 0.05:
+                suitable_normal = normals[idxs]
+                idx = idxs
 
         suitable_translation = translations[idx]
+        print("suitable normal is: ", suitable_normal)
         print("suitable translation is: ", suitable_translation)
 
         '''
         movement wrt camera frame is Right(X) Down(Y) Forward(Z)
         '''
-        scale = local_pose.z / suitable_translation[2]
+        scale = np.abs((local_pose.z - 1.5) / suitable_translation[1])
         pending_movement = [0, 0, 0]
-        pending_movement[0] = suitable_translation[0] * scale
-        pending_movement[1] = - local_pose.z
-        pending_movement[2] = suitable_translation[2] * scale
+        pending_movement[0] = suitable_translation[2] * scale
+        pending_movement[1] = - suitable_translation[0] * scale
 
+        # first move in the horizontally and then land
         if(found_target):
             print("current height is: ", local_pose.z)
-            print("Moving in body(FLU) frame: ", (suitable_translation[2], -suitable_translation[0], - (local_pose.z - 1)))
+            print("current scale is: ", scale)
+            print("Moving in body(FLU) frame: ", (pending_movement[0], pending_movement[1], - local_pose.z))
 
-            com.move(suitable_translation[0], -suitable_translation[2], - (local_pose.z - 1))
-            time.sleep(30)
+            com.move(pending_movement[0], pending_movement[1], pending_movement[2])
+            time.sleep(10)
+            com.move(0, 0, - local_pose.z)
             found_target = False
-
 
 def pose_callback(data):
     global local_pose
