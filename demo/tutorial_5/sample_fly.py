@@ -3,7 +3,7 @@ from qr_code import QRdetect
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import PoseStamped
-from commander import Commander
+from commander_2 import Commander
 import rospy
 import cv2
 import time
@@ -60,7 +60,8 @@ def image_callback(image):
         '''
         movement wrt camera frame is Right(X) Down(Y) Forward(Z)
         '''
-        scale = np.abs((local_pose.z - 1.5) / suitable_translation[1])
+        # scale = np.abs((local_pose.z - 1.5) / suitable_translation[1])
+        scale = np.abs((local_pose.z-1) / suitable_translation[1])
         pending_movement = [0, 0, 0]
         pending_movement[0] = suitable_translation[2] * scale
         pending_movement[1] = - suitable_translation[0] * scale
