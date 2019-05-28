@@ -6,7 +6,24 @@
 
 
 
-pcl_helper::pcl_helper(){};
+pcl_helper::pcl_helper(string config_path)
+{
+    this->config_path = config_path;
+
+    cv::FileStorage fsSettings(this->config_path, cv::FileStorage::READ);
+
+    radius = fsSettings["Radius"];
+    MinNeighbor = fsSettings["MinNeighbor"];
+
+    mean_k = fsSettings["mean_k"];
+    stdThres = fsSettings["stdThres"];
+
+    cout<<"using radius: "<<radius<<endl;
+    cout<<"using points number: "<<MinNeighbor<<endl;
+
+    cout<<"using mean_k: "<<mean_k<<endl;
+    cout<<"using stdThres: "<<stdThres<<endl;
+};
 
 void pcl_helper::ROSPointCloud2toPointCloudXYZ(sensor_msgs::PointCloud2& input_cloud, pcl::PointCloud<pcl::PointXYZ>& output_cloud)
 {
@@ -29,30 +46,6 @@ void pcl_helper::PointCloudXYZtoROSPointCloud2(pcl::PointCloud<pcl::PointXYZ>& i
 
     //step 2. convert pcl_cloud2 pc to ROS pc
     pcl_conversions::fromPCL(pcl_cloud, output_cloud);
-}
-
-
-pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_helper::PCLStatisticalOutlierFilter(pcl::PointCloud<pcl::PointXYZ>::Ptr raw_cloud_p, int mean_k, int stdThres)
-{
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
-
-    pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
-    sor.setInputCloud (raw_cloud_p);
-
-    std::cerr << "Cloud before filtering: " << std::endl;
-    std::cerr << *raw_cloud_p << std::endl;
-
-    sor.setMeanK (mean_k);
-    sor.setStddevMulThresh (stdThres);
-    sor.filter (*cloud_filtered);
-
-    sor.setNegative (true);
-    sor.filter (*cloud_filtered);
-
-    std::cerr << "Cloud after filtering: " << std::endl;
-    std::cerr << *cloud_filtered << std::endl;
-
-    return cloud_filtered;
 }
 
 
@@ -121,5 +114,52 @@ bool pcl_helper::createPointCloud2(vector<geometry_msgs::Point32>& input_points,
     //step 3, return
     return true;
 }
+
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_helper::PCLStatisticalOutlierFilter(pcl::PointCloud<pcl::PointXYZ>::Ptr raw_cloud_p)
+{
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+
+
+    mStatisticalOutlierRemoval.setInputCloud (raw_cloud_p);
+
+    std::cerr << "Cloud before filtering: " << std::endl;
+    std::cerr << *raw_cloud_p << std::endl;
+
+    mStatisticalOutlierRemoval.setMeanK (this->mean_k);
+    mStatisticalOutlierRemoval.setStddevMulThresh (this->stdThres);
+    mStatisticalOutlierRemoval.filter (*cloud_filtered);
+
+    mStatisticalOutlierRemoval.setNegative (true);
+    mStatisticalOutlierRemoval.filter (*cloud_filtered);
+
+    std::cerr << "Cloud after filtering: " << std::endl;
+    std::cerr << *cloud_filtered << std::endl;
+
+    return cloud_filtered;
+
+}
+
+
+pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_helper::PCLRadiusOutlierRemoval(pcl::PointCloud<pcl::PointXYZ>::Ptr raw_cloud_p)
+{
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered (new pcl::PointCloud<pcl::PointXYZ>);
+
+    mRadiusOutlierRemoval.setInputCloud(raw_cloud_p);
+    mRadiusOutlierRemoval.setRadiusSearch(this->radius);
+    mRadiusOutlierRemoval.setMinNeighborsInRadius (this->MinNeighbor);
+
+    mRadiusOutlierRemoval.filter (*cloud_filtered);
+
+    return cloud_filtered;
+}
+
+
+//pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_helper::PCLConditionalRemoval(pcl::PointCloud<pcl::PointXYZ>::Ptr raw_cloud_p, float Min, float Max)
+//{
+//
+//}
 
 

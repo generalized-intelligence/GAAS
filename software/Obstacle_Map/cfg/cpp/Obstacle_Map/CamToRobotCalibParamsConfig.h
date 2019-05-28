@@ -10,6 +10,12 @@
 #ifndef __Obstacle_Map__CAMTOROBOTCALIBPARAMSCONFIG_H__
 #define __Obstacle_Map__CAMTOROBOTCALIBPARAMSCONFIG_H__
 
+#if __cplusplus >= 201103L
+#define DYNAMIC_RECONFIGURE_FINAL final
+#else
+#define DYNAMIC_RECONFIGURE_FINAL
+#endif
+
 #include <dynamic_reconfigure/config_tools.h>
 #include <limits>
 #include <ros/node_handle.h>
@@ -51,8 +57,10 @@ namespace Obstacle_Map
     typedef boost::shared_ptr<AbstractParamDescription> AbstractParamDescriptionPtr;
     typedef boost::shared_ptr<const AbstractParamDescription> AbstractParamDescriptionConstPtr;
 
+    // Final keyword added to class because it has virtual methods and inherits
+    // from a class with a non-virtual destructor.
     template <class T>
-    class ParamDescription : public AbstractParamDescription
+    class ParamDescription DYNAMIC_RECONFIGURE_FINAL : public AbstractParamDescription
     {
     public:
       ParamDescription(std::string a_name, std::string a_type, uint32_t a_level,
@@ -137,8 +145,10 @@ namespace Obstacle_Map
     typedef boost::shared_ptr<AbstractGroupDescription> AbstractGroupDescriptionPtr;
     typedef boost::shared_ptr<const AbstractGroupDescription> AbstractGroupDescriptionConstPtr;
 
+    // Final keyword added to class because it has virtual methods and inherits
+    // from a class with a non-virtual destructor.
     template<class T, class PT>
-    class GroupDescription : public AbstractGroupDescription
+    class GroupDescription DYNAMIC_RECONFIGURE_FINAL : public AbstractGroupDescription
     {
     public:
       GroupDescription(std::string a_name, std::string a_type, int a_parent, int a_id, bool a_s, T PT::* a_f) : AbstractGroupDescription(a_name, a_type, a_parent, a_id, a_s), field(a_f)
@@ -262,7 +272,7 @@ double TRANS_Z;
       double TRANS_Y;
 //#line 274 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       double TRANS_Z;
-//#line 218 "/opt/ros/kinetic/share/dynamic_reconfigure/templates/ConfigType.h.template"
+//#line 228 "/opt/ros/kinetic/share/dynamic_reconfigure/templates/ConfigType.h.template"
 
     bool __fromMessage__(dynamic_reconfigure::Config &msg)
     {
@@ -464,7 +474,7 @@ CamToRobotCalibParamsConfig::GroupDescription<CamToRobotCalibParamsConfig::DEFAU
       Default.convertParams();
 //#line 246 "/opt/ros/kinetic/lib/python2.7/dist-packages/dynamic_reconfigure/parameter_generator.py"
       __group_descriptions__.push_back(CamToRobotCalibParamsConfig::AbstractGroupDescriptionConstPtr(new CamToRobotCalibParamsConfig::GroupDescription<CamToRobotCalibParamsConfig::DEFAULT, CamToRobotCalibParamsConfig>(Default)));
-//#line 356 "/opt/ros/kinetic/share/dynamic_reconfigure/templates/ConfigType.h.template"
+//#line 366 "/opt/ros/kinetic/share/dynamic_reconfigure/templates/ConfigType.h.template"
 
       for (std::vector<CamToRobotCalibParamsConfig::AbstractGroupDescriptionConstPtr>::const_iterator i = __group_descriptions__.begin(); i != __group_descriptions__.end(); ++i)
       {
@@ -541,5 +551,7 @@ CamToRobotCalibParamsConfig::GroupDescription<CamToRobotCalibParamsConfig::DEFAU
 
 
 }
+
+#undef DYNAMIC_RECONFIGURE_FINAL
 
 #endif // __CAMTOROBOTCALIBPARAMSRECONFIGURATOR_H__

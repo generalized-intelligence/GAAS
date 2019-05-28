@@ -27,7 +27,6 @@ Mat XR, XT, Q, P1, P2,R_downward,T_downward;
 Mat R1, R2, K1, K2, D1, D2, R;
 Mat lmapx, lmapy, rmapx, rmapy;
 Vec3d T;
-double min_x,max_x,min_y,max_y;
 
 stereo_dense_reconstruction::CamToRobotCalibParamsConfig config;
 FileStorage calib_file;
@@ -49,6 +48,7 @@ int TextureThreshold, UniquenessRatio, SpeckleWindowSize, Lambda, SigmaColor;
 int bUseWLSfilter, displayImage, disparityMax, disparityMin;
 int method, p1, p2, disp12MaxDiff, speckleRange, fullDP, SADWindowSize;
 float distanceMax, distanceMin;
+int conductStereoRectify, max_x, min_x, max_y, min_y;
 
 pcl_helper* mpPCL_helper;
 
@@ -195,7 +195,7 @@ void publishPointCloud(Mat& img_left, Mat& dmap, int stereo_pair_id) {
     }
 
     log_index ++;
-    cout<<"log index: "<<log_index<<endl;
+
     sensor_msgs::PointCloud2 pc2;
 
     bool result = sensor_msgs::convertPointCloudToPointCloud2(pc, pc2);
@@ -211,7 +211,11 @@ void publishPointCloud(Mat& img_left, Mat& dmap, int stereo_pair_id) {
 
         *cloudPTR = output_cloud;
 
-        auto result_cloud = mpPCL_helper->PCLStatisticalOutlierFilter(cloudPTR, 1, 0);
+        cout<<"cloudPTR: "<<cloudPTR<<endl;
+
+        auto result_cloud = mpPCL_helper->PCLStatisticalOutlierFilter(cloudPTR);
+
+        cout<<"*result_cloud: "<<*result_cloud<<endl;
 
         mpPCL_helper->PointCloudXYZtoROSPointCloud2(*result_cloud, pc2);
     }
@@ -281,7 +285,6 @@ cv::Mat generateDisparityMapBM(Mat& left, Mat& right) {
 
         conf_map = wls_filter->getConfidenceMap();
         cv::Rect ROI = wls_filter->getROI();
-
 
         //step 6, return value
         Mat dmap = Mat(out_img_size, CV_8UC1, Scalar(0));
@@ -385,8 +388,20 @@ void imgCallback(const sensor_msgs::ImageConstPtr& msg_left, const sensor_msgs::
       return;
   
   Mat img_left, img_right, img_left_color;
-  remap(tmpL, img_left, lmapx, lmapy, cv::INTER_LINEAR);
-  remap(tmpR, img_right, rmapx, rmapy, cv::INTER_LINEAR);
+
+
+  //NOTE conduct stereoRectify?
+  if(conductStereoRectify)
+  {
+      remap(tmpL, img_left, lmapx, lmapy, cv::INTER_LINEAR);
+      remap(tmpR, img_right, rmapx, rmapy, cv::INTER_LINEAR);
+  }
+  else
+  {
+      img_left = tmpL;
+      img_right = tmpR;
+  }
+
 
   cvtColor(img_left, img_left_color, CV_GRAY2BGR);
 
@@ -408,11 +423,9 @@ void imgCallback(const sensor_msgs::ImageConstPtr& msg_left, const sensor_msgs::
 
   }
 
-  cout<<"before publishpointcloud"<<endl;
+  cout<<"Publishing pointcloud, index: "<<log_index<<endl;
 
   publishPointCloud(img_left_color, dmap, stereo_pair_id);
-
-  cout<<"after publishpointcloud"<<endl;
 
 
   if(displayImage)
@@ -431,8 +444,8 @@ void findRectificationMap(Size finalSize) {
   Rect validRoi[2];
   cout << "Starting rectification" << endl;
   
-  stereoRectify(K1, D1, K2, D2, calib_img_size, R, Mat(T), R1, R2, P1, P2, Q, 
-                CV_CALIB_ZERO_DISPARITY, 0, finalSize, &validRoi[0], &validRoi[1]);
+  cv::stereoRectify(K1, D1, K2, D2, calib_img_size, R, Mat(T), R1, R2, P1, P2, Q,
+          CV_CALIB_ZERO_DISPARITY, 0, finalSize, &validRoi[0], &validRoi[1]);
   
   cv::initUndistortRectifyMap(K1, D1, R1, P1, finalSize, CV_32F, lmapx, lmapy);
   cv::initUndistortRectifyMap(K2, D2, R2, P2, finalSize, CV_32F, rmapx, rmapy);
@@ -465,6 +478,7 @@ int main(int argc, char** argv) {
     int out_height = fsSettings["out_height"];
     int debug = fsSettings["debug"];
     method  = fsSettings["method"];
+    conductStereoRectify = fsSettings["conductStereoRectify"];
 
     string left_img_topic = string(fsSettings["left_img_topic"]);
     string right_img_topic = string(fsSettings["right_img_topic"]);
@@ -496,10 +510,17 @@ int main(int argc, char** argv) {
     SADWindowSize = fsSettings["SADWindowSize"];
 
     // for WLS filter
-    bUseWLSfilter = fsSettings["UseWLSfilter"];
+    bUseWLSfilter =
     Lambda  = fsSettings["Lambda"];
     SigmaColor  = fsSettings["SigmaColor"];
     displayImage = fsSettings["displayImage"];
+
+    // for image max/min x and y
+    max_x = fsSettings["max_x"];
+    min_x = fsSettings["min_x"];
+    max_y = fsSettings["max_y"];
+    min_y = fsSettings["min_y"];;
+
 
     cout<<"-------------Brief-----------------"<<endl;
     cout<<"left_img_topic: "<<left_img_topic<<endl;
@@ -514,6 +535,7 @@ int main(int argc, char** argv) {
     cout<<"disparityMin: "<<disparityMin<<endl;
     cout<<"distanceMax: "<<distanceMax<<endl;
     cout<<"distanceMin: "<<distanceMin<<endl;
+    cout<<"conductStereoRectify: "<<conductStereoRectify<<endl;
 
     cout<<"RangeOfDisparity: "<<RangeOfDisparity<<endl;
     cout<<"SizeOfBlockWindow: "<<SizeOfBlockWindow<<endl;
@@ -553,17 +575,13 @@ int main(int argc, char** argv) {
     calib_file["XT"] >> XT;
     calib_file["R_downward"] >>R_downward;
     calib_file["T_downward"] >>T_downward;
-    min_x = calib_file["min_x"];
-    min_y = calib_file["min_y"];
-    max_x = calib_file["max_x"];
-    max_y = calib_file["max_y"];
 
     findRectificationMap(out_img_size);
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> SyncPolicy;
 
     int image_id = -1;
 
-    mpPCL_helper = new pcl_helper();
+    mpPCL_helper = new pcl_helper(config_path);
 
     //NOTE forward stereo pair.
     message_filters::Subscriber<sensor_msgs::Image> sub_img_left(nh, left_img_topic, 1);
