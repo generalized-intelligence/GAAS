@@ -17,7 +17,7 @@ class visual_guidance:
     initialize feature matcher,
     pre-compute target keypoints and descriptors.
     '''
-    def __init__(self, query_image_path, k=np.array([[376.0, 0, 376], [0, 376.0, 0], [0, 0, 1]]) ):
+    def __init__(self, query_image_path, k=np.array([[376.0, 0, 376], [0, 376.0, 240], [0, 0, 1]]) ):
 
         if os.path.exists(query_image_path):
             self.query_image = cv.imread(query_image_path, cv.IMREAD_GRAYSCALE)
@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
     # this is the simulation camera instrinstic
     camera_intrinstics = np.array([[376.0, 0.0, 376],
-                                   [0.0, 376.0, 0.0],
+                                   [0.0, 376.0, 240.0],
                                    [0.0, 0.0, 1.0]])
 
     vg = visual_guidance("calibration_board.png", k=camera_intrinstics)

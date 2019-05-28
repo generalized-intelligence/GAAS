@@ -40,11 +40,10 @@ void sync_pc_callback(sensor_msgs::PointCloud2::ConstPtr ppc,geometry_msgs::Pose
     bool result = sensor_msgs::convertPointCloud2ToPointCloud(pc2, pc);
 
     geometry_msgs::PoseStamped pose = *ppose;
-    Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();    
-    //Eigen::Quaterniond q(pose.pose.orientation.w,pose.pose.orientation.x,pose.pose.orientation.y,-pose.pose.orientation.z);
-    //Eigen::Quaterniond q(pose.pose.orientation.w,pose.pose.orientation.x,pose.pose.orientation.y,-pose.pose.orientation.z);
+    Eigen::Matrix4d transform = Eigen::Matrix4d::Identity();
     Eigen::Quaterniond q(pose.pose.orientation.w,pose.pose.orientation.x,pose.pose.orientation.y,pose.pose.orientation.z);
     Eigen::Matrix3d mat = q.toRotationMatrix();
+
     for (int i = 0;i<3;i++)
     {
         for(int j =0 ;j<3;j++)
@@ -61,7 +60,7 @@ void sync_pc_callback(sensor_msgs::PointCloud2::ConstPtr ppc,geometry_msgs::Pose
     transform(2,3) = pose.pose.position.z;
 
 
-    for(int k=0;k<3;k++)
+    for(int k=0; k<3; k++)
     {
       std::cout<<transform(k,3)<<" |";
     }
@@ -77,11 +76,11 @@ void sync_pc_callback(sensor_msgs::PointCloud2::ConstPtr ppc,geometry_msgs::Pose
         original_cloud->push_back(p);
     }
 
-
     pcl::PointCloud<pcl::PointXYZ>::Ptr  transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
     pcl::transformPointCloud(*original_cloud,*transformed_cloud,transform);
     sensor_msgs::PointCloud  pc_out;
-    for(auto iter = original_cloud->points.begin();iter!=original_cloud->points.end();++iter)
+
+    for(auto iter = original_cloud->points.begin(); iter!=original_cloud->points.end(); ++iter)
     {
         geometry_msgs::Point32 p;
         p.x=(*iter).x;
@@ -89,11 +88,8 @@ void sync_pc_callback(sensor_msgs::PointCloud2::ConstPtr ppc,geometry_msgs::Pose
         p.z=(*iter).z;
         pc_out.points.push_back(p);
     }
+
     sensor_msgs::PointCloud2 pc_out_pointcloud2;
-    //pcl::fromPCLPointCloud2(pcl_pc2,*temp_cloud);
-    //void fromROSMsg(const sensor_msgs::PointCloud2 &, pcl::PointCloud<T>&);
-    //void toROSMsg(const pcl::PointCloud<T> &, sensor_msgs::PointCloud2 &);
-    //void moveFromROSMsg(sensor_msgs::PointCloud2 &, pcl::PointCloud<T> &); //shallow copy
     pcl::toROSMsg(*transformed_cloud,pc_out_pointcloud2);
     pc_out_pointcloud2.header.frame_id = "map";
     output_cloud_pub.publish(pc_out_pointcloud2);

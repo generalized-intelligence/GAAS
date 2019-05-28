@@ -12,10 +12,7 @@
 [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
   [![Join Facebook Group at https://www.facebook.com/groups/300340454189266/?ref=bookmarks](https://img.shields.io/badge/Group-Facebook-blue.svg)](https://www.facebook.com/groups/300340454189266/?ref=bookmarks) [![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)](https://twitter.com/GAAS_ooo)   [![Follow Medium at https://medium.com/generalized-intelligence](https://img.shields.io/badge/Medium-Blogs-black.svg)](https://medium.com/generalized-intelligence)
 
-
-扫码加入 GAAS 微信讨论群（由于现有的群人数都超过 100 人，需要先加 GAAS 管理员，由管理员发送入群邀请）：
-
-<img width="200" height="200" src="https://s2.ax1x.com/2019/04/12/AbWeyV.jpg"/>
+<img width="500" src="https://s2.ax1x.com/2019/05/26/VEIUsI.png"/>
 
 - [What is GAAS?](#what-is-gaas)
   * [Tutorial for GAAS](#tutorial-for-gaas)
@@ -56,7 +53,9 @@ Currently the project provides the following ten funcitons, some of which may ne
 NOTE: This is a beta version of the software. Please re-ensure the stability of each feature before implementing on real drones.
 
 <p align="center">
-<img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
+<img src="https://github.com/generalized-intelligence/GAAS/blob/master/demo/gaaspole.gif"/>
+    
+    VISION BASED POLE AVOIDANCE BY GAAS
 </p>
 
 1. Details about automatic taking off and landing can be found in: ```software/px4_mavros_scripts```;
@@ -132,11 +131,14 @@ Il Vole
 当前 GAAS 可为无人机提供以下十大功能，其中一些功能仍有待优化：
 
 注意：GAAS beta 版部分功能尚不稳定，请在模拟器中确保稳定性后再在实机操作。
+
 <p align="center">
-<img height="300" src="https://s2.ax1x.com/2019/05/16/EbE7WR.png"/>
+<img src="https://github.com/generalized-intelligence/GAAS/blob/master/demo/gaaspole.gif"/>
+    
+    无人机纯视觉双目躲避室内细杆（无光流）
 </p>
 
-1. 其中自动启飞，降落等功能实现在 ```software/px4_mavros_scripts```；
+1. 其中自动起飞，降落等功能实现在 ```software/px4_mavros_scripts```；
 2. 无 GPS 环境下自主飞行功能的实现在 ```software/SLAM/ygz_slam_ros```, 目前使用的是基于双目光流的 SLAM；
 3. 基于双目视觉的避障的实现在 ```software/Obstacle_Map```；
 4. 路径规划的实现在 ```software/Navigator```；
@@ -146,7 +148,7 @@ Il Vole
 8. 物体检测，具体实现在 ```algorithms/image_detection```；
 9. 语义分割，具体实现在 ```algorithms/image_segmentation```；
 10. 无人机控制 API 及中英文教程，具体在 ```GAAS/demo``` 文件夹。
-11. 我们所用的硬件清单在 ```GAAS/hardware```
+我们所用的硬件清单在 ```GAAS/hardware```
 
 <p align="center">
 <img src="https://s2.ax1x.com/2019/05/17/EqXAdx.png"/>

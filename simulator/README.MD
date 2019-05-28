@@ -1,4 +1,4 @@
-# Gazebo Simulation Launch Files, Drone Models and World Modles
+# Gazebo Simulation Launch Files, Drone Models and World Models
 
 Before using functions, please make sure you have properly set your environment variables by:
 

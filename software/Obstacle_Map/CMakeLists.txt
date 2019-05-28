@@ -86,16 +86,16 @@ target_link_libraries(match_pointcloud_and_slam_pose
 			 "-lpopt -lboost_system"
 			pcl_helper)
 
-#rosbuild_add_executable(match_pointcloud_and_slam_pose2
-#		src/match_pointcloud_and_slam_pose2.cpp
-#		)
-#
-#target_link_libraries(match_pointcloud_and_slam_pose2
-#			${OpenCV_LIBS}
-#			${PCL_LIBRARIES}
-#			 "-lpopt -lboost_system"
-#			pcl_helper)
-#
+rosbuild_add_executable(match_pointcloud_and_slam_pose2
+		src/match_pointcloud_and_slam_pose2.cpp
+		)
+
+target_link_libraries(match_pointcloud_and_slam_pose2
+			${OpenCV_LIBS}
+			${PCL_LIBRARIES}
+			 "-lpopt -lboost_system"
+			pcl_helper)
+
 #rosbuild_add_executable(rgbd_camera_to_pointcloud
 #		src/rgbd_camera_to_pointcloud.cpp
 #		)
