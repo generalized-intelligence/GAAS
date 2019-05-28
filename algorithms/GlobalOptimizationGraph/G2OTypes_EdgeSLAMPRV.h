@@ -189,7 +189,7 @@ class IMUPreIntegration {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
         EdgeSLAMPRV(const Vector3d &gw) : BaseMultiEdge<9, IMUPreIntegration>(), GravityVec(gw) {
-            resize(6);
+            resize(4);
         }/*
         EdgeSLAMPRV(): BaseMultiEdge<9, IMUPreIntegration>()
         {

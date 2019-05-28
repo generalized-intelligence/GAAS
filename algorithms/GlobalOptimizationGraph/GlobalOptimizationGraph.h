@@ -105,8 +105,8 @@ public:
     bool addGOGFrame()
     {
         GOG_Frame* pF = new GOG_Frame();
-        pF->pPRVertex = new VertexPR;
-        pF->pSpeedVertex = new VertexSpeed;
+        pF->pPRVertex = new VertexPR();
+        pF->pSpeedVertex = new VertexSpeed();
         int basic_vertex_id = this->iterateNewestFrameID();
         pF->pPRVertex->setId(basic_vertex_id+0);
         pF->pSpeedVertex->setId(basic_vertex_id+1);
@@ -854,7 +854,7 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     pEdgeSLAMPRV->setVertex(1,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vpr_j_id)) );
     pEdgeSLAMPRV->setVertex(2,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vspeed_i_id)) );
     pEdgeSLAMPRV->setVertex(3,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vspeed_j_id)) );
-    
+    this->optimizer.addEdge(pEdgeSLAMPRV);
     cout<<"SLAMEdgePRV Vertices set."<<endl;
     auto slam_preint = new IMUPreIntegration;
     
@@ -913,7 +913,7 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     cout<<"Information set."<<endl;
     pEdgeSLAMPRV->setLevel(0);
     cout<<"Level set."<<endl;
-    this->optimizer.addEdge(pEdgeSLAMPRV);
+//     this->optimizer.addEdge(pEdgeSLAMPRV);
     cout<<"Edge PRV added to optimization graph."<<endl;
     
     //pEdgeSLAMPRV.setInformation();
