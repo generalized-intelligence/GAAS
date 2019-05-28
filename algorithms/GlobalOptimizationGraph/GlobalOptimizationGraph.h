@@ -24,6 +24,7 @@
 #include <deque>
 #include <opencv2/opencv.hpp>
 #include "GOG_Frame.h"
+#include "utils.h"
 using namespace std;
 using namespace ygz;
 //采用自顶向下设计方法,分块逐步实现.
@@ -129,7 +130,8 @@ public:
         this->debug_show_optimization_graph();//just show how this optimizable_graph looks like.
         
          //TODO change to <3 for gps-denied condition.
-        if(this->optimizer.edges().size()<=3)
+        //if(this->optimizer.edges().size()<=3)
+        if(false)
         {
             retval = false;
             this->resetOptimizationGraph();
@@ -480,7 +482,7 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
     //VertexPR* pcurrent_state = new VertexPR();
     cout<<"operate SlidingWindow.front()."<<endl;
     addGOGFrame();
-    this->SlidingWindow.front().slam_frame_time = slam_msg.header.stamp.toSec();//set timestamp.
+    this->SlidingWindow.front().slam_frame_time = micros();//slam_msg.header.stamp.toNSec();//set timestamp.
     this->SlidingWindow.front().SLAM_msg = slam_msg;
     VertexPR* pcurrent_state = this->SlidingWindow.front().pPRVertex;
     pcurrent_state->R() = this->ahrs_R_init;
@@ -743,7 +745,7 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
 {
     //addGOGFrame(SLAM_msg.header.stamp.toSec());//called in ROS IO Manager.
     //set timestamp
-    this->SlidingWindow.front().slam_frame_time = SLAM_msg.header.stamp.toSec();
+    this->SlidingWindow.front().slam_frame_time = micros();//SLAM_msg.header.stamp.toNSec();
     this->SlidingWindow.front().SLAM_msg = SLAM_msg;
     //part<1> Rotation.
     cout<<"addBlockSLAM() : part 1."<<endl;
@@ -823,7 +825,8 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
         pEdgeSlamTranslation->setRobustKernel(rk);
         rk->setDelta(thHuber);
     }
-    this->optimizer.addEdge(pEdgeSlamTranslation);
+    //this->optimizer.addEdge(pEdgeSlamTranslation);
+    cout<<"TODO:consider if slam_translation shall be used."<<endl;
     //Edge PRV.
     /*//TODO:fill Edge SLAM PRV.
     if(this->historyStatesWindow.size()>0)
@@ -855,7 +858,8 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     GOG_Frame* lastFrame = &(this->SlidingWindow[1]);
     GOG_Frame* thisFrame = &(this->SlidingWindow.front());
     cout<<"Frame queryed."<<endl;
-    double dt = thisFrame->slam_frame_time - lastFrame->slam_frame_time;
+    double dt = ((thisFrame->slam_frame_time - lastFrame->slam_frame_time)*1.0)/1000000.0;
+    cout<<"[SLAM_INFO] dt is:"<<dt<<"s"<<"\tt2:"<<thisFrame->slam_frame_time<<"\tt1:"<<lastFrame->slam_frame_time<<endl;
     auto pEdgeSLAMPRV = new EdgeSLAMPRV(Vector3d(0,0,0));//4 vertices:pr_i,pr_j,speed_i,speed_j
     int vpr_j_id = this->newest_frame_id;
     int vspeed_j_id = vpr_j_id+1;

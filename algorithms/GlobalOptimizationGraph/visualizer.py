@@ -1,4 +1,5 @@
 #encoding=utf-8
+import sys
 import os
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
@@ -113,9 +114,10 @@ ax.scatter(x_opt,y_opt,z_opt,c='r')
 ax.set_xlabel('X') 
 ax.set_ylabel('Y') 
 ax.set_zlabel('Z') # 坐标轴 
-ax.set_xlim3d(-20,20)
-ax.set_ylim3d(-20,20)
-ax.set_zlim3d(-20,20)
+if(not(len(sys.argv)>1 and  sys.argv[1] == 'no_lim')):
+    ax.set_xlim3d(-20,20)
+    ax.set_ylim3d(-20,20)
+    ax.set_zlim3d(-20,20)
 plt.show()
 '''
 plt.scatter(xs,ys,alpha=0.6)  # 绘制散点图，透明度为0.6（这样颜色浅一点，比较好看）

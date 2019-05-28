@@ -22,17 +22,18 @@
 
 #include <iostream>
 #include <thread>
-using namespace std;
-unsigned long long micros()//instead of micros in Arduino.h
-{
-    struct timeval tp;
-    gettimeofday(&tp, NULL);
-    unsigned long long result = (unsigned long long)(tp.tv_sec * 1000000 + tp.tv_usec);
-    //cout<<"micros():"<<result<<endl;
-    //std::cout<<"result:"<<result<<std::endl;
-    return result;
-}
-typedef unsigned long long time_us_t;
+#include "utils.h"
+//using namespace std;
+// unsigned long long micros()//instead of micros in Arduino.h
+// {
+//     struct timeval tp;
+//     gettimeofday(&tp, NULL);
+//     unsigned long long result = (unsigned long long)(tp.tv_sec * 1000000 + tp.tv_usec);
+//     //cout<<"micros():"<<result<<endl;
+//     //std::cout<<"result:"<<result<<std::endl;
+//     return result;
+// }
+// typedef unsigned long long time_us_t;
 
 
 class ROS_IO_Manager
@@ -56,8 +57,8 @@ public:
         ros::spinOnce();//Handle all callbacks.
         //一个简单实现:如果两种消息都凑齐至少一个,送一次.GPS有没有无所谓.
         //TODO:delete check gps in this ().
-        bool msg_avail = this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0&&this->GPS_buffer.size()>0;cout<<"TODO:remove GPS here."<<endl;
-        //bool msg_avail = this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0;
+        //bool msg_avail = this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0&&this->GPS_buffer.size()>0;cout<<"TODO:remove GPS here."<<endl;
+        bool msg_avail = this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0;
         if(msg_avail)
         {
             bool result = this->doUpdateOptimizationGraph();

@@ -20,6 +20,7 @@
 #include <cmath>
 #include <deque>
 #include <opencv2/opencv.hpp>
+#include "utils.h"
 using namespace std;
 using namespace ygz;
 class GOG_Frame
@@ -29,7 +30,9 @@ public:
     {;}
     VertexPR* pPRVertex;
     VertexSpeed* pSpeedVertex;
-    double slam_frame_time;
+    //double slam_frame_time;
+    //long long int slam_frame_time;
+    time_us_t slam_frame_time;//有些包时间戳有问题，时间差无穷小，速度将是无穷大，用接收时间代替真实时间确保数值稳定。
     geometry_msgs::PoseStamped SLAM_msg;
 };
 #endif
