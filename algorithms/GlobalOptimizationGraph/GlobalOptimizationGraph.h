@@ -41,7 +41,7 @@ using namespace ygz;
 //{
 //    
 //};
-
+const float thHuber = 50;
 struct PRState
 {
     Matrix3d rotation;
@@ -633,6 +633,13 @@ void GlobalOptimizationGraph::addBlockAHRS(const nav_msgs::Odometry& AHRS_msg)
     }
     pEdgeAttitude->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *> (this->optimizer.vertex(newest_vpr_id)) );
     cout<<"added vertex ahrs."<<endl;
+    const bool AHRS_ROTATION_USE_ROBUST_KERNEL = true;
+    if(AHRS_ROTATION_USE_ROBUST_KERNEL)
+    {
+        g2o::RobustKernelHuber *rk = new g2o::RobustKernelHuber;
+        pEdgeAttitude->setRobustKernel(rk);
+        rk->setDelta(thHuber);
+    }
     this->optimizer.addEdge(pEdgeAttitude);
     cout<<"AHRS EDGE ADDED!"<<endl;
 }
@@ -711,6 +718,13 @@ void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
   }
   pEdgePRGPS->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(newest_vpr_id)));
 
+  const bool GPS_USE_ROBUST_KERNEL = true;
+  if(GPS_USE_ROBUST_KERNEL)
+  {
+      g2o::RobustKernelHuber *rk = new g2o::RobustKernelHuber;
+      pEdgePRGPS->setRobustKernel(rk);
+      rk->setDelta(thHuber);
+  }
   this->optimizer.addEdge(pEdgePRGPS);
 }
 
@@ -782,7 +796,13 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     pEdgeSlamRotation->setMeasurement(se3_slam);
     pEdgeSlamRotation->setInformation(info_mat_slam_rotation);
     cout <<"Measurement,information mat set.Adding edge slam!!!"<<endl;
-    
+    const bool SLAM_ROTATION_USE_ROBUST_KERNEL = true;
+    if(SLAM_ROTATION_USE_ROBUST_KERNEL)
+    {
+        g2o::RobustKernelHuber *rk = new g2o::RobustKernelHuber;
+        pEdgeSlamRotation->setRobustKernel(rk);
+        rk->setDelta(thHuber);
+    }
     this->optimizer.addEdge(pEdgeSlamRotation);
     cout<<"Edge SLAM added successfully."<<endl;
     //part<2> Translation
@@ -796,6 +816,13 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     double slam_t_info_weight = (this->fSettings)["SLAM_T_INFO_WEIGHT"];
     pEdgeSlamTranslation->setInformation(t_info_mat*slam_t_info_weight);
     pEdgeSlamTranslation->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(newest_vpr_id)));
+    const bool SLAM_TRANSLATION_USE_ROBUST_KERNEL = true;
+    if(SLAM_TRANSLATION_USE_ROBUST_KERNEL)
+    {
+        g2o::RobustKernelHuber *rk = new g2o::RobustKernelHuber;
+        pEdgeSlamTranslation->setRobustKernel(rk);
+        rk->setDelta(thHuber);
+    }
     this->optimizer.addEdge(pEdgeSlamTranslation);
     //Edge PRV.
     /*//TODO:fill Edge SLAM PRV.
@@ -854,7 +881,6 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     pEdgeSLAMPRV->setVertex(1,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vpr_j_id)) );
     pEdgeSLAMPRV->setVertex(2,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vspeed_i_id)) );
     pEdgeSLAMPRV->setVertex(3,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vspeed_j_id)) );
-    this->optimizer.addEdge(pEdgeSLAMPRV);
     cout<<"SLAMEdgePRV Vertices set."<<endl;
     auto slam_preint = new IMUPreIntegration;
     
@@ -913,7 +939,14 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
     cout<<"Information set."<<endl;
     pEdgeSLAMPRV->setLevel(0);
     cout<<"Level set."<<endl;
-//     this->optimizer.addEdge(pEdgeSLAMPRV);
+    const bool SLAM_EPRV_USE_ROBUST_KERNEL = true;
+    if(SLAM_EPRV_USE_ROBUST_KERNEL)
+    {
+        g2o::RobustKernelHuber *rk = new g2o::RobustKernelHuber;
+        pEdgeSLAMPRV->setRobustKernel(rk);
+        rk->setDelta(5);//小一些的delta,容易忽略极端值。
+    }
+    this->optimizer.addEdge(pEdgeSLAMPRV);
     cout<<"Edge PRV added to optimization graph."<<endl;
     
     //pEdgeSLAMPRV.setInformation();

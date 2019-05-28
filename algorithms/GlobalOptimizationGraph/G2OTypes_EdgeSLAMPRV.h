@@ -257,7 +257,8 @@ class IMUPreIntegration {
             //this line includes correction term of bias change
 
         // residual error of Delta Rotation measurement
-        const Matrix3d dR_dbg = SO3d::exp(M.getJRBiasg() * dBgi).matrix();
+        //const Matrix3d dR_dbg = SO3d::exp(M.getJRBiasg() * dBgi).matrix();
+        const Matrix3d dR_dbg = Matrix3d::Identity(3,3);
         const Matrix3d rRij = (dRij * dR_dbg).inverse() * RiT * Rj;
         const Vector3d rPhiij = SO3d::log(rRij);
 
