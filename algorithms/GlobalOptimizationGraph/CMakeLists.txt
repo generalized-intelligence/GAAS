@@ -4,8 +4,8 @@ LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fpermissive")
 
 
-#set( CMAKE_BUILD_TYPE "Debug" )
-set(CMAKE_BUILD_TYPE "Release")
+set( CMAKE_BUILD_TYPE "Debug" )
+#set(CMAKE_BUILD_TYPE "Release")
 
 find_package(Eigen3 3.1.0 REQUIRED)
 

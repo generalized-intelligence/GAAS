@@ -25,7 +25,11 @@ using namespace ygz;
 class GOG_Frame
 {
 public:
+    GOG_Frame()
+    {;}
     VertexPR* pPRVertex;
     VertexSpeed* pSpeedVertex;
+    double slam_frame_time;
+    geometry_msgs::PoseStamped SLAM_msg;
 };
 #endif

@@ -104,7 +104,7 @@ public:
     
     bool addGOGFrame()
     {
-        GOG_Frame* pF = new GOG_Frame;
+        GOG_Frame* pF = new GOG_Frame();
         pF->pPRVertex = new VertexPR;
         pF->pSpeedVertex = new VertexSpeed;
         int basic_vertex_id = this->iterateNewestFrameID();
@@ -373,6 +373,10 @@ private:
         ;
     }
     VertexPR relative_scene_to_UAV_body;
+    
+    //time for calc speed vertex
+    double last_slam_msg_time;
+    double init_slam_msg_time;
 };
 
 GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
@@ -476,11 +480,18 @@ bool GlobalOptimizationGraph::init_SLAM(//const geometry_msgs::PoseStamped& slam
     //VertexPR* pcurrent_state = new VertexPR();
     cout<<"operate SlidingWindow.front()."<<endl;
     addGOGFrame();
+    this->SlidingWindow.front().slam_frame_time = slam_msg.header.stamp.toSec();//set timestamp.
+    this->SlidingWindow.front().SLAM_msg = slam_msg;
     VertexPR* pcurrent_state = this->SlidingWindow.front().pPRVertex;
     pcurrent_state->R() = this->ahrs_R_init;
     pcurrent_state->t() = Vector3d(0,0,0);
     //pcurrent_state->setId(0);
     pcurrent_state->setFixed(true);
+    
+    
+    //estimate speed: 0 0 0 
+    this->SlidingWindow.front().pSpeedVertex->setEstimate(Vector3d(0,0,0));
+
     //this->optimizer.addVertex(pcurrent_state);
     cout<<"[SLAM_INFO] SLAM_init_R:\n"<<q_.toRotationMatrix()<<endl;
     cout<<"[SLAM_INFO] ahrs_R:\n"<<this->ahrs_R_init<<endl;
@@ -716,6 +727,10 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
 //void GlobalOptimizationGraph::addBlockSLAM(std::vector<const geometry_msgs::PoseStamped&> SLAM_msg_list)
 //for multiple msgs.
 {
+    //addGOGFrame(SLAM_msg.header.stamp.toSec());//called in ROS IO Manager.
+    //set timestamp
+    this->SlidingWindow.front().slam_frame_time = SLAM_msg.header.stamp.toSec();
+    this->SlidingWindow.front().SLAM_msg = SLAM_msg;
     //part<1> Rotation.
     cout<<"addBlockSLAM() : part 1."<<endl;
     auto pEdgeSlamRotation = new EdgeAttitude();
@@ -804,7 +819,119 @@ void GlobalOptimizationGraph::addBlockSLAM(const geometry_msgs::PoseStamped& SLA
         //calc infomation mat from multiple/single slam msg.May be it can be estimated from points num or quality.
         //pEdgePositionSLAM->setInformation(...);TODO
     }*/
+    //step<2> add edge_slam_prv
+    if(this->SlidingWindow.size()<3)//只有一帧，放弃。
+    {
+        cout<<"Edge count <3.return."<<endl;
+        return;
+    }
+    GOG_Frame* lastFrame = &(this->SlidingWindow[1]);
+    GOG_Frame* thisFrame = &(this->SlidingWindow.front());
+    cout<<"Frame queryed."<<endl;
+    double dt = thisFrame->slam_frame_time - lastFrame->slam_frame_time;
+    auto pEdgeSLAMPRV = new EdgeSLAMPRV(Vector3d(0,0,0));//4 vertices:pr_i,pr_j,speed_i,speed_j
+    int vpr_j_id = this->newest_frame_id;
+    int vspeed_j_id = vpr_j_id+1;
+    int vpr_i_id = vpr_j_id-2;
+    int vspeed_i_id = vpr_i_id+1;
+    
+    //check memory.
+    bool vertex_memory_correct = true;
+    for (int i=0;i<4;i++)
+    {
+        if(this->optimizer.vertex(vpr_i_id+i) == NULL)
+        {
+            vertex_memory_correct = false;
+            cout<<"Error in EdgeSLAMPRV:memory not correct!i:"<<i<<endl;
+        }
+    }
+    if(!vertex_memory_correct)
+    {
+        return;
+    }
+    
+    pEdgeSLAMPRV->setVertex(0,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vpr_i_id)) );
+    pEdgeSLAMPRV->setVertex(1,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vpr_j_id)) );
+    pEdgeSLAMPRV->setVertex(2,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vspeed_i_id)) );
+    pEdgeSLAMPRV->setVertex(3,dynamic_cast<g2o::OptimizableGraph::Vertex *>(this->optimizer.vertex(vspeed_j_id)) );
+    
+    cout<<"SLAMEdgePRV Vertices set."<<endl;
+    auto slam_preint = new IMUPreIntegration;
+    
+//IMU preint 这个对象更新的方法如下：
+    
+    //Vector3d bg = mpLastKeyFrame->BiasG();//设置IMU bias，对于我们的SLAM测速不需要。
+    //Vector3d ba = mpLastKeyFrame->BiasA();
 
+    //const IMUData &imu = mvIMUSinceLastKF.front();//读取最早的imu消息时间。
+    //dt 已经计算.
+    //没有什么可update的，这块略过。
+    auto last_position = lastFrame->SLAM_msg.pose.position;
+    Vector3d p_last(last_position.x,last_position.y,last_position.z);
+    
+    slam_preint->_delta_P = t_ - (this->SLAM_to_UAV_coordinate_transfer_R* - p_last);
+    cout <<"DeltaP set."<<endl;
+    //if(this->SlidingWindow.size()<3)
+    if(1) //TODO:DEBUG ONLY!
+    {
+        slam_preint->_delta_V = Vector3d(0,0,0);//set speed estimation to 0;
+    }
+    //slam_preint->deltaV = 
+    cout<<"DeltaV set."<<endl;
+    auto last_q = SLAM_msg.pose.orientation;
+    Eigen::Quaterniond last_q_;
+    last_q_.w() = last_q.w;
+    last_q_.x() = last_q.x;
+    last_q_.y() = last_q.y;
+    last_q_.z() = last_q.z;
+    
+    auto last_R = last_q_.toRotationMatrix();
+    slam_preint->_delta_R = q_.toRotationMatrix() * last_R.inverse();
+    cout<<"DeltaR set."<<endl;
+    /*
+    IMUPreInt.update(imu.mfGyro - bg, imu.mfAcce - ba, dt); //更新。
+
+    // integrate each imu
+    for (size_t i = 0; i < mvIMUSinceLastKF.size(); i++) {
+        const IMUData &imu = mvIMUSinceLastKF[i];
+        double nextt;
+    
+        // 
+        if (i == mvIMUSinceLastKF.size() - 1) 
+            nextt = mpCurrentFrame->mTimeStamp;         // last IMU, next is this KeyFrame
+        else
+            nextt = mvIMUSinceLastKF[i + 1].mfTimeStamp;  // regular condition, next is imu data
+        // delta time
+        double dt = nextt - imu.mfTimeStamp;
+        // update pre-integrator
+        IMUPreInt.update(imu.mfGyro - bg, imu.mfAcce - ba, dt); 
+    }*/
+
+    pEdgeSLAMPRV->setMeasurement(*slam_preint);
+    cout<<"Measurement set."<<endl;
+    pEdgeSLAMPRV->setInformation(Matrix9d::Identity());
+    cout<<"Information set."<<endl;
+    pEdgeSLAMPRV->setLevel(0);
+    cout<<"Level set."<<endl;
+    this->optimizer.addEdge(pEdgeSLAMPRV);
+    cout<<"Edge PRV added to optimization graph."<<endl;
+    
+    //pEdgeSLAMPRV.setInformation();
+/*      Matrix9d CovPRV = imupreint.getCovPVPhi();
+        // 但是Edge里用是P,R,V，所以交换顺序
+        //这里要考虑到删掉了一些行列。
+        CovPRV.col(3).swap(CovPRV.col(6));
+        CovPRV.col(4).swap(CovPRV.col(7));
+        CovPRV.col(5).swap(CovPRV.col(8));
+        CovPRV.row(3).swap(CovPRV.row(6));
+        CovPRV.row(4).swap(CovPRV.row(7));
+        CovPRV.row(5).swap(CovPRV.row(8));
+
+        // information matrix
+        ePRV->setInformation(CovPRV.inverse());
+*/
+    
+    
 
     //TODO
 }

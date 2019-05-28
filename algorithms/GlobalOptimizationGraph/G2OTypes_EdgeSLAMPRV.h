@@ -190,7 +190,11 @@ class IMUPreIntegration {
 
         EdgeSLAMPRV(const Vector3d &gw) : BaseMultiEdge<9, IMUPreIntegration>(), GravityVec(gw) {
             resize(6);
-        }
+        }/*
+        EdgeSLAMPRV(): BaseMultiEdge<9, IMUPreIntegration>()
+        {
+            resize(6);
+        }*/
 
         bool read(std::istream &is) override { return true; }
 

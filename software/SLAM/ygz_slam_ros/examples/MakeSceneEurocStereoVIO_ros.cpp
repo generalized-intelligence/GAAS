@@ -145,7 +145,7 @@ void mySigintHandler(int sig)
 
         cur_frame_db.save("database.bin");
         
-         for(int i; i<VecLeftImage.size(); i++)
+         for(int i=0; i<VecLeftImage.size(); i++)
          {
              cv::imwrite("./image/left/"+to_string(i)+".png", VecLeftImage[i].clone() );
              cv::imwrite("./image/right/"+to_string(i)+".png", VecRightImage[i].clone() );
