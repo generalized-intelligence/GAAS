@@ -1,3 +1,5 @@
+<img src="https://github.com/generalized-intelligence/GAAS/blob/master/demo/tracking-demo.gif"/>
+
 Object Tracking is used to track objects in videos. The user will draw a bounding box around the to-be tracked object and the algorithms will track the object as the position of the object changes.
 
 There are several different realizations with the same ros interface.
