@@ -12,7 +12,8 @@
 [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
   [![Join Facebook Group at https://www.facebook.com/groups/300340454189266/?ref=bookmarks](https://img.shields.io/badge/Group-Facebook-blue.svg)](https://www.facebook.com/groups/300340454189266/?ref=bookmarks) [![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)](https://twitter.com/GAAS_ooo)   [![Follow Medium at https://medium.com/generalized-intelligence](https://img.shields.io/badge/Medium-Blogs-black.svg)](https://medium.com/generalized-intelligence)
 
-<img width="500" src="https://s2.ax1x.com/2019/05/26/VEIUsI.png"/>
+<img width="350" src="https://s2.ax1x.com/2019/05/26/VEIUsI.png"/>  [<img width="500 " src="https://s2.ax1x.com/2019/05/31/VQgnZn.png" width="160">](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)
+
 
 - [What is GAAS?](#what-is-gaas)
   * [Tutorial for GAAS](#tutorial-for-gaas)
