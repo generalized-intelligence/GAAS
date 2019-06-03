@@ -1,5 +1,5 @@
 <a href="">
-    <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" alt="gaas logo" title="gaas" align="right" height="180" />
+    <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" alt="gaas logo" title="gaas" align="right" height="100" />
 </a>
 
 # Generalized Autonomy Aviation System
