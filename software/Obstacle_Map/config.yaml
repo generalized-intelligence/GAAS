@@ -30,7 +30,7 @@ disparityMax: 20
 disparityMin: 2
 
 # maximum point distance (z)
-distanceMax: 6
+distanceMax: 10
 distanceMin: 0.1
 
 # max/min x and y
@@ -74,7 +74,7 @@ fullDP: 0
 # useful param
 UseRadiusOutlierRemoval: 1
 Radius: 0.05 # meter
-MinNeighbor: 70
+MinNeighbor: 30
 
 # use PCL filtering? be carefull with this option!
 UsePCLfiltering: 0
