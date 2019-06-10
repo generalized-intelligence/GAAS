@@ -1434,45 +1434,6 @@
       </link>
       <pose frame=''>7.23117 7.8776 0 0 -0 0</pose>
     </model>
-    <model name='suv'>
-      <static>1</static>
-      <link name='link'>
-        <collision name='collision'>
-          <pose frame=''>0 0 0 0 0 -1.5708</pose>
-          <geometry>
-            <mesh>
-              <scale>0.06 0.06 0.06</scale>
-              <uri>model://suv/meshes/suv.obj</uri>
-            </mesh>
-          </geometry>
-          <max_contacts>10</max_contacts>
-          <surface>
-            <contact>
-              <ode/>
-            </contact>
-            <bounce/>
-            <friction>
-              <torsional>
-                <ode/>
-              </torsional>
-              <ode/>
-            </friction>
-          </surface>
-        </collision>
-        <visual name='visual'>
-          <pose frame=''>0 0 0 0 0 -1.5708</pose>
-          <geometry>
-            <mesh>
-              <scale>0.06 0.06 0.06</scale>
-              <uri>model://suv/meshes/suv.obj</uri>
-            </mesh>
-          </geometry>
-        </visual>
-        <self_collide>0</self_collide>
-        <kinematic>0</kinematic>
-      </link>
-      <pose frame=''>11.1008 -13.6153 0 0 -0 0</pose>
-    </model>
     <model name='oak_tree_0_clone_0'>
       <static>1</static>
       <link name='link'>
@@ -2111,10 +2072,10 @@
       <pose frame=''>4.87457 0.315548 0 0 -0 0</pose>
     </model>
     <state world_name='default'>
-      <sim_time>959 638000000</sim_time>
-      <real_time>50 37721885</real_time>
-      <wall_time>1556087311 617725053</wall_time>
-      <iterations>24964</iterations>
+      <sim_time>996 332000000</sim_time>
+      <real_time>36 844161802</real_time>
+      <wall_time>1559810121 123555549</wall_time>
+      <iterations>18347</iterations>
       <model name='House 1'>
         <pose frame=''>17.5745 16.149 0 0 -0 0</pose>
         <scale>1 1 1</scale>
@@ -2530,16 +2491,6 @@
         <scale>1 1 1</scale>
         <link name='link'>
           <pose frame=''>-3.34649 10.5704 0 0 -0 0</pose>
-          <velocity>0 0 0 0 -0 0</velocity>
-          <acceleration>0 0 0 0 -0 0</acceleration>
-          <wrench>0 0 0 0 -0 0</wrench>
-        </link>
-      </model>
-      <model name='suv'>
-        <pose frame=''>11.1008 -13.6153 0 0 -0 0</pose>
-        <scale>1 1 1</scale>
-        <link name='link'>
-          <pose frame=''>11.1008 -13.6153 0 0 -0 0</pose>
           <velocity>0 0 0 0 -0 0</velocity>
           <acceleration>0 0 0 0 -0 0</acceleration>
           <wrench>0 0 0 0 -0 0</wrench>
