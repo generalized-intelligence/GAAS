@@ -398,11 +398,11 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
         return;
     }
     cv::Mat imLeftRect, imRightRect;
-    //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
-    //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
+    cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
+    cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
 
-    imLeftRect = cv_ptrLeft->image;
-    imRightRect = cv_ptrRight->image;
+    //imLeftRect = cv_ptrLeft->image;
+    //imRightRect = cv_ptrRight->image;
 
     VehicleAttitude atti;
     atti.q.x() = posemsg.pose.orientation.x;
@@ -471,11 +471,11 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
 //    }
 //
 //    cv::Mat imLeftRect, imRightRect;
-//    //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
-//    //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
+//    cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
+//    cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
 //
-//    imLeftRect = cv_ptrLeft->image;
-//    imRightRect = cv_ptrRight->image;
+//    //imLeftRect = cv_ptrLeft->image;
+//    //imRightRect = cv_ptrRight->image;
 //
 //
 //    bool use_height = false;
@@ -613,11 +613,11 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     }
 
     cv::Mat imLeftRect, imRightRect;
-    //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
-    //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
+    cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
+    cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
 
-    imLeftRect = cv_ptrLeft->image;
-    imRightRect = cv_ptrRight->image;
+    //imLeftRect = cv_ptrLeft->image;
+    //imRightRect = cv_ptrRight->image;
 
 
     bool use_height = false;
@@ -627,7 +627,8 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
       use_height = true;
       height_in = height_list.back();
     }
-
+    gps_list.clear();
+    atti_list.clear();
     if(gps_list.size()==0)
     {
         if(atti_list.size()>0)
@@ -821,6 +822,8 @@ int main(int argc, char **argv) {
 
     fsSettings["LEFT.P"] >> P_l;
     fsSettings["RIGHT.P"] >> P_r;
+    //P_l = cv::Mat::eye(3,3,CV_32F);
+    //P_r = cv::Mat::eye(3,3,CV_32F);
 
     fsSettings["LEFT.R"] >> R_l;
     fsSettings["RIGHT.R"] >> R_r;
@@ -839,6 +842,10 @@ int main(int argc, char **argv) {
         cerr << "ERROR: Calibration parameters to rectify stereo are missing!" << endl;
         return 1;
     }
+    //P_l.at<float>(0,0) = fsSettings["Camera.fx"];
+    //P_l.at<float>(1,1) = fsSettings["Camera.fy"];
+    //P_l.at<float>(0,2) = fsSettings["Camera.cx"];
+    //P_l.at<float>(1,2) = fsSettings["Camera.cy"];
 
     cv::initUndistortRectifyMap(K_l, D_l, R_l, P_l.rowRange(0, 3).colRange(0, 3), cv::Size(cols_l, rows_l), CV_32F, M1l,
                                 M2l);
@@ -872,7 +879,7 @@ int main(int argc, char **argv) {
     
     ros::Subscriber imu_sub = nh.subscribe("/mynteye/imu/data_raw", 1000, FetchImuCallback);
     ros::Subscriber gps_sub = nh.subscribe("/dji_sdk/gps_position",100,FetchGPSCallback);
-    ros::Publisher ygz_odom_vis_pub = nh.advertise<visualization_msgs::Marker>("/ygz_odom_marker",10);
+    ros::Publisher ygz_odom_vis_pub = nh.advertise<visualization_msgs::Marker>("/ygz_odom_marker222",10);
     pVisualOdomPublisher = &ygz_odom_vis_pub;
     VisualOdomMSGindex = 0;
     
