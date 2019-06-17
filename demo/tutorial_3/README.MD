@@ -15,7 +15,7 @@ This tutorial can be organized into the following part:
 
 我们已经推出了开发者套件，并且可以预装 GAAS 以及 Mavros。你可以自己搭配，也可以选择我们为你[组合好的开发平台](https://item.taobao.com/item.htm?id=591140560551).
 
-手把手教学：https://gaas.gitbook.io/guide/wu-ren-ji-zi-dong-jia-shi-xi-lie-part-3-zai-wu-gps-huan-jing-xia-tong-guo-slam-shi-xian-wei-zhi-gu-j
+手把手教学：https://app.gitbook.com/@gaas/s/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-part-3-zai-wu-gps-huan-jing-xia-tong-guo-slam-shi-xian-wei-zhi-gu-j
 
 本讲内容在实机上通过测试，可以实现较为稳定的定点，但是还有很大的优化空间。大家没有把握的情况下我不建议实机测试，因为当SLAM信号中断时会有潜在危险。本讲中的内容会通过Gazebo展示，但是实机上的设置方法也非常类似。
 本讲内容可以分为三个部分：
