@@ -56,7 +56,7 @@ public:
         ros::spinOnce();//Handle all callbacks.
         //一个简单实现:如果两种消息都凑齐至少一个,送一次.GPS有没有无所谓.
         //TODO:delete check gps in this ().
-        bool msg_avail = this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0&&this->GPS_buffer.size()>0;cout<<"TODO:remove GPS here."<<endl;
+        bool msg_avail = this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0&&this->GPS_buffer.size()>0;//cout<<"TODO:remove GPS here."<<endl;
         //bool msg_avail = this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0;
         if(msg_avail)
         {
@@ -135,10 +135,15 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
 		   )> slam_callback(
                                      boost::bind(&slam_buffer_helper,this,boost::ref(this->SLAM_buffer),_1)
                            );
-    AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
-    GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix",10,gps_callback);
-    //SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
-    SLAM_sub = pNH->subscribe("/gaas/slam/pose",10,slam_callback);
+
+    string ahrs_topic_name = (*pSettings)["AHRS_topic_name"];
+    string gps_topic_name = (*pSettings)["GPS_topic_name"];
+    string slam_topic_name = (*pSettings)["SLAM_topic_name"];
+    AHRS_sub = pNH->subscribe(ahrs_topic_name,10,ahrs_callback);
+    GPS_sub = pNH->subscribe(gps_topic_name,10,gps_callback);
+    SLAM_sub = pNH->subscribe(slam_topic_name,10,slam_callback);
+
+    //SLAM_sub = pNH->subscribe("/vins_estimator/odometry",10,slam_callback);
     cout <<"callback function binding finished!"<<endl;
     //
     //
@@ -243,7 +248,7 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
     //check if we have necessary msgs.
     //return true if optimize success.
     bool retval = false;
-    if(this->AHRS_buffer.size()>=1 && this->SLAM_buffer.size()>=1)
+    if(this->AHRS_buffer.size()>=1 && this->SLAM_buffer.size()>=1&&this->GPS_buffer.size()>=1)
     {
         //step<1> add vertex.
         this->pGraph->addGOGFrame();

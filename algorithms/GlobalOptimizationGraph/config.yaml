@@ -1,10 +1,28 @@
 %YAML:1.0
 
 
+
+
+
+
+
+
+
+
+
 INIT_SPIN_TIMES : 10000
 INIT_MAX_TIME_us : 5000000 # 5s.
 
-AHRS_topic_name : "/GAAS/AHRS/attitude"
+#AHRS_topic_name : "/GAAS/AHRS/attitude"
+AHRS_topic_name : "/mavros/local_position/odom"
+GPS_topic_name : "/mavros/global_position/raw/fix"
+SLAM_topic_name : "/gaas/slam/pose"
+#SLAM_topic_name : "/okvis_node/okvis_odometry"
+#GPS_topic_name : "/mavros/global_position/global"
+
+
+
+
 AHRS_AVAIL_MINIMUM : 5
 
 ENABLE_GPS : true
@@ -14,15 +32,18 @@ GPS_AVAIL_MINIMUM : 10
 GPS_AHRS_MAX_TIME_DIFF_s : 0.8
 
 
-GPS_INIT_VARIANCE_THRESHOLD_m : 2.0
-GPS_INIT_ALT_VARIANCE_THRESHOLD_m : 1.0
-GPS_MIN_VARIANCE_LONLAT_m : 0.5 # minimum variance allowed.
-GPS_MIN_VARIANCE_ALT_m : 0.8
-GPS_topic_name : "/mavros/global_position/global"
+#GPS_INIT_VARIANCE_THRESHOLD_m : 2.0
+GPS_INIT_VARIANCE_THRESHOLD_m : 4.0
+GPS_INIT_ALT_VARIANCE_THRESHOLD_m : 2.0
+#GPS_MIN_VARIANCE_LONLAT_m : 0.5 # minimum variance allowed.
+GPS_MIN_VARIANCE_LONLAT_m : 1.0 # minimum variance allowed.
+#GPS_MIN_VARIANCE_ALT_m : 0.8
+GPS_MIN_VARIANCE_ALT_m : 1.8
 GPS_MAX_DELAY_SEC : 0.5
 
-SLAM_AVAIL_MINIMUM : 50
 
+#SLAM_AVAIL_MINIMUM : 30
+SLAM_AVAIL_MINIMUM : 10
 
 #SLAM_AHRS_MAX_TIME_DIFF_s : 0.08
 SLAM_AHRS_MAX_TIME_DIFF_s : 0.8
