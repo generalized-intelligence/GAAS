@@ -63,6 +63,7 @@ class Commander:
 if __name__ == "__main__":
     
     con = Commander()
+    time.sleep(2)
     con.move(1, 0, 0)
     time.sleep(2)
     con.turn(90)
