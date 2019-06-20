@@ -13,6 +13,9 @@
 
 [<img width="390" src = "https://s2.ax1x.com/2019/05/31/VlMV1g.png" >](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)<img width="390" src="https://s2.ax1x.com/2019/05/31/VlME9S.png"/> 
 
+Slack Workspace:https://bit.ly/2Ky8VbV
+Discord: https://discord.gg/cUxYsRc
+
 
 - [What is GAAS?](#what-is-gaas)
   * [Tutorial for GAAS](#tutorial-for-gaas)
