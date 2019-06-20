@@ -11,11 +11,7 @@
 
 <img src = "https://s2.ax1x.com/2019/06/14/V4JkLD.png" >
 
-Slack Workspace:https://bit.ly/2Ky8VbV
-Discord: https://discord.gg/cUxYsRc
-
-[<img width="290" src = "https://s2.ax1x.com/2019/06/20/Vvmy6A.png" >](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)[<img width="290" src="https://s2.ax1x.com/2019/06/20/Vvmsld.png"/>](https://bit.ly/2Ky8VbV)[<img width="290" src="https://s2.ax1x.com/2019/06/20/Vvm6OI.png"/>](https://discord.gg/cUxYsRc)
-
+[<img width="280" src = "https://s2.ax1x.com/2019/06/20/Vvmy6A.png" >](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvmsld.png"/>](https://bit.ly/2Ky8VbV)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvm6OI.png"/>](https://discord.gg/cUxYsRc)
 <img src="https://s2.ax1x.com/2019/06/20/Vvmgmt.png">
 
 - [What is GAAS?](#what-is-gaas)
