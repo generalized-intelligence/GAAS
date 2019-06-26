@@ -11,6 +11,11 @@
 
 [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
   [![Join Facebook Group at https://www.facebook.com/groups/300340454189266/?ref=bookmarks](https://img.shields.io/badge/Group-Facebook-blue.svg)](https://www.facebook.com/groups/300340454189266/?ref=bookmarks) [![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)](https://twitter.com/GAAS_ooo)   [![Follow Medium at https://medium.com/generalized-intelligence](https://img.shields.io/badge/Medium-Blogs-black.svg)](https://medium.com/generalized-intelligence)
+  
+  <img width="900" src = "https://s2.ax1x.com/2019/06/14/V4JkLD.png">
+
+[<img src="https://s2.ax1x.com/2019/06/21/Vz7bNT.png">](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)[<img src="https://s2.ax1x.com/2019/06/21/Vz7sBt.png"/>](https://bit.ly/2Ky8VbV)[<img src="https://s2.ax1x.com/2019/06/21/VzHA8e.png"/>](https://discord.gg/cUxYsRc)
+<img src="https://s2.ax1x.com/2019/06/21/VzI4j1.png">
 
 
 扫码加入 GAAS 微信讨论群（由于现有的群人数都超过 100 人，需要先加 GAAS 管理员，由管理员发送入群邀请）：
