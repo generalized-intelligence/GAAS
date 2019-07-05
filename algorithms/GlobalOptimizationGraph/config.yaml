@@ -21,7 +21,7 @@ GPS_MIN_VARIANCE_ALT_m : 0.8
 GPS_topic_name : "/mavros/global_position/global"
 GPS_MAX_DELAY_SEC : 0.5
 
-SLAM_AVAIL_MINIMUM : 50
+SLAM_AVAIL_MINIMUM : 5 #20
 
 
 #SLAM_AHRS_MAX_TIME_DIFF_s : 0.08

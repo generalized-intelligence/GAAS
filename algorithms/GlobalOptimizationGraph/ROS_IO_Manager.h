@@ -78,6 +78,15 @@ public:
     {
         return this->pGraph;
     }
+    void publish_ahrs_marker(const visualization_msgs::Marker& m)
+    {
+        this->attitude_ahrs.publish(m);
+    }
+    void publish_slam_marker(const visualization_msgs::Marker& m)
+    {
+        this->attitude_slam.publish(m);
+    }
+
 private:
     time_us_t start_time_us;
     double ros_start_time;
@@ -102,6 +111,9 @@ private:
     shared_ptr<GlobalOptimizationGraph> pGraph = nullptr;
     shared_ptr<cv::FileStorage> pSettings;
 
+    ros::Publisher attitude_ahrs;
+    ros::Publisher attitude_slam;
+    int attitude_marker_id = 0;
     //CallbackBufferBlock<xxx_msgs::SceneRetrieveInfo> SceneRetrieve_Buffer;
     //ros::Subscriber SceneRetrieve_sub;
 };
@@ -127,8 +139,11 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     //reference:
     //const boost::function<void(const boost::shared_ptr<M const> &)> callback
     //auto f2 = 
+    attitude_ahrs = this->pNH->advertise<visualization_msgs::Marker>("attitude_ahrs",1);
+    attitude_slam = this->pNH->advertise<visualization_msgs::Marker>("attitude_slam",1);
+
     boost::function<void(const boost::shared_ptr<nav_msgs::Odometry const>&
-		   )> ahrs_callback(boost::bind(&ahrs_buffer_helper,boost::ref(this->AHRS_buffer),_1 ));
+		   )> ahrs_callback(boost::bind(&ahrs_buffer_helper,this,boost::ref(this->AHRS_buffer),_1 ));
     boost::function<void(const boost::shared_ptr<sensor_msgs::NavSatFix const>&
 		   )> gps_callback(boost::bind(&gps_buffer_helper,boost::ref(this->GPS_buffer),_1));
     boost::function<void(const boost::shared_ptr<geometry_msgs::PoseStamped const>&
