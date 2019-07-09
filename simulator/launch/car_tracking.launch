@@ -4,12 +4,12 @@
   </include>
   <!-- Load the URDF into the ROS Parameter Server -->
   <param name="robot_description"
-         command="$(find xacro)/xacro.py '$(find gazebotest)/urdf/my_robot.xacro'" />
+         command="$(find xacro)/xacro.py '$(find mavlink_sitl_gazebo)/urdf/car.xacro'" />
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 
   <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
    <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-        args="-urdf -model my_robot -param robot_description -z 5"/>
+        args="-urdf -model car -param robot_description -z 5"/>
    <!-- PX4 configs -->
     <arg name="interactive" default="true"/>
     <!-- PX4 SITL -->
