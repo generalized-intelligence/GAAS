@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/gaas_folder/GAAS/software/SLAM/ygz_slam_ros/build/devel/setup.sh

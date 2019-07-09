@@ -1,0 +1,89 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+
+# camera topics
+left_img_topic:  /gi/simulation/left/image_raw
+right_img_topic:  /gi/simulation/right/image_raw
+
+# Stereo calibration file name
+calib_file_name: calibration/mynteye2.yml
+
+# Calibration image width and height
+calib_width: 752
+calib_height: 480
+
+# Rectified image width and height
+out_width: 752
+out_height: 480
+
+# Set d=1 for cam to robot frame calibration
+debug: 0
+
+# display image?
+displayImage: 0
+
+# disparity maximum and minimum
+disparityMax: 20
+disparityMin: 2
+
+# maximum point distance (z)
+distanceMax: 10
+distanceMin: 0.1
+
+# max/min x and y
+max_x: 650
+min_x: 102
+max_y: 480
+min_y: 50
+
+# disparity map generation method
+method: 0 # 0 for StereoBM, 1 for StereoSGBM
+
+# conduct stereoRectify?
+conductStereoRectify: 0
+
+# use WLS filter？
+UseWLSfilter: 1
+Lambda: 0
+SigmaColor: 10
+
+# common params for both methods:
+MinDisparity: 7
+NumDisparities: 32
+PreFilterCap: 63
+UniquenessRatio: 115
+SpeckleWindowSize: 0
+
+# for StereoBM (Block Matching) matcher params
+RangeOfDisparity: 16 # dividable by 16
+SizeOfBlockWindow: 7 # must be odd
+PreFilterSize: 255
+SmallerBlockSize: 7
+TextureThreshold: 255
+
+# for StereoSGBM (Semi-Global Block Matching) matcher params
+P1: 700
+P2: 2800
+disp12MaxDiff: 10
+speckleRange: 3
+fullDP: 0
+
+# useful param
+UseRadiusOutlierRemoval: 1
+Radius: 0.05 # meter
+MinNeighbor: 30
+
+# use PCL filtering? be carefull with this option!
+UsePCLfiltering: 0
+UseStatisticalOutlierRemoval: 0
+mean_k: 50
+stdThres: 1
+
+# not implemented yet
+UseConditionalRemoval: 0
+Min: 0.0
+Max: 3.0
+
