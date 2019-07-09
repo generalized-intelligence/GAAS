@@ -48,6 +48,7 @@ void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::
     if(match_success)
     {
         cout<<" Match success! RT mat is: \n"<<RT_mat<<endl;
+        //TODO:publish RT mat!
     }
     else
     {

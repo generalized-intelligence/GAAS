@@ -26,7 +26,7 @@ Flight control and Sensor:
   
   Ampmeter: Shenyang Yingfeng Technology 3-6S 60A
   
-  Laser: LIDAR Lite V3
+  Laser: LIDAR Lite V3 （Optional）
   
   Optic Flow: PX4 FLOW
   

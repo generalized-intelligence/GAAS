@@ -6,6 +6,7 @@ import numpy as np
 
 #check_file='without_gps_log.log'
 
+RANGE=40
 def get_gps_position_by_lines(line):
     if line.find('[GPS_INFO]')>=0 and line.find("GPS_relative_pos")>0:
         print line
@@ -14,8 +15,7 @@ def get_gps_position_by_lines(line):
     return None
 
 def get_slam_position_by_lines(line):
-    if line.find('[SLAM_INFO]')>=0 and line.find("slam position")>0:
-        print line
+    if line.find('[SLAM_INFO]')>=0  and line.find("slam position")>0:#and line.find("slam_orig")>0:#        print line
         print line.split(':')[-1].split(',')
         return map(float,line.split(':')[-1].split(',')[-4:])
     return None
@@ -105,17 +105,17 @@ print ('len x_gps:',len(xs),'len x_slam:',len(xslam),'len x_opt:',len(x_opt))
 ax = plt.subplot(111, projection='3d') # 创建一个三维的绘图工程 
 
 
-ax.scatter(xs, ys, zs, c='y') 
+ax.scatter(xs, ys, zs, c='y',s = 10) 
 #ax.scatter(yslam,zslam,xslam,c = 'b')
-ax.scatter(xslam,yslam,zslam,c='b')
-ax.scatter(x_opt,y_opt,z_opt,c='r')
+ax.scatter(xslam,yslam,zslam,c='b',alpha=0.5,s = 1)
+ax.scatter(x_opt,y_opt,z_opt,c='r',alpha=0.5,s = 1)
 # 绘制数据点 
 ax.set_xlabel('X') 
 ax.set_ylabel('Y') 
 ax.set_zlabel('Z') # 坐标轴 
-#ax.set_xlim3d(-20,20)
-#ax.set_ylim3d(-20,20)
-#ax.set_zlim3d(-20,20)
+ax.set_xlim3d(-1*RANGE,RANGE)
+ax.set_ylim3d(-1*RANGE,RANGE)
+ax.set_zlim3d(-1*RANGE,RANGE)
 plt.show()
 '''
 plt.scatter(xs,ys,alpha=0.6)  # 绘制散点图，透明度为0.6（这样颜色浅一点，比较好看）

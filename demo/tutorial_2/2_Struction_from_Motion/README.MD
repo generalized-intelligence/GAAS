@@ -10,7 +10,7 @@ Steps required to build a 3D model with drones are:
 4. land the drone and process images from rosbag;
 5. upload images to provided website.
 
-See step-by-step guide at: https://gaas.gitbook.io/guide/build-your-own-autonomous-drone-part-2-build-a-3d-model-of-a-building-with-your-drone
+See step-by-step guide at: https://app.gitbook.com/@gaas/s/guide/software-realization-build-your-own-autonomous-drone/build-your-own-autonomous-drone-part-2-build-a-3d-model-of-a-building-with-your-drone
 
 --------
 
