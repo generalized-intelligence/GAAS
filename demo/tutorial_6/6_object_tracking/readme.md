@@ -5,7 +5,10 @@ In the previous tutorials, we talked about how to set up a simulation, how to us
 
 >Please note that GAAS-Object-Tracking is a module of the GAAS project. It doesn't work as a stand-alone tracking software.
 
+Please continue reading on the tutorial at our [GitBook](https://gaas.gitbook.io/).
+
 <img src = "https://s2.ax1x.com/2019/07/09/Zyj6iV.png" >
+
 
 ---
 
@@ -15,3 +18,6 @@ In the previous tutorials, we talked about how to set up a simulation, how to us
 ](https://github.com/generalized-intelligence/GAAS-Object-Tracking.git) 模块进行目标跟踪。注意，此实现比较简单，实际情况下需要使用更为复杂的方法。
 
 >请注意，该全局跟踪是的一个模块，无法独立使用。
+
+请移步到我们的 Gitbook 主页继续阅读[详细教程](https://gaas.gitbook.io/)
+
