@@ -27,11 +27,11 @@ displayImage: 0
 
 # disparity maximum and minimum
 disparityMax: 20
-disparityMin: 2
+disparityMin: 1
 
 # maximum point distance (z)
 distanceMax: 10
-distanceMin: 0.1
+distanceMin: 0.05
 
 # max/min x and y
 max_x: 650
