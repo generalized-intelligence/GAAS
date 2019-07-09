@@ -1,3 +1,4 @@
+:star: Star us on GitHub — it helps!
 # Autonomous Drone Software E06: Basic Object Tracking
 
 In the previous tutorials, we talked about how to set up a simulation, how to use Python to control UAVs and how to use stereo cameras to estimate depth. In today's tutorial, I will briefly go over how to use [GAAS-Object-Tracking
@@ -11,7 +12,7 @@ Please continue reading on the tutorial at our [GitBook](https://gaas.gitbook.io
 
 
 ---
-
+如果觉得教程有帮助，请点右上角:star:以表支持
 # 无人机自动驾驶软件系列 E06: 简单全局目标追踪
 
 前几讲中，我们讲述了如何设置仿真环境，如何通过python控制无人机，如何使用双目进行深度估计。本讲中，我会简要介绍如何通过 [GAAS-Object-Tracking
