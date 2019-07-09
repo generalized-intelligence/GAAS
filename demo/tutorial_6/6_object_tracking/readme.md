@@ -12,7 +12,7 @@ Please continue reading on the tutorial at our [GitBook](https://gaas.gitbook.io
 
 ---
 
-# 无人机自动驾驶软件系列 E06:简单全局目标追踪
+# 无人机自动驾驶软件系列 E06: 简单全局目标追踪
 
 前几讲中，我们讲述了如何设置仿真环境，如何通过python控制无人机，如何使用双目进行深度估计。本讲中，我会简要介绍如何通过 [GAAS-Object-Tracking
 ](https://github.com/generalized-intelligence/GAAS-Object-Tracking.git) 模块进行目标跟踪。注意，此实现比较简单，实际情况下需要使用更为复杂的方法。
