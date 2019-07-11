@@ -74,7 +74,7 @@ find_package(catkin REQUIRED COMPONENTS
                                 nav_msgs
                                 std_msgs
                                 octomap_msgs
-                                octomap_rviz_plugins
+                                #octomap_rviz_plugins
                                 visualization_msgs
                                 tf)
 #find_package(CUDA  REQUIRED)

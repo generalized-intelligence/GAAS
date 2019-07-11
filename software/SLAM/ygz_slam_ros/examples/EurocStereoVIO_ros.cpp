@@ -629,6 +629,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     }
     gps_list.clear();
     atti_list.clear();
+    cout<<"calc:";
     if(gps_list.size()==0)
     {
         if(atti_list.size()>0)
@@ -761,17 +762,22 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
 
     cout<<"EstimatedPose : "<<EstimatedPose.pose.position.x<<", "<<EstimatedPose.pose.position.y<<", "<<EstimatedPose.pose.position.z<<endl;
 
+    final_pose.pose.position.x = EstimatedPose.pose.position.x * cos(pixhawk_heading_rad) + EstimatedPose.pose.position.y * sin(pixhawk_heading_rad);
+    final_pose.pose.position.y = EstimatedPose.pose.position.y * cos(pixhawk_heading_rad) - EstimatedPose.pose.position.x * sin(pixhawk_heading_rad);
+    final_pose.pose.position.z = EstimatedPose.pose.position.z;
+    final_pose.header.stamp =  msgLeft->header.stamp;
+    final_pose.pose.orientation.x = quat.x();
+    final_pose.pose.orientation.y = quat.y();
+    final_pose.pose.orientation.z = quat.z();
+    final_pose.pose.orientation.w = quat.w();
+
+
     if(IMU_valid)
     {
-      final_pose.pose.position.x = EstimatedPose.pose.position.x * cos(pixhawk_heading_rad) + EstimatedPose.pose.position.y * sin(pixhawk_heading_rad);
-      final_pose.pose.position.y = EstimatedPose.pose.position.y * cos(pixhawk_heading_rad) - EstimatedPose.pose.position.x * sin(pixhawk_heading_rad);
-      final_pose.pose.position.z = EstimatedPose.pose.position.z;
-      final_pose.header.stamp =  msgLeft->header.stamp;
-
-      pExternalEstimate->publish(final_pose);
-      pGAAS_SLAM_pose_pub->publish(final_pose);
-      pFakeGPS->publish(EstimatedPose);
+        pExternalEstimate->publish(final_pose);
+        pFakeGPS->publish(EstimatedPose);
     }
+    pGAAS_SLAM_pose_pub->publish(final_pose);
 
 
     //NOTE -----------------------------------------------------------------------------------------------------------
@@ -928,7 +934,7 @@ int main(int argc, char **argv) {
     //ros::Subscriber heading_sub = nh.subscribe<mavros_msgs::State>("mavros/state", 10, heading_cb);
     
     //NOTE drone onboard imu data
-    ros::Subscriber pixhawk_imu_sub = nh.subscribe("/mavros/imu/data", 5, pixhawkIMU_sub);
+    //ros::Subscriber pixhawk_imu_sub = nh.subscribe("/mavros/imu/data", 5, pixhawkIMU_sub);
 
 
     ros::spin();

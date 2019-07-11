@@ -5,7 +5,17 @@
 #include <memory>
 #include <thread>
 #include <chrono>
-
+#include <csignal>
+#include <unistd.h>
+ 
+ 
+void signalHandler( int signum )
+{
+    cout << "Interrupt signal (" << signum << ") received.\n";
+    // 清理并关闭
+    // 终止程序  
+    exit(signum);
+}
 
 
 
@@ -57,7 +67,7 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
 void loop(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pGOG)
 {
     int count = 0;
-    while(true)
+    while(ros::ok())
     {
         bool stateUpdated = pRIM->loopFunc();
         if(stateUpdated)

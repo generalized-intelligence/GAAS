@@ -1,5 +1,5 @@
 /*
-uNavAHRS.cpp
+   uNavAHRS.cpp
 Brian R Taylor
 brian.taylor@bolderflight.com
 Bolder Flight Systems
@@ -198,7 +198,13 @@ bool uNavAHRS::update(float gx,float gy,float gz,float ax,float ay,float az,floa
           _quatVariance(3,0) = _quatM2(3,0)/((float)(_quatCount-1));
         }
       }
-    } else {
+      std::cout<<"gyroVariance:"<<_gyroVariance<<std::endl;
+      std::cout<<"accVariance:"<<_accelVariance<<std::endl;
+      std::cout<<"accMean:"<<_accelMean<<std::endl;
+      std::cout<<"magVariance:"<<_magVariance<<std::endl;
+    }
+    
+    else {
       /* initialize state */
       x_(0,0) = _quatMean(0,0);
       x_(1,0) = _quatMean(1,0);

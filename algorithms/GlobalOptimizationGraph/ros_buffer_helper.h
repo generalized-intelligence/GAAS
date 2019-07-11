@@ -22,7 +22,7 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     cout<<"Is running with gps:"<<state<<endl;
     slam_buffer.onCallbackBlock(*slam_msg);
     visualization_msgs::Marker slam_marker;
-    slam_marker.header.frame_id = "map";
+    slam_marker.header.frame_id = "world";
     slam_marker.header.stamp = ros::Time::now();
     slam_marker.type = visualization_msgs::Marker::ARROW;
     slam_marker.action = visualization_msgs::Marker::ADD;
@@ -59,7 +59,7 @@ void ahrs_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<nav_msgs::Odom
     cout<<"AHRS message received!"<<endl;
     ahrs_buffer.onCallbackBlock(*ahrs_msg);
     visualization_msgs::Marker ahrs_marker;
-    ahrs_marker.header.frame_id = "map";
+    ahrs_marker.header.frame_id = "world";
     ahrs_marker.header.stamp = ros::Time::now();
     ahrs_marker.type = visualization_msgs::Marker::ARROW;
     ahrs_marker.action = visualization_msgs::Marker::ADD;
