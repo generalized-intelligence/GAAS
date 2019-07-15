@@ -20,10 +20,10 @@ namespace ygz {
         double accMeasError2 = 2.0e-3 * 2.0e-3 / 0.005  ;   // 加速度计测量方差
          */
 
-        double gyrBiasRw2 = 2.0e-5 * 2.0e-5;   // 陀螺仪的随机游走方差
-        double accBiasRw2 = 5.0e-3 * 5.0e-3;   // 加速度计随机游走方差
-        double gyrMeasError2 = 1.7e-1 * 1.7e-1;   // 陀螺仪的测量方差
-        double accMeasError2 = 2.0e1 * 2.0e1;   // 加速度计测量方差
+        double gyrBiasRw2 = 7.3979e-05*7.3979e-05;  //2.0e-5 * 2.0e-5;   // 陀螺仪的随机游走方差
+        double accBiasRw2 = 1.2053e-03*1.2053e-03;//5.0e-3 * 5.0e-3;   // 加速度计随机游走方差
+        double gyrMeasError2 = 2.5540e-03*2.5540e-03;//1.7e-1 * 1.7e-1;   // 陀螺仪的测量方差
+        double accMeasError2 = 2.7851e-02*2.7851e-02;//2.0e1 * 2.0e1;   // 加速度计测量方差
         double gravity = 9.810;
 
         size_t numPyramid = 5;
@@ -68,7 +68,8 @@ namespace ygz {
         float GridElementWidthInv;
         float GridElementHeightInv;
 
-        bool trackerUseHistBalance = true;     // Tracker是否要计算gray histogram balance
+        bool trackerUseHistBalance = false;     // Tracker是否要计算gray histogram balance
+        //bool trackerUseHistBalance = true;     // Tracker是否要计算gray histogram balance
 
         int numBackendKeyframes = 10;
         double keyframeTimeGapInit = 0.5;      // 初始化时，两个关键帧之间的时间距离

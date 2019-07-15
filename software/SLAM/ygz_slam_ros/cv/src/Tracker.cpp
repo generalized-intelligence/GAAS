@@ -66,7 +66,7 @@ namespace ygz {
 	    bool use_height
 	    
 			      ) {
-
+        cout<<"entered base::InsertStereo()!"<<endl;
         mpCurrentFrame = shared_ptr<Frame>(new Frame(imRectLeft, imRectRight, timestamp, mpCam, vimu));
         mpCurrentFrame->ComputeImagePyramid();
         

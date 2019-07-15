@@ -65,6 +65,7 @@ namespace ygz {
         double gps_x, double gps_y, double gps_z, bool use_gps, double height, bool use_height)
     {
         
+        cout<<"entered InsertStereo()."<<endl;
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
         
         if (setting::trackerUseHistBalance)
@@ -80,10 +81,10 @@ namespace ygz {
         {
             mpCurrentFrame = shared_ptr<Frame>(new Frame(imRectLeft, imRectRight, timestamp, mpCam, vimu));
         }
-        
+        cout<<"hist balance passed."<<endl;
         shared_ptr<FrameLight> pFrameLight = make_shared<FrameLight>(this->frame_id);
-        this->id_to_frame_map[this->frame_id] = pFrameLight;
-	
+        //this->id_to_frame_map[this->frame_id] = pFrameLight;
+        cout<<"imu vec size:"<<vimu.size()<<endl;
         if (this->mbVisionOnlyMode == false&&vimu.size()>0)
         {
             mvIMUSinceLastKF.insert(mvIMUSinceLastKF.end(), vimu.begin(), vimu.end());   // 追加imu数据
@@ -532,49 +533,61 @@ namespace ygz {
     void TrackerLK::CreateStereoMapPoints() {
 
         // 尝试通过左右双目建立一些地图点
+        //cout<<"in CreateStereoMapPoints()."<<endl;
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
         mpCurrentFrame->AssignFeaturesToGrid();
         mpExtractor->Detect(mpCurrentFrame, true, false);    // extract new keypoints in left eye
-
+        //cout<<"detect."<<endl;
         std::chrono::steady_clock::time_point t3 = std::chrono::steady_clock::now();
         double timeCost2 = std::chrono::duration_cast<std::chrono::duration<double> >(t3 - t1).count();
         LOG(INFO) << "Detect new feature cost time: " << timeCost2 << endl;
 
         // 对未形成地图点的部分进行左右目匹配
         mpMatcher->ComputeStereoMatchesOptiFlow(mpCurrentFrame, true);
-
+        //cout<<"optiflow."<<endl;
         float meanInvDepth = 1.0 / (mpCurrentFrame->ComputeSceneMedianDepth(2) + 1e-9);
-
+        //cout<<"meanInvDepth calced"<<endl;
         int cntMono = 0, cntStereo = 0, cntUpdate = 0;
         // 处理匹配结果
+        //cout<<"mFeaturesLeft.size():"<<mpCurrentFrame->mFeaturesLeft.size()<<endl;
         for (size_t i = 0; i < mpCurrentFrame->mFeaturesLeft.size(); i++) {
+            //cout<<"deref mFeatureLeft["<<i<<"]"<<endl;
             shared_ptr<Feature> feat = mpCurrentFrame->mFeaturesLeft[i];
+            //cout<<"deref mFeatureLeft["<<i<<"] finished."<<endl;
             if (feat == nullptr)
-	    {
+            {
                 continue;
-	    }
+            }
             if (feat->mpPoint == nullptr) 
-	    {
+            {
                 // 来自新的特征点
+                //cout<<"mFeatureLeft["<<i<<"] is new."<<endl;
                 if (feat->mfInvDepth > setting::minNewMapPointInvD && feat->mfInvDepth < setting::maxNewMapPointInvD) {
+                    //cout<<"mFeatureLeft["<<i<<"] maped successfully."<<endl;
                     // 双目匹配成功
                     // we create a map point here
                     shared_ptr<MapPoint> mp(new MapPoint(mpCurrentFrame, i));   // 创建新地图点
                     feat->mpPoint = mp;
 		    
-		    //build obstacle_map
-		    if(this->mBuildObstacleMap)
-		    {
-		        shared_ptr<FrameLight> pFrameLight = this->id_to_frame_map[this->frame_id];
-		        mpCurrentFrame->obs_lock.lock();
-			    PointerObs pObs = make_shared<ObstacleCandidate>(
-				mpCurrentFrame->Rwc().inverse() * (mp->GetWorldPos() - mpCurrentFrame->Ow()),feat
-					  );
-		        pFrameLight->obstacle_list.push_back(pObs); // the 3d pos is relative to its owner KF.
-			mpCurrentFrame->obs_lock.unlock();
-		    }
+                    //build obstacle_map
+                    //if(this->mBuildObstacleMap)
+                    if(false)
+                    {
+                        cout<<"mFeatureLeft["<<i<<"] in obsmap"<<endl;
+                        shared_ptr<FrameLight> pFrameLight = this->id_to_frame_map[this->frame_id];
+                        mpCurrentFrame->obs_lock.lock();
+                        PointerObs pObs = make_shared<ObstacleCandidate>(
+                        mpCurrentFrame->Rwc().inverse() * (mp->GetWorldPos() - mpCurrentFrame->Ow()),feat
+                              );
+                        pFrameLight->obstacle_list.push_back(pObs); // the 3d pos is relative to its owner KF.
+                        mpCurrentFrame->obs_lock.unlock();
+                        cout<<"mFeatureLeft["<<i<<"] quit obsmap"<<endl;
+                    }
                     cntStereo++;
-                } else {
+                 }
+                 else
+                 {
+
                     //cout<<"Dis failed.distance:"<<1.0/feat->mfInvDepth<<endl;
                     // 双目匹配不成功，增加单目特征点
                     feat->mfInvDepth = meanInvDepth;
@@ -582,32 +595,37 @@ namespace ygz {
                     feat->mpPoint = mp;
                     mp->SetStatus(MapPoint::IMMATURE);
                     cntMono++;
-                }
-            } 
+                 }
+            }
             else 
-	    {
-                // 已经关联了地图点
-                if (feat->mpPoint->Status() == MapPoint::IMMATURE) {
+            {
+                //cout<<"mFeatureLeft["<<i<<"] already exist."<<endl;
+                    // 已经关联了地图点
+                if (feat->mpPoint->Status() == MapPoint::IMMATURE)
+                {
                     if (feat->mpPoint->mpRefKF.expired() ||
                         (feat->mpPoint->mpRefKF.expired() == false &&
                          feat->mpPoint->mpRefKF.lock()->mbIsKeyFrame == false))
+                    {
                         feat->mpPoint->mpRefKF = mpCurrentFrame;    // change its reference
-
+                    }
                     if (feat->mfInvDepth > setting::minNewMapPointInvD &&
-                        feat->mfInvDepth < setting::maxNewMapPointInvD) {
+                        feat->mfInvDepth < setting::maxNewMapPointInvD)
+                    {
                         // 逆深度有效，说明在左右目之间匹配到了未成熟的地图点
                         feat->mpPoint->SetStatus(MapPoint::GOOD);
-                        Vector3d ptFrame =
-                                mpCurrentFrame->mpCam->Img2Cam(feat->mPixel) * (1.0 / double(feat->mfInvDepth));
+                        Vector3d ptFrame = mpCurrentFrame->mpCam->Img2Cam(feat->mPixel) * (1.0 / double(feat->mfInvDepth));
                         feat->mpPoint->SetWorldPos(mpCurrentFrame->mRwc * ptFrame + mpCurrentFrame->mOw);
                         cntUpdate++;
-                    } else {
+                    }
+                    else
+                    {
                         // 如果没有，那么将invDepth设成根据地图点世界坐标推算出来的，并保持这个点为IMMATURE
                         Vector3d pw = feat->mpPoint->mWorldPos;
                         feat->mfInvDepth = 1.0 / (mpCurrentFrame->mRcw * pw + mpCurrentFrame->mtcw)[2];
                     }
                 }
-            }
+             }
         }
 
         LOG(INFO) << "new stereo: " << cntStereo << ", new Mono: " << cntMono << ", update immature: " << cntUpdate

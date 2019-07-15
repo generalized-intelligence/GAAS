@@ -417,7 +417,7 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     //LOG(WARNING)<<atti.q.toRotationMatrix()<<endl;
     atti.time_ms = posemsg.header.stamp.toNSec();
     pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
-                                           0,0,0,false,atti,true,0,false);
+                                           0,0,0,false,atti,false,0,false);
     
     
     Vector3d pos = pos_and_atti.translation();
@@ -611,7 +611,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
     }
-
+    cout<<"enter callback"<<endl;
     cv::Mat imLeftRect, imRightRect;
     cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
     cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
@@ -619,50 +619,23 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     //imLeftRect = cv_ptrLeft->image;
     //imRightRect = cv_ptrRight->image;
 
-
+    cout<<"image remaped."<<endl;
     bool use_height = false;
     double height_in = 0;
-    if(height_ever_init && height_list.size()>0)
-    {
-      use_height = true;
-      height_in = height_list.back();
-    }
-    gps_list.clear();
-    atti_list.clear();
-    cout<<"calc:";
-    if(gps_list.size()==0)
-    {
-        if(atti_list.size()>0)
-	    {
-	        pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
-			0,0,0,false,atti_list.back(),true,height_in,use_height);
-        }
-        else
-        {
-            pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
-                    0,0,0,false,VehicleAttitude(),false,height_in,use_height);
-        }
+    //if(height_ever_init && height_list.size()>0)
+    //{
+    //  use_height = true;
+    //  height_in = height_list.back();
+    //}
+    cout<<"height list initiated."<<endl;
+    //gps_list.clear();
+    //atti_list.clear();
+    cout<<"calc:"<<endl;
+    VehicleAttitude temp_obj;
+    pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
+            0,0,0,false,temp_obj,true,height_in,use_height);
 
-    }
-    else
-    {
-        GPS_pos pos = gps_list.back();
-        //system.AddStereoIMU(cv_ptrLeft->image,cv_ptrRight->image,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,true);
-
-        cout<<"Do not use gps."<<endl;
-        if(atti_list.size()>0)
-        {
-            LOG(WARNING)<<"Adding atti into stereo frame"<<endl;
-            pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,false,atti_list.back(),true,height_in,use_height);
-        }
-        else
-        {
-            LOG(WARNING)<<"No atti in queue.frame without atti."<<endl;
-            pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,false,VehicleAttitude(),false,height_in,use_height);
-        }
-
-    }
-
+    cout<<"Stereo IMU info added."<<endl;
     //publish odom!
     {
       Vector3d pos = pos_and_atti.translation();
