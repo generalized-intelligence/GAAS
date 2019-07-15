@@ -1,0 +1,11 @@
+<launch>
+  <node name="okvis_node" pkg="okvis_ros" type="okvis_node" output="screen">
+    <param name="config_filename" value="$(find okvis_ros)/okvis/config/config_DOC1357.yaml" />
+    <param name="mesh_file" value="firefly.dae" />
+    <remap from="/camera0" to="/cam0/image_raw" />
+    <remap from="/camera1" to="/cam1/image_raw" />
+    <remap from="/calibration0" to="/cam0/calibration" />
+    <remap from="/calibration1" to="/cam1/calibration" />
+    <remap from="/imu" to="/imu0" />
+  </node>
+</launch>

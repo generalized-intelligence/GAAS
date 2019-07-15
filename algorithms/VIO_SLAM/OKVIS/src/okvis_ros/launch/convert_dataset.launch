@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="dataset_convertor" pkg="okvis_ros" type="dataset_convertor" output="screen" args="$(arg bag)">  
+    <rosparam file="$(find okvis_ros)/config/dataset_converter.yaml" command="load" ns="/"/>
+  </node>
+</launch>

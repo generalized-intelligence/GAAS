@@ -1,0 +1,15 @@
+#this parameter file stores the topic names of the bag file that has to 
+# be converted
+
+dataset:                      ['okvis_dataset']
+sensors:                      ['cam0','cam1','imu0','vicon']
+data_file:                     'data.csv'
+
+info: 
+  #type: type of sensor 
+  #topic: topic on which the sensor publishes its data, some times the initial '/' is not required
+  #dir(optional): subdirectory in which the data has to be stored 
+  cam0:                       {type: camera, topic: '/cam0/image_raw', data_dir: 'data'}
+  cam1:                       {type: camera, topic: 'cam1/image_raw', data_dir: 'data'}
+  imu0:                       {type: imu, topic: '/imu0'}
+  vicon:                      {type: vicon, topic: '/vicon/sensor_cross/sensor_cross'}

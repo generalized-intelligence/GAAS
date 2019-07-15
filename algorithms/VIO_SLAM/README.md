@@ -1,0 +1,5 @@
+加入一些VIO算法。
+为了在GlobalOptimizationGraph中将两个坐标系之间roll pitch yaw三个自由度的优化通过重力估计简化成一个并提高Visual SLAM的精度，这里引入一些试验性质的VIO算法。
+现在支持OKVIS.如果能解决协议问题，可能会支持VINS.后面考虑支持一些基于EKF的算法,以简化计算量。
+
+算法完善后会移动到software/SLAM下。本目录下的算法建议仅供试用。

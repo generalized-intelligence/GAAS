@@ -1,0 +1,3 @@
+[submodule "okvis"]
+	path = okvis
+	url = https://github.com/ethz-asl/okvis.git
