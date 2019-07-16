@@ -35,7 +35,7 @@ SET(SOURCES  ${PROJECT_SOURCE_DIR}/src/fast_10.cpp
              ${PROJECT_SOURCE_DIR}/src/fast_10_score.cpp
              ${PROJECT_SOURCE_DIR}/src/nonmax_3x3.cpp)
 IF(IS_ARM)
-  LIST(APPEND SOURCES ${PROJECT_SOURCE_DIR}/src/faster_corner_9_neon.cpp)
+  # LIST(APPEND SOURCES ${PROJECT_SOURCE_DIR}/src/faster_corner_9_neon.cpp)
 ELSE()
   LIST(APPEND SOURCES ${PROJECT_SOURCE_DIR}/src/faster_corner_10_sse.cpp)
 ENDIF()
