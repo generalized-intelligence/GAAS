@@ -5,7 +5,6 @@ In Autonomous [Drone Hardware E01](https://github.com/generalized-intelligence/G
 
 
 
-
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=6Dk7oSKf4wE
 " target="_blank"><img src="https://s2.ax1x.com/2019/07/18/ZXeE79.md.png" 
-alt="Step-by-Step PID Tuning with QGroundControl" width="480" height="360" border="10" /></a>
+alt="Step-by-Step PID Tuning with QGroundControl" width=480xp border="10" /></a>
