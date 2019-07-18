@@ -1,6 +1,8 @@
 ## Building a Drone from Scratch
 Check out the first hardware video tutorial below for a demonstration of how to build a drone from scratch. The very same drone will later on be used to demonstrate the implementation of GAAS framework on real drones.
 
+Visit our [GitBook](https://gaas.gitbook.io/guide/) to see more tutorials like this one.
+
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=OAd1oZaF5_I
 " target="_blank"><img src="http://img.youtube.com/vi/OAd1oZaF5_I/0.jpg" 
