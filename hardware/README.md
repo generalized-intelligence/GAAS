@@ -1,8 +1,8 @@
-This repository lists recommended hardware for building your own prototype.
+## List of Recommended Hardware for Building Your Own Prototype
 
-In order to facilitate indoor testing and daily maintenance, we have not selected models that are too large or too small. Excellent performance and easy maintenance are our original intention to build this drone.
+In order to facilitate indoor testing and daily maintenance, we did not select models that are too large or too small. Excellent performance and easy maintenance are our original intention to build this drone.
 
-And if you wish, we could help you buy all of this hardware and send it to you. Or we can send you the links if you could use taobao.com. Please contact us for more details at hi@giai.tech.
+If you wish, we could help you buy all of this hardware and send it to you. Or we can send you the links if you could use taobao.com. Please contact us for more details at hi@gaas.dev.
 
 This is a list of hardware that we used for testing. You may use the same hardware for your prototype:
 
@@ -38,7 +38,7 @@ Communication equipment:
   
   Battray: ACE 3S 5300mah 30C This configuration can fly for about 14 minutes at an outdoor temperature of 0-5 °C. It is believed that better outdoor performance will be achieved under better outdoor conditions.
   
-Plan:
+Hardware Blueprint:
 
   1. Test the stability of each brand of binocular camera.
    
@@ -54,7 +54,7 @@ EKF2_AID_MASK   Attitude control sensor fusion
 
 RC_MAP_OFFB_SW  Get into offboard channel  
 
-**We strongly recommend using the remote control's two-stage switch to enter the offboard mode instead of sending commands via TX2, especially if it has not been tested for long periods of time. Use the remote control to control the chances of entering the offboard to avoid accidents.**
+**We strongly recommend using the remote control's two-stage switch to enter the offboard mode instead of sending commands via TX2, especially if it has not been tested for long periods of time. Use the remote control to avoid accidents.**
 
 SYS_COMPANION   TELEM2 working mode
 
