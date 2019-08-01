@@ -11,7 +11,7 @@ In the previous tutorials, we have talked about how to control your drone with p
 
 Again, I have to stress that you will need some extra work before going to the field test and the algorithms mentioned here are far from optimal. 
 
-To ensure optimal reading experience, [continue reading](https://app.gitbook.com/@gaas/s/guide/software-realization-build-your-own-autonomous-drone/build-your-own-autonomous-drone-part-4-stereo-depth-estimation-octomap-and-path-planning) this tutorial at our dedicated GitBook.
+To ensure optimal reading experience, [continue reading](https://gaas.gitbook.io/guide/) this tutorial at our dedicated GitBook.
 
 ---
 
@@ -26,4 +26,4 @@ To ensure optimal reading experience, [continue reading](https://app.gitbook.com
 
 我需要强调的是，我们提供的算法并不是最优的，你可能需要进行参数调优，甚至更换其中的某一或某几个部分的算法，才能实现较为稳定的实际飞行效果。
 
-为了保证最佳阅读体验，我们将本次教程放到了 GitBook 文档中，[点击这里](https://app.gitbook.com/@gaas/s/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-part-4-shen-du-gu-ji-ba-cha-shu-di-tu-yi-ji-lu-jing-gui-hua)继续阅读。
+为了保证最佳阅读体验，我们将本次教程放到了 GitBook 文档中，[点击这里](https://gaas.gitbook.io/guide/)继续阅读。
