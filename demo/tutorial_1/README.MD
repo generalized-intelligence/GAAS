@@ -56,7 +56,7 @@ to check the connection between PX4 and mavros.
 
 ## OFFBOARD控制以及Gazebo仿真
 
-详细版点此查看：https://www.yuque.com/docs/share/c58215c6-e582-4854-95bf-c395953ada8b
+详细版点此查看：https://gaas.gitbook.io/guide/
 
 此文件夹内包含一些基于 Python 以及 Gazebo 的脚本， 脚本可以用来控制基于 PX4 的无人机在 Offboard 模式下进行指点飞行。使用脚本需要你安装了 mavros， Gazebo7 并且编译了 PX4。
 
