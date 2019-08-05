@@ -86,8 +86,6 @@ void FetchHeightCallback(const double);
 
 ros::Publisher* pVisualOdomPublisher;
 ros::Publisher* pExternalEstimate;
-ros::Publisher* pGAAS_SLAM_pose_pub;
-
 ros::Publisher* SLAMpose;
 ros::Publisher* pFakeGPS;
 
@@ -317,13 +315,15 @@ void deg2rad(double heading_deg)
 
 void pixhawkIMU_sub(const sensor_msgs::Imu &curQ)
 {
+  return;
+}
 
-    pixhawk_imu_data = curQ;
 
-    //decode heading information from pixhawk onbaord IMU quaternion
-    double w = curQ.orientation.w;
-    double z_in = curQ.orientation.z;
-
+void DroneLocalPositionSub(const geometry_msgs::PoseStamped& local_pose)
+{   
+    double w = local_pose.pose.orientation.w;
+    double z_in = local_pose.pose.orientation.z;
+    
     double check_NS = w*z_in;
     double w_abs = abs(w);
     double z_in_abs = abs(z_in);
@@ -343,45 +343,17 @@ void pixhawkIMU_sub(const sensor_msgs::Imu &curQ)
 
     ROS_INFO("Heading received: %f", heading_deg);
 
-    //ROS_INFO("Current Heading is : %f", heading_deg);
-
-    //ignore the first 20 readings and only use values from [20, 60)
-//    if(40 >= imu_idx && imu_idx >= 20)
-//    {
-//        HeadingVec.push_back(heading_deg);
-//        ROS_INFO("Heading received: %f", heading_deg);
-//    }
-//    //average the values we got
-//    else if(imu_idx == 41)
-//    {
-//        float sum = 0;
-//        for(auto n : HeadingVec)
-
-//        {
-//            sum += n;
-//        }
-//
-//        pixhawk_heading = sum/HeadingVec.size();
-//        ROS_INFO("Heading set to: %f", pixhawk_heading);
-//
-//        //set global heading in rad
-//        deg2rad(pixhawk_heading);
-//
-//        //IMU data received, set it valid
-//        IMU_valid = true;
-//    }
-
-
-
     //set global heading in rad
-    deg2rad(heading_deg);
-
+    if(!IMU_valid)
+    {
+      deg2rad(heading_deg);
+    }
+    
     //IMU data received, set it valid
     IMU_valid = true;
 
-
     imu_idx++;
-
+  
 }
 
 void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor_msgs::ImageConstPtr &msgRight,const geometry_msgs::PoseStamped &posemsg)
@@ -446,148 +418,6 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
 }
 
 
-//void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight)
-//{
-//    System& system = *pSystem;
-//
-//    try
-//    {
-//        cv_ptrLeft = cv_bridge::toCvShare(msgLeft);
-//    }
-//    catch (cv_bridge::Exception& e)
-//    {
-//        ROS_ERROR("cv_bridge exception: %s", e.what());
-//        return;
-//    }
-//
-//    try
-//    {
-//        cv_ptrRight = cv_bridge::toCvShare(msgRight);
-//    }
-//    catch (cv_bridge::Exception& e)
-//    {
-//        ROS_ERROR("cv_bridge exception: %s", e.what());
-//        return;
-//    }
-//
-//    cv::Mat imLeftRect, imRightRect;
-//    //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
-//    //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
-//
-//    imLeftRect = cv_ptrLeft->image;
-//    imRightRect = cv_ptrRight->image;
-//
-//
-//    bool use_height = false;
-//    double height_in = 0;
-//    if(height_ever_init && height_list.size()>0)
-//    {
-//        use_height = true;
-//        height_in = height_list.back();
-//    }
-//
-//    if(gps_list.size()==0)
-//    {
-//        if(atti_list.size()>0)
-//        {
-//            pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
-//                                               0,0,0,false,atti_list.back(),true,height_in,use_height);
-//        }
-//        else
-//        {
-//            pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
-//                                               0,0,0,false,VehicleAttitude(),false,height_in,use_height);
-//        }
-//
-//    }
-//    else
-//    {
-//        GPS_pos pos = gps_list.back();
-//        //system.AddStereoIMU(cv_ptrLeft->image,cv_ptrRight->image,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,true);
-//
-//        cout<<"Do not use gps."<<endl;
-//        if(atti_list.size()>0)
-//        {
-//            LOG(WARNING)<<"Adding atti into stereo frame"<<endl;
-//            pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,false,atti_list.back(),true,height_in,use_height);
-//        }
-//        else
-//        {
-//            LOG(WARNING)<<"No atti in queue.frame without atti."<<endl;
-//            pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,false,VehicleAttitude(),false,height_in,use_height);
-//        }
-//
-//    }
-//
-//    //publish odom!
-//    {
-//        Vector3d pos = pos_and_atti.translation();
-//        Matrix3d mat = pos_and_atti.rotationMatrix();
-//        Quaterniond quat(mat);
-//
-//
-//        visualization_msgs::Marker mark;
-//        mark.header.frame_id="/map";
-//        mark.id = VisualOdomMSGindex;
-//        mark.color.a = 0.5;
-//        mark.color.r = 1.0;
-//        mark.pose.position.x = pos[0];
-//        mark.pose.position.y = pos[1];
-//        mark.pose.position.z = pos[2];
-//
-//        mark.pose.orientation.x = quat.x();
-//        mark.pose.orientation.y = quat.y();
-//        mark.pose.orientation.z = quat.z();
-//        mark.pose.orientation.w = quat.w();
-//        mark.scale.x = 0.05;
-//        mark.scale.y = 0.05;
-//        mark.scale.z = 0.05;
-//        mark.action = visualization_msgs::Marker::ADD;
-//        mark.type = visualization_msgs::Marker::ARROW;
-//
-//        pVisualOdomPublisher->publish(mark);
-//        VisualOdomMSGindex+=1;
-//    }
-//
-//
-//    //NOTE publish slam estiamted pose to px4 external pose estimation.----------------------------------------------
-//    //SE3d InversePose = pos_and_atti.inverse();
-//    SE3d InversePose = pos_and_atti;
-//
-//    Vector3d pos = InversePose.translation();
-//    Matrix3d mat = InversePose.rotationMatrix();
-//    Quaterniond quat(mat);
-//
-//    geometry_msgs::PoseStamped EstimatedPose;
-//
-//    EstimatedPose.header.stamp = ros::Time::now();
-//
-//    //ROS uses ENU
-//    EstimatedPose.pose.position.x = pos[1];
-//    EstimatedPose.pose.position.y = pos[2];
-//    EstimatedPose.pose.position.z = pos[0];
-//
-//
-////    EstimatedPose.pose.orientation.x = quat.x();
-////    EstimatedPose.pose.orientation.y = quat.y();
-////    EstimatedPose.pose.orientation.z = quat.z();
-////    EstimatedPose.pose.orientation.w = quat.w();
-//
-//    EstimatedPose.pose.orientation.x = quat.y();
-//    EstimatedPose.pose.orientation.y = quat.z();
-//    EstimatedPose.pose.orientation.z = quat.x();
-//    EstimatedPose.pose.orientation.w = quat.w();
-//
-//    cout<<"EstimatedPose : "<<EstimatedPose.pose.position.x<<", "<<EstimatedPose.pose.position.y<<", "<<EstimatedPose.pose.position.z<<endl;
-//
-//    pExternalEstimate->publish(EstimatedPose);
-//
-//    gps_list.clear();
-//    temp_vimu.clear();
-//    atti_list.clear();
-//}
-
-
 void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight)
 {
     System& system = *pSystem;
@@ -619,7 +449,6 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     imLeftRect = cv_ptrLeft->image;
     imRightRect = cv_ptrRight->image;
 
-
     bool use_height = false;
     double height_in = 0;
     if(height_ever_init && height_list.size()>0)
@@ -632,15 +461,14 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     {
         if(atti_list.size()>0)
 	    {
-	        pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
-			0,0,0,false,atti_list.back(),true,height_in,use_height);
+	        pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),
+	                temp_vimu, 0, 0, 0, false,atti_list.back(),true,height_in,use_height);
         }
         else
         {
             pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
-                    0,0,0,false,VehicleAttitude(),false,height_in,use_height);
+                    0, 0, 0, false, VehicleAttitude(), false, height_in, use_height);
         }
-
     }
     else
     {
@@ -658,17 +486,25 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
             LOG(WARNING)<<"No atti in queue.frame without atti."<<endl;
             pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,false,VehicleAttitude(),false,height_in,use_height);
         }
-
     }
-
+    
+     Quaterniond quat_test_1;
+     
     //publish odom!
     {
       Vector3d pos = pos_and_atti.translation();
-      //SO3d so3 = pos_and_atti.rotationMatrix();
-
       Matrix3d mat = pos_and_atti.rotationMatrix();
+      cout<<"original pose t: "<<pos[0]<<", "<<pos[1]<<", "<<pos[2]<<endl;
 
       Quaterniond quat(mat);
+      quat_test_1 = quat;
+      cout<<"original pose R: "<<mat<<endl;
+      cout<<"original pose q: "<<quat.x()<<", "<<quat.y()<<", "<<quat.z()<<", "<<quat.w()<<endl;
+      
+      Quaterniond temp_q(0,0,0,-1);
+      SO3d tempSO3(temp_q);
+      cout<<"temp so3: "<<tempSO3.matrix()<<endl;
+      
       visualization_msgs::Marker mark;
       mark.header.frame_id="/map";
       mark.id = VisualOdomMSGindex;
@@ -677,7 +513,6 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
       mark.pose.position.x = pos[0];
       mark.pose.position.y = pos[1];
       mark.pose.position.z = pos[2];
-
       mark.pose.orientation.x = quat.x();
       mark.pose.orientation.y = quat.y();
       mark.pose.orientation.z = quat.z();
@@ -687,11 +522,9 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
       mark.scale.z = 0.05;
       mark.action = visualization_msgs::Marker::ADD;
       mark.type = visualization_msgs::Marker::ARROW;
-
-
       pVisualOdomPublisher->publish(mark);
       VisualOdomMSGindex+=1;
-//step 2
+
       geometry_msgs::PoseStamped EstimatedPose_for_obs_avoid;
       EstimatedPose_for_obs_avoid.header.stamp = ros::Time::now();
       auto &pose_obs = EstimatedPose_for_obs_avoid.pose.position;
@@ -707,70 +540,42 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
 
     }
 
-    //NOTE publish slam estiamted pose to px4 external pose estimation.----------------------------------------------
-    SE3d InversePose = pos_and_atti.inverse();
 
-    Vector3d pos = InversePose.translation();
-    Matrix3d mat = InversePose.rotationMatrix();
-    Quaterniond quat(mat);
+    //Convert from original SE3 to px4 drone body frame
+    Matrix3d CustomRotation;
+    CustomRotation << 0, 1, 0, 0, 0, 1, 1, 0, 0;
+    Vector3d CustomTranslation;
+    CustomTranslation << 0, 0, 0;
+    SE3d CustomTransform(CustomRotation, CustomTranslation);
+    
+    cout<<"CustomTransform R and t: "<<CustomTransform.rotationMatrix()<<", "<<CustomTransform.translation()<<endl;
+    
+    //Converted result
+    SE3d DroneFrameSE3 = CustomTransform * pos_and_atti;
+    Vector3d DroneFrameSE3_t = DroneFrameSE3.translation();
+    Matrix3d DroneFrameSE3_R = DroneFrameSE3.rotationMatrix();
+    
+    cout<<"converted pose: "<<DroneFrameSE3_t[0]<<", "<<DroneFrameSE3_t[1]<<", "<<DroneFrameSE3_t[2]<<endl;
+    
+    Quaterniond DroneFrameSE3_Q(DroneFrameSE3_R);
+    cout<<"converted pose q: "<<DroneFrameSE3_Q.x()<<", "<<DroneFrameSE3_Q.y()<<", "<<DroneFrameSE3_Q.z()<<", "<<DroneFrameSE3_Q.w()<<endl;
 
-    geometry_msgs::PoseStamped EstimatedPose, final_pose;
+    geometry_msgs::PoseStamped EstimatedPose;
     EstimatedPose.header.stamp = ros::Time::now();
-    final_pose.header.stamp = ros::Time::now();
 
-    bool NED = false;
-    if(NED)
-    {
-        //ENU -z +x
-        //     | /
-        //     |/
-        //     0____ +y
-        EstimatedPose.pose.position.x = -pos(2,0);
-        EstimatedPose.pose.position.y = -pos(1,0);
-        EstimatedPose.pose.position.z = pos(0,0);
-    }
-    else
-    {
-
-        //NED  +z +y
-        //     | /
-        //     |/
-        //     0____ +x
-        EstimatedPose.pose.position.x = -pos(1,0);
-        EstimatedPose.pose.position.y = -pos(2,0);
-        //EstimatedPose.pose.position.z = -pos(0,0);
-        EstimatedPose.pose.position.z = pos(0,0);
-
-        cout<<"vision pose: "<<EstimatedPose.pose.position.x<<", "<<EstimatedPose.pose.position.y<<", "<<EstimatedPose.pose.position.z<<endl;
-    }
-
-
-    if(publishVisionQuaternion)
-    {
-        EstimatedPose.pose.orientation.x = quat.x();
-        EstimatedPose.pose.orientation.y = quat.y();
-        EstimatedPose.pose.orientation.z = quat.z();
-        EstimatedPose.pose.orientation.w = quat.w();
-    }
-
-
-    EstimatedPose.pose.position.x = EstimatedPose.pose.position.x;
-    EstimatedPose.pose.position.y = EstimatedPose.pose.position.y;
-    EstimatedPose.pose.position.z = EstimatedPose.pose.position.z;
-
-    cout<<"EstimatedPose : "<<EstimatedPose.pose.position.x<<", "<<EstimatedPose.pose.position.y<<", "<<EstimatedPose.pose.position.z<<endl;
-
-    if(IMU_valid)
-    {
-      final_pose.pose.position.x = EstimatedPose.pose.position.x * cos(pixhawk_heading_rad) + EstimatedPose.pose.position.y * sin(pixhawk_heading_rad);
-      final_pose.pose.position.y = EstimatedPose.pose.position.y * cos(pixhawk_heading_rad) - EstimatedPose.pose.position.x * sin(pixhawk_heading_rad);
-      final_pose.pose.position.z = EstimatedPose.pose.position.z;
-      final_pose.header.stamp =  msgLeft->header.stamp;
-
-      pExternalEstimate->publish(final_pose);
-      pGAAS_SLAM_pose_pub->publish(final_pose);
-      pFakeGPS->publish(EstimatedPose);
-    }
+    //NED  +z +y
+    //     | /
+    //     |/
+    //     0____ +x
+    //EstimatedPose.pose.position.x = DroneFrameSE3_t[0];
+    //EstimatedPose.pose.position.y = DroneFrameSE3_t[1];
+    //EstimatedPose.pose.position.z = DroneFrameSE3_t[2];
+    
+    EstimatedPose.pose.position.x = DroneFrameSE3_t[0] * cos(pixhawk_heading_rad) + DroneFrameSE3_t[1] * sin(pixhawk_heading_rad);
+    EstimatedPose.pose.position.y = DroneFrameSE3_t[1] * cos(pixhawk_heading_rad) - DroneFrameSE3_t[0] * sin(pixhawk_heading_rad);
+    EstimatedPose.pose.position.z = DroneFrameSE3_t[2];
+   
+    pExternalEstimate->publish(EstimatedPose);
 
 
     //NOTE -----------------------------------------------------------------------------------------------------------
@@ -906,9 +711,6 @@ int main(int argc, char **argv) {
     //NOTE For px4's external pose estimate
     ros::Publisher px4_external_pose_estimate = nh.advertise<geometry_msgs::PoseStamped>("/mavros/vision_pose/pose",10);
     pExternalEstimate = &px4_external_pose_estimate;
-
-    ros::Publisher vision_pose_publisher_ext = nh.advertise<geometry_msgs::PoseStamped>("/gaas/slam/pose",10);
-    pGAAS_SLAM_pose_pub = &vision_pose_publisher_ext;
     
     //NOTE px4 state 
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("mavros/state", 10, state_cb);
@@ -922,7 +724,9 @@ int main(int argc, char **argv) {
     
     //NOTE drone onboard imu data
     ros::Subscriber pixhawk_imu_sub = nh.subscribe("/mavros/imu/data", 5, pixhawkIMU_sub);
-
+  
+    //NOTE fcu local pos, only need its Q reading to align initial yaw axis
+    ros::Subscriber drone_local_position = nh.subscribe("/mavros/local_position/pose", 5, DroneLocalPositionSub);
 
     ros::spin();
     
