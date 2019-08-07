@@ -1,6 +1,8 @@
 #ifndef GLOBAL_OPTIMIZATION_GRAPH_H
 #define GLOBAL_OPTIMIZATION_GRAPH_H
 
+#include <glog/logging.h>
+
 #include <gtsam/geometry/Pose2.h>
 #include <gtsam/inference/Key.h>
 #include <gtsam/slam/PriorFactor.h>
@@ -25,6 +27,8 @@
 #include "CallbacksBufferBlock.h"
 #include <cmath>
 #include <deque>
+#include <fstream>
+#include <sstream>
 #include <opencv2/opencv.hpp>
 #include "GOG_Frame.h"
 #include "GPS_like.h"
@@ -56,8 +60,8 @@ public:
     //SLAM msg as fixed vertexpr node.
     void addBlockSLAM(int msg_index);//(const geometry_msgs::PoseStamped& SLAM_msg);
 
-    void addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg);
-    void addBlockVelocity(const geometry_msgs::TwistStamped& velocity_msg);
+    void addBlockGPS(int msg_index);//(const sensor_msgs::NavSatFix& GPS_msg);
+    void addBlockVelocity(int msg_index);//(const geometry_msgs::TwistStamped& velocity_msg);
     void addBlockQRCode();
     void addBlockSceneRetriever();
     void addBlockFCAttitude();
@@ -79,10 +83,10 @@ public:
     bool doOptimization()
     {
         //bool retval = false;//if optimize success(edge >=3).
-        GaussNewtonParams parameters;
-        parameters.relativeErrorTol = 1e-5;// Stop iterating once the change in error between steps is less than this value
-        parameters.maxIterations = 10000;// Do not perform more than N iteration steps
-        GaussNewtonOptimizer optimizer(graph, initialEstimate, parameters);// Create the optimizer ...
+        //GaussNewtonParams parameters;
+        //parameters.relativeErrorTol = 1e-5;// Stop iterating once the change in error between steps is less than this value
+        //parameters.maxIterations = 10000;// Do not perform more than N iteration steps
+        //GaussNewtonOptimizer optimizer(graph, initialEstimate, parameters);// Create the optimizer ...
        //Values result = optimizer.optimize();// ... and optimize
         return true;
     }
@@ -126,7 +130,6 @@ private:
     int slam_vertex_index = 0;
     int last_gps_vertex_index = -1;
     int last_gps_vel_index = -1;
-
     double yaw_init_to_slam = 0.0; //GOG初始的y轴 转向 slam的y轴夹角.
     double yaw_init_to_gps = 0.0; //GOG的y轴 到 gps的北 夹角.
     
@@ -176,7 +179,8 @@ bool gps_msg_is_valid(const sensor_msgs::NavSatFix& gps)
 {
     if(gps.status.status>=0 && gps.position_covariance_type>=2)
     {
-        if( sqrt(pow(gps.position_covariance[0],2) + pow(gps.position_covariance[4],2)) < 3 )
+        if( sqrt(pow(gps.position_covariance[0],2) + pow(gps.position_covariance[4],2)) < 30000//3
+											 )
         {
             return true;
         }
@@ -184,12 +188,18 @@ bool gps_msg_is_valid(const sensor_msgs::NavSatFix& gps)
     return false;
 }
 
-void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
+void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::NavSatFix& GPS_msg)
 {
+    LOG(INFO)<<"In addBlockGPS():adding gps pos factor"<<endl;
+    auto GPS_msg = pGPS_Buffer->at(msg_index);
     if (!gps_msg_is_valid(GPS_msg))//unstable observation.
     {
-        cout<<"GPS msg check failed.Return."<<endl;
+        LOG(INFO)<<"GPS msg check failed.Return."<<endl;
         return;
+    }
+    if(slam_vertex_index==0)
+    {
+        cout <<"slam not ready,return."<<endl;
     }
     if (last_gps_vertex_index<0)//初始化GPS.
     {
@@ -210,6 +220,7 @@ void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
     double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
     double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
     cout <<"setting gps measurement!"<<endl;
+    cout <<"slam_vertex_index:"<<slam_vertex_index<<endl;
 
     Vector3d gps_measurement_vec3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),delta_alt);
     bool covariance_valid = (GPS_msg.position_covariance_type >=2);
@@ -218,9 +229,14 @@ void GlobalOptimizationGraph::addBlockGPS(const sensor_msgs::NavSatFix& GPS_msg)
     dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d[0]*sin(yaw_init_to_gps); 
 
     noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
-    graph.add(GPSPose2Factor(gtsam::Symbol('x',slam_vertex_index), Point2(//gps_measurement_vec3d[0],gps_measurement_vec3d[1]
+    LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"    yaw:init to gps"<<yaw_init_to_gps<<endl;
+    graph.add(GPSPose2Factor(slam_vertex_index-1,//gtsam::Symbol('x',slam_vertex_index),
+									 Point2(//gps_measurement_vec3d[0],gps_measurement_vec3d[1]
                                                                    dx,dy), gpsModel));
-    last_gps_vertex_index = slam_vertex_index;
+    cout <<"insert pos at "<<slam_vertex_index-1<<"."<<endl;
+    cout <<"slam buffer size():"<<pSLAM_Buffer->size()<<endl;
+    cout <<"graph.size()"<<graph.size()<<endl;
+    last_gps_vertex_index = slam_vertex_index-1;
     cout<<"[GPS_INFO]GPS_relative_pos:"<<
             gps_measurement_vec3d[0]<<","<<
             gps_measurement_vec3d[1]<<","<<
@@ -287,22 +303,30 @@ const double dy_slam_var = 0.01;
 const double vel_x_var = 0.05;
 const double vel_y_var = 0.05;
 
-void GlobalOptimizationGraph::addBlockVelocity(const geometry_msgs::TwistStamped& velocity_msg)
+void GlobalOptimizationGraph::addBlockVelocity(int msg_index)//(const geometry_msgs::TwistStamped& velocity_msg)
 {
+    LOG(INFO)<<"In addBlockVelocity():adding gps vel factor"<<endl;
+    auto velocity_msg = this->pVelocity_Buffer->at(msg_index);
+    if(slam_vertex_index == 0)
+    {
+        LOG(INFO)<<"slam not ready."<<endl;
+        return;
+    }
     if(last_gps_vel_index == -1)
     {
-        last_gps_vel_index = slam_vertex_index;
+        last_gps_vel_index = slam_vertex_index-1;
+        LOG(INFO) << "Initialized slam-vel msg at slam msg index"<<slam_vertex_index-1<<"!"<<endl;
     }
     else
     {
         //计算差.
         double vx = velocity_msg.twist.linear.x;
         double vy = velocity_msg.twist.linear.y;
-        double dt = pSLAM_Buffer->at(slam_vertex_index).header.stamp.toSec()- pSLAM_Buffer->at(last_gps_vel_index).header.stamp.toSec();
+        double dt = pSLAM_Buffer->at(slam_vertex_index-1).header.stamp.toSec()- pSLAM_Buffer->at(last_gps_vel_index).header.stamp.toSec();
         double dx_vel = vx*dt;
         double dy_vel = vy*dt;
-        double dx_slam = this->pSLAM_Buffer->at(slam_vertex_index).pose.position.x - this->pSLAM_Buffer->at(last_gps_vel_index).pose.position.x;
-        double dy_slam = this->pSLAM_Buffer->at(slam_vertex_index).pose.position.y - this->pSLAM_Buffer->at(last_gps_vel_index).pose.position.y;
+        double dx_slam = this->pSLAM_Buffer->at(slam_vertex_index-1).pose.position.x - this->pSLAM_Buffer->at(last_gps_vel_index).pose.position.x;
+        double dy_slam = this->pSLAM_Buffer->at(slam_vertex_index-1).pose.position.y - this->pSLAM_Buffer->at(last_gps_vel_index).pose.position.y;
         //计算yaw.两种方法：几何法，最小二乘重投影。
         check_and_fix_dx(dx_slam); //避免出现极小。
         check_and_fix_dx(dx_vel);
@@ -312,22 +336,35 @@ void GlobalOptimizationGraph::addBlockVelocity(const geometry_msgs::TwistStamped
         double theta_gps_var = calc_angle_variance(dx_vel,dy_vel,vel_x_var,vel_y_var);
 
         //先计算theta_slam_to_gps;再变换到theta_init_to_gps;
+        LOG(INFO)<<"In addBlockVelocity() we do update yaw: theta_gps:"<<theta_gps*180/3.14159<<"deg;theta_slam:"<<theta_slam*180/3.14159<<"deg."<<endl;
+        LOG(INFO)<<"dx_vel = "<<dx_vel<<",dy_vel = "<<dy_vel<<";dx_slam = "<<dx_slam<<",dy_slam = "<<dy_slam<<endl<<endl;
+        LOG(INFO)<<"original vx: "<<vx<<",vy: "<<vy<<";"<<"dt: "<<dt<<"sec."<<"current index:"<<slam_vertex_index-1<<"prev_index:"<<last_gps_vel_index<<endl;
         double theta_slam_to_gps = theta_gps - theta_slam;
         double yaw_init_to_gps = yaw_init_to_slam - theta_slam_to_gps;
         fix_angle(yaw_init_to_gps);
 
+        LOG(INFO) << "theta slam_to_gps:"<<theta_slam_to_gps<<";yaw init to gps:"<<yaw_init_to_gps*180/3.14159<<" deg."<<endl;
         //sin(yaw_init_to_gps) cos(yaw_init_to_gps)
         double diff_x = cos(-1*yaw_init_to_gps)*dx_vel - sin(-1*yaw_init_to_gps)*dy_vel;
         double diff_y = sin(-1*yaw_init_to_gps)*dy_vel + cos(-1*yaw_init_to_gps)*dx_vel;
-
+        LOG(INFO) << "dx_slam:"<<dx_slam<<",dy_slam:"<<dy_slam<<",dx_vel:"<<dx_vel<<",dy_vel:"<<dy_vel<<"."<<endl;
         if(calcnorm(dx_slam,dy_slam) > 0.1 && calcnorm(dx_vel,dy_vel)>0.1) //认为已经观测到有效的yaw.
         {
+            LOG(INFO) <<"speed matching valid! slam_vertex_index-1: "<<slam_vertex_index-1<<endl;
             //diff_yaw = yaw_init_to_gps - last_yaw_init_to_gps; // last_yaw_init_to_gps //这个应该不产生yaw的观测，因为机身的转动不可观测。
+            cout <<"insert vel at "<<slam_vertex_index-1<<"."<<endl;
+            cout <<"slam buffer size():"<<pSLAM_Buffer->size()<<endl;
             noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.2,0.2,0.1));//for slam diff rotation and translation.
-            graph.emplace_shared<BetweenFactor<Pose2> >(last_gps_vel_index,slam_vertex_index,Pose2(diff_x,diff_y,theta_slam_to_gps - yaw_init_to_gps),model_relative_movement);
-            last_gps_vel_index = slam_vertex_index;
+            graph.emplace_shared<BetweenFactor<Pose2> >(last_gps_vel_index,slam_vertex_index-1,Pose2(diff_x,diff_y,theta_slam_to_gps - yaw_init_to_gps),model_relative_movement);
         }
+        last_gps_vel_index = slam_vertex_index-1;
     }
+}
+
+
+void getDxDyFromSlamMsg(const geometry_msgs::PoseStamped& msg)
+{
+    
 }
 
 void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs::PoseStamped& SLAM_msg)
@@ -338,6 +375,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
     //两种策略：1.来slam消息就立即创建节点
     //          2.等到gps信息到来再创建。
     //这里我们选择第2种。
+    LOG(INFO)<<"In addBlockSLAM(): adding slam msg at slam_vertex_index: "<<slam_vertex_index<<"."<<endl;
     auto SLAM_msg = pSLAM_Buffer->at(msg_index);
     //addGOGFrame(SLAM_msg.pose.position.x,SLAM_msg.pose.position.y);//create a new map 'vertexPR'
     GOG_Frame* pF = new GOG_Frame();
@@ -348,7 +386,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
 
     if (slam_vertex_index >0)
     {
-        //calc diff
+        //calc diff for index
         auto orient = SLAM_msg.pose.orientation;
         Eigen::Quaterniond q_;
         q_.x() = orient.x;q_.y() = orient.y;q_.z() = orient.z;q_.w() = orient.w;
@@ -359,6 +397,20 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         double diff_x,diff_y;
         diff_x = fx*cos(yaw_init_to_slam) - fy*sin(yaw_init_to_slam);
         diff_y = fy*cos(yaw_init_to_slam) + fx*cos(yaw_init_to_slam);
+        //for index-1
+        const geometry_msgs::PoseStamped& slam_msg_old = this->pSLAM_Buffer->at(slam_vertex_index-1);
+        orient = slam_msg_old.pose.orientation;
+        q_.x() = orient.x;q_.y() = orient.y;q_.z() = orient.z;q_.w() = orient.w;
+        R_SLAM_Mat = q_.toRotationMatrix();
+        vec_forward = R_SLAM_Mat*Vector3d(1,0,0);
+        fx = vec_forward[0];fy = vec_forward[1];
+        double oldx,oldy;
+        oldx = fx*cos(yaw_init_to_slam) - fy*sin(yaw_init_to_slam);
+        oldy = fy*cos(yaw_init_to_slam) + fx*cos(yaw_init_to_slam);
+        //minus
+        diff_x -= oldx;
+        diff_y -= oldy;
+
 
         double diff_yaw = (get_yaw_from_slam_msg(SLAM_msg) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(slam_vertex_index-1)));
         noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.2,0.2,0.1));//for slam diff rotation and translation.
@@ -367,14 +419,38 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
 
         p_isam->update(graph,initialEstimate);
         Values currentEstimate = p_isam->estimate();
-        currentEstimate.print("Current estimate: ");
+        LOG(INFO)<<"current yaw_init_to_slam:"<<yaw_init_to_slam*180/3.14159<<" deg."<<endl;
+        cout <<"last state:"<<endl;
+        currentEstimate.at(slam_vertex_index-1).print();
+        //currentEstimate.print("Current estimate: ");
+        /*if(slam_vertex_index%1000 == 0)
+        {
+            GaussNewtonParams parameters;
+            // Stop iterating once the change in error between steps is less than this value
+            parameters.relativeErrorTol = 1e-5;
+            // Do not perform more than N iteration steps
+            parameters.maxIterations = 10000;
+            // Create the optimizer ...
+            GaussNewtonOptimizer optimizer(graph, initialEstimate, parameters);
+            Values result= optimizer.optimize();
+        }*/
+        if(slam_vertex_index%300 == 0)
+        {
+            stringstream ss;
+            ss<<"Pose2SLAMExample_"<<slam_vertex_index/300<<".dot";
+            string path;
+            ss>>path;
+            ofstream os(path.c_str());
+            //graph.bayesTree().saveGraph(os, currentEstimate);
+            p_isam->saveGraph(path.c_str());
+        }
         graph.resize(0);
         initialEstimate.clear();
-
         cout<<"-------- ---------------------------------- --------"<<endl;
     }
     else//init
     {
+        LOG(INFO)<<"Initializing slam factor."<<endl;
         noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.3,0.3,0.1));
         graph.emplace_shared<PriorFactor<Pose2> >(0,Pose2(0,0,0),priorNoise_Absolute);//位置和朝向角都初始化成0.
         get_yaw_from_slam_msg(SLAM_msg);

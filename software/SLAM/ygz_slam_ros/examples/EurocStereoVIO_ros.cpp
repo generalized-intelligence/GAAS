@@ -198,7 +198,7 @@ void FetchImuCallback(const sensor_msgs::Imu& imu)
 		imu.linear_acceleration.z,
 		imu.header.stamp.toNSec() );
   
-  temp_vimu.push_back(t_imu);
+  //temp_vimu.push_back(t_imu);
   //LOG(INFO) << "fecthing imu2" << endl;
 }
 

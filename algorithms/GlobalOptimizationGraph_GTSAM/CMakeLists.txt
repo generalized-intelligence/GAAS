@@ -13,6 +13,7 @@ find_package(OpenCV 3.3.1 REQUIRED)
 #set(g2o_PACKAGE_PATH ${PROJECT_SOURCE_DIR}/Thirdparty/g2o)
 
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
+find_package(Glog)
 find_package(catkin REQUIRED COMPONENTS
     roscpp
     sensor_msgs
@@ -37,6 +38,7 @@ set (THIRD_PARTY_LIBS
 	${EIGEN3_LIBS}
 	${OpenCV_LIBS}
 	${catkin_LIBRARIES}
+        ${GLOG_LIBRARIES}
 )
 add_library(G2OTypesLib G2OTypes.cpp)
 

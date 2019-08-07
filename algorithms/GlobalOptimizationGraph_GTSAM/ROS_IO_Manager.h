@@ -23,6 +23,8 @@
 #include <iostream>
 #include <thread>
 #include <mutex>
+
+#include <glog/logging.h>
 using namespace std;
 unsigned long long micros()//instead of micros in Arduino.h
 {
@@ -95,6 +97,8 @@ public:
     }
 
     std::mutex slam_buf_mutex;
+    std::mutex gps_vel_mutex;
+    std::mutex gps_pos_mutex;
 private:
     time_us_t start_time_us;
     double ros_start_time;
@@ -167,8 +171,9 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
     GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix",10,gps_callback);
     //SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
-    SLAM_sub = pNH->subscribe("/gaas/slam/pose",10,slam_callback);
-    Velocity_sub = pNH->subscribe("/mavros/global_position/raw/gps_vel",10,gps_callback);
+    SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);//("/gaas/slam/pose",10,slam_callback);
+    Velocity_sub = pNH->subscribe("/mavros/global_position/raw/gps_vel",10,velocity_callback);
+    
 
     cout <<"callback function binding finished!"<<endl;
     //SceneRetrieve_sub = pNH->subscribe("/..../,10,....")
@@ -189,19 +194,27 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
         //step<1> add vertex.
         //this->pGraph->addGOGFrame();
         //step<2> add edges.
-        if(this->_gps_pos_update)
-        {
-            this->pGraph->addBlockGPS(this->GPS_buffer.getLastMessage());   //do update.
-            this->_gps_pos_update = false;
-        }
         if(this->_slam_msg_update)
         {
             this->pGraph->addBlockSLAM(this->SLAM_buffer.size()-1);
             this->_slam_msg_update = false;
         }
+
+        if(this->_gps_pos_update)
+        {
+            this->pGraph->addBlockGPS(this->GPS_buffer.size()-1);   //do update.
+            this->_gps_pos_update = false;
+        }
+        if(this->_gps_vel_update)
+        {
+            this->pGraph->addBlockVelocity(this->Velocity_buffer.size()-1);
+            this->_gps_vel_update = false;
+        }
         //do optimization.
         retval = this->pGraph->doOptimization();
         this->slam_buf_mutex.unlock();
+        this->gps_vel_mutex.unlock();
+        this->gps_pos_mutex.unlock();
         //this->pGraph->updateSLAM_AHRS_relative_rotation_translation();
     }
     return retval;

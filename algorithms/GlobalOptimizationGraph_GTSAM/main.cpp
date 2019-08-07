@@ -7,7 +7,7 @@
 #include <chrono>
 #include <csignal>
 #include <unistd.h>
- 
+#include <glog/logging.h>
  
 void signalHandler( int signum )
 {
@@ -28,7 +28,9 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
     fSettings.open(string(argv[1]),cv::FileStorage::READ);
     
     pRIM->setOptimizationGraph(pGOG);
+    
     time_us_t t1 = micros();
+    /*
     int init_spin_times = fSettings["INIT_SPIN_TIMES"];
     for(int i=0;i<init_spin_times;i++)
     {
@@ -48,7 +50,7 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
         {
             std::this_thread::sleep_for(std::chrono::milliseconds(1));//sleep 1ms.
         }
-    }
+    }*/
     
     /*
     if (fSettings["ENABLE_GPS"])
@@ -85,6 +87,8 @@ void loop(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
 
 int main(int argc,char** argv)
 {
+    FLAGS_alsologtostderr = 1;
+    google::InitGoogleLogging(argv[0]);
     //step<1> check input.
     cout<<"Usage:GlobalOptimization_main [config_file_path]"<<endl;
     if (argc<2)

@@ -5,7 +5,7 @@
 void gps_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<sensor_msgs::NavSatFix>& nav_buffer,
 		const boost::shared_ptr<sensor_msgs::NavSatFix const>& nav_msg)
 {
-    bool locked = pRIM->slam_buf_mutex.try_lock();
+    bool locked = pRIM->gps_vel_mutex.try_lock();
     if(!locked)
     {
         return;
@@ -20,6 +20,11 @@ void gps_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<sensor_msgs::Nav
 void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::PoseStamped>& slam_buffer,
 		const boost::shared_ptr<geometry_msgs::PoseStamped const>& slam_msg)
 {
+    bool locked = pRIM->slam_buf_mutex.try_lock();
+    if(!locked)
+    {
+        return;
+    }
     if (pRIM->getGraph() == nullptr)
     {
         cout<<"waiting for gog init.pass this msg."<<endl;
@@ -40,6 +45,7 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     slam_marker.pose.orientation.y = q_.y;
     slam_marker.pose.orientation.z = q_.z;
     slam_marker.pose.orientation.w = q_.w;
+    LOG(INFO)<<"Original SLAM xyz:"<<slam_msg->pose.position.x<<","<<slam_msg->pose.position.y<<","<<slam_msg->pose.position.z<<endl;
     
     slam_marker.scale.x = 4;
     slam_marker.scale.y = 2;
@@ -54,7 +60,14 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
 
 void velocity_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs::TwistStamped>& velocity_buffer,const boost::shared_ptr<geometry_msgs::TwistStamped const>& velocity_msg)
 {
+    bool locked = pRIM->gps_vel_mutex.try_lock();
+    if(!locked)
+    {
+        return;
+    }
+
     cout<<"Velocity msgs received!"<<endl;
+    velocity_msg->header.stamp = ros::Time::now();
     velocity_buffer.onCallbackBlock(*velocity_msg);
     pRIM->_gps_vel_update = true;
 }

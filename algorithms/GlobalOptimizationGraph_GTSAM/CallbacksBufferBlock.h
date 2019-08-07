@@ -6,6 +6,7 @@
 #include <vector>
 #include <deque>
 #include <iostream>
+#include <glog/logging.h>
 using namespace std;
 template <typename T>
 class CallbackBufferBlock
@@ -44,8 +45,8 @@ public:
     {
         if(index >= msgBuffer.size())
         {
-            cout<<"ERROR:dereference index overflow!"<<endl;
-            cout<<"index: "<<index<<",size:"<<msgBuffer.size()<<endl;
+            LOG(ERROR) <<"ERROR:dereference index overflow!"<<endl;
+            LOG(ERROR) <<"index: "<<index<<",size:"<<msgBuffer.size()<<endl;
         }
         return this->msgBuffer[index];
     }
@@ -65,7 +66,7 @@ void CallbackBufferBlock<T>::onCallbackBlock(const T& msg)
     //push_front,push_back();
     //pop_front,pop_back();
     //at(),operator []
-    this->msgBuffer.push_front(msg); //msgBuffer.front() oldest.msgBuffer.end() latest.
+    this->msgBuffer.push_back(msg); //msgBuffer.front() oldest.msgBuffer.end() latest.
     //if (this->msgBuffer.size()>=this->buffer_size)
     //{
     //    this->msgBuffer.pop_back();
@@ -74,7 +75,7 @@ void CallbackBufferBlock<T>::onCallbackBlock(const T& msg)
 template <typename T>
 double CallbackBufferBlock<T>::queryLastMessageTime()
 {
-    double ret_time =  this->msgBuffer.front().header.stamp.toSec();
+    double ret_time =  this->msgBuffer.end().header.stamp.toSec();
     cout<<"MessageTime:"<<ret_time<<endl;
     return ret_time;
 }
@@ -83,7 +84,7 @@ T CallbackBufferBlock<T>::getLastMessage()
 {
     if (this->msgBuffer.size() > 0)
     {
-        return this->msgBuffer.front();
+        return this->msgBuffer.end();
     }
 }
 
