@@ -5,6 +5,7 @@
 void gps_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<sensor_msgs::NavSatFix>& nav_buffer,
 		const boost::shared_ptr<sensor_msgs::NavSatFix const>& nav_msg)
 {
+    LOG(INFO)<<"GPS pos info received!"<<endl;
     bool locked = pRIM->gps_vel_mutex.try_lock();
     if(!locked)
     {
@@ -20,6 +21,7 @@ void gps_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<sensor_msgs::Nav
 void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::PoseStamped>& slam_buffer,
 		const boost::shared_ptr<geometry_msgs::PoseStamped const>& slam_msg)
 {
+    LOG(INFO)<<"SLAM msg received!"<<endl;
     bool locked = pRIM->slam_buf_mutex.try_lock();
     if(!locked)
     {
@@ -33,7 +35,6 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     cout<<"SLAM message received!"<<endl;
     bool state = ( pRIM->getGraph()->getStatus() & 1 );
     cout<<"Is running with gps:"<<state<<endl;
-    slam_buffer.onCallbackBlock(*slam_msg);
     visualization_msgs::Marker slam_marker;
     slam_marker.header.frame_id = "world";
     slam_marker.header.stamp = ros::Time::now();
@@ -45,7 +46,7 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     slam_marker.pose.orientation.y = q_.y;
     slam_marker.pose.orientation.z = q_.z;
     slam_marker.pose.orientation.w = q_.w;
-    LOG(INFO)<<"Original SLAM xyz:"<<slam_msg->pose.position.x<<","<<slam_msg->pose.position.y<<","<<slam_msg->pose.position.z<<endl;
+    auto xyz_original = slam_msg->pose.position;
     
     slam_marker.scale.x = 4;
     slam_marker.scale.y = 2;
@@ -56,10 +57,37 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     slam_marker.color.a = 1;
     pRIM->publish_slam_marker(slam_marker);
     pRIM->_slam_msg_update = true;
+    Quaterniond rot_origin;
+
+    rot_origin.x() = q_.x;
+    rot_origin.y() = q_.y;
+    rot_origin.z() = q_.z;
+    rot_origin.w() = q_.w;
+
+    Vector3d xyz(xyz_original.x,xyz_original.y,xyz_original.z);
+    Matrix3d rotation = rot_origin.toRotationMatrix();
+    rotation = pRIM->SLAM_ROTATION_EIGEN*rotation;
+    xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;
+
+    geometry_msgs::PoseStamped new_msg;
+    new_msg = *slam_msg;
+    new_msg.pose.position.x = xyz[0];
+    new_msg.pose.position.y = xyz[1];
+    new_msg.pose.position.z = xyz[2];
+
+    LOG(INFO)<<"Original SLAM xyz:"<<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<endl;
+    Quaterniond rot_2(rotation);
+    new_msg.pose.orientation.x = rot_2.x();
+    new_msg.pose.orientation.y = rot_2.y();
+    new_msg.pose.orientation.z = rot_2.z();
+    new_msg.pose.orientation.w = rot_2.w();
+    //cout <<pRIM->SLAM_ROTATION_EIGEN<<endl;
+    slam_buffer.onCallbackBlock(new_msg);
 }
 
 void velocity_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs::TwistStamped>& velocity_buffer,const boost::shared_ptr<geometry_msgs::TwistStamped const>& velocity_msg)
 {
+    LOG(INFO)<<"Velo msg received!"<<endl<<endl;;
     bool locked = pRIM->gps_vel_mutex.try_lock();
     if(!locked)
     {
@@ -76,7 +104,7 @@ void velocity_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_m
 void ahrs_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<nav_msgs::Odometry>& ahrs_buffer,
 		const boost::shared_ptr<nav_msgs::Odometry const>& ahrs_msg)
 {
-    cout<<"AHRS message received!"<<endl;
+    //cout<<"AHRS message received!"<<endl;
     ahrs_buffer.onCallbackBlock(*ahrs_msg);
     visualization_msgs::Marker ahrs_marker;
     ahrs_marker.header.frame_id = "world";

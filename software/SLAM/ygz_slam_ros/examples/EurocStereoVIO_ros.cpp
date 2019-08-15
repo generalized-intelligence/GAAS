@@ -446,148 +446,6 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
 }
 
 
-//void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight)
-//{
-//    System& system = *pSystem;
-//
-//    try
-//    {
-//        cv_ptrLeft = cv_bridge::toCvShare(msgLeft);
-//    }
-//    catch (cv_bridge::Exception& e)
-//    {
-//        ROS_ERROR("cv_bridge exception: %s", e.what());
-//        return;
-//    }
-//
-//    try
-//    {
-//        cv_ptrRight = cv_bridge::toCvShare(msgRight);
-//    }
-//    catch (cv_bridge::Exception& e)
-//    {
-//        ROS_ERROR("cv_bridge exception: %s", e.what());
-//        return;
-//    }
-//
-//    cv::Mat imLeftRect, imRightRect;
-//    cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
-//    cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
-//
-//    //imLeftRect = cv_ptrLeft->image;
-//    //imRightRect = cv_ptrRight->image;
-//
-//
-//    bool use_height = false;
-//    double height_in = 0;
-//    if(height_ever_init && height_list.size()>0)
-//    {
-//        use_height = true;
-//        height_in = height_list.back();
-//    }
-//
-//    if(gps_list.size()==0)
-//    {
-//        if(atti_list.size()>0)
-//        {
-//            pos_and_atti = system.AddStereoIMU(imLeftRect, imRightRect, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
-//                                               0,0,0,false,atti_list.back(),true,height_in,use_height);
-//        }
-//        else
-//        {
-//            pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
-//                                               0,0,0,false,VehicleAttitude(),false,height_in,use_height);
-//        }
-//
-//    }
-//    else
-//    {
-//        GPS_pos pos = gps_list.back();
-//        //system.AddStereoIMU(cv_ptrLeft->image,cv_ptrRight->image,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,true);
-//
-//        cout<<"Do not use gps."<<endl;
-//        if(atti_list.size()>0)
-//        {
-//            LOG(WARNING)<<"Adding atti into stereo frame"<<endl;
-//            pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,false,atti_list.back(),true,height_in,use_height);
-//        }
-//        else
-//        {
-//            LOG(WARNING)<<"No atti in queue.frame without atti."<<endl;
-//            pos_and_atti = system.AddStereoIMU(imLeftRect,imRightRect,cv_ptrLeft->header.stamp.toNSec(),temp_vimu,pos.x,pos.y,pos.z,false,VehicleAttitude(),false,height_in,use_height);
-//        }
-//
-//    }
-//
-//    //publish odom!
-//    {
-//        Vector3d pos = pos_and_atti.translation();
-//        Matrix3d mat = pos_and_atti.rotationMatrix();
-//        Quaterniond quat(mat);
-//
-//
-//        visualization_msgs::Marker mark;
-//        mark.header.frame_id="/map";
-//        mark.id = VisualOdomMSGindex;
-//        mark.color.a = 0.5;
-//        mark.color.r = 1.0;
-//        mark.pose.position.x = pos[0];
-//        mark.pose.position.y = pos[1];
-//        mark.pose.position.z = pos[2];
-//
-//        mark.pose.orientation.x = quat.x();
-//        mark.pose.orientation.y = quat.y();
-//        mark.pose.orientation.z = quat.z();
-//        mark.pose.orientation.w = quat.w();
-//        mark.scale.x = 0.05;
-//        mark.scale.y = 0.05;
-//        mark.scale.z = 0.05;
-//        mark.action = visualization_msgs::Marker::ADD;
-//        mark.type = visualization_msgs::Marker::ARROW;
-//
-//        pVisualOdomPublisher->publish(mark);
-//        VisualOdomMSGindex+=1;
-//    }
-//
-//
-//    //NOTE publish slam estiamted pose to px4 external pose estimation.----------------------------------------------
-//    //SE3d InversePose = pos_and_atti.inverse();
-//    SE3d InversePose = pos_and_atti;
-//
-//    Vector3d pos = InversePose.translation();
-//    Matrix3d mat = InversePose.rotationMatrix();
-//    Quaterniond quat(mat);
-//
-//    geometry_msgs::PoseStamped EstimatedPose;
-//
-//    EstimatedPose.header.stamp = ros::Time::now();
-//
-//    //ROS uses ENU
-//    EstimatedPose.pose.position.x = pos[1];
-//    EstimatedPose.pose.position.y = pos[2];
-//    EstimatedPose.pose.position.z = pos[0];
-//
-//
-////    EstimatedPose.pose.orientation.x = quat.x();
-////    EstimatedPose.pose.orientation.y = quat.y();
-////    EstimatedPose.pose.orientation.z = quat.z();
-////    EstimatedPose.pose.orientation.w = quat.w();
-//
-//    EstimatedPose.pose.orientation.x = quat.y();
-//    EstimatedPose.pose.orientation.y = quat.z();
-//    EstimatedPose.pose.orientation.z = quat.x();
-//    EstimatedPose.pose.orientation.w = quat.w();
-//
-//    cout<<"EstimatedPose : "<<EstimatedPose.pose.position.x<<", "<<EstimatedPose.pose.position.y<<", "<<EstimatedPose.pose.position.z<<endl;
-//
-//    pExternalEstimate->publish(EstimatedPose);
-//
-//    gps_list.clear();
-//    temp_vimu.clear();
-//    atti_list.clear();
-//}
-
-
 void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight)
 {
     System& system = *pSystem;
@@ -668,6 +526,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
       VisualOdomMSGindex+=1;
 //step 2
       geometry_msgs::PoseStamped EstimatedPose_for_obs_avoid;
+      EstimatedPose_for_obs_avoid.header.frame_id = "world";
       EstimatedPose_for_obs_avoid.header.stamp = ros::Time::now();
       auto &pose_obs = EstimatedPose_for_obs_avoid.pose.position;
       pose_obs.x = pos(0,0);
@@ -693,64 +552,30 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     EstimatedPose.header.stamp = ros::Time::now();
     final_pose.header.stamp = ros::Time::now();
 
-    bool NED = false;
-    if(NED)
-    {
-        //ENU -z +x
-        //     | /
-        //     |/
-        //     0____ +y
-        EstimatedPose.pose.position.x = -pos(2,0);
-        EstimatedPose.pose.position.y = -pos(1,0);
-        EstimatedPose.pose.position.z = pos(0,0);
-    }
-    else
-    {
+    EstimatedPose.pose.position.x = pos(0,0);
+    EstimatedPose.pose.position.y = pos(1,0);
+    EstimatedPose.pose.position.z = pos(2,0);
 
-        //NED  +z +y
-        //     | /
-        //     |/
-        //     0____ +x
-        EstimatedPose.pose.position.x = -pos(1,0);
-        EstimatedPose.pose.position.y = -pos(2,0);
-        //EstimatedPose.pose.position.z = -pos(0,0);
-        EstimatedPose.pose.position.z = pos(0,0);
-
-        cout<<"vision pose: "<<EstimatedPose.pose.position.x<<", "<<EstimatedPose.pose.position.y<<", "<<EstimatedPose.pose.position.z<<endl;
-    }
-
-
-    if(publishVisionQuaternion)
-    {
-        EstimatedPose.pose.orientation.x = quat.x();
-        EstimatedPose.pose.orientation.y = quat.y();
-        EstimatedPose.pose.orientation.z = quat.z();
-        EstimatedPose.pose.orientation.w = quat.w();
-    }
-
-
-    EstimatedPose.pose.position.x = EstimatedPose.pose.position.x;
-    EstimatedPose.pose.position.y = EstimatedPose.pose.position.y;
-    EstimatedPose.pose.position.z = EstimatedPose.pose.position.z;
+    EstimatedPose.pose.orientation.x = quat.x();
+    EstimatedPose.pose.orientation.y = quat.y();
+    EstimatedPose.pose.orientation.z = quat.z();
+    EstimatedPose.pose.orientation.w = quat.w();
 
     cout<<"EstimatedPose : "<<EstimatedPose.pose.position.x<<", "<<EstimatedPose.pose.position.y<<", "<<EstimatedPose.pose.position.z<<endl;
 
-    final_pose.pose.position.x = EstimatedPose.pose.position.x * cos(pixhawk_heading_rad) + EstimatedPose.pose.position.y * sin(pixhawk_heading_rad);
-    final_pose.pose.position.y = EstimatedPose.pose.position.y * cos(pixhawk_heading_rad) - EstimatedPose.pose.position.x * sin(pixhawk_heading_rad);
-    final_pose.pose.position.z = EstimatedPose.pose.position.z;
+    //final_pose.pose.position.x = EstimatedPose.pose.position.x * cos(pixhawk_heading_rad) + EstimatedPose.pose.position.y * sin(pixhawk_heading_rad);
+    //final_pose.pose.position.y = EstimatedPose.pose.position.y * cos(pixhawk_heading_rad) - EstimatedPose.pose.position.x * sin(pixhawk_heading_rad);
+    //final_pose.pose.position.z = EstimatedPose.pose.position.z;
+    final_pose.pose.position = EstimatedPose.pose.position;
+    final_pose.pose.orientation = EstimatedPose.pose.orientation;
     final_pose.header.stamp =  msgLeft->header.stamp;
-    final_pose.pose.orientation.x = quat.x();
-    final_pose.pose.orientation.y = quat.y();
-    final_pose.pose.orientation.z = quat.z();
-    final_pose.pose.orientation.w = quat.w();
 
-
-    if(IMU_valid)
-    {
-        pExternalEstimate->publish(final_pose);
-        pFakeGPS->publish(EstimatedPose);
-    }
-    pGAAS_SLAM_pose_pub->publish(final_pose);
+    //if(IMU_valid)
+    //{
+    //    pExternalEstimate->publish(final_pose);
+    //    pFakeGPS->publish(EstimatedPose);
+    //}
+    pGAAS_SLAM_pose_pub->publish(EstimatedPose_for_obs_avoid);
 
 
     //NOTE -----------------------------------------------------------------------------------------------------------
@@ -857,7 +682,7 @@ int main(int argc, char **argv) {
     message_filters::Subscriber<sensor_msgs::Image> right_sub(nh, right_topic, 10);
     
     ros::Subscriber imu_sub = nh.subscribe("/mynteye/imu/data_raw", 1000, FetchImuCallback);
-    ros::Subscriber gps_sub = nh.subscribe("/dji_sdk/gps_position",100,FetchGPSCallback);
+    //ros::Subscriber gps_sub = nh.subscribe("/dji_sdk/gps_position",100,FetchGPSCallback);
     ros::Publisher ygz_odom_vis_pub = nh.advertise<visualization_msgs::Marker>("/ygz_odom_marker222",10);
     pVisualOdomPublisher = &ygz_odom_vis_pub;
     VisualOdomMSGindex = 0;
@@ -866,7 +691,7 @@ int main(int argc, char **argv) {
     //ros::Subscriber atti_sub_dji = nh.subscribe("/dji_sdk/attitude",100,FetchAttitudeCallback_dji);
     
     //for PX4 device:
-    ros::Subscriber atti_sub_px4 = nh.subscribe("/mavros/global_position/local",100,FetchAttitudeCallback_px4);
+    //ros::Subscriber atti_sub_px4 = nh.subscribe("/mavros/global_position/local",100,FetchAttitudeCallback_px4);
 
 //old version
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_pol;

@@ -16,6 +16,7 @@
 //#include "uNavAHRS.h"
 #include <memory>
 #include <opencv2/core/persistence.hpp>
+#include <opencv2/core/eigen.hpp>
 #include "CallbacksBufferBlock.h"
 
 #include <sys/time.h>
@@ -99,6 +100,10 @@ public:
     std::mutex slam_buf_mutex;
     std::mutex gps_vel_mutex;
     std::mutex gps_pos_mutex;
+
+
+    cv::Mat SLAM_ROTATION;//fsSettings["LEFT.R"] >> R_l;
+    Matrix3d SLAM_ROTATION_EIGEN;
 private:
     time_us_t start_time_us;
     double ros_start_time;
@@ -143,6 +148,8 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     //step<1> read config.
     this->pSettings = shared_ptr<cv::FileStorage>(new cv::FileStorage ());
     pSettings->open(string(argv[1]),cv::FileStorage::READ);
+    (*pSettings)["SLAM_ROTATION_MAT"] >> this->SLAM_ROTATION;
+    cv2eigen(this->SLAM_ROTATION,SLAM_ROTATION_EIGEN);
     //step<2> init ros.
     ros::init(argc,argv,"GlobalOptimizationGraph_ROSNode");
     this->pNH = new ros::NodeHandle();
@@ -171,7 +178,7 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
     GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix",10,gps_callback);
     //SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
-    SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);//("/gaas/slam/pose",10,slam_callback);
+    SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);//("/SLAM/pose_for_obs_avoid",10,slam_callback);//("/gaas/slam/pose",10,slam_callback);
     Velocity_sub = pNH->subscribe("/mavros/global_position/raw/gps_vel",10,velocity_callback);
     
 

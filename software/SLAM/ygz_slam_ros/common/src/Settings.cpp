@@ -71,9 +71,9 @@ namespace ygz {
         bool trackerUseHistBalance = false;     // Tracker是否要计算gray histogram balance
         //bool trackerUseHistBalance = true;     // Tracker是否要计算gray histogram balance
 
-        int numBackendKeyframes = 10;
+        int numBackendKeyframes = 5;
         double keyframeTimeGapInit = 0.5;      // 初始化时，两个关键帧之间的时间距离
-        double keyframeTimeGapTracking = 0.5;  // 正常跟踪，两个关键帧之间的时间距离
+        double keyframeTimeGapTracking = 0.2;  // 正常跟踪，两个关键帧之间的时间距离
 
         void initSettings() {
             // compute the scale factors in each frame

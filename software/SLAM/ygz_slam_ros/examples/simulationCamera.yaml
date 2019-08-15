@@ -6,9 +6,11 @@
 
 
 # camera and imu topics
-Left: /gi/simulation/left/image_raw 
+Left: /gi/simulation_forward/left/image_raw
+#/gi/simulation/left/image_raw 
         # /multisense_sl/camera/left/image_raw
-Right: /gi/simulation/right/image_raw 
+Right: /gi/simulation_forward/right/image_raw
+#/gi/simulation/right/image_raw 
         # /multisense_sl/camera/right/image_raw
 
 # not used for now
@@ -81,7 +83,7 @@ LEFT.R:  !!opencv-matrix
    rows: 3
    cols: 3
    dt: d
-   data: [0.9995051975828172, -0.004232452030025982, 0.031168034181628675, 0.00404399044045864, 0.9999731738419173, 0.006107187391924209, -0.031193046440691295, -0.005978122308562103, 0.9994955006939314]
+   data: [1,0,0,0,1,0,0,0,1]
 LEFT.P:  !!opencv-matrix
    rows: 3
    cols: 4

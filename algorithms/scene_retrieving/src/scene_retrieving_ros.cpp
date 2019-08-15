@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include <ros/ros.h>
+#include <std_msgs/String.h>
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
 #include <message_filters/subscriber.h>
@@ -18,7 +19,7 @@
 using namespace std;
 
 std::shared_ptr<SceneRetriever> pSceneRetriever;
-
+ros::Publisher Pub;
 
 void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight)
 {
@@ -48,6 +49,13 @@ void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::
     if(match_success)
     {
         cout<<" Match success! RT mat is: \n"<<RT_mat<<endl;
+        std_msgs::String str;
+        stringstream ss;
+        std::string str_content;
+        ss<<"Frame id:"<<0<<","<<1<<";RT:"<<RT_mat;
+        ss>>str_content;
+        str.data = str_content.c_str();
+        Pub.publish(str);
     }
     else
     {
@@ -100,7 +108,7 @@ int main(int argc,char** argv)
     ros::init(argc, argv, "scene_retrieve");
     ros::NodeHandle nh;
 
-
+    Pub = nh.advertise<std_msgs::String>("/gaas/scene_retrieving",10);
     std::shared_ptr<SceneRetriever> pSceneRetrieve(new SceneRetriever(voc_file_path, scene_path));
     pSceneRetriever = pSceneRetrieve;
 

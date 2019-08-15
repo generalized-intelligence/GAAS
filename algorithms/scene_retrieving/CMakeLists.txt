@@ -35,8 +35,8 @@ LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-#                                cv_bridge
-#                                image_transport
+                                cv_bridge
+                                image_transport
                                 roscpp
                                 sensor_msgs
 				geometry_msgs
@@ -44,7 +44,7 @@ find_package(catkin REQUIRED COMPONENTS
 #                                std_msgs
 #                                octomap_msgs
 #                                octomap_rviz_plugins
-                               visualization_msgs
+                                visualization_msgs
 #                               tf
 				)
 
