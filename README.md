@@ -9,7 +9,7 @@
 [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
   [![Join Facebook Group at https://www.facebook.com/groups/300340454189266/?ref=bookmarks](https://img.shields.io/badge/Group-Facebook-blue.svg)](https://www.facebook.com/groups/300340454189266/?ref=bookmarks) [![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)](https://twitter.com/GAAS_ooo)   [![Follow Medium at https://medium.com/generalized-intelligence](https://img.shields.io/badge/Medium-Blogs-black.svg)](https://medium.com/generalized-intelligence)
   
-[<img src = "https://s2.ax1x.com/2019/07/08/ZrtSE9.jpg">](https://forms.gle/UG5fUsUuJr52kP767)
+[<img src = "https://s2.ax1x.com/2019/08/16/mZt6n1.jpg">](forum.gaas.dev)
 
 [<img width="280" src = "https://s2.ax1x.com/2019/06/20/Vvmy6A.png" >](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvmsld.png"/>](https://bit.ly/2Ky8VbV)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvm6OI.png"/>](https://discord.gg/cUxYsRc)
 <img src="https://s2.ax1x.com/2019/06/20/Vvmgmt.png">
