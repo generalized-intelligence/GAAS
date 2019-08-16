@@ -2,7 +2,7 @@
     <img src="https://s2.ax1x.com/2019/01/31/k1TWUU.jpg" alt="gaas logo" title="gaas" align="right" height="100" />
 </a>
 
-# Generalized Aviation -- Generalized Autonomy Aviation System
+# Generalized Autonomy Aviation System
 
 :star: Star us on GitHub — it helps!
 
