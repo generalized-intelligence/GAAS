@@ -49,18 +49,33 @@ public:
     const int STATE_NO_GPS = 0;
     const int STATE_WITH_GPS = 1;
     const int STATE_INITIALIZING = 2;//只有位置,没有yaw.
-    StateTransferManager(GPS_SLAM_MATCHER& matcher,cv::Settings& fSettings)
+    StateTransferManager(GPS_SLAM_MATCHER& matcher,cv::FileStorage& fSettings,NonlinearFactorGraph& graph,GPSExpand& gps_coord)
     {
-        this->pgps_slam_manager = &matcher;
-        patience = fSettings["GPS_RECATCH_PATIENCE"];
+        pSettings = &fSettings;
+        this->pgps_slam_matcher = &matcher;
+        this->patience = (*pSettings)["GPS_RECATCH_PATIENCE"];
+        this->pGraph = &graph;
+        this->pGPS_coord = &gps_coord;
+        LOG(INFO)<<"StateTransferManager Initiated!"<<endl;
     }
-    int updateState(bool gps_valid,int new_gps_id)//返回新状态.
+    void getNewestYawAndVarianceRad(double& newestRad_out,double& newestCoariance_out)
+    {
+        newestRad_out = this->segment_yaw_slam_to_gps_initial.back()
+                                  + 0;
+                                   //this->estimatedBias;//获取对应的值+偏置.(在slam里 减去这个偏置. 后面实现.)
+        newestCoariance_out = this->newestCovariance;//this->segment_yaw_slam_to_gps_initial_variance.back();//获取对应的值
+    }
+    int updateState(bool gps_valid,bool& gpsLoopMode_output)//GPS_Valid只检验GPS和SLAM时间戳 以及gps covariance合格与否
+    //返回新状态,以及在gpsLoopMode_output中给出这次是否应该以回环形式处理.
     {//读取里面GPS消息的状态.
+        //TODO:set this->newestVariance 以提供查询.
+        gpsLoopMode_output = false;
         if(this->currentState==STATE_WITH_GPS)
         {
             if(!gps_valid)
             {
                 gps_invalid_count +=1;
+                const int INVALID_COUNT_THRES=50;//TODO:set into config file.
                 if(gps_invalid_count>INVALID_COUNT_THRES)
                 {
                     this->currentState = STATE_NO_GPS;
@@ -68,35 +83,57 @@ public:
                 }
             }
         }
-        if(this->currentState == STATE_NO_GPS)
+        else if(this->currentState == STATE_INITIALIZING)
+        {
+            if(!gps_valid)
+            {
+                this->patience-=1;
+            }
+            else
+            {
+                bool init_success;
+                int current_patience;
+                double init_yaw,init_yaw_variance;
+                checkMatcherToInitGPSYaw(init_success,init_yaw,init_yaw_variance);
+                if(init_success)
+                {
+                    gpsLoopMode_output = true;
+                    //processGPSRecatch(...);//重新匹配. //这段逻辑放到GlobalOptimizationGraph里.
+                    currentState = STATE_WITH_GPS;
+                    //segment_beginning_match_id.push_back()
+                    //segment_yaw_slam_to_gps_initial.push_back(xxx)
+                    //gps_path_segment_id+=1;
+                }
+                else
+                {
+                    this->patience-=1;
+                }
+            }
+            if(this->patience == 0)
+            {//初始化失败了.
+                this->patience = (*pSettings)["GPS_RECATCH_PATIENCE"];
+                this->currentState = STATE_NO_GPS;
+                this->segment_yaw_calib_beginning_id.pop_back();//反向消除改变.
+            }
+        }
+        else if(this->currentState == STATE_NO_GPS)
         {
             if(gps_valid)
             {
                 //尝试初始化yaw角度.将这个点作为第一个点.
                 this->currentState = STATE_INITIALIZING;//然后有两种可能:初始化成功,或很快再次进入无GPS状态.
-                //segment_yaw_calib_beginning_id.push_back(...)
+                segment_yaw_calib_beginning_id.push_back(pgps_slam_matcher->matchLen()-1);
             }
         }
-        if(this->currentState == STATE_INITIALIZING)
-        {
-            bool init_success;
-            int patience;
-            double init_yaw,init_yaw_variance;
-            checkMatcherToInitGPSYaw(init_success,patience,init_yaw,init_yaw_variance);
-            if(init_success)
-            {
-                //processGPSRecatch(...);//重新匹配.
-                //currentState = STATE_WITH_GPS
-                //segment_beginning_match_id.push_back()
-                //segment_yaw_slam_to_gps_initial.push_back(xxx)
-                //gps_path_segment_id+=1;
-            }
-        }
+        return this->currentState;
     }
-    void checkMatcherToInitGPSYaw(bool& init_success,int& patience,double& init_yaw,double& init_yaw_variance);//初始化成功与否 剩余可重试次数.
-    int getCurrentState()
+    void checkMatcherToInitGPSYaw(bool& init_success,double& init_yaw,double& init_yaw_variance);//初始化成功与否 剩余可重试次数.
+//从STATE_INITIALIZING 进行状态转移.
+    inline int getCurrentState()
     {
+        return this->currentState;
     }
+    /*
     inline int getCurrentSegmentID()
     {
         return this->gps_path_segment_id;
@@ -122,7 +159,7 @@ public:
         {//加入从INITILIZING到WITH_GPS这一段的所有点进优化图.
             graph.emplace_back(match_id.slam_id,match_id.gps_id,Pose2(xxx,xxx,xxx));
         }
-    }
+    }*/
 private:
     int currentState = STATE_NO_GPS;
     int patience;
@@ -131,14 +168,54 @@ private:
     vector<double> segment_yaw_slam_to_gps_initial; // 每一段 初始化时候yaw init to gps.
                                                     //GlobalOptimizationGraph应该从这里读取这个角度.
                                                     //如果要加滤波器,应该要在这里加入.
+    double newestCovariance;
     vector<int> segment_beginning_match_id;//每一段gps-slam都有的轨迹 开始时的match_id.可根据这个查询slam-gps的id和时间.
     vector<int> segment_yaw_calib_beginning_id;
+
     GPS_SLAM_MATCHER* pgps_slam_matcher;
+    NonlinearFactorGraph* pGraph;
+    GPSExpand* pGPS_coord;
     int gps_invalid_count = 0;
+    cv::FileStorage* pSettings;
 };
 
+void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success,double& init_yaw,double& init_yaw_variance)
+//init_success:输出参数,这次初始化是否成功.
+//init_yaw:输出参数.
+//init_yaw_variance:输出参数.
+{
+//????这里先在哪里插入gps-slam对应关系??
+    init_success = false;
+    bool yaw_calc_valid = false;
+    double init_yaw_deg,init_yaw_deg_variance;
 
-
+//取代原来GlobalOptimizationGraph中的实现.
+//->
+    if(this->pgps_slam_matcher->matchLen()>5)
+    {
+        bool yaw_calc_result_valid;
+        double deg,deg_variance;
+        pgps_slam_matcher->check2IndexAndCalcDeltaDeg(0,pgps_slam_matcher->matchLen()-1,//id
+                                                       *pGPS_coord,yaw_calc_result_valid,deg,deg_variance
+                                                        );//尝试计算yaw.
+        if(yaw_calc_result_valid&& deg_variance < 20)//TODO:换成配置文件里的值.
+        //满足variance<这个值 认为初始化成功了.
+        {
+            init_success = true;
+            init_yaw = init_yaw_deg*3.1415926/180;
+            init_yaw_variance = init_yaw_deg_variance*3.1415926/180;
+            LOG(INFO)<<"YAW UPDATED.New value:"<<deg<<" deg,covariance:"<<deg_variance<<" deg."<<endl;
+            double _rad = (deg*3.1415926535)/180;
+            //this->yaw_init_to_gps = fix_angle(_rad);
+            this->segment_yaw_slam_to_gps_initial.push_back(_rad);
+        }   
+    }   
+    else
+    {
+        LOG(INFO)<<"Not in check func.Len:"<<this->pgps_slam_matcher->matchLen()<<endl;
+    }
+//<-
+}
 
 
 

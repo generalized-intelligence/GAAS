@@ -4,6 +4,7 @@
 
 
 #include "GPS_SLAM_Matcher.h"
+#include "StateTransfer.h"
 #include <glog/logging.h>
 
 #include <gtsam/geometry/Pose2.h>
@@ -17,6 +18,8 @@
 #include <gtsam/inference/Symbol.h>
 #include <gtsam/nonlinear/NonlinearISAM.h>
 #include <gtsam/slam/dataset.h> 
+#include <gtsam/nonlinear/ISAM2.h>
+#include <gtsam/nonlinear/ISAM2Params.h>
 
 #include <opencv2/core/persistence.hpp>
 #include <memory>
@@ -129,6 +132,7 @@ public:
         this->pAHRS_Buffer = &AHRSbuf;
 
         this->p_gps_slam_matcher = shared_ptr<GPS_SLAM_MATCHER>(new GPS_SLAM_MATCHER(this->pSLAM_Buffer,this->pGPS_Buffer,&(this->fSettings )) );
+        this->p_state_tranfer_manager = shared_ptr<StateTransferManager>(new StateTransferManager(*p_gps_slam_matcher,this->fSettings,this->graph,this->GPS_coord));
     }
 private:
     cv::FileStorage fSettings;
@@ -143,13 +147,17 @@ public:
     {
         return this->status;
     }
-    void stateTransfer(int new_state);
 private:
     shared_ptr<GPS_SLAM_MATCHER> p_gps_slam_matcher;
+    shared_ptr<StateTransferManager> p_state_tranfer_manager;
+
+
     NonlinearFactorGraph graph;
     Values initialEstimate;
     const int relinearizeInterval = 300;
-    NonlinearISAM* p_isam;//(relinearizeInterval);
+    //NonlinearISAM* p_isam;//(relinearizeInterval);
+    //NonlinearISAM* p_isam;
+    ISAM2* p_isam;
 
     int status = STATUS_NO_GPS_NO_SCENE;
 
@@ -185,7 +193,13 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     this->fSettings.open(string(argv[1]),cv::FileStorage::READ);
     this->GPS_AVAIL_MINIMUM = fSettings["GPS_AVAIL_MINIMUM"];
 
-    p_isam = new NonlinearISAM (relinearizeInterval);
+    //p_isam = new NonlinearISAM (relinearizeInterval);
+    ISAM2Params isam2_params_; //在定義ISAM2例項的時候儲存引數的。
+    isam2_params_.relinearizeThreshold = 0.01;
+    isam2_params_.relinearizeSkip = 1;//多少个变量之后,relinearize.
+    isam2_params_.enableRelinearization = false;//禁止relinearize.
+
+    p_isam = new ISAM2(isam2_params_);
     
     //if a 'vertex' inputs: 
     //Values initialEstimate; initialEstimate.insert(1,Pose2( abs pos and yaw));
@@ -243,8 +257,64 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
         }
         return;
     }*/
+
+
+    //新的方法.
     bool add_match_success = this->p_gps_slam_matcher->addMatch(slam_vertex_index-1,msg_index);
     LOG(INFO)<<"Add match result:"<<add_match_success<<endl;
+    bool inGPSLoopMode_out = false;
+    int newestState = this->p_state_tranfer_manager->updateState(add_match_success,inGPSLoopMode_out);
+    if(newestState == this->p_state_tranfer_manager->STATE_NO_GPS)
+    { // 无有效GPS信号.
+        return;
+    }
+    if(newestState == this->p_state_tranfer_manager->STATE_INITIALIZING)
+    {
+        //add relative_pos only.
+        
+    }
+    if (newestState == this->p_state_tranfer_manager->STATE_WITH_GPS)
+    {
+        if(inGPSLoopMode_out)
+        {
+            //add pos and refine whole map.
+        }
+        else
+        {//常规操作.
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//这些逻辑 放到StateTranfer里面去处理:
+//    更新gps信息.
+//    更新yaw角度.
+//
+//这段代码中用到的GlobalOptimizationGraph的内部变量:
+//    yaw_init_to_gps
+//    GPS_coord
+//    graph //应该用不到.先放进去.
     if(add_match_success && this->p_gps_slam_matcher->matchLen()>5)
     {
         bool yaw_calc_result_valid;
@@ -289,6 +359,9 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             gps_measurement_vec3d[0]<<","<<
             gps_measurement_vec3d[1]<<","<<
             delta_alt<<endl;
+
+//整个都放进去,变成一个东西.这里加一个方法,允许StateTransfer从外面改里面的状态
+
 }
 
 bool check_and_fix_dx(double& dx)
@@ -460,7 +533,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
 	//  parameters.relinearizeThreshold = 0.01;
   	// parameters.relinearizeSkip = 1;
 
-        Values currentEstimate = p_isam->estimate();
+        Values currentEstimate = p_isam->calculateEstimate();//p_isam->estimate();
         LOG(INFO)<<"current yaw_init_to_slam:"<<yaw_init_to_slam*180/3.14159<<" deg."<<endl;
         cout <<"last state:"<<endl;
         currentEstimate.at(slam_vertex_index-1).print();

@@ -27,6 +27,7 @@ SLAM_AVAIL_MINIMUM : 5 #20
 #SLAM_AHRS_MAX_TIME_DIFF_s : 0.08
 SLAM_AHRS_MAX_TIME_DIFF_s : 0.8
 SLAM_T_INFO_WEIGHT : 0.5
+GPS_RECATCH_PATIENCE : 100 # GPS msg 5Hz, 400 means 20s.
 
 SCENE_RETREVE_GPS_AVAIL : false # use scene model gps info?do not recommend.
 
