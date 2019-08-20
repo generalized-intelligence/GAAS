@@ -64,7 +64,7 @@ double fix_angle(double& angle)
     double ret_val = angle;
     return ret_val;
 }
-
+double get_yaw_from_slam_msg(const geometry_msgs::PoseStamped &m);
 class GlobalOptimizationGraph
 {
 public:
@@ -165,7 +165,7 @@ private:
     int last_gps_vertex_index = -1;
     int last_gps_vel_index = -1;
     double yaw_init_to_slam = 0.0; //GOG初始的y轴 转向 slam的y轴夹角.
-    double yaw_init_to_gps = 0.0; //GOG的y轴 到 gps的北 夹角.
+    //double yaw_init_to_gps = 0.0; //GOG的y轴 到 gps的北 夹角.
     
     //message buffers.
     
@@ -271,37 +271,129 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
     if(newestState == this->p_state_tranfer_manager->STATE_INITIALIZING)
     {
         //add relative_pos only.
+        return;//TODO:暂定.未来加入这种情况的绝对位置确定.
         
     }
     if (newestState == this->p_state_tranfer_manager->STATE_WITH_GPS)
     {
         if(inGPSLoopMode_out)
         {
-            //add pos and refine whole map.
+            //add pos and refine whole map.TODO.
+            //step<1>.插入常规点约束.
+            //double dx,dy;
+            //int graph_node_index;
+            //dx =  dy = .....
+            //graph_node_index = ...
+            //Point2 p2_input(dx,dy);
+            //graph.add(GPSPose2Factor(graph_node_index,p2_input,gpsModel));
+            double delta_lon = GPS_msg.longitude - GPS_coord.getLon();
+            double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
+            double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
+
+            bool init_yaw_valid_ = false;
+            double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);//这是和是否回环没关系的.
+            if(!init_yaw_valid_)
+            {
+                LOG(WARNING)<<"init yaw not valid.can not add gps measurement"<<endl;
+                return;
+            }
+            cout <<"setting gps measurement!"<<endl;
+            cout <<"slam_vertex_index:"<<slam_vertex_index<<endl;
+
+            Vector3d gps_measurement_vec3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),delta_alt);
+            bool covariance_valid = (GPS_msg.position_covariance_type >=2);
+            double dx,dy;
+            dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) - gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //     reproject to gog coordinate.
+            dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
+            noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
+            LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
+ 
+            graph.add(GPSPose2Factor(slam_vertex_index-1,//gtsam::Symbol('x',slam_vertex_index),
+                                                                             Point2(//gps_measurement_vec3d[0],    gps_measurement_vec3d[1]        
+                                                                             dx,dy), gpsModel));
+            cout <<"insert pos at "<<slam_vertex_index-1<<"."<<endl;    
+            cout <<"slam buffer size():"<<pSLAM_Buffer->size()<<endl;
+            cout <<"graph.size()"<<graph.size()<<endl;
+            last_gps_vertex_index = slam_vertex_index-1;
+            cout<<"[GPS_INFO]GPS_relative_pos:"<<
+                gps_measurement_vec3d[0]<<","<<
+                gps_measurement_vec3d[1]<<","<<
+                delta_alt<<endl;
+
+
+            LOG(INFO)<<"Loop mode GPS insertion step<1> finished."<<endl;
+
+
+            //step<2>.插入gps测算的转角,位移约束,纠正这期间SLAM yaw的总漂移.
+            //noiseModel::Diagonal::shared_ptr ...
+           
+            auto gps_covar1_ = this->pGPS_Buffer->at( this->p_gps_slam_matcher->at(p_state_tranfer_manager->getLastGPSSLAMMatchID()).gps_index ).position_covariance;//at [0,4,9].
+            auto gps_covar2_ = this->pGPS_Buffer->at(msg_index).position_covariance;
+            int slam_node_index_loop_ = this->p_gps_slam_matcher->at(p_state_tranfer_manager->getLastGPSSLAMMatchID()).slam_index;//回环点的index.
+            double noise_dx_ = sqrt(gps_covar1_[0]*gps_covar1_[0] + gps_covar2_[0]*gps_covar2_[0]);
+            double noise_dy_ = sqrt(gps_covar1_[4]*gps_covar1_[4] + gps_covar2_[4]*gps_covar2_[4]);
+            noiseModel::Diagonal::shared_ptr noise_model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(noise_dx_,noise_dy_,0.1) );//variance for diff rotation and translation.//TODO fill in angle covariance.
+
+            //By using Diagonal::Sigmas, here we do assert that the variance of x,y and yaw are perpendicular.         
+            double delta_lon_relative,delta_lat_relative,delta_alt_relative;
+            delta_lon_relative =  this->pGPS_Buffer->at( this->p_gps_slam_matcher->at(p_state_tranfer_manager->getLastGPSSLAMMatchID()).gps_index ).longitude - this->pGPS_Buffer->at(msg_index).longitude;
+            delta_lat_relative =  this->pGPS_Buffer->at( this->p_gps_slam_matcher->at(p_state_tranfer_manager->getLastGPSSLAMMatchID()).gps_index ).latitude - this->pGPS_Buffer->at(msg_index).latitude;
+            delta_alt_relative =  this->pGPS_Buffer->at( this->p_gps_slam_matcher->at(p_state_tranfer_manager->getLastGPSSLAMMatchID()).gps_index ).altitude - this->pGPS_Buffer->at(msg_index).altitude;
+            Vector3d gps_measurement_vec3d_diff_(delta_lon_relative*1000*GPS_coord.vari_km_per_lon_deg(),delta_lat_relative*1000*GPS_coord.vari_km_per_lat_deg(),delta_alt_relative);
+            
+            double diff_x,diff_y,diff_yaw;
+            diff_x = gps_measurement_vec3d_diff_[0]*cos(yaw_init_to_gps) - gps_measurement_vec3d_diff_[1]*sin(yaw_init_to_gps);
+            diff_y = gps_measurement_vec3d_diff_[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d_diff_[0]*sin(yaw_init_to_gps);
+            double newest_yaw_diff_rad,newest_yaw_diff_rad_variance;
+            this->p_state_tranfer_manager->getNewestYawAndVarianceRad(newest_yaw_diff_rad,newest_yaw_diff_rad_variance);
+            double yaw_error_fix_ = newest_yaw_diff_rad - yaw_init_to_gps;//过程中SLAM yaw产生的漂移.
+            fix_angle(yaw_error_fix_);
+            diff_yaw = get_yaw_from_slam_msg(this->pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(slam_node_index_loop_)) - yaw_error_fix_;//过程中飞机头部转向的角度.SLAM的角度有漂移,要通过GPS测量纠正后再输入.
+            fix_angle(diff_yaw);
+
+            graph.emplace_shared<BetweenFactor<Pose2> >(slam_vertex_index-1,slam_node_index_loop_,Pose2( diff_x,diff_y,diff_yaw),noise_model_relative_movement);
+            LOG(INFO)<<"Loop mode GPS insertion step<2> finished."<<endl;
+            //this->p_isam->update();Values currentEstimate = p_isam->calculateBestEstimate();
+
         }
         else
         {//常规操作.
+            double delta_lon = GPS_msg.longitude - GPS_coord.getLon();
+            double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
+            double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
+            bool init_yaw_valid_ = false;
+            double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);
+            if(!init_yaw_valid_)
+            {
+                LOG(WARNING)<<"init yaw not valid.can not add gps measurement"<<endl;
+                return;
+            }
+            cout <<"setting gps measurement!"<<endl;
+            cout <<"slam_vertex_index:"<<slam_vertex_index<<endl;
+
+            Vector3d gps_measurement_vec3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),delta_alt);
+            bool covariance_valid = (GPS_msg.position_covariance_type >=2);
+            double dx,dy;
+            dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) - gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //     reproject to gog coordinate.
+            dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
+
+            noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
+            LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
+ 
+            graph.add(GPSPose2Factor(slam_vertex_index-1,//gtsam::Symbol('x',slam_vertex_index),
+                                                                             Point2(//gps_measurement_vec3d[0],    gps_measurement_vec3d[1]
+                                                                             dx,dy), gpsModel));
+            cout <<"insert pos at "<<slam_vertex_index-1<<"."<<endl;
+            cout <<"slam buffer size():"<<pSLAM_Buffer->size()<<endl;
+            cout <<"graph.size()"<<graph.size()<<endl;
+            last_gps_vertex_index = slam_vertex_index-1;
+            cout<<"[GPS_INFO]GPS_relative_pos:"<<
+                gps_measurement_vec3d[0]<<","<<
+                gps_measurement_vec3d[1]<<","<<
+                delta_alt<<endl;
+
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -315,6 +407,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
 //    yaw_init_to_gps
 //    GPS_coord
 //    graph //应该用不到.先放进去.
+/*
     if(add_match_success && this->p_gps_slam_matcher->matchLen()>5)
     {
         bool yaw_calc_result_valid;
@@ -359,7 +452,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             gps_measurement_vec3d[0]<<","<<
             gps_measurement_vec3d[1]<<","<<
             delta_alt<<endl;
-
+*/
 //整个都放进去,变成一个东西.这里加一个方法,允许StateTransfer从外面改里面的状态
 
 }

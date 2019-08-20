@@ -80,6 +80,7 @@ public:
                 {
                     this->currentState = STATE_NO_GPS;
                     this->gps_invalid_count = 0;
+                    this->lastGPSSLAMMatchID = this->pgps_slam_matcher->matchLen()-1;
                 }
             }
         }
@@ -100,6 +101,11 @@ public:
                     gpsLoopMode_output = true;
                     //processGPSRecatch(...);//重新匹配. //这段逻辑放到GlobalOptimizationGraph里.
                     currentState = STATE_WITH_GPS;
+                    if(this->everInitWithGPS == false)
+                    {
+                        this->init_yaw_to_world_enu_rad_const = init_yaw;//只有这一次,初始化这个量.
+                        this->everInitWithGPS = true;
+                    }
                     //segment_beginning_match_id.push_back()
                     //segment_yaw_slam_to_gps_initial.push_back(xxx)
                     //gps_path_segment_id+=1;
@@ -126,6 +132,11 @@ public:
             }
         }
         return this->currentState;
+    }
+    inline double getInitYawToWorldRad(bool& valueValid)
+    {
+        valueValid = this->everInitWithGPS;
+        return this->init_yaw_to_world_enu_rad_const;
     }
     void checkMatcherToInitGPSYaw(bool& init_success,double& init_yaw,double& init_yaw_variance);//初始化成功与否 剩余可重试次数.
 //从STATE_INITIALIZING 进行状态转移.
@@ -160,10 +171,15 @@ public:
             graph.emplace_back(match_id.slam_id,match_id.gps_id,Pose2(xxx,xxx,xxx));
         }
     }*/
+    inline int getLastGPSSLAMMatchID()
+    {
+        return this->lastGPSSLAMMatchID;
+    }
 private:
+    bool everInitWithGPS = false;
     int currentState = STATE_NO_GPS;
     int patience;
-
+    double init_yaw_to_world_enu_rad_const = 0;
     int gps_path_segment_id = 0;//第几段有gps的轨迹.
     vector<double> segment_yaw_slam_to_gps_initial; // 每一段 初始化时候yaw init to gps.
                                                     //GlobalOptimizationGraph应该从这里读取这个角度.
@@ -171,6 +187,7 @@ private:
     double newestCovariance;
     vector<int> segment_beginning_match_id;//每一段gps-slam都有的轨迹 开始时的match_id.可根据这个查询slam-gps的id和时间.
     vector<int> segment_yaw_calib_beginning_id;
+    int lastGPSSLAMMatchID = -1;
 
     GPS_SLAM_MATCHER* pgps_slam_matcher;
     NonlinearFactorGraph* pGraph;

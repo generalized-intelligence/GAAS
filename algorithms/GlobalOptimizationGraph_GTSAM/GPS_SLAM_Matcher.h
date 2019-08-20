@@ -147,6 +147,14 @@ public:
         //    valid = true;
         //}
     }
+    slam_gps_match at(int index)
+    {
+        if(index>=this->match_vec.size())
+        {
+            LOG(ERROR)<<"In GPS_SLAM_MATCHER at():index overflow!"<<"match_vec.size():"<<match_vec.size()<<",input index:"<<index<<endl;
+        }
+        return this->match_vec.at(index);
+    }
 private:
     vector<slam_gps_match> match_vec;
     CallbackBufferBlock<geometry_msgs::PoseStamped>* pslam_buf;
