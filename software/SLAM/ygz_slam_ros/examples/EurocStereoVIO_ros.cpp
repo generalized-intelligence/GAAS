@@ -450,6 +450,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
 {
     System& system = *pSystem;
 
+    geometry_msgs::PoseStamped EstimatedPose_for_obs_avoid;
     try
     {
         cv_ptrLeft = cv_bridge::toCvShare(msgLeft);
@@ -477,6 +478,19 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     //imLeftRect = cv_ptrLeft->image;
     //imRightRect = cv_ptrRight->image;
 
+    if(imLeftRect.dims >=2)
+    {
+        cout<<"Dims:"<<imLeftRect.dims<<endl;
+        cv::Mat tmp;
+        cv::cvtColor(imLeftRect,tmp,cv::COLOR_BGR2GRAY);
+        imLeftRect = tmp;
+    }
+    if(imRightRect.dims>=2)
+    {
+        cv::Mat tmp;
+        cv::cvtColor(imRightRect,tmp,cv::COLOR_BGR2GRAY);
+        imRightRect = tmp;
+    }
     cout<<"image remaped."<<endl;
     bool use_height = false;
     double height_in = 0;
@@ -525,7 +539,6 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
       pVisualOdomPublisher->publish(mark);
       VisualOdomMSGindex+=1;
 //step 2
-      geometry_msgs::PoseStamped EstimatedPose_for_obs_avoid;
       EstimatedPose_for_obs_avoid.header.frame_id = "world";
       EstimatedPose_for_obs_avoid.header.stamp = ros::Time::now();
       auto &pose_obs = EstimatedPose_for_obs_avoid.pose.position;

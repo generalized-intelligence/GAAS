@@ -240,7 +240,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
     }
     if(slam_vertex_index==0)
     {
-        cout <<"slam not ready,return."<<endl;
+       LOG(WARNING) <<"In addBlockGPS():slam not ready,return."<<endl;
+       return;
     }
     if (last_gps_vertex_index<0)//初始化GPS.
     {
@@ -266,16 +267,19 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
     int newestState = this->p_state_tranfer_manager->updateState(add_match_success,inGPSLoopMode_out);
     if(newestState == this->p_state_tranfer_manager->STATE_NO_GPS)
     { // 无有效GPS信号.
+        LOG(INFO)<<"Running in addBlockGPS() branch newstate == STATE_NO_GPS"<<endl;
         return;
     }
     if(newestState == this->p_state_tranfer_manager->STATE_INITIALIZING)
     {
         //add relative_pos only.
+        LOG(INFO)<<"Running in addBlockGPS() branch newstate == STATE_INITIALIZING"<<endl;
         return;//TODO:暂定.未来加入这种情况的绝对位置确定.
         
     }
     if (newestState == this->p_state_tranfer_manager->STATE_WITH_GPS)
     {
+        LOG(INFO)<<"Running in addBlockGPS() branch newstate == STATE_WITH_GPS"<<endl;
         if(inGPSLoopMode_out)
         {
             //add pos and refine whole map.TODO.
@@ -326,7 +330,11 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
 
             //step<2>.插入gps测算的转角,位移约束,纠正这期间SLAM yaw的总漂移.
             //noiseModel::Diagonal::shared_ptr ...
-           
+            if(this->p_state_tranfer_manager->getLastGPSSLAMMatchID()<0)
+            { //first time initializing GPS-SLAM matching. No loop to deal with.
+                LOG(INFO)<<"Initializing GPS-SLAM matching for the 1st time.Nothing to do in addBlockGPS-Initializing-Step2."<<endl;
+                return;
+            }
             auto gps_covar1_ = this->pGPS_Buffer->at( this->p_gps_slam_matcher->at(p_state_tranfer_manager->getLastGPSSLAMMatchID()).gps_index ).position_covariance;//at [0,4,9].
             auto gps_covar2_ = this->pGPS_Buffer->at(msg_index).position_covariance;
             int slam_node_index_loop_ = this->p_gps_slam_matcher->at(p_state_tranfer_manager->getLastGPSSLAMMatchID()).slam_index;//回环点的index.

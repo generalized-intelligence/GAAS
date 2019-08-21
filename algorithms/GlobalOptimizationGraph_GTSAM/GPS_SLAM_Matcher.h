@@ -102,6 +102,10 @@ public:
     //需要选择一种策略。
     void check2IndexAndCalcDeltaDeg(int matchindex1,int matchindex2,GPSExpand& GPS_coord,bool& valid,double& delta_deg,double& deg_variance)
     {
+        LOG(INFO)<<"In check2IndexAndCalcDeltaDeg(): matchindex:"<<matchindex1<<","<<matchindex2<<";"<<endl;
+        LOG(INFO)<<"		GPS index:"<<match_vec[matchindex1].gps_index<<","<<match_vec[matchindex2].gps_index<<";"<<endl;
+        LOG(INFO)<<"		SLAM index:"<<match_vec[matchindex1].slam_index<<","<<match_vec[matchindex2].slam_index<<";"<<endl;
+        
         double p1_variance = calc_gps_covariance(pgps_pos_buf->at(match_vec[matchindex1].gps_index));
         double p2_variance = calc_gps_covariance(pgps_pos_buf->at(match_vec[matchindex2].gps_index));
         
