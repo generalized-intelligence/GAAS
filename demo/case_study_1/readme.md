@@ -79,6 +79,7 @@ make posix_sitl_default none_iris
 
 5. In Unreal, click the Play button. The simulation is launched. You should see a drone in the simulator. 
 > Press `F1` key to see a list of shortcuts. You may also open FPS to view FPS at any time. 
+
 ![Play Blocks](https://s2.ax1x.com/2019/08/21/mUkTP0.png)
 
 6. Download [QGroundControl](http://qgroundcontrol.com/), and change the listening port, as shown below: 
@@ -121,14 +122,14 @@ python px4_mavros_run.py
 3. Now we need to set up the AirSim configuration to include the stereo camera. We have provided the configuration file in GAAS.
 ```python
 git pull origin master
-cp (GAAS_PATH)/simulator/airsim/settings.json ~/Documents/AirSim/
+cp (GAAS_PATH)/simulator/AirSim/settings.json ~/Documents/AirSim/
 ```
 > In this config file, GPS has been set to `false,` and the stereo camera is included.
 
 4. After the above steps, let's click the Play button to start the simulation. However, without GPS, the drone will not be able to take off. We need to turn on SLAM to allow the drone to operate in GPS-deficient environment. 
 
 
-5. We have set up a stereo camera with a baseline of 12cm in the configuration file. It is the same setup as GAAS SLAM. Before running SLAM algorithms, we need to publish the camera data from the simulator to ROS. Install the Python Library for Airsim and then under GAAS directory, `simulator/airsim` , run `drone_image_ros.py`. 
+5. We have set up a stereo camera with a baseline of 12cm in the configuration file. It is the same setup as GAAS SLAM. Before running SLAM algorithms, we need to publish the camera data from the simulator to ROS. Install the Python Library for Airsim and then under GAAS directory, `simulator/AirSim` , run `drone_image_ros.py`. 
 
 6. Next, follow [GAAS Tutorial EP03](https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/build-your-own-autonomous-drone-part-3-using-slam-in-gps-denied-environment-for-position-estimation) to use GAAS for inspection of aircraft.
 ![Airplane Fly](https://s2.ax1x.com/2019/08/21/mUEcng.png)
