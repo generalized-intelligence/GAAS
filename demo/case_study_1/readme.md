@@ -83,6 +83,7 @@ make posix_sitl_default none_iris
 ![Play Blocks](https://s2.ax1x.com/2019/08/21/mUkTP0.png)
 
 6. Download [QGroundControl](http://qgroundcontrol.com/), and change the listening port, as shown below: 
+
 ![Common Link](https://s2.ax1x.com/2019/08/21/mUAlQS.png)
 ![Common Link UDP](https://s2.ax1x.com/2019/08/21/mUA4yD.png)
 
@@ -132,6 +133,7 @@ cp (GAAS_PATH)/simulator/AirSim/settings.json ~/Documents/AirSim/
 5. We have set up a stereo camera with a baseline of 12cm in the configuration file. It is the same setup as GAAS SLAM. Before running SLAM algorithms, we need to publish the camera data from the simulator to ROS. Install the Python Library for Airsim and then under GAAS directory, `simulator/AirSim` , run `drone_image_ros.py`. 
 
 6. Next, follow [GAAS Tutorial EP03](https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/build-your-own-autonomous-drone-part-3-using-slam-in-gps-denied-environment-for-position-estimation) to use GAAS for inspection of aircraft.
+
 ![Airplane Fly](https://s2.ax1x.com/2019/08/21/mUEcng.png)
 
 > Note: When using SLAM, go to ` Edit >> Editor Preference` in Unreal to turn off the `Use Less CPU when in Background` , otherwise the frame rate will be affected.
