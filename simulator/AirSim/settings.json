@@ -1,0 +1,81 @@
+{
+  "SimMode" : "Multirotor", 
+  "SettingsVersion" : 1.2, 
+  "SeeDocsAt" : "https://github.com/Microsoft/AirSim/blob/master/docs/settings.md",
+       "Vehicles": {
+         "PX4": {
+           "VehicleType": "PX4Multirotor",
+           "UseSerial": false,
+           "DefaultVehicleState": "Armed",
+           "AutoCreate": true,
+           "PawnPath": "",
+           "EnableCollisionPassthrogh": false,
+           "EnableCollisions": true,
+           "AllowAPIAlways": true,
+           "RC": {
+             "RemoteControlID": 0,
+             "AllowAPIWhenDisconnected": false
+           },
+           "Cameras": {
+             "front-left": {
+               "X": 0.50, "Y": -0.06, "Z": 0.10,
+               "Pitch": 0.0, "Roll": 0.0, "Yaw": 0.0,
+               "CaptureSettings": [
+                {
+                  "ImageType": 0,
+                  "Width": 752,
+                  "Height": 480,
+                  "FOV_Degrees": 90
+                }
+              ]
+             },
+             "front-right": {
+               "X": 0.50, "Y": 0.06, "Z": 0.10,
+               "Pitch": 0.0, "Roll": 0.0, "Yaw": 0.0,
+               "CaptureSettings": [
+                {
+                  "ImageType": 0,
+                  "Width": 752,
+                  "Height": 480,
+                  "FOV_Degrees": 90
+                }
+              ]
+             }
+           },
+           "Sensors": {
+            "Barometer": {
+              "SensorType": 1,
+              "Enabled": true
+            },
+            "Imu": {
+               "SensorType": 2,
+               "Enabled": true
+            },
+            "Gps": {
+               "SensorType": 3,
+               "Enabled": false
+            },
+            "Magnetometer": {
+               "SensorType": 4,
+               "Enabled": true
+            },
+            "Distance": {
+               "SensorType": 5,
+               "Enabled": true
+            },
+            "Lidar1": {
+               "SensorType": 6,
+                "Enabled": true,
+                "NumberOfChannels": 2,
+                "PointsPerSecond": 5000,
+                "RotationsPerSecond": 10,
+                "VerticalFOVUpper": 0.1,
+                "VerticalFOVLower": -0.1,
+                "Range": 40
+            }
+         }
+           
+         }
+   }
+ }
+ 
