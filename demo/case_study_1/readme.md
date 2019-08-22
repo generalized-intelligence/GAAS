@@ -5,6 +5,9 @@ Existing drones are not suitable for such task. First, it requires pilots to ope
 
 This case study shows how to use GAAS to control autonomous drones for aircraft inspection. This case study is based on a real project currently ongoing in the GAAS team. Minor details are changed for confidentiality purpose.
 
+<p align="center">
+<img src="https://github.com/generalized-intelligence/GAAS/blob/master/demo/aircraft_inspection.gif?raw=true"/>
+
 ## What is AirSim?
 
 [AirSim](https://github.com/microsoft/AirSim) is an open-source simulator for drones, cars and more, built on Unreal Engine and developed by Microsoft. Comparing to Gazebo, AirSim has a more realistic simulated environment. AirSim supports PX4 based Hardware-In-The-Loop (HITL) and Software-In-The-Loop (SITL)。
