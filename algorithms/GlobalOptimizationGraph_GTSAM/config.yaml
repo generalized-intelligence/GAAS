@@ -27,7 +27,6 @@ SLAM_AVAIL_MINIMUM : 5 #20
 #SLAM_AHRS_MAX_TIME_DIFF_s : 0.08
 SLAM_AHRS_MAX_TIME_DIFF_s : 0.8
 SLAM_T_INFO_WEIGHT : 0.5
-GPS_RECATCH_PATIENCE : 100 # GPS msg 5Hz, 400 means 20s.
 
 SCENE_RETREVE_GPS_AVAIL : false # use scene model gps info?do not recommend.
 
@@ -37,9 +36,21 @@ VISION_loss_thres : 0.5
 SCENE_RETREVE_loss_thres : 0.3
 
 
+
+#for SLAM-GPS yaw match only:
+SLAM_GPS_DELAY_THRESHOLD : 0.5
+GPS_POS_THRES_m : 50
+
+
+
 OPTIMIZATION_GRAPH_KF_WIND_LEN : 10
 
+SLAM_ROTATION_MAT: !!opencv-matrix
+    rows: 3
+    cols: 3
+    dt: d
+    data: [ 0,0,-1,
+            0,1,0,
+            1,0,0]
+GPS_RECATCH_PATIENCE: 30
 
-
-
-...

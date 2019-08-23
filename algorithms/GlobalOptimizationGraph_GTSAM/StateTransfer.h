@@ -49,13 +49,15 @@ public:
     const int STATE_NO_GPS = 0;
     const int STATE_WITH_GPS = 1;
     const int STATE_INITIALIZING = 2;//只有位置,没有yaw.
-    StateTransferManager(GPS_SLAM_MATCHER& matcher,cv::FileStorage& fSettings,NonlinearFactorGraph& graph,GPSExpand& gps_coord)
+    StateTransferManager(GPS_SLAM_MATCHER& matcher,cv::FileStorage& fSettings,NonlinearFactorGraph& graph,GPSExpand& gps_coord,CallbackBufferBlock<sensor_msgs::NavSatFix>* pGPS_buffer_in,CallbackBufferBlock<geometry_msgs::PoseStamped>* pSLAM_buffer_in)
     {
         pSettings = &fSettings;
         this->pgps_slam_matcher = &matcher;
         this->patience = (*pSettings)["GPS_RECATCH_PATIENCE"];
         this->pGraph = &graph;
         this->pGPS_coord = &gps_coord;
+        this->pGPS_buffer = pGPS_buffer_in;
+        this->pSLAM_buffer = pSLAM_buffer_in;
         LOG(INFO)<<"StateTransferManager Initiated!"<<endl;
     }
     void getNewestYawAndVarianceRad(double& newestRad_out,double& newestCoariance_out)
@@ -64,6 +66,32 @@ public:
                                   + 0;
                                    //this->estimatedBias;//获取对应的值+偏置.(在slam里 减去这个偏置. 后面实现.)
         newestCoariance_out = this->newestCovariance;//this->segment_yaw_slam_to_gps_initial_variance.back();//获取对应的值
+    }
+    int updateSlam()//接收到SLAM消息时候调用.
+    {
+        if(this->pgps_slam_matcher->matchLen() == 0)
+        {
+            return STATE_NO_GPS;
+        }
+        auto last_match = this->pgps_slam_matcher->at(this->pgps_slam_matcher->matchLen()-1);
+        if(1)//WTF??
+        {
+            if( this->pSLAM_buffer->queryLastMessageTime() - this-> pGPS_buffer->at(last_match.gps_index).header.stamp.toSec() > 4)//TODO:阈值移到配置文件中.
+            {
+                if(this->currentState == STATE_INITIALIZING)
+                {
+                    LOG(INFO)<<"Initiating Failed:Drop GPS for over 4 sec.Drop out from STATE_INITIALIZING to STATE_NO_GPS"<<endl;
+                    LOG(INFO)<<"newstate == STATE_NO_GPS for dropout from previous state."<<endl;
+                }
+                if(this->currentState == STATE_WITH_GPS)
+                {
+                    LOG(INFO)<<"Drop out from STATE_WITH_GPS to STATE_NO_GPS:Drop GPS for over 4 sec."<<endl;
+                    LOG(INFO)<<"newstate == STATE_NO_GPS for dropout from previous state."<<endl;
+                }
+                this->currentState = STATE_NO_GPS;
+            }
+        }
+        return currentState;
     }
     int updateState(bool gps_valid,bool& gpsLoopMode_output)//GPS_Valid只检验GPS和SLAM时间戳 以及gps covariance合格与否
     //返回新状态,以及在gpsLoopMode_output中给出这次是否应该以回环形式处理.
@@ -75,7 +103,7 @@ public:
             if(!gps_valid)
             {
                 gps_invalid_count +=1;
-                const int INVALID_COUNT_THRES=50;//TODO:set into config file.
+                const int INVALID_COUNT_THRES=(*pSettings)["GPS_RECATCH_PATIENCE"];
                 if(gps_invalid_count>INVALID_COUNT_THRES)
                 {
                     this->currentState = STATE_NO_GPS;
@@ -194,6 +222,8 @@ private:
     GPSExpand* pGPS_coord;
     int gps_invalid_count = 0;
     cv::FileStorage* pSettings;
+    CallbackBufferBlock<sensor_msgs::NavSatFix>* pGPS_buffer;
+    CallbackBufferBlock<geometry_msgs::PoseStamped>* pSLAM_buffer;
 };
 
 void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success,double& init_yaw,double& init_yaw_variance)

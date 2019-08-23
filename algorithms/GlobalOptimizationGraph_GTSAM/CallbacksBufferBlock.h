@@ -75,7 +75,7 @@ void CallbackBufferBlock<T>::onCallbackBlock(const T& msg)
 template <typename T>
 double CallbackBufferBlock<T>::queryLastMessageTime()
 {
-    double ret_time =  this->msgBuffer.end().header.stamp.toSec();
+    double ret_time = msgBuffer.at(this->msgBuffer.size()-1).header.stamp.toSec();
     cout<<"MessageTime:"<<ret_time<<endl;
     return ret_time;
 }

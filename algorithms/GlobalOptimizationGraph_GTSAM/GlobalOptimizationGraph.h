@@ -132,7 +132,7 @@ public:
         this->pAHRS_Buffer = &AHRSbuf;
 
         this->p_gps_slam_matcher = shared_ptr<GPS_SLAM_MATCHER>(new GPS_SLAM_MATCHER(this->pSLAM_Buffer,this->pGPS_Buffer,&(this->fSettings )) );
-        this->p_state_tranfer_manager = shared_ptr<StateTransferManager>(new StateTransferManager(*p_gps_slam_matcher,this->fSettings,this->graph,this->GPS_coord));
+        this->p_state_tranfer_manager = shared_ptr<StateTransferManager>(new StateTransferManager(*p_gps_slam_matcher,this->fSettings,this->graph,this->GPS_coord,this->pGPS_Buffer,this->pSLAM_Buffer));
     }
 private:
     cv::FileStorage fSettings;
@@ -296,11 +296,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
 
             bool init_yaw_valid_ = false;
             double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);//这是和是否回环没关系的.
-            if(!init_yaw_valid_)
-            {
-                LOG(WARNING)<<"init yaw not valid.can not add gps measurement"<<endl;
-                return;
-            }
+
             cout <<"setting gps measurement!"<<endl;
             cout <<"slam_vertex_index:"<<slam_vertex_index<<endl;
 
@@ -311,6 +307,12 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
             noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
             LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
+            if(!init_yaw_valid_)//移到这里判断,以便于留下LOG.
+            {
+                LOG(WARNING)<<"init yaw not valid.can not add gps measurement"<<endl;
+                return;
+            }
+
  
             graph.add(GPSPose2Factor(slam_vertex_index-1,//gtsam::Symbol('x',slam_vertex_index),
                                                                              Point2(//gps_measurement_vec3d[0],    gps_measurement_vec3d[1]        
@@ -371,11 +373,6 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
             bool init_yaw_valid_ = false;
             double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);
-            if(!init_yaw_valid_)
-            {
-                LOG(WARNING)<<"init yaw not valid.can not add gps measurement"<<endl;
-                return;
-            }
             cout <<"setting gps measurement!"<<endl;
             cout <<"slam_vertex_index:"<<slam_vertex_index<<endl;
 
@@ -387,7 +384,12 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
 
             noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
             LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
- 
+            if(!init_yaw_valid_)//移到这里判断,方便产生LOG.
+            {
+                LOG(WARNING)<<"init yaw not valid.can not add gps measurement"<<endl;
+                return;
+            }
+
             graph.add(GPSPose2Factor(slam_vertex_index-1,//gtsam::Symbol('x',slam_vertex_index),
                                                                              Point2(//gps_measurement_vec3d[0],    gps_measurement_vec3d[1]
                                                                              dx,dy), gpsModel));
@@ -590,6 +592,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
     //addGOGFrame(SLAM_msg.pose.position.x,SLAM_msg.pose.position.y);//create a new map 'vertexPR'
     GOG_Frame* pF = new GOG_Frame();
     cout <<"Insert "<<slam_vertex_index<<"in initialEstimate!"<<endl;
+    this->p_state_tranfer_manager->updateSlam();
     initialEstimate.insert(slam_vertex_index,Pose2(//initial guess of abs pos and yaw
                                                    SLAM_msg.pose.position.x,SLAM_msg.pose.position.y,0
 				)); //here we use basic_vertex_id to represent vehicle position vertex id
