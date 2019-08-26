@@ -1,0 +1,56 @@
+%YAML:1.0
+
+
+INIT_SPIN_TIMES : 10000
+INIT_MAX_TIME_us : 10000000 # 10s.
+
+AHRS_topic_name : "/GAAS/AHRS/attitude"
+AHRS_AVAIL_MINIMUM : 5
+
+ENABLE_GPS : true
+GPS_AVAIL_MINIMUM : 1 #10
+
+#GPS_AHRS_MAX_TIME_DIFF_s : 0.08
+GPS_AHRS_MAX_TIME_DIFF_s : 0.8
+
+
+GPS_INIT_VARIANCE_THRESHOLD_m : 4.0 #2.0
+GPS_INIT_ALT_VARIANCE_THRESHOLD_m : 20.0 #1.0
+GPS_MIN_VARIANCE_LONLAT_m : 0.5 # minimum variance allowed.
+GPS_MIN_VARIANCE_ALT_m : 0.8
+GPS_topic_name : "/mavros/global_position/global"
+GPS_MAX_DELAY_SEC : 0.5
+
+SLAM_AVAIL_MINIMUM : 5 #20
+
+
+#SLAM_AHRS_MAX_TIME_DIFF_s : 0.08
+SLAM_AHRS_MAX_TIME_DIFF_s : 0.8
+SLAM_T_INFO_WEIGHT : 0.5
+
+SCENE_RETREVE_GPS_AVAIL : false # use scene model gps info?do not recommend.
+
+AHRS_loss_thres : 10.0
+GPS_loss_thres : 5.0
+VISION_loss_thres : 0.5
+SCENE_RETREVE_loss_thres : 0.3
+
+
+
+#for SLAM-GPS yaw match only:
+SLAM_GPS_DELAY_THRESHOLD : 0.5
+GPS_POS_THRES_m : 50
+
+
+
+OPTIMIZATION_GRAPH_KF_WIND_LEN : 10
+
+SLAM_ROTATION_MAT: !!opencv-matrix
+    rows: 3
+    cols: 3
+    dt: d
+    data: [ 0,0,-1,
+            0,1,0,
+            1,0,0]
+GPS_RECATCH_PATIENCE: 30
+
