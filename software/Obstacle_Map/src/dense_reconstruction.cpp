@@ -510,7 +510,7 @@ int main(int argc, char** argv) {
     SADWindowSize = fsSettings["SADWindowSize"];
 
     // for WLS filter
-    bUseWLSfilter =
+    bUseWLSfilter = fsSettings["UseWLSfilter"];
     Lambda  = fsSettings["Lambda"];
     SigmaColor  = fsSettings["SigmaColor"];
     displayImage = fsSettings["displayImage"];
