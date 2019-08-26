@@ -195,9 +195,13 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
 
     //p_isam = new NonlinearISAM (relinearizeInterval);
     ISAM2Params isam2_params_; //在定義ISAM2例項的時候儲存引數的。
-    isam2_params_.relinearizeThreshold = 0.01;
-    isam2_params_.relinearizeSkip = 1;//多少个变量之后,relinearize.
-    isam2_params_.enableRelinearization = false;//禁止relinearize.
+    int enable_relinearize_in = this->fSettings["ENABLE_RELINEARIZE"];
+    bool enable_relinearize = (enable_relinearize_in!=0);
+    double relinearizeThres = this->fSettings["RELINEARIZE_THRES"];
+    isam2_params_.relinearizeThreshold = relinearizeThres; //0.01;
+    int relinearizeSkip_num = this->fSettings["RELINEARIZE_SKIP_NUM"];
+    isam2_params_.relinearizeSkip = relinearizeSkip_num;//1;//多少个变量之后,relinearize.
+    isam2_params_.enableRelinearization = enable_relinearize;//false;//禁止relinearize.
 
     p_isam = new ISAM2(isam2_params_);
     

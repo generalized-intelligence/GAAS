@@ -54,3 +54,8 @@ SLAM_ROTATION_MAT: !!opencv-matrix
             1,0,0]
 GPS_RECATCH_PATIENCE: 30
 
+#optimization relinearize options:
+ENABLE_RELINEARIZE: 1
+RELINEARIZE_THRES: 0.01
+RELINEARIZE_SKIP_NUM: 1
+
