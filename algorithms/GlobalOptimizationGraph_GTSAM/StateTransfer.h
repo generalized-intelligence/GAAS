@@ -132,6 +132,7 @@ public:
                     if(this->everInitWithGPS == false)
                     {
                         this->init_yaw_to_world_enu_rad_const = init_yaw;//只有这一次,初始化这个量.
+                        LOG(INFO)<<"INIT YAW TO WORLD CONST_YAW = "<<init_yaw*180/3.1415926535<<"."<<endl;
                         this->everInitWithGPS = true;
                     }
                     //segment_beginning_match_id.push_back()
@@ -234,7 +235,7 @@ void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success,double& i
 //????这里先在哪里插入gps-slam对应关系??
     init_success = false;
     bool yaw_calc_valid = false;
-    double init_yaw_deg,init_yaw_deg_variance;
+    //double init_yaw_deg,init_yaw_deg_variance;
 
 //取代原来GlobalOptimizationGraph中的实现.
 //->
@@ -245,14 +246,15 @@ void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success,double& i
         pgps_slam_matcher->check2IndexAndCalcDeltaDeg(0,pgps_slam_matcher->matchLen()-1,//id
                                                        *pGPS_coord,yaw_calc_result_valid,deg,deg_variance
                                                         );//尝试计算yaw.
+        
         if(yaw_calc_result_valid&& deg_variance < 20)//TODO:换成配置文件里的值.
         //满足variance<这个值 认为初始化成功了.
         {
             init_success = true;
-            init_yaw = init_yaw_deg*3.1415926/180;
-            init_yaw_variance = init_yaw_deg_variance*3.1415926/180;
             LOG(INFO)<<"YAW UPDATED.New value:"<<deg<<" deg,covariance:"<<deg_variance<<" deg."<<endl;
             double _rad = (deg*3.1415926535)/180;
+            init_yaw = _rad;// init_yaw_deg*3.1415926/180;
+            init_yaw_variance = deg_variance*3.1415926/180;
             //this->yaw_init_to_gps = fix_angle(_rad);
             this->segment_yaw_slam_to_gps_initial.push_back(_rad);
         }   

@@ -294,7 +294,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
             double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
 
-            bool init_yaw_valid_ = false;
+            bool init_yaw_valid_ = false;//好像gps这块得乘个-1...
+            //double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);//这是和是否回环没关系的.
             double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);//这是和是否回环没关系的.
 
             cout <<"setting gps measurement!"<<endl;
@@ -303,8 +304,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             Vector3d gps_measurement_vec3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),delta_alt);
             bool covariance_valid = (GPS_msg.position_covariance_type >=2);
             double dx,dy;
-            dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) - gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //     reproject to gog coordinate.
-            dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
+            dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) + gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //     reproject to gog coordinate.
+            dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) - gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
             noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
             LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
             if(!init_yaw_valid_)//移到这里判断,以便于留下LOG.
@@ -352,8 +353,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             Vector3d gps_measurement_vec3d_diff_(delta_lon_relative*1000*GPS_coord.vari_km_per_lon_deg(),delta_lat_relative*1000*GPS_coord.vari_km_per_lat_deg(),delta_alt_relative);
             
             double diff_x,diff_y,diff_yaw;
-            diff_x = gps_measurement_vec3d_diff_[0]*cos(yaw_init_to_gps) - gps_measurement_vec3d_diff_[1]*sin(yaw_init_to_gps);
-            diff_y = gps_measurement_vec3d_diff_[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d_diff_[0]*sin(yaw_init_to_gps);
+            diff_x = gps_measurement_vec3d_diff_[0]*cos(yaw_init_to_gps) + gps_measurement_vec3d_diff_[1]*sin(yaw_init_to_gps);
+            diff_y = gps_measurement_vec3d_diff_[1]*cos(yaw_init_to_gps) - gps_measurement_vec3d_diff_[0]*sin(yaw_init_to_gps);
             double newest_yaw_diff_rad,newest_yaw_diff_rad_variance;
             this->p_state_tranfer_manager->getNewestYawAndVarianceRad(newest_yaw_diff_rad,newest_yaw_diff_rad_variance);
             double yaw_error_fix_ = newest_yaw_diff_rad - yaw_init_to_gps;//过程中SLAM yaw产生的漂移.
@@ -372,6 +373,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
             double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
             bool init_yaw_valid_ = false;
+            //double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);
+            //好像也是符号问题.
             double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);
             cout <<"setting gps measurement!"<<endl;
             cout <<"slam_vertex_index:"<<slam_vertex_index<<endl;
@@ -379,8 +382,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             Vector3d gps_measurement_vec3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),delta_alt);
             bool covariance_valid = (GPS_msg.position_covariance_type >=2);
             double dx,dy;
-            dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) - gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //     reproject to gog coordinate.
-            dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
+            dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) + gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //     reproject to gog coordinate.
+            dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) - gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
 
             noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
             LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
@@ -609,7 +612,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         fx = vec_forward[0];fy = vec_forward[1];
         double diff_x,diff_y;
         diff_x = fx*cos(yaw_init_to_slam) - fy*sin(yaw_init_to_slam);
-        diff_y = fy*cos(yaw_init_to_slam) + fx*cos(yaw_init_to_slam);
+        diff_y = fy*cos(yaw_init_to_slam) + fx*sin(yaw_init_to_slam);
         //for index-1
         const geometry_msgs::PoseStamped& slam_msg_old = this->pSLAM_Buffer->at(slam_vertex_index-1);
         orient = slam_msg_old.pose.orientation;
@@ -619,14 +622,16 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         fx = vec_forward[0];fy = vec_forward[1];
         double oldx,oldy;
         oldx = fx*cos(yaw_init_to_slam) - fy*sin(yaw_init_to_slam);
-        oldy = fy*cos(yaw_init_to_slam) + fx*cos(yaw_init_to_slam);
+        oldy = fy*cos(yaw_init_to_slam) + fx*sin(yaw_init_to_slam);
         //minus
         diff_x -= oldx;
         diff_y -= oldy;
 
 
         double diff_yaw = (get_yaw_from_slam_msg(SLAM_msg) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(slam_vertex_index-1)));
-        noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.2,0.2,0.1));//for slam diff rotation and translation.
+        //调调参数.
+        //noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.2,0.2,0.1));//for slam diff rotation and translation.
+        noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.001,0.001,0.0016));// 1mm/帧 0.1°/帧
         graph.emplace_shared<BetweenFactor<Pose2> >(slam_vertex_index-1,slam_vertex_index,Pose2( diff_x,diff_y,diff_yaw),model_relative_movement);
         slam_vertex_index++;
 
@@ -640,7 +645,54 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         Values currentEstimate = p_isam->calculateEstimate();//p_isam->estimate();
         LOG(INFO)<<"current yaw_init_to_slam:"<<yaw_init_to_slam*180/3.14159<<" deg."<<endl;
         cout <<"last state:"<<endl;
-        currentEstimate.at(slam_vertex_index-1).print();
+/*        Values result = DoglegOptimizer(graph, initialEstimate).optimize();
+
+  //result.print("Final results:\n");
+
+ 
+  for(Values::iterator key_value = result.begin(); key_value != result.end(); ++key_value)
+
+  {
+
+Key key = key_value->key;
+
+Symbol asSymbol(key);
+
+cout << asSymbol.chr() << std::endl;
+
+cout << asSymbol.index() << std::endl;
+
+ 
+
+if(asSymbol.chr() == 'l')
+
+{
+
+Point3 pt3 = key_value->value.cast<Point3>();
+
+pt3.print("pt : ");
+
+} else if(asSymbol.chr() == 'x')
+
+{
+
+Pose3 p3 = key_value->value.cast<Pose3>();
+
+p3.print("pose3 : ");
+
+ 
+
+Matrix4 mm = p3.matrix();
+
+}
+
+  }*/
+        const Pose2* p_obj = &(currentEstimate.at(slam_vertex_index-1).cast<Pose2>());
+                       //dynamic_cast<Pose2*>( &(currentEstimate.at(slam_vertex_index-1)) );//这几个值都不对,应该是内存错误.
+                       //(Pose2*) (&p_isam->calculateEstimate(slam_vertex_index-1));
+                       //dynamic_cast<Pose2> (currentEstimate.at(slam_vertex_index-1));
+        LOG(INFO)<<"Current NODE ESTIMATED STATE at index:"<<slam_vertex_index-1<< " x:"<<p_obj->x()<<",y:"<<p_obj->y()<<",theta:"<<p_obj->theta()<<endl;
+        LOG(INFO)<<"Current NODE ESTIMATED Position for visualizer:"<<p_obj->x()<<","<<p_obj->y()<<","<<p_obj->theta()*10<<endl;
         currentEstimate.print("Current estimate: ");
         /*if(slam_vertex_index%1000 == 0)
         {
