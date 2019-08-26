@@ -1,9 +1,12 @@
 # Using AirSim to Simulate Aircraft Inspection by Autonomous Drones
-Regular maintenance of aircraft is critical to the safety of flights. However, due to the size of the aircraft, maintenance technicians are having trouble to inspect the top of the aircraft. Since 2017, Airbus has been using drones to help with the maintenance of aircraft. The use of drones allows maintenance technicians to collect a large number of pictures of the aircraft for safety analysis.
+Regular maintenance of aircraft is critical to the safety of flights. However, due to the size of the aircraft, maintenance technicians are having trouble inspecting the top of the aircraft. Since 2017, Airbus has been using drones to help with the maintenance of aircraft. The use of drones allows maintenance technicians to collect a large number of pictures of the aircraft for safety analysis.
 
-GPS-based drones are not suitable for such task. First, it requires pilots to operate the drone. A minor deviation from the planned flight route could damage the aircraft. ALso, for effective inspection, the pictures of aircraft parts must be taken at the same angle every time. A lot of pilots are not qualified or willing to operate drones under such risky and challenging scenario. Second, traditional drones rely on GPS, but indoor aircraft storage does not have GPS reception. 
+Existing drones are not suitable for such task. First, it requires pilots to operate the drone. A minor deviation from the planned flight route could damage the aircraft. ALso, for effective inspection, the pictures of aircraft parts must be taken at the same angle every time. A lot of pilots are not qualified or willing to operate drones under such risky and challenging scenario. Second, traditional drones rely on GPS, but indoor aircraft storage does not have GPS reception. 
 
 This case study shows how to use GAAS to control autonomous drones for aircraft inspection. This case study is based on a real project currently ongoing in the GAAS team. Minor details are changed for confidentiality purpose.
+
+<p align="center">
+<img src="https://github.com/generalized-intelligence/GAAS/blob/master/demo/aircraft_inspection.gif?raw=true"/>
 
 ## What is AirSim?
 
@@ -45,7 +48,7 @@ cd AirSim
 ## How to launch PX4 SITL
 Before using PX4 in AirSim, we should install and launch PX4 SITL. Through PX4 SITL, we may use PX4 as the flight control for drones in AirSim. 
 
-1. First, make sure that you have installed all dependencies required by PX4 as listed in the [GAAS Tutorial] (https://gaas.gitbook.io/guide/)。
+1. First, make sure that you have installed all dependencies required by PX4 as listed in the [GAAS Tutorial](https://gaas.gitbook.io/guide/).
 2. Install PX4 Firmware. **Note**: AirSim requires Firmware v1.8.2.
 ```
 bash
@@ -91,7 +94,7 @@ make posix_sitl_default none_iris
 
 ## How to use GAAS to allow the drone to fly autonomously
 
-1. GAAS uses MAVROS to communicate with PX4. First, we need to launch MAVROS. Please see [GAAS Tutoriap EP01](https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen) . We recommend using Method 2 for the installation of MAVROS. 
+1. GAAS uses MAVROS to communicate with PX4. First, we need to launch MAVROS. Please see [GAAS Tutorial EP01](https://gaas.gitbook.io/guide/software-realization-build-your-own-autonomous-drone/wu-ren-ji-zi-dong-jia-shi-xi-lie-offboard-kong-zhi-yi-ji-gazebo-fang-zhen). We recommend using Method 2 for the installation of MAVROS. 
 
 2. PX4 uses UDP ports for communication, so we need to change the MAVROS `fcu_url`  configuration. Start a new launch file with:
 ```bash
