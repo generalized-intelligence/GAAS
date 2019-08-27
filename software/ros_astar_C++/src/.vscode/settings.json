@@ -1,0 +1,12 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/autonomy/catkin_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/kinetic/lib/python2.7/dist-packages"
+    ],
+    "files.associations": {
+        "vector": "cpp",
+        "ostream": "cpp",
+        "chrono": "cpp",
+        "iostream": "cpp"
+    }
+}

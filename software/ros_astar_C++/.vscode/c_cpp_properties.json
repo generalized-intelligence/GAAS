@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/autonomy/catkin_ws/devel/include/**",
+                "/opt/ros/kinetic/include/**",
+                "/home/autonomy/catkin_ws/src/pointcloudTraj/Utils/kdtree/include/**",
+                "/home/autonomy/catkin_ws/src/mavros/libmavconn/include/**",
+                "/home/autonomy/catkin_ws/src/mavros/mavros/include/**",
+                "/home/autonomy/catkin_ws/src/mavros/mavros_msgs/include/**",
+                "/home/autonomy/catkin_ws/src/octomap_mapping/octomap_server/include/**",
+                "/home/autonomy/catkin_ws/src/octoplan/include/**",
+                "/home/autonomy/catkin_ws/src/pointcloudTraj/Planner/include/**",
+                "/home/autonomy/catkin_ws/src/pointcloudTraj/Utils/pose_utils/include/**",
+                "/home/autonomy/catkin_ws/src/pointcloudTraj/Utils/quadrotor_msgs/include/**",
+                "/home/autonomy/catkin_ws/src/ros_astar/include/**",
+                "/home/autonomy/catkin_ws/src/mavros/test_mavros/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/clang-3.8",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
