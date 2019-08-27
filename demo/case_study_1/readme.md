@@ -1,6 +1,8 @@
 # Using AirSim to Simulate Aircraft Inspection by Autonomous Drones
 Regular maintenance of aircraft is critical to the safety of flights. However, due to the size of the aircraft, maintenance technicians are having trouble inspecting the top of the aircraft. Since 2017, Airbus has been using drones to help with the maintenance of aircraft. The use of drones allows maintenance technicians to collect a large number of pictures of the aircraft for safety analysis.
 
+For Chinese Version 中文版说明：https://gaas.gitbook.io/guide/case-study/zai-airsim-zhong-mo-ni-wu-ren-ji-dui-ke-ji-xun-jian
+
 Existing drones are not suitable for such task. First, it requires pilots to operate the drone. A minor deviation from the planned flight route could damage the aircraft. ALso, for effective inspection, the pictures of aircraft parts must be taken at the same angle every time. A lot of pilots are not qualified or willing to operate drones under such risky and challenging scenario. Second, traditional drones rely on GPS, but indoor aircraft storage does not have GPS reception. 
 
 This case study shows how to use GAAS to control autonomous drones for aircraft inspection. This case study is based on a real project currently ongoing in the GAAS team. Minor details are changed for confidentiality purpose.
