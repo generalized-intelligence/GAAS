@@ -59,7 +59,17 @@ if(NOT OpenCV_VERSION VERSION_LESS "3.0")
 ELSE()
     SET(OPENCV_VERSION_3 OFF)
 ENDIF()
+find_package(catkin REQUIRED COMPONENTS
+    roscpp
+    sensor_msgs
+    nav_msgs
+    visualization_msgs
+    message_filters
 
+)
+include_directories(
+ ${catkin_INCLUDE_DIRS}
+)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS})
@@ -238,7 +248,14 @@ set(SRCS_DVISION
 
 #add_executable(demo demo/demo.cpp)
 add_library(loopclosingmanager src/LoopClosingManager.cpp)
+
+
+
 target_link_libraries(loopclosingmanager ${OpenCV_LIBS} ${PROJECT_NAME})
+#add_executable(ros_loopclosing_main src/ros_loopclosing_main.cpp)
+#target_link_libraries(ros_loopclosing_main ${OpenCV_LIBS} ${PROJECT_NAME} loopclosingmanager ${catkin_LIBRARIES})
+
+
 #target_link_libraries(demo ${PROJECT_NAME} ${OpenCV_LIBS})
 #  file(COPY demo/images DESTINATION ${CMAKE_BINARY_DIR}/)
 

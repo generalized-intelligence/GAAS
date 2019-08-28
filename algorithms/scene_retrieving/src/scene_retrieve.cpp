@@ -190,7 +190,16 @@ void Scene::removeEmptyElement()
 //---------------------------------------class SceneRetriever------------------------------------
 
 SceneRetriever::SceneRetriever(){};
+SceneRetriever::SceneRetriever(const string& voc)
+{
+    this->original_scene = Scene();
+    this->ploop_closing_manager_of_scene = shared_ptr<LoopClosingManager>(new LoopClosingManager(voc));
+    this->mpCv_helper = shared_ptr<cv_helper>(new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554));
+    this->mpCv_helper->setMask("mask.png");
 
+    this->_init_retriever();
+
+}
 
 SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
 {

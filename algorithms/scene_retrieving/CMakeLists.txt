@@ -40,6 +40,7 @@ find_package(catkin REQUIRED COMPONENTS
                                 roscpp
                                 sensor_msgs
 				geometry_msgs
+                                roseus
 #                                nav_msgs
 #                                std_msgs
 #                                octomap_msgs
@@ -54,6 +55,7 @@ find_package(PCL REQUIRED)
 
 
 find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
+find_package (Glog REQUIRED)
 IF(USE_CONTRIB)
 add_definitions(-DUSE_CONTRIB)
 ENDIF()
@@ -75,7 +77,7 @@ include_directories(${OpenCV_INCLUDE_DIRS}
                         )
 
 MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS})
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES})
 
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION

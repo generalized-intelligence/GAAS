@@ -17,7 +17,7 @@ Required External Modules:
     
     mkdir build && cd build&&cmake ..&&make -j4
 
-
+4.roseus.  sudo apt install ros-xxx-roseus
 
 
 "场景重定位"功能可以支持通过视觉特征,重新在已知场景中通过回环检测等方法定位摄像机的位置.
