@@ -5,7 +5,8 @@
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/QuaternionStamped.h>
 #include <visualization_msgs/Marker.h>
-
+#include <std_msgs/Header.h>
+#include <roseus/StringStamped.h>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
@@ -133,6 +134,7 @@ private:
 
     ros::Publisher attitude_ahrs;
     ros::Publisher attitude_slam;
+    ros::Publisher state_string_publisher;
     int attitude_marker_id = 0;
     //CallbackBufferBlock<xxx_msgs::SceneRetrieveInfo> SceneRetrieve_Buffer;
     //ros::Subscriber SceneRetrieve_sub;
@@ -163,6 +165,7 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     //auto f2 = 
     attitude_ahrs = this->pNH->advertise<visualization_msgs::Marker>("attitude_ahrs",1);
     attitude_slam = this->pNH->advertise<visualization_msgs::Marker>("attitude_slam",1);
+    state_string_publisher = this->pNH->advertise<roseus::StringStamped>("/gaas/global_optimization_graph/state",1);
 
     boost::function<void(const boost::shared_ptr<nav_msgs::Odometry const>&
 		   )> ahrs_callback(boost::bind(&ahrs_buffer_helper,this,boost::ref(this->AHRS_buffer),_1 ));
@@ -240,7 +243,31 @@ void ROS_IO_Manager::SLAM_callback(const geometry_msgs::PoseStamped& SLAM_msg)
 }
 bool ROS_IO_Manager::publishAll()
 {
-    cout<<"WARNING: RIM::publishAll not implemented!"<<endl;//TODO:fill this.
+    LOG(INFO)<<"In ROS_IO_Manager::publishAll():"<<endl;
+    auto info = this->pGraph->queryCurrentFullStatus(); // TODO:查询优化器最新的状态.
+    //这里需要规定API返回什么.
+    //1.bool status_ok.
+    //2.current R quaternion
+    //3.current translation vector
+    //4.std_msgs::Header( especially timestamp) of this pose.
+    //5.inner id inside GlobalOptimizationGraph.
+    //
+    if (info.state_correct)//check status;
+    {
+        roseus::StringStamped pub_msg;//TODO:publish relative topics.
+        pub_msg.header = info.header_;
+        stringstream ss;
+        ss<<info.innerID_of_GOG<<"|"<<info.ret_val_R.w()<<","<<info.ret_val_R.x()<<","<<info.ret_val_R.y()<<","<<info.ret_val_R.z()<<"|"<<info.ret_val_t[0]<<","<<info.ret_val_t[1]<<","<<info.ret_val_t[2];
+        //std::string pub_string = string(info.innerID_of_GOG)+ string("|")+string(info.ret_val_R.w())+","+string(info.ret_val_R.x())+","+string(info.ret_val_R.y())+","+string(ret_val_R.z())+"|"+string(info.ret_val_t[0])+","+string(info.ret_val_t[1])+","+string(info.ret_val_t[2]);
+        std::string pub_string;
+        ss>>pub_string;
+        pub_msg.data = pub_string;
+        this->state_string_publisher.publish(pub_msg);
+    }
+    else
+    {
+        LOG(WARNING)<<"Global Optimization Graph estimation state incorrect.In ROS_IO_Manager::publishAll()."<<endl;
+    }
     //auto pose = this->pGraph->getpCurrentPR()->estimate();
     //make a ros msg.
 }

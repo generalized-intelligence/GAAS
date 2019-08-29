@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
     nav_msgs
     visualization_msgs
     message_filters
-
+    roseus
 )
 
 

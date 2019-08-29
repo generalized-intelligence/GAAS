@@ -25,6 +25,7 @@
 #include <memory>
 #include <iostream>
 #include <ros/ros.h>
+#include <std_msgs/Header.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -65,6 +66,19 @@ double fix_angle(double& angle)
     return ret_val;
 }
 double get_yaw_from_slam_msg(const geometry_msgs::PoseStamped &m);
+
+
+
+typedef struct OptimizationGraphStatus
+{
+    bool state_correct = false;
+    Quaterniond ret_val_R;
+    Vector3d ret_val_t;
+    std_msgs::Header header_;
+    int innerID_of_GOG;
+}
+OptimizationGraphStatusT;
+
 class GlobalOptimizationGraph
 {
 public:
@@ -134,6 +148,14 @@ public:
         this->p_gps_slam_matcher = shared_ptr<GPS_SLAM_MATCHER>(new GPS_SLAM_MATCHER(this->pSLAM_Buffer,this->pGPS_Buffer,&(this->fSettings )) );
         this->p_state_tranfer_manager = shared_ptr<StateTransferManager>(new StateTransferManager(*p_gps_slam_matcher,this->fSettings,this->graph,this->GPS_coord,this->pGPS_Buffer,this->pSLAM_Buffer));
     }
+    //std::tuple<bool,Quaterniond,Vector3d,double,int> queryCurrentFullStatus()
+    OptimizationGraphStatusT queryCurrentFullStatus()
+    {
+        state_mutex.lock();
+        auto ret_val = this->current_status;
+        state_mutex.unlock();
+        return ret_val;
+    }
 private:
     cv::FileStorage fSettings;
     //status management.
@@ -185,6 +207,9 @@ private:
     //time for calc speed vertex
     double last_slam_msg_time;
     double init_slam_msg_time;
+
+    OptimizationGraphStatusT current_status;
+    std::mutex state_mutex;//锁定当前返回值的状态.
 };
 
 GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
