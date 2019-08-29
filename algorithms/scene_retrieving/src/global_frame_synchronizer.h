@@ -79,13 +79,24 @@ public:
         }
         buffer_mutex.unlock();
     }
-    void processMatch(double t,const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight,int gog_id,int currentSceneFrameID)
+    void processMatch(double t,const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight,int gog_id,int currentSceneFrameID) // 只放在任务队列里.真正处理在
     {//TODO:put into another thread.
         process_match_mutex.lock();
         //TODO :auto scene_frame = generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr, const cv::Mat& RotationMat, const cv::Mat& TranslationMat, const cv::Mat& Q_mat);
         //this->pSceneRetriever-> addFrameToScene(const std::vector<cv::KeyPoint>& points2d_in, const std::vector<cv::Point3d>points3d_in,const cv::Mat& point_desp_in, const cv::Mat R, const cv::Mat t)
         this->scene_frame_id_to_gog_id_and_time_t[currentSceneFrameID] = std::make_pair(gog_id,t);
+
+
+        task_queue_mutex.lock()
+        this->backend_task_queue.push_back(std::make_tuple( msgLeft,msgRight,gog_id,currentSceneFrameID ) );
+        if(this->backend_task_queue.size()>20) // TODO:set into config file.
+        {
+            this->backend_task_queue.pop_front();
+        }
+        task_queue_mutex.unlock();
+
         process_match_mutex.unlock();
+        
     }
     int retrieveGOGIDFromSceneFrameID(int scene_frame_id) //return -1 if invalid.
     {
@@ -97,6 +108,36 @@ public:
         LOG(WARNING)<<"Invalid scene_frame_id: "<<scene_frame_id<<". Check the code!"<<endl;
         return -1;
     }
+    std::pair<int,int> checkLoopTaskQueue(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight,int gog_id,int currentSceneFrameID,bool& match_success_out)
+    {
+        match_success_out = false;
+        if(this->task_queue_mutex.try_lock())
+        {
+            do
+            {
+                if(this->backend_task_queue.size() == 0)
+                {
+                    this->task_queue_mutex.unlock();
+                    break;
+                }
+                auto task_info = this->backend_task_queue.front();
+                this->backend_task_queue.pop_front();
+                this->task_queue_mutex.unlock();//till here we do release the mutex to avoid waste of time in critical area.
+                //prepare for calling retrieveGOGIDFromSceneFrameID()...
+                //int inliers = this->pSceneRetriever->retrieveSceneFromStereoImage(curLeftImage, curRightImage, Q_mat, RT_mat,match_success);
+                //if(match_success)
+                //{
+                //    publish(.....)
+                //}
+
+            }while(0);
+        }
+        else
+        {
+            LOG(INFO)<<"Try lock failed in checkLoopTaskQueue()."<<endl;
+        }
+    }
+    
 private:
     //std::vector<...>
     //std::map<double,int > map_stamp_to_scene_frame_id;//以时间戳为主键进行查找:int scene_frame_id,int gog_id
@@ -110,6 +151,11 @@ private:
     std::map<int,std::pair<int,double> > scene_frame_id_to_gog_id_and_time_t;
     std::mutex process_match_mutex;
     SceneRetriever* pSceneRetriever;
+    //后端匹配的任务队列.
+    std::deque< std::tuple<const sensor_msgs::ImageConstPtr&,const sensor_msgs::ImageConstPtr&,int,int> > backend_task_queue;
+    std::mutex task_queue_mutex;
+    std::thread backend_thread;
+
 };
 
 

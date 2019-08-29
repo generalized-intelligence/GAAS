@@ -132,6 +132,20 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_
 }
 
 
+int main_of_backend_thread()
+{
+    std::cout << "Starting backend thread."<<endl;
+    while(true)
+    {
+        std::cout << "In backend thread:"<<endl;
+        //pGlobalFrameSync->checkLoopTaskQueue(...)
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
+    std::cout << "Exiting concurrent thread."<<endl;
+}
+
+
+
 int main(int argc,char** argv)
 {
 
