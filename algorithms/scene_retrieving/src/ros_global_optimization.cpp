@@ -8,7 +8,7 @@
 #include <opencv2/opencv.hpp>
 #include "scene_retrieve.h"
 #include <iostream>
-
+#include <thread>
 #include <ros/ros.h>
 #include <std_msgs/String.h>
 #include <roseus/StringStamped.h>
@@ -138,7 +138,22 @@ int main_of_backend_thread()
     while(true)
     {
         std::cout << "In backend thread:"<<endl;
-        //pGlobalFrameSync->checkLoopTaskQueue(...)
+        bool match_success_out = false;
+        cv::Mat camera_Q_mat;
+        cv::Mat RT_mat_out;
+        auto ret_val = pGlobalFrameSync->checkLoopTaskQueue(match_success_out,camera_Q_mat,RT_mat_out);
+        if(match_success_out)
+        {
+            LOG(INFO)<<"Match success in backend thread,id:"<<std::get<0>(ret_val)<<","<<std::get<1>(ret_val)<<".RT_mat:"<<RT_mat_out<<endl;
+            //cout<<" Match success! RT mat is: \n"<<RT_mat<<endl;
+            std_msgs::String str;
+            stringstream ss;
+            std::string str_content;
+            ss<<"Frame id:"<<0<<","<<1<<";RT:"<<RT_mat_out;
+            ss>>str_content;
+            str.data = str_content.c_str();
+            Pub.publish(str);
+        }
         std::this_thread::sleep_for(std::chrono::seconds(2));
     }
     std::cout << "Exiting concurrent thread."<<endl;
@@ -195,7 +210,8 @@ int main(int argc,char** argv)
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub);
     sync.setMaxIntervalDuration(ros::Duration(0.01));
     sync.registerCallback(boost::bind(StereoImageCallback, _1, _2));
-
+    std::thread backend_thread(main_of_backend_thread);
+    ros::spin();
     return 0;
 }
 

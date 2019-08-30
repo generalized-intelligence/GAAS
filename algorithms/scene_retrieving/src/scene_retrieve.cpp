@@ -318,7 +318,7 @@ void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& cur
 }
 
 
-int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect, cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
+int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect, cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success,int* pMatchedIndexID_output)
 {
     this->LoopClosureDebugIndex ++;
 
@@ -493,6 +493,11 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
 
     cout<<"new T:\n"<<new_T<<endl;
 
+    match_success = true;
+    if(pMatchedIndexID_output != nullptr)
+    {
+        *pMatchedIndexID_output = loop_index;
+    }
     this->mpCv_helper->publishPose(new_R, new_t, 0);
     RT_mat_of_stereo_cam_output = new_T;
 
@@ -501,7 +506,7 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
 
 
 
-int SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect, cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success)
+int SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect, cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,int* pMatchedIndexID_output)
 {
     if(this->original_scene.hasScale == false)
     {
@@ -589,6 +594,10 @@ int SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect,
             cout<<"solve pnp finished, publishing the result finished."<<endl;
 
             match_success = true;
+            if(pMatchedIndexID_output!=nullptr)
+            {
+                *pMatchedIndexID_output = loop_index;
+            }
             return pnpResult;
         }
         else

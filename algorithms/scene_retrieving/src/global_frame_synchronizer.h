@@ -87,7 +87,7 @@ public:
         this->scene_frame_id_to_gog_id_and_time_t[currentSceneFrameID] = std::make_pair(gog_id,t);
 
 
-        task_queue_mutex.lock()
+        task_queue_mutex.lock();
         this->backend_task_queue.push_back(std::make_tuple( msgLeft,msgRight,gog_id,currentSceneFrameID ) );
         if(this->backend_task_queue.size()>20) // TODO:set into config file.
         {
@@ -108,7 +108,14 @@ public:
         LOG(WARNING)<<"Invalid scene_frame_id: "<<scene_frame_id<<". Check the code!"<<endl;
         return -1;
     }
-    std::pair<int,int> checkLoopTaskQueue(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight,int gog_id,int currentSceneFrameID,bool& match_success_out)
+    std::pair<int,int> checkLoopTaskQueue(bool& match_success_out,cv::Mat camera_Q_mat,cv::Mat& RT_mat_out)
+    //输入参数:
+    //1.匹配是否成功
+    //2.输入双目摄像机参数Q.
+    //3.返回的RT矩阵.(如果匹配成功则有效.)
+    //返回值:
+    //1.回环帧gog_id(老的那个帧)
+    //2.当前帧gog_id(新的帧.)
     {
         match_success_out = false;
         if(this->task_queue_mutex.try_lock())
@@ -121,21 +128,33 @@ public:
                     break;
                 }
                 auto task_info = this->backend_task_queue.front();
+
+                int gog_id_of_this_task = std::get<2>(task_info);
                 this->backend_task_queue.pop_front();
                 this->task_queue_mutex.unlock();//till here we do release the mutex to avoid waste of time in critical area.
                 //prepare for calling retrieveGOGIDFromSceneFrameID()...
-                //int inliers = this->pSceneRetriever->retrieveSceneFromStereoImage(curLeftImage, curRightImage, Q_mat, RT_mat,match_success);
-                //if(match_success)
-                //{
-                //    publish(.....)
-                //}
-
+                int retrieved_frame_id = -1;
+                cv::Mat Q_mat;
+                Q_mat = camera_Q_mat;
+                cv::Mat left_im,right_im;
+                left_im = cv_bridge::toCvShare(std::get<0>(task_info))->image;
+                right_im = cv_bridge::toCvShare(std::get<1>(task_info))->image;
+                int inliers = this->pSceneRetriever->retrieveSceneFromStereoImage(
+                    left_im,right_im,
+                    Q_mat, RT_mat_out,match_success_out,&retrieved_frame_id);
+                if(match_success_out)
+                {
+                    //获取retrieved scene frame id, 由此获取gog中回环帧的id.
+                    int gog_loop_id = std::get<0>(this->scene_frame_id_to_gog_id_and_time_t[retrieved_frame_id]);
+                    return std::make_pair(gog_loop_id,gog_id_of_this_task);//publish(.....)
+                }
             }while(0);
         }
         else
         {
             LOG(INFO)<<"Try lock failed in checkLoopTaskQueue()."<<endl;
         }
+        return std::make_pair(-1,-1);
     }
     
 private:
@@ -152,10 +171,14 @@ private:
     std::mutex process_match_mutex;
     SceneRetriever* pSceneRetriever;
     //后端匹配的任务队列.
+    //structure:
+    //1.image left ptr;
+    //2.image right ptr;
+    //3.gog_id of this msg;
+    //4.scene_id of this msg;
     std::deque< std::tuple<const sensor_msgs::ImageConstPtr&,const sensor_msgs::ImageConstPtr&,int,int> > backend_task_queue;
     std::mutex task_queue_mutex;
-    std::thread backend_thread;
-
+    //std::thread backend_thread;
 };
 
 
