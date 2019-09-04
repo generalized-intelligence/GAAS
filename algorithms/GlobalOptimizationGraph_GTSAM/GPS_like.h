@@ -55,3 +55,23 @@ public:
 
 };
 
+
+
+class GPSAltitudeFactor:public gtsam::NoiseModelFactor1<gtsam::Point2>{
+private:
+    double m1_,m2_;
+public:
+    GPSAltitudeFactor(gtsam::Key height_key,const gtsam::Point2 m,gtsam::SharedNoiseModel model):
+        gtsam::NoiseModelFactor1<gtsam::Point2>(model,height_key),m1_(m.x()),m2_(m.y()){}
+    gtsam::Vector evaluateError(const gtsam::Point2& p, boost::optional<gtsam::Matrix&> H = boost::none) const
+    {
+        if(H)
+        {
+            *H = (gtsam::Matrix22()<<1.0,0.0,0.0,1.0).finished();
+        }
+        return (gtsam::Vector2()<<p.x() -m1_,p.y()-m2_).finished();
+    }
+};
+
+
+

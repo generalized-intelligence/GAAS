@@ -127,5 +127,24 @@ void ahrs_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<nav_msgs::Odom
     pRIM->publish_ahrs_marker(ahrs_marker);
 }
 
+void barometer_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<sensor_msgs::FluidPressure>& barometer_buffer,
+                const boost::shared_ptr<sensor_msgs::FluidPressure const>& barometer_msg)
+{
+    //....TODO:fill in this
+    barometer_buffer.onCallbackBlock(*barometer_msg);
+    pRIM->_barometer_msg_update = true;
+    
+}
+
+
+
+
+
+
+
+
+
+
+
 
 

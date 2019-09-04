@@ -2,6 +2,7 @@
 
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
+#include <sensor_msgs/FluidPressure.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/QuaternionStamped.h>
 #include <visualization_msgs/Marker.h>
@@ -54,11 +55,12 @@ public:
     inline void setOptimizationGraph(shared_ptr<GlobalOptimizationGraph> pG)
     {
         this->pGraph = pG;
-        this->pGraph->initBuffers(this->SLAM_buffer,this->GPS_buffer,this->AHRS_buffer,this->Velocity_buffer);
+        this->pGraph->initBuffers(this->SLAM_buffer,this->GPS_buffer,this->AHRS_buffer,this->Velocity_buffer,this->Barometer_buffer);
     }
     bool _gps_pos_update = false;
     bool _gps_vel_update = false;
     bool _slam_msg_update = false;
+    bool _barometer_msg_update = false;
 
     bool loopFunc()//return true if updated.
     {
@@ -129,6 +131,9 @@ private:
     CallbackBufferBlock<geometry_msgs::TwistStamped> Velocity_buffer;
     ros::Subscriber Velocity_sub;
 
+    CallbackBufferBlock<sensor_msgs::FluidPressure> Barometer_buffer;
+    ros::Subscriber Barometer_sub;
+
     shared_ptr<GlobalOptimizationGraph> pGraph = nullptr;
     shared_ptr<cv::FileStorage> pSettings;
 
@@ -178,12 +183,17 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     boost::function<void(const boost::shared_ptr<geometry_msgs::TwistStamped const>& 
                    )> velocity_callback( boost::bind(&velocity_buffer_helper,this,boost::ref(this->Velocity_buffer),_1) 
                            );
+    boost::function<void(const boost::shared_ptr<sensor_msgs::FluidPressure const>&
+                   )> barometer_callback( boost::bind(&barometer_buffer_helper,this,boost::ref(this->Barometer_buffer),_1)
+                           );
+
+
     AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
     GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix",10,gps_callback);
     //SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
     SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);//("/SLAM/pose_for_obs_avoid",10,slam_callback);//("/gaas/slam/pose",10,slam_callback);
     Velocity_sub = pNH->subscribe("/mavros/global_position/raw/gps_vel",10,velocity_callback);
-    
+    Barometer_sub = pNH->subscribe("/mavros/imu/static_pressure",10,barometer_callback);
 
     cout <<"callback function binding finished!"<<endl;
     //SceneRetrieve_sub = pNH->subscribe("/..../,10,....")
@@ -220,8 +230,13 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
             this->pGraph->addBlockVelocity(this->Velocity_buffer.size()-1);
             this->_gps_vel_update = false;
         }
+        if(this->_barometer_msg_update)
+        {
+            this->pGraph->addBlockBarometer(this->Barometer_buffer.size()-1);
+            this->_barometer_msg_update = false;
+        }
         //do optimization.
-        retval = this->pGraph->doOptimization();
+        retval = true;//retval = this->pGraph->doOptimization();//TODO:fix this.
         this->slam_buf_mutex.unlock();
         this->gps_vel_mutex.unlock();
         this->gps_pos_mutex.unlock();
