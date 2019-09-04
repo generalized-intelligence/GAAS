@@ -2,20 +2,21 @@
 #define GLOBAL_OPTIMIZATION_GRAPH_H
 
 
+#include <gtsam/base/Matrix.h>
+#include <gtsam/base/Vector.h>
+//#include <gtsam/geometry/Rot2.h>
+//#include <gtsam/geometry/Pose2.h>
+//#include <gtsam/geometry/Point2.h>
 
-#include "GPS_SLAM_Matcher.h"
-#include "StateTransfer.h"
+
 #include <glog/logging.h>
 
-#include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
-#include <gtsam/geometry/Rot2.h>
-#include <gtsam/geometry/Pose2.h>
-//#include <gtsam/geometry/Point2.h>
 #include <gtsam/inference/Key.h>
 #include <gtsam/slam/PriorFactor.h>
 #include <gtsam/slam/BetweenFactor.h>
 #include <gtsam/nonlinear/NonlinearFactorGraph.h>
 #include <gtsam/nonlinear/GaussNewtonOptimizer.h>
+#include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
 #include <gtsam/nonlinear/Marginals.h>
 #include <gtsam/nonlinear/Values.h>
 #include <gtsam/inference/Symbol.h>
@@ -44,6 +45,9 @@
 #include <opencv2/opencv.hpp>
 #include "GOG_Frame.h"
 #include "GPS_like.h"
+#include "GPS_SLAM_Matcher.h"
+#include "StateTransfer.h"
+
 #include "modules/Barometer_module.h"
 using namespace std;
 using namespace ygz;
@@ -250,16 +254,16 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
         GPS_coord.expandAt(GPS_msg.longitude,GPS_msg.latitude,GPS_msg.altitude); //这里已经初始化了altitude.
         cout <<"Initiating GPS block in Optimization Graph!"<<endl;
     }
-    /*if(this->allow_gps_usage == false || this->gps_init_success == false||  !(this->status&0x01)  )//check if GPS valid.
-    {
-        cout<<"[WARNING] Unable to add GPS edge.GPS usage is forbidden in config file."<<endl;
-        if(this->allow_gps_usage)
-        {
-            cout<<"trying to reinit gps:"<<endl;
-            this->try_reinit_gps();
-        }
-        return;
-    }*/
+//    if(this->allow_gps_usage == false || this->gps_init_success == false||  !(this->status&0x01)  )//check if GPS valid.
+//    {
+//        cout<<"[WARNING] Unable to add GPS edge.GPS usage is forbidden in config file."<<endl;
+//        if(this->allow_gps_usage)
+//        {
+//            cout<<"trying to reinit gps:"<<endl;
+//            this->try_reinit_gps();
+//        }
+//        return;
+//    }
     //新的方法.
     bool add_match_success = this->p_gps_slam_matcher->addMatch(slam_vertex_index-1,msg_index);
     LOG(INFO)<<"Add match result:"<<add_match_success<<endl;
@@ -301,6 +305,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) + gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //     reproject to gog coordinate.
             dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) - gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
             dh = gps_measurement_vec3d[2];
+
             noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
             LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
             if(!init_yaw_valid_)//移到这里判断,以便于留下LOG.
@@ -359,7 +364,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             diff_yaw = get_yaw_from_slam_msg(this->pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(slam_node_index_loop_)) - yaw_error_fix_;//过程中飞机头部转向的角度.SLAM的角度有漂移,要通过GPS测量纠正后再输入.
             fix_angle(diff_yaw);
             graph.emplace_shared<BetweenFactor<Pose2> >(Symbol('x',slam_vertex_index-1),Symbol('x',slam_node_index_loop_),Pose2( diff_x,diff_y,diff_yaw),noise_model_relative_movement);
-            graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',slam_vertex_index-1),Symbol('h',slam_node_index_loop_),Point2(delta_alt_relative),noise_model_relative_altitude_);
+            graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',slam_vertex_index-1),Symbol('h',slam_node_index_loop_),Point2(delta_alt_relative,0),noise_model_relative_altitude_);
             //graph.emplace_shared<BetweenFactor<Rot2> >(Symbol('y'),...)//TODO:纠正yaw的误差积累.
             LOG(INFO)<<"Loop mode GPS insertion step<2> finished."<<endl;
             //this->p_isam->update();Values currentEstimate = p_isam->calculateBestEstimate();

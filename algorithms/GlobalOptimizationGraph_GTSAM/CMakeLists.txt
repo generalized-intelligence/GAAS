@@ -50,7 +50,6 @@ target_link_libraries(GlobalOptimizationGraph
         gtsam;${Boost_PROGRAM_OPTIONS_LIBRARY}
 	G2OTypesLib
 	${THIRD_PARTY_LIBS})
-
 add_executable(GlobalOptimizationGraph_main main.cpp)
 
 target_link_libraries(GlobalOptimizationGraph_main
