@@ -9,7 +9,16 @@
 To use ygz slam with ROS wrapper, please use the following method.
 
 ## Dependencies
-
+    
+    NOTE: 
+    
+    This package requires an Opencv version higher than 3.4.5 and opencv contirb is required as well.
+    Before building opencv, make sure you have set ENABLE_CXX11 and WITH_QT to true. 
+    Also, before build g2o, remember to install suitesparse, if you are running ubuntu or debian based system, 
+    you can use
+    
+    libsuitesparse-dev
+   
     please install the following dependencies:
     
     1. Pangolin (for visualization): https://github.com/stevenlovegrove/Pangolin
