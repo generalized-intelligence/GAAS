@@ -13,12 +13,19 @@ public:
     double height_diff_to_init(double baro_val_in,double gps_height_in);
     void set_gps_to_baro_height_transformation(double gps_height,double baro_val,bool& success_out);
 
-    double get_gps_minus_baro_height(bool& valid)
+    inline double get_gps_minus_baro_height(bool& valid)
     {
         valid = (this->gps_diff_ever_init&&this->ever_init);
         return this->gps_minus_baro_height;
     }
-
+    inline bool get_gps_diff_ever_init()
+    {
+        return this->gps_diff_ever_init;
+    }
+    inline bool get_ever_init()
+    {
+        return this->ever_init;
+    }
 
 private:
     vector<double> init_baro_val;

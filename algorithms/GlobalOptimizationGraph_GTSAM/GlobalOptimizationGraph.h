@@ -138,6 +138,7 @@ public:
         this->pBarometer_Buffer = &Barometerbuf;
         this->p_gps_slam_matcher = shared_ptr<GPS_SLAM_MATCHER>(new GPS_SLAM_MATCHER(this->pSLAM_Buffer,this->pGPS_Buffer,&(this->fSettings )) );
         this->p_state_tranfer_manager = shared_ptr<StateTransferManager>(new StateTransferManager(*p_gps_slam_matcher,this->fSettings,this->graph,this->GPS_coord,this->pGPS_Buffer,this->pSLAM_Buffer));
+        this->p_BarometerManager = shared_ptr<BarometerManager>(new BarometerManager());
     }
     //std::tuple<bool,Quaterniond,Vector3d,double,int> queryCurrentFullStatus()
     OptimizationGraphStatusT queryCurrentFullStatus()
@@ -163,7 +164,7 @@ public:
 private:
     shared_ptr<GPS_SLAM_MATCHER> p_gps_slam_matcher;
     shared_ptr<StateTransferManager> p_state_tranfer_manager;
-
+    shared_ptr<BarometerManager> p_BarometerManager;
 
     NonlinearFactorGraph graph;
     Values initialEstimate;
@@ -177,6 +178,7 @@ private:
     int slam_vertex_index = 0;
     int last_gps_vertex_index = -1;
     int last_gps_vel_index = -1;
+    int last_baro_vertex_index = -1;
     double yaw_init_to_slam = 0.0; //GOG初始的y轴 转向 slam的y轴夹角.
     //double yaw_init_to_gps = 0.0; //GOG的y轴 到 gps的北 夹角.
     
@@ -476,9 +478,62 @@ void GlobalOptimizationGraph::addBlockBarometer(int msg_index)
     {
         LOG(INFO)<<"Barometer usage disabled in GOG setting."<<endl;
         return;
-    }//TODO:continue...
+    }
+    if(slam_vertex_index==0)
+    {
+       LOG(WARNING) <<"In addBlockGPS():slam not ready,return."<<endl;
+       return;
+    }
+
     //this->baro_manager.xxxx
-    //graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',slam_vertex_index-1),Symbol('h',slam_vertex_index),....);//计算barometer变化量.
+    bool init_finished = this->p_BarometerManager->init_iterate(msg.fluid_pressure/1000);//input unit: kpa.
+    //这里隐式的约定了如果有Barometer消息,则从开始就有.不存在中间发布的情况;且开始时高度变化是很小的.
+    if(!init_finished)
+    {
+        LOG(INFO)<<"Barometer Manager still initializing."<<endl;
+        return;
+    }
+    bool data_valid;
+    double height = this->p_BarometerManager->get_current_baro_height(msg.fluid_pressure/1000,data_valid);
+    if(!data_valid)
+    {
+        LOG(INFO)<<"Barometer info invalid!"<<endl;
+        return;
+    }
+    if (last_baro_vertex_index<0)//初始化Baro,并且不插入值.
+    {   
+        //GPS_coord.expandAt(GPS_msg.longitude,GPS_msg.latitude,GPS_msg.altitude); //这里已经初始化了altitude.
+        cout <<"Initiating Barometer block in Optimization Graph!"<<endl; //TODO:记录气压计和SLAM的初值差.
+    }
+    else
+    {
+        bool hist_avail;
+        double diff_height = height - this->p_BarometerManager->get_current_baro_height(this->pBarometer_Buffer->at(msg_index-1).fluid_pressure/1000,hist_avail);
+        if(hist_avail)
+        {
+            noiseModel::Diagonal::shared_ptr model_relative_height_barometer = noiseModel::Diagonal::Sigmas(Vector2(1.0,0.0)); // TODO:挪到配置文件里.现在写死barometer的方差是1.
+            graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',slam_vertex_index-1),Symbol('h',last_baro_vertex_index),Point2(diff_height,0.0),model_relative_height_barometer);//计算barometer变化量.
+        }
+    }
+    //TODO:考虑是否要删除其中一种约束.
+    noiseModel::Diagonal::shared_ptr model_abs_height = noiseModel::Diagonal::Sigmas(Vector2(1.0,0.0));//第二个数没用到,随便填的,第一个固定1.0m
+    graph.add(GPSAltitudeFactor(Symbol('h',slam_vertex_index-1),Point2(height,0.0)//第二个数没用到,随便填的
+                        ,model_abs_height));
+    bool gps_baro_diff_ever_init = this->p_BarometerManager->get_gps_diff_ever_init();
+    if(!gps_baro_diff_ever_init)//尝试初始化GPS和气压计的差值.
+    //TODO:加入策略 在气压计高度产生缓漂时,通过GPS重初始化.
+    {
+        if(this->last_gps_vertex_index>0&&this->p_state_tranfer_manager->getCurrentState() == this->p_state_tranfer_manager->STATE_WITH_GPS)
+        {
+            bool init_gps_baro_diff_success;
+            this->p_BarometerManager->set_gps_to_baro_height_transformation(msg.fluid_pressure/1000,this->pGPS_Buffer->at(this->pGPS_Buffer->size()-1).altitude,init_gps_baro_diff_success);
+            if(!init_gps_baro_diff_success)
+            {
+                LOG(WARNING)<<"Init GPS_BARO relative height failed!"<<endl;
+            }
+        }
+    }
+    last_baro_vertex_index = slam_vertex_index-1;
 }
 
 void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs::PoseStamped& SLAM_msg)
