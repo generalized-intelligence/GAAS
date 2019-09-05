@@ -11,8 +11,8 @@
   
 [<img src = "https://s2.ax1x.com/2019/08/16/mZt6n1.jpg">](https://forum.gaas.dev)
 
-[<img src="https://s2.ax1x.com/2019/06/21/Vz7bNT.png">](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)[<img src="https://s2.ax1x.com/2019/06/21/Vz7sBt.png"/>](https://bit.ly/2Ky8VbV)[<img src="https://s2.ax1x.com/2019/06/21/VzHA8e.png"/>](https://discord.gg/cUxYsRc)
-<img src="https://s2.ax1x.com/2019/06/21/VzI4j1.png">
+[<img width="280" src = "https://s2.ax1x.com/2019/06/20/Vvmy6A.png" >](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvmsld.png"/>](https://bit.ly/2Ky8VbV)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvm6OI.png"/>](https://discord.gg/cUxYsRc)
+<img src="https://s2.ax1x.com/2019/06/20/Vvmgmt.png">
 
 - [What is GAAS?](#what-is-gaas)
   * [Tutorial for GAAS](#tutorial-for-gaas)
