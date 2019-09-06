@@ -49,6 +49,8 @@
 #include "StateTransfer.h"
 
 #include "modules/Barometer_module.h"
+#include "modules/RPY_Quat_utils.h"
+
 using namespace std;
 using namespace ygz;
 using namespace gtsam;
@@ -442,13 +444,17 @@ double get_yaw_from_slam_msg(const geometry_msgs::PoseStamped &m)
     auto orient = m.pose.orientation;
     Eigen::Quaterniond q_;
     q_.x() = orient.x;q_.y() = orient.y;q_.z() = orient.z;q_.w() = orient.w;
-    Matrix3d R_SLAM_Mat = q_.toRotationMatrix();
-    Vector3d vec_forward = R_SLAM_Mat*Vector3d(1,0,0);
-    double fx,fy;//reproject to xOy;
-    fx = vec_forward[0];fy = vec_forward[1];
-    check_and_fix_dx(fx);
-    double yaw = atan2(fy,fx);
-    fix_angle(yaw);
+//    
+//    Matrix3d R_SLAM_Mat = q_.toRotationMatrix();
+//    Vector3d vec_forward = R_SLAM_Mat*Vector3d(1,0,0);
+//    double fx,fy;//reproject to xOy;
+//    fx = vec_forward[0];fy = vec_forward[1];
+//    check_and_fix_dx(fx);
+//    double yaw = atan2(fy,fx);
+//    fix_angle(yaw);
+//    return yaw;
+    double roll,pitch,yaw;
+    getRPYFromQuat(orient.x,orient.y,orient.z,orient.w,roll,pitch,yaw);
     return yaw;
 }
 double calcnorm(double x,double y)
