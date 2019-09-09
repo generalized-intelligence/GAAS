@@ -607,13 +607,45 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         Values currentEstimate = p_isam->calculateEstimate();//p_isam->estimate();
         LOG(INFO)<<"current yaw_init_to_slam:"<<yaw_init_to_slam*180/3.14159<<" deg."<<endl;
         cout <<"last state:"<<endl;
-        const Pose2* p_obj = &(currentEstimate.at(slam_vertex_index-1).cast<Pose2>());
+        const Pose2* p_obj = &(currentEstimate.at(Symbol('x',slam_vertex_index-1)).cast<Pose2>());
                        //dynamic_cast<Pose2*>( &(currentEstimate.at(slam_vertex_index-1)) );//这几个值都不对,应该是内存错误.
                        //(Pose2*) (&p_isam->calculateEstimate(slam_vertex_index-1));
                        //dynamic_cast<Pose2> (currentEstimate.at(slam_vertex_index-1));
         LOG(INFO)<<"Current NODE ESTIMATED STATE at index:"<<slam_vertex_index-1<< " x:"<<p_obj->x()<<",y:"<<p_obj->y()<<",theta:"<<p_obj->theta()<<endl;
         LOG(INFO)<<"Current NODE ESTIMATED Position for visualizer:"<<p_obj->x()<<","<<p_obj->y()<<","<<p_obj->theta()*10<<endl;
         currentEstimate.print("Current estimate: ");
+        //取出优化器里的量.
+        {//在新的作用域里搞,不动外面的东西.将来可以挪到新函数里去.
+            state_mutex.lock();
+            //    bool state_correct = false;
+            //    Quaterniond ret_val_R;
+            //    Vector3d ret_val_t;
+            //    std_msgs::Header header_;
+            //    int innerID_of_GOG;
+            this->current_status.state_correct = true;//TODO.
+            auto Q__ = SLAM_msg.pose.orientation;
+            const Pose2 current_pose2d = currentEstimate.at(Symbol('x',slam_vertex_index-1)).cast<Pose2>();
+            double new_yaw_rad = current_pose2d.theta();
+            double newx,newy,newz,neww;
+            getNewQuaternionFromOriginalQuaternionAndNewYawAngle(Q__.x,Q__.y,Q__.z,Q__.w,new_yaw_rad,
+                                                         newx,newy,newz,neww);
+            
+            current_status.ret_val_R.x() = newx;//生成一个.
+            current_status.ret_val_R.y() = newy;
+            current_status.ret_val_R.z() = newz;
+            current_status.ret_val_R.w() = neww;
+
+            current_status.ret_val_t[0] = current_pose2d.x();
+            current_status.ret_val_t[1] = current_pose2d.y();
+            Point2 current_height = currentEstimate.at(Symbol('h',slam_vertex_index-1)).cast<Point2>();
+            current_status.ret_val_t[2] = current_height.x();//y没用.
+            current_status.header_ = SLAM_msg.header;
+            current_status.innerID_of_GOG = this->slam_vertex_index-1;
+            //TODO:dump current_status to a log file.
+            state_mutex.unlock();
+        }
+
+
         /*if(slam_vertex_index%1000 == 0)
         {
             GaussNewtonParams parameters;
