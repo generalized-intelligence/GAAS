@@ -276,6 +276,7 @@ bool ROS_IO_Manager::publishAll()
         //std::string pub_string = string(info.innerID_of_GOG)+ string("|")+string(info.ret_val_R.w())+","+string(info.ret_val_R.x())+","+string(info.ret_val_R.y())+","+string(ret_val_R.z())+"|"+string(info.ret_val_t[0])+","+string(info.ret_val_t[1])+","+string(info.ret_val_t[2]);
         std::string pub_string;
         ss>>pub_string;
+        LOG(INFO)<<"Current full status:"<<pub_string<<endl;
         pub_msg.data = pub_string;
         this->state_string_publisher.publish(pub_msg);
     }

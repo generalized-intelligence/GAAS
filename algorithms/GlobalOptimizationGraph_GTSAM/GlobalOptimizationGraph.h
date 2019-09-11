@@ -170,7 +170,7 @@ private:
 
     NonlinearFactorGraph graph;
     Values initialEstimate;
-    const int relinearizeInterval = 300;
+    const int relinearizeInterval = 2000;//300;
     //NonlinearISAM* p_isam;//(relinearizeInterval);
     //NonlinearISAM* p_isam;
     ISAM2* p_isam;
@@ -393,7 +393,10 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) - gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
             dh = gps_measurement_vec3d[2];
             noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
-            
+            {//debug only.
+                auto ps__ = pSLAM_Buffer->at(slam_vertex_index).pose.position;
+                LOG(INFO)<<"GPS_MEASUREMENT_DEBUG:dxdydh:"<<dx<<","<<dy<<","<<dy<<";"<<"SLAM:"<<ps__.x<<","<<ps__.y<<","<<ps__.z<<endl;
+            }
             LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
             if(!init_yaw_valid_)//移到这里判断,方便产生LOG.
             {
