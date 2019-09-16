@@ -7,6 +7,10 @@ GAAS Mirror for TX2 beta provides a one-step installation tool to set up your TX
 
 ## How to use GAAS Mirror for TX2 beta?
 
+### Step Zero: Verify File Integrity
+MD5: 24151c13609338ffb33786a0366242a9
+
+SHA1: 376a0507e99fe1edd91fe3a9e01f55d00db2609e
 
 ### Step One: Install Nvidia Jetpack
 Download NVIDIA Jetpack from the [NVIDIA website](https://developer.nvidia.com/embedded/jetpack-archive). You may need to register for an account. Note that GAAS is running on Ubuntu 16.04 and thus the highest version we can use for JetPack is NVIDIA Jetpack3.3.
