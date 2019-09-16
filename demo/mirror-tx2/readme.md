@@ -77,7 +77,7 @@ If you would like to start with a clean system, follow the instruction on this W
 
 <img src="https://s2.ax1x.com/2019/09/16/nWewz8.png" width=500>
 
-2. Go to the sub-folder Linux_for_tegra. Launch a terminal and copy tx2gaas.img to system.img:
+2. Go to Installation_Directory/64_TX2/Linux_for_tegra. Launch a terminal and copy tx2gaas.img to system.img:
 
 ```sudo cp my_backup.img system.img```
  
