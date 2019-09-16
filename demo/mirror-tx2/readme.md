@@ -4,6 +4,7 @@
 GAAS Mirror for TX2 beta provides a one-step installation tool to set up your TX2 with the GAAS framework. The mirror includes installation of Ubuntu 16.04, ROS, other GAAS dependencies, GAAS git repo, compiled SLAM module, MYNTAI SDK.
 
 #### [Download Now](https://1drv.ms/u/s!Ai0N8dl2SJ8HiFUaAsS9Jvf3i4UH?e=dafBBh)
+You need to sign in a Microsoft account to download the Mirror as it is shared through One Drive. The mirror is about 19GB.
 
 ## How to use GAAS Mirror for TX2 beta?
 
