@@ -394,7 +394,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             dh = gps_measurement_vec3d[2];
             noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
             {//debug only.
-                auto ps__ = pSLAM_Buffer->at(slam_vertex_index).pose.position;
+                auto ps__ = pSLAM_Buffer->at(slam_vertex_index-1).pose.position;
                 LOG(INFO)<<"GPS_MEASUREMENT_DEBUG:dxdydh:"<<dx<<","<<dy<<","<<dy<<";"<<"SLAM:"<<ps__.x<<","<<ps__.y<<","<<ps__.z<<endl;
             }
             LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
@@ -556,6 +556,13 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
     LOG(INFO)<<"In addBlockSLAM(): adding slam msg at slam_vertex_index: "<<slam_vertex_index<<"."<<endl;
     auto SLAM_msg = pSLAM_Buffer->at(msg_index);
     //addGOGFrame(SLAM_msg.pose.position.x,SLAM_msg.pose.position.y);//create a new map 'vertexPR'
+    double current_yaw_slam = get_yaw_from_slam_msg(SLAM_msg);
+    if(current_yaw_slam<0)
+    {
+        current_yaw_slam+=(3.1415926*2);
+    }
+    LOG(INFO)<<"[DEBUG] Yaw in get_yaw_from_slam_msg:"<<current_yaw_slam*180/3.1415926<<endl;
+
     GOG_Frame* pF = new GOG_Frame();
     cout <<"Insert "<<slam_vertex_index<<"in initialEstimate!"<<endl;
     this->p_state_tranfer_manager->updateSlam();
@@ -698,7 +705,9 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         Rot2 rot_drift_prior = Rot2::fromAngle(0);
         //initialEstimate.insert(Symbol('y',0),...)//TODO.
         //graph.emplace_shared<PriorFactor<Rot2> >(Symbol('y',0),rot_drift_prior,priorNoise_Height);//定义初始SLAM yaw漂移角为0.
-        get_yaw_from_slam_msg(SLAM_msg);
+        double current_yaw_slam = get_yaw_from_slam_msg(SLAM_msg);
+
+        LOG(INFO)<<"[DEBUG] Yaw in get_yaw_from_slam_msg:"<<current_yaw_slam*180/3.1415926<<endl;
         slam_vertex_index++;
     }
     //if gps-like measurement inputs:  (pay attention:here we use Point2 as input.)
