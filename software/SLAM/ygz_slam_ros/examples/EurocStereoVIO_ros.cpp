@@ -87,6 +87,7 @@ void FetchHeightCallback(const double);
 ros::Publisher* pVisualOdomPublisher;
 ros::Publisher* pExternalEstimate;
 ros::Publisher* pGAAS_SLAM_pose_pub;
+ros::Publisher* pVis__;
 
 ros::Publisher* SLAMpose;
 ros::Publisher* pFakeGPS;
@@ -551,7 +552,13 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
       pose_atti.y = quat.y();
       pose_atti.z = quat.z();
       SLAMpose->publish(EstimatedPose_for_obs_avoid);
-
+//step3 rviz vis obj.
+      auto vis_ = nav_msgs::Odometry();
+      vis_.pose.pose.position = pose_obs;
+      vis_.pose.pose.orientation = pose_atti;
+      vis_.header.frame_id = "/map";
+      //TODO:publish this.
+      pVis__->publish(vis_);
     }
 
     //NOTE publish slam estiamted pose to px4 external pose estimation.----------------------------------------------
@@ -697,7 +704,9 @@ int main(int argc, char **argv) {
     ros::Subscriber imu_sub = nh.subscribe("/mynteye/imu/data_raw", 1000, FetchImuCallback);
     //ros::Subscriber gps_sub = nh.subscribe("/dji_sdk/gps_position",100,FetchGPSCallback);
     ros::Publisher ygz_odom_vis_pub = nh.advertise<visualization_msgs::Marker>("/ygz_odom_marker222",10);
+    ros::Publisher vis__pub = nh.advertise<nav_msgs::Odometry>("/vis__",10);
     pVisualOdomPublisher = &ygz_odom_vis_pub;
+    pVis__ = &vis__pub;
     VisualOdomMSGindex = 0;
     
     //for DJI device:

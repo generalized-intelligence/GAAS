@@ -49,9 +49,10 @@ SLAM_ROTATION_MAT: !!opencv-matrix
     rows: 3
     cols: 3
     dt: d
-    data: [ 0,0,-1,
-            0,1,0,
-            1,0,0]
+    #data: [ 0,0,-1,
+    #        0,1,0,
+    #        1,0,0]
+    data: [0,0,1,1,0,0,0,1,0]
 GPS_RECATCH_PATIENCE: 30
 
 #optimization relinearize options:

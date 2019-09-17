@@ -66,8 +66,13 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
 
     Vector3d xyz(xyz_original.x,xyz_original.y,xyz_original.z);
     Matrix3d rotation = rot_origin.toRotationMatrix();
-    rotation = pRIM->SLAM_ROTATION_EIGEN*rotation;
-    xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;
+    // rotation = pRIM->SLAM_ROTATION_EIGEN*rotation;
+    //xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;
+    //Transfromation at right.
+    rotation = rotation*pRIM->SLAM_ROTATION_EIGEN;
+    xyz = (xyz.transpose()*pRIM->SLAM_ROTATION_EIGEN).transpose();
+
+
 
     geometry_msgs::PoseStamped new_msg;
     new_msg = *slam_msg;
