@@ -24,7 +24,9 @@ void getNewQuaternionFromOriginalQuaternionAndNewYawAngle(double x,double y,doub
     double R,P,Y;//original RPY angles.
     getRPYFromQuat(x,y,z,w,R,P,Y);
     tf::Matrix3x3 newRmat;
-    newRmat.setRPY(R,P,new_yaw_rad);
+    //newRmat.setRPY(R,P,new_yaw_rad);
+    //newRmat.setRPY(R,new_yaw_rad,P);
+    newRmat.setRPY(new_yaw_rad,P,Y);//maybe we should decompose the rotation matrix directly.
     tf::Quaternion quat_out_;
     newRmat.getRotation(quat_out_);
     newx = quat_out_.getX();

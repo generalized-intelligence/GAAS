@@ -1,6 +1,6 @@
 #ifndef GLOBAL_OPTIMIZATION_GRAPH_H
 #define GLOBAL_OPTIMIZATION_GRAPH_H
-
+#define EIGEN_MAX_STATIC_ALIGN_BYTES 0  //To avoid Eigen memory alignment error.
 
 #include <gtsam/base/Matrix.h>
 #include <gtsam/base/Vector.h>
@@ -289,6 +289,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
         LOG(INFO)<<"Running in addBlockGPS() branch newstate == STATE_WITH_GPS"<<endl;
         if(inGPSLoopMode_out)
         {//GPS 环形约束形式.
+            LOG(INFO)<<"In addBlockGPS():in loop mode."<<endl;
             //add pos and refine whole map.TODO.
             //step<1>.插入常规点约束.
             //double dx,dy;
@@ -300,8 +301,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             //double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);//这是和是否回环没关系的.
             double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);//这是和是否回环没关系的.
 
-            cout <<"setting gps measurement!"<<endl;
-            cout <<"slam_vertex_index:"<<slam_vertex_index<<endl;
+            LOG(INFO) <<"setting gps measurement!"<<endl;
+            LOG(INFO) <<"slam_vertex_index:"<<slam_vertex_index<<endl;
 
             Vector3d gps_measurement_vec3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),delta_alt);
             bool covariance_valid = (GPS_msg.position_covariance_type >=2);
@@ -376,6 +377,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
         }//GPS 环形约束形式结束.
         else
         {//常规操作.
+            LOG(INFO)<<"addingGPSBlock():In ordinary mode."<<endl;
             double delta_lon = GPS_msg.longitude - GPS_coord.getLon();
             double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
             double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
@@ -383,8 +385,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             //double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);
             //好像也是符号问题.
             double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);
-            cout <<"setting gps measurement!"<<endl;
-            cout <<"slam_vertex_index:"<<slam_vertex_index<<endl;
+            LOG(INFO) <<"setting gps measurement!"<<endl;
+            LOG(INFO) <<"slam_vertex_index:"<<slam_vertex_index<<endl;
 
             Vector3d gps_measurement_vec3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),delta_alt);
             bool covariance_valid = (GPS_msg.position_covariance_type >=2);
@@ -394,7 +396,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             dh = gps_measurement_vec3d[2];
             noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
             {//debug only.
-                auto ps__ = pSLAM_Buffer->at(slam_vertex_index).pose.position;
+                auto ps__ = pSLAM_Buffer->at(slam_vertex_index-1).pose.position;
                 LOG(INFO)<<"GPS_MEASUREMENT_DEBUG:dxdydh:"<<dx<<","<<dy<<","<<dy<<";"<<"SLAM:"<<ps__.x<<","<<ps__.y<<","<<ps__.z<<endl;
             }
             LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;

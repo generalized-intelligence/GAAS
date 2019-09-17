@@ -37,7 +37,7 @@ if __name__ == '__main__':
             o.pose.pose.position.y = pos[1]
             o.pose.pose.position.z = pos[2]
             #sleep(0.01)
-            sleep(0.1)
+            sleep(0.01)
             odom_pub.publish(o)
 
 
