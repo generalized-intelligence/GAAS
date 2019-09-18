@@ -69,12 +69,14 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     // rotation = pRIM->SLAM_ROTATION_EIGEN*rotation;
     //xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;
     //Transfromation at right.
+    //step<1> 坐标系轴变动.
     rotation = rotation*pRIM->SLAM_ROTATION_EIGEN;
     //xyz不动.
     //xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;//旋转右乘(坐标系变换),点左乘(世界坐标系下表示)
     //xyz = (xyz.transpose()*pRIM->SLAM_ROTATION_EIGEN).transpose();
-
-
+    //step<2> 坐标系对齐世界坐标系.
+    rotation = pRIM->SLAM_ROT_AND_TRANS_EIGEN*rotation;
+    xyz = pRIM->SLAM_ROT_AND_TRANS_EIGEN*xyz;
 
     geometry_msgs::PoseStamped new_msg;
     new_msg = *slam_msg;

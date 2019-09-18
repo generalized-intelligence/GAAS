@@ -51,6 +51,14 @@ SLAM_ROTATION_MAT: !!opencv-matrix
     dt: d
     #data: [1,0,0,0,1,0,0,0,1] #mat Eye(). z downward.
     data: [0,0,1,1,0,0,0,1,0]
+
+SLAM_RT_TRANS_MAT: !!opencv-matrix
+#for both rotation and translation.
+    rows: 3
+    cols: 3
+    dt: d
+    data: [0,1,0,0,0,1,1,0,0]
+
 GPS_RECATCH_PATIENCE: 30
 
 #optimization relinearize options:

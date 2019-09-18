@@ -106,7 +106,9 @@ public:
 
 
     cv::Mat SLAM_ROTATION;//fsSettings["LEFT.R"] >> R_l;
+    cv::Mat SLAM_ROT_AND_TRANS;
     Matrix3d SLAM_ROTATION_EIGEN;
+    Matrix3d SLAM_ROT_AND_TRANS_EIGEN;
 private:
     time_us_t start_time_us;
     double ros_start_time;
@@ -156,7 +158,9 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     this->pSettings = shared_ptr<cv::FileStorage>(new cv::FileStorage ());
     pSettings->open(string(argv[1]),cv::FileStorage::READ);
     (*pSettings)["SLAM_ROTATION_MAT"] >> this->SLAM_ROTATION;
+    (*pSettings)["SLAM_RT_TRANS_MAT"] >> this->SLAM_ROT_AND_TRANS;
     cv2eigen(this->SLAM_ROTATION,SLAM_ROTATION_EIGEN);
+    cv2eigen(this->SLAM_ROT_AND_TRANS,SLAM_ROT_AND_TRANS_EIGEN);
     //step<2> init ros.
     ros::init(argc,argv,"GlobalOptimizationGraph_ROSNode");
     this->pNH = new ros::NodeHandle();
