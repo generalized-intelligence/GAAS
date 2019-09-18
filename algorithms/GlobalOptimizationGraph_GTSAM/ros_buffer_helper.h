@@ -70,7 +70,9 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     //xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;
     //Transfromation at right.
     rotation = rotation*pRIM->SLAM_ROTATION_EIGEN;
-    xyz = (xyz.transpose()*pRIM->SLAM_ROTATION_EIGEN).transpose();
+    //xyz不动.
+    //xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;//旋转右乘(坐标系变换),点左乘(世界坐标系下表示)
+    //xyz = (xyz.transpose()*pRIM->SLAM_ROTATION_EIGEN).transpose();
 
 
 

@@ -17,25 +17,36 @@ def get_checkfile(check_file_name):
 
 def get_check_yaw_data(check_file):
     ys = []
+    ps = []
+    rs = []
     for line in check_file:
       if line.find('get_yaw_from_slam_msg')>0:
-        res = float(line.split('get_yaw_from_slam_msg:')[1])
-        ys.append(res)
-    return ys
+        print line
+        yaw = float(line.split('get_yaw_from_slam_msg:')[1].split('\t')[0])
+        print float(line.split('pitch:')[1].split('\t')[0])
+        pitch = float(line.split('pitch:')[1].split('\t')[0] )
+         
+        print  float(line.split('roll:')[1])
+        roll = float(line.split('roll:')[1])
+        ys.append(yaw)
+        ps.append(pitch)
+        rs.append(roll)
+        
+    return ys,ps,rs
 
 
     
 
-check_file_with_gps = get_checkfile('./yaw.log') # read gps and visualize.
+check_file_with_gps = get_checkfile('/tmp/GlobalOptimizationGraph_main.INFO') # read gps and visualize.
 
 
 #xs,ys,zs,ts = get_check_gps_data(check_file_with_gps)
-ys = get_check_yaw_data(check_file_with_gps)
+ys ,ps, rs = get_check_yaw_data(check_file_with_gps)
 
+ax = plt.plot(ys,'r',linewidth = 3)
+ax = plt.plot(ps,'y',linewidth=3)
+ax = plt.plot(rs,'b',linewidth=3)
 #x, y, z = data[0], data[1], data[2]
-ax = plt.plot(ys,'r'#, projection='2d'
-			) # 创建一个三维的绘图工程 
-
 
 #ax.scatter(ys,c='y')  # gps.
 #ax.scatter(yslam,zslam,xslam,c = 'b')

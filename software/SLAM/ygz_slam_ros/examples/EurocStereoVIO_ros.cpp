@@ -512,6 +512,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     //publish odom!
     {
       Vector3d pos = pos_and_atti.translation();
+      pos[0] = pos[0]*-1;
       //SO3d so3 = pos_and_atti.rotationMatrix();
 
       Matrix3d mat = pos_and_atti.rotationMatrix();

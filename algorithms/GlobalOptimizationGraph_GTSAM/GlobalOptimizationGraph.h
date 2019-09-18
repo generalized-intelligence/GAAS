@@ -77,6 +77,7 @@ double fix_angle(double& angle)
     return ret_val;
 }
 double get_yaw_from_slam_msg(const geometry_msgs::PoseStamped &m);
+void get_rpy_from_slam_msg(const geometry_msgs::PoseStamped &m,double& roll,double& pitch,double& yaw);
 
 
 
@@ -462,6 +463,13 @@ double get_yaw_from_slam_msg(const geometry_msgs::PoseStamped &m)
     getRPYFromQuat(orient.x,orient.y,orient.z,orient.w,roll,pitch,yaw);
     return yaw;
 }
+void get_rpy_from_slam_msg(const geometry_msgs::PoseStamped& m,double& roll,double& pitch,double& yaw)
+{
+    auto orient = m.pose.orientation;
+    Eigen::Quaterniond q_;
+    q_.x() = orient.x;q_.y() = orient.y;q_.z() = orient.z;q_.w() = orient.w;
+    getRPYFromQuat(orient.x,orient.y,orient.z,orient.w,roll,pitch,yaw);
+}
 double calcnorm(double x,double y)
 {
     return sqrt(x*x+y*y);
@@ -558,12 +566,17 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
     LOG(INFO)<<"In addBlockSLAM(): adding slam msg at slam_vertex_index: "<<slam_vertex_index<<"."<<endl;
     auto SLAM_msg = pSLAM_Buffer->at(msg_index);
     //addGOGFrame(SLAM_msg.pose.position.x,SLAM_msg.pose.position.y);//create a new map 'vertexPR'
-    double current_yaw_slam = get_yaw_from_slam_msg(SLAM_msg);
-    if(current_yaw_slam<0)
     {
-        current_yaw_slam+=(3.1415926*2);
+        double r,p,y;
+        get_rpy_from_slam_msg(SLAM_msg,r,p,y);
+        fix_angle(r);
+        fix_angle(p);
+        fix_angle(y);
+        LOG(INFO)<<"[DEBUG] Yaw in get_yaw_from_slam_msg:"<<y*180/3.1415926<<"\tpitch:"<<p*180/3.1415926<<"\troll:"<<r*180/3.1415926<<endl;
+        auto p_ = SLAM_msg.pose.position;
+        auto q = SLAM_msg.pose.orientation;
+        LOG(INFO)<<"[DEBUG] Full info of slam input:"<<p_.x<<","<<p_.y<<","<<p_.z<<";"<<q.x<<","<<q.y<<","<<q.z<<","<<q.w<<endl;
     }
-    LOG(INFO)<<"[DEBUG] Yaw in get_yaw_from_slam_msg:"<<current_yaw_slam*180/3.1415926<<endl;
 
     GOG_Frame* pF = new GOG_Frame();
     cout <<"Insert "<<slam_vertex_index<<"in initialEstimate!"<<endl;
@@ -709,7 +722,6 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         //graph.emplace_shared<PriorFactor<Rot2> >(Symbol('y',0),rot_drift_prior,priorNoise_Height);//定义初始SLAM yaw漂移角为0.
         double current_yaw_slam = get_yaw_from_slam_msg(SLAM_msg);
 
-        LOG(INFO)<<"[DEBUG] Yaw in get_yaw_from_slam_msg:"<<current_yaw_slam*180/3.1415926<<endl;
         slam_vertex_index++;
     }
     //if gps-like measurement inputs:  (pay attention:here we use Point2 as input.)
