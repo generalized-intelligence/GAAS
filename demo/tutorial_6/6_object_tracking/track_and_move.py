@@ -17,7 +17,7 @@ import config
 
 #Keep the object in the center.
 class SimpleTrackAndMove:
-    def __init__(self, resolution,  K, commander, left_topic='/gi/simulation/left/image_raw', right_topic='/gi/simulation/right/image_raw', 
+    def __init__(self, resolution,  K, left_topic='/gi/simulation/left/image_raw', right_topic='/gi/simulation/right/image_raw', 
                         object_position_topic='/track_rect_pub' ,move_threshold=0.3, altitude=3000, stereo=None, baseline=None, ):
 
         self.fx = float(K[0][0])
@@ -123,7 +123,7 @@ class SimpleTrackAndMove:
 
 
 if __name__ == '__main__':
-    rospy.init_node('track_and_move', anonymous=True)
+    #rospy.init_node('track_and_move', anonymous=True)
     
     K = config.K 
     resolution = config.resolution

@@ -2,7 +2,7 @@ from commander import Commander
 import time
 import rospy
 
-rospy.init_node('init_drone')
+#rospy.init_node('init_drone')
 
 con = Commander()
 
