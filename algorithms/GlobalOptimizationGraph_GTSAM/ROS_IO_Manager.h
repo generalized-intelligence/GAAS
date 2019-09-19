@@ -253,9 +253,10 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
 void ROS_IO_Manager::GPS_callback(const sensor_msgs::NavSatFix& GPS_msg)
 {
     //什么也不做.
-    LOG(WARNING)<<"GPS DISABLED!"<<endl;
-    //this->GPS_buffer.onCallbackBlock(GPS_msg);
+    //LOG(WARNING)<<"GPS DISABLED!"<<endl;
 
+    //正常操作
+    this->GPS_buffer.onCallbackBlock(GPS_msg);
 
     //Do other callback procedure.
 }
