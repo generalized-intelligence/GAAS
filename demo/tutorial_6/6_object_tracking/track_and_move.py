@@ -123,8 +123,6 @@ class SimpleTrackAndMove:
 
 
 if __name__ == '__main__':
-    #rospy.init_node('track_and_move', anonymous=True)
-    
     K = config.K 
     resolution = config.resolution
     left_topic = config.left_topic
