@@ -171,6 +171,7 @@ private:
 
     NonlinearFactorGraph graph;
     Values initialEstimate;
+    double yaw_rad_current_estimate = 0;
     const int relinearizeInterval = 2000;//300;
     //NonlinearISAM* p_isam;//(relinearizeInterval);
     //NonlinearISAM* p_isam;
@@ -194,6 +195,8 @@ private:
     CallbackBufferBlock<sensor_msgs::FluidPressure>* pBarometer_Buffer;
     //uav location attitude info management.
     void remap_UAV_coordinate_with_GPS_coordinate();
+
+    bool gps_expand_ever_init = false;
     GPSExpand GPS_coord;
 
     bool allow_gps_usage = true;//can be configured by config.yaml
@@ -261,11 +264,12 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
        LOG(WARNING) <<"In addBlockGPS():slam not ready,return."<<endl;
        return;
     }
-    if (last_gps_vertex_index<0)//初始化GPS.
+    if (last_gps_vertex_index<0&&!gps_expand_ever_init)//初始化GPS.
     {
         GPS_coord.expandAt(GPS_msg.longitude,GPS_msg.latitude,GPS_msg.altitude); //这里已经初始化了altitude.
         LOG(INFO)<<"Initializing GPS expand at:"<<GPS_msg.longitude<<","<<GPS_msg.latitude<<","<<GPS_msg.altitude<<endl;
         cout <<"Initializing GPS block in Optimization Graph!"<<endl;
+        gps_expand_ever_init = true;
     }
 //    if(this->allow_gps_usage == false || this->gps_init_success == false||  !(this->status&0x01)  )//check if GPS valid.
 //    {
@@ -359,7 +363,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             int slam_node_index_loop_ = this->p_gps_slam_matcher->at(p_state_tranfer_manager->getLastGPSSLAMMatchID()).slam_index;//回环点的index.
             double noise_dx_ = sqrt(gps_covar1_[0]*gps_covar1_[0] + gps_covar2_[0]*gps_covar2_[0]);
             double noise_dy_ = sqrt(gps_covar1_[4]*gps_covar1_[4] + gps_covar2_[4]*gps_covar2_[4]);
-            noiseModel::Diagonal::shared_ptr noise_model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(noise_dx_,noise_dy_,0.1) );//variance for diff rotation and translation.//TODO fill in angle covariance.
+            noiseModel::Diagonal::shared_ptr noise_model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(noise_dx_,noise_dy_,0.01744*2 //2 deg /Loop
+																	) );//variance for diff rotation and translation.//TODO fill in angle covariance.
             noiseModel::Diagonal::shared_ptr noise_model_relative_altitude_ = noiseModel::Diagonal::Sigmas(Vector2(0.1,0.001));//第二个数随便填的,没用到.
 
             //By using Diagonal::Sigmas, here we do assert that the variance of x,y and yaw are perpendicular.         
@@ -592,13 +597,13 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
     GOG_Frame* pF = new GOG_Frame();
     cout <<"Insert "<<slam_vertex_index<<"in initialEstimate!"<<endl;
     this->p_state_tranfer_manager->updateSlam();
-    initialEstimate.insert(Symbol('x',slam_vertex_index),Pose2(//initial guess of abs pos and yaw
-                                                   SLAM_msg.pose.position.x,SLAM_msg.pose.position.y,0
-				)); //here we use basic_vertex_id to represent vehicle position vertex id
-    initialEstimate.insert(Symbol('h',slam_vertex_index),Point2(0,0));//initial guess of height:0.//TODO.
 
     if (slam_vertex_index >0)
     {
+        initialEstimate.insert(Symbol('x',slam_vertex_index),Pose2(//initial guess of abs pos and yaw
+                                                   SLAM_msg.pose.position.x,SLAM_msg.pose.position.y,get_yaw_from_slam_msg(SLAM_msg)//this->yaw_rad_current_estimate //这里出了问题.
+				)); //here we use basic_vertex_id to represent vehicle position vertex id
+        initialEstimate.insert(Symbol('h',slam_vertex_index),Point2(0,0));//initial guess of height:0.//TODO.
         //calc diff for index
         auto orient = SLAM_msg.pose.orientation;
         Eigen::Quaterniond q_;
@@ -633,7 +638,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         double diff_yaw = (get_yaw_from_slam_msg(SLAM_msg) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(slam_vertex_index-1)));
         //调调参数.
         //noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.2,0.2,0.1));//for slam diff rotation and translation.
-        noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.001,0.001,0.0016));// 1mm/帧 0.1°/帧
+        noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.001,0.001,0.01744*0.01));// 1mm/帧 0.01744 1度.100帧一度.
         noiseModel::Diagonal::shared_ptr model_relative_height_ = noiseModel::Diagonal::Sigmas(Vector2(0.001,0));//1mm/帧,第二个没用.
         //'x':xOy平面位置;'h':高度;'y':朝向角偏差.
         graph.emplace_shared<BetweenFactor<Pose2> >(Symbol('x', slam_vertex_index-1),Symbol('x',slam_vertex_index),Pose2( diff_x,diff_y,diff_yaw),model_relative_movement);
@@ -646,7 +651,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
             {
                 LOG(WARNING)<<"In addBlockSLAM():GPS not stable;adding slam prior pose restriction."<<endl;
                 auto p__ = SLAM_msg.pose.position;
-                noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.3,0.3,0.1));
+                noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.3,0.3,0.01744*10)); //0.3m,10度.
                 graph.emplace_shared<PriorFactor<Pose2> >(Symbol('x',slam_vertex_index),Pose2(p__.x,p__.y,get_yaw_from_slam_msg(SLAM_msg)),priorNoise_Absolute);//位置和朝向角都初始化成0.
                 noiseModel::Diagonal::shared_ptr priorNoise_Height = noiseModel::Diagonal::Sigmas(Vector2(1.0,0.0));
                 graph.emplace_shared<PriorFactor<Point2> >(Symbol('h',slam_vertex_index),Point2(p__.z,0),priorNoise_Height);//高度初始化成0
@@ -684,6 +689,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
             auto Q__ = SLAM_msg.pose.orientation;
             const Pose2 current_pose2d = currentEstimate.at(Symbol('x',slam_vertex_index-1)).cast<Pose2>();
             double new_yaw_rad = current_pose2d.theta();
+            this->yaw_rad_current_estimate = new_yaw_rad;
             double newx,newy,newz,neww;
             getNewQuaternionFromOriginalQuaternionAndNewYawAngle(Q__.x,Q__.y,Q__.z,Q__.w,new_yaw_rad,
                                                          newx,newy,newz,neww);
@@ -741,8 +747,12 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
     //SLAM输入初始化。
     //设置初始朝向角为0度，位置为0,0.以后的位姿以此为参考。
     {
+        initialEstimate.insert(Symbol('x',slam_vertex_index),Pose2(//initial guess of abs pos and yaw
+                                                   SLAM_msg.pose.position.x,SLAM_msg.pose.position.y,0 
+				)); //here we use basic_vertex_id to represent vehicle position vertex id
+        initialEstimate.insert(Symbol('h',slam_vertex_index),Point2(0,0));//initial guess of height:0.//TODO.
         LOG(INFO)<<"Initializing slam factor."<<endl;
-        noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.3,0.3,0.1));
+        noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.3,0.3,0.01744*5));//初始化角度方差5度. 0.3m.
         graph.emplace_shared<PriorFactor<Pose2> >(Symbol('x',0),Pose2(0,0,0),priorNoise_Absolute);//位置和朝向角都初始化成0.
         noiseModel::Diagonal::shared_ptr priorNoise_Height = noiseModel::Diagonal::Sigmas(Vector2(1.0,0.0));
         graph.emplace_shared<PriorFactor<Point2> >(Symbol('h',0),Point2(0,0),priorNoise_Height);//高度初始化成0

@@ -18,11 +18,13 @@ void R2ypr(Eigen::Matrix3d &R,double& y,double& p,double& r)
         y = atan2(n(1), n(0));
         p = atan2(-n(2), n(0) * cos(y) + n(1) * sin(y));
         r = atan2(a(0) * sin(y) - a(1) * cos(y), -o(0) * sin(y) + o(1) * cos(y));
+        //return r,p,y
 }
 Matrix3d ypr2R(double y,double p,double r )//const Vector3d& ypr)
 {
 
   // Eigen::Matrix<double, 3, 3> Rz;
+  LOG(INFO)<<"[DEBUG]in ypr2R():INPUT ypr:"<<y<<","<<p<<","<<r<<endl;
   Matrix3d Rz;
   Rz << cos(y), -sin(y), 0,
       sin(y), cos(y), 0,
@@ -50,6 +52,10 @@ void getRPYFromQuat(double x,double y,double z,double w,double& roll,double& pit
     Quaterniond quat(w,x,y,z);
     auto m = quat.toRotationMatrix();
     R2ypr(m,yaw,pitch,roll);
+    if (yaw>3.1415926535)
+    {
+        y-= 2*3.1415926535;
+    }
 }
 
 
@@ -60,8 +66,9 @@ void getNewQuaternionFromOriginalQuaternionAndNewYawAngle(double x,double y,doub
     getRPYFromQuat(x,y,z,w,R,P,Y);
     //tf::Matrix3x3 newRmat;
     //newRmat.setRPY(R,P,new_yaw_rad);
+    LOG(INFO)<<" in getnewquat(): input original ypr(by quat) val:"<<Y<<","<<P<<","<<R<<endl;
     LOG(INFO)<<"In getNewQuaternionFromOriginalQuaternionAndNewYawAngle(): old rad:"<<R<<";new rad:"<<new_yaw_rad<<endl;
-    Matrix3d mat_rotate = ypr2R(new_yaw_rad,P,Y);
+    Matrix3d mat_rotate = ypr2R(new_yaw_rad,P,R);
     Quaterniond q_(mat_rotate);
     /*newRmat.setRPY(new_yaw_rad,P,Y);//maybe we should decompose the rotation matrix directly.
     tf::Quaternion quat_out_;
@@ -70,6 +77,10 @@ void getNewQuaternionFromOriginalQuaternionAndNewYawAngle(double x,double y,doub
     newy = q_.y();
     newz = q_.z();
     neww = q_.w();
+    //DEBUG用.
+    double out_r,out_p,out_y;
+    getRPYFromQuat(newx,newy,newz,neww,out_r,out_p,out_y);
+    LOG(INFO)<<"after transformed in getNewQuat() ypr:"<<out_y<<","<<out_p<<","<<out_r<<endl;    
 }
 
 #endif
