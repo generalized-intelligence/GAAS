@@ -281,7 +281,7 @@ bool ROS_IO_Manager::publishAll()
         roseus::StringStamped pub_msg;//TODO:publish relative topics.
         pub_msg.header = info.header_;
         stringstream ss;
-        ss<<info.innerID_of_GOG<<"|"<<info.ret_val_R.w()<<","<<info.ret_val_R.x()<<","<<info.ret_val_R.y()<<","<<info.ret_val_R.z()<<"|"<<info.ret_val_t[0]<<","<<info.ret_val_t[1]<<","<<info.ret_val_t[2];
+        ss<<info.innerID_of_GOG<<"|"<<info.ret_val_R.x()<<","<<info.ret_val_R.y()<<","<<info.ret_val_R.z()<<","<<info.ret_val_R.w()<<"|"<<info.ret_val_t[0]<<","<<info.ret_val_t[1]<<","<<info.ret_val_t[2];
         //std::string pub_string = string(info.innerID_of_GOG)+ string("|")+string(info.ret_val_R.w())+","+string(info.ret_val_R.x())+","+string(info.ret_val_R.y())+","+string(ret_val_R.z())+"|"+string(info.ret_val_t[0])+","+string(info.ret_val_t[1])+","+string(info.ret_val_t[2]);
         std::string pub_string;
         ss>>pub_string;

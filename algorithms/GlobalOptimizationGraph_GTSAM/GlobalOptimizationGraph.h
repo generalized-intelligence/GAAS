@@ -214,6 +214,11 @@ private:
 
 GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
 {
+
+    testRPY_INVERSE();
+    testRPY_INVERSE(2,3,1);
+    testRPY_INVERSE(3,1,2);
+
     //cv::FileStorage fSettings;//(string(argv[1]),cv::FileStorage::READ);
     this->fSettings.open(string(argv[1]),cv::FileStorage::READ);
     this->GPS_AVAIL_MINIMUM = fSettings["GPS_AVAIL_MINIMUM"];
@@ -691,6 +696,9 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
             double new_yaw_rad = current_pose2d.theta();
             this->yaw_rad_current_estimate = new_yaw_rad;
             double newx,newy,newz,neww;
+            //LOG(WARNING)<<"CHANGING newxyzw for DEBUG QUAT ONLY!!!"<<endl;
+            //newx = Q__.x;newy=Q__.y;newz=Q__.z;neww=Q__.w;//Debug.
+            //尝试如果不改变xyzw,是否坐标系仍然不正常.
             getNewQuaternionFromOriginalQuaternionAndNewYawAngle(Q__.x,Q__.y,Q__.z,Q__.w,new_yaw_rad,
                                                          newx,newy,newz,neww);
             

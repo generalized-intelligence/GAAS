@@ -41,6 +41,11 @@ Matrix3d ypr2R(double y,double p,double r )//const Vector3d& ypr)
   Rx << 1., 0., 0.,
       0., cos(r), -sin(r),
       0., sin(r), cos(r);
+  Matrix3d finaltrans;
+  finaltrans<<1,0,0,
+              0,-1,0,
+              0,0,-1;
+  //return Rz * Ry * Rx*finaltrans;
   return Rz * Ry * Rx;
 }
 
@@ -60,27 +65,51 @@ void getRPYFromQuat(double x,double y,double z,double w,double& roll,double& pit
 
 
 void getNewQuaternionFromOriginalQuaternionAndNewYawAngle(double x,double y,double z,double w,double new_yaw_rad,
-                                                          double& newx,double& newy,double& newz,double& neww)
+                                                          double& newx,double& newy,double& newz,double& neww,bool do_operation = true)
 {
     double R,P,Y;//original RPY angles.
+    
     getRPYFromQuat(x,y,z,w,R,P,Y);
     //tf::Matrix3x3 newRmat;
     //newRmat.setRPY(R,P,new_yaw_rad);
     LOG(INFO)<<" in getnewquat(): input original ypr(by quat) val:"<<Y<<","<<P<<","<<R<<endl;
     LOG(INFO)<<"In getNewQuaternionFromOriginalQuaternionAndNewYawAngle(): old rad:"<<R<<";new rad:"<<new_yaw_rad<<endl;
-    Matrix3d mat_rotate = ypr2R(new_yaw_rad,P,R);
-    Quaterniond q_(mat_rotate);
-    /*newRmat.setRPY(new_yaw_rad,P,Y);//maybe we should decompose the rotation matrix directly.
-    tf::Quaternion quat_out_;
-    newRmat.getRotation(quat_out_);*/
-    newx = q_.x();
-    newy = q_.y();
-    newz = q_.z();
-    neww = q_.w();
+    if(do_operation)
+    {
+        Matrix3d mat_rotate = ypr2R(new_yaw_rad,P,R);
+        Quaterniond q_(mat_rotate);
+        /*newRmat.setRPY(new_yaw_rad,P,Y);//maybe we should decompose the rotation matrix directly.
+        tf::Quaternion quat_out_;
+        newRmat.getRotation(quat_out_);*/
+        newx = q_.x();
+        newy = q_.y();
+        newz = q_.z();
+        neww = q_.w();
+    }
+    else
+    {
+        newx = x;
+        newy = y;
+        newz = z;
+        neww = w;
+    }
     //DEBUG用.
     double out_r,out_p,out_y;
     getRPYFromQuat(newx,newy,newz,neww,out_r,out_p,out_y);
     LOG(INFO)<<"after transformed in getNewQuat() ypr:"<<out_y<<","<<out_p<<","<<out_r<<endl;    
 }
+//DEBUG ONLY:
+
+void testRPY_INVERSE(double y= 1,double p = 2,double r=1.5)
+{
+    auto mat = ypr2R(y,p,r);
+    LOG(INFO)<<"[TEST_RPY_UTILS] Mat input:"<<mat<<endl;
+    double yo,po,ro;//output.
+    R2ypr(mat,yo,po,ro);
+    auto mat2 = ypr2R(yo,po,ro);
+    LOG(INFO)<<"[TEST_RPY_UTILS] Mat output:"<<mat2<<endl;
+}
+
+
 
 #endif

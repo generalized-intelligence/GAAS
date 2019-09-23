@@ -44,35 +44,12 @@ if __name__ == '__main__':
     #print lines
     i = 0
     #优化后结果.
-    '''
-    for l__ in lines:
-        if(l__.find('full stat')>=0):
-            #print l__
-            orient = map(float,l__.split('|')[1].split(','))
-            pos = map(float,l__.split('|')[2].split(','))
-            print 'pos:',pos,'orient:',orient
-            o = Odometry()
-            o.header.frame_id = '/map'
-            #o.id = i
-            #i+=1
-            o.pose.pose.orientation.x = orient[0]
-            o.pose.pose.orientation.y = orient[1]
-            o.pose.pose.orientation.z = orient[2]
-            o.pose.pose.orientation.w = orient[3]
-            o.pose.pose.position.x = pos[0]
-            o.pose.pose.position.y = pos[1]
-            o.pose.pose.position.z = pos[2]
-            #sleep(0.01)
-            sleep(0.05)
-            odom_pub.publish(o)
-
-    '''
     #SLAM输入的显示.
     mat = np.matrix([[1,0,0],[0,1,0],[0,0,1]])
     #mat = np.matrix([[0,0,1],[1,0,0],[0,1,0]])
     #mat = np.matrix([[0,1,0],[0,0,1],[1,0,0]])
     rs,ps,ys,px_list,py_list = [],[],[],[],[]
-    mode_slam = False#True#False
+    mode_slam =  False#True#False
     mode_opti = True#False#True
     #mat = np.matrix([[0,0,1],[1,0,0],[0,1,0]])  # ygz 旋转阵右乘这个,平移不动.
     for l__ in lines:
@@ -86,7 +63,7 @@ if __name__ == '__main__':
             #(px,py,pz),(x,y,z,w) = process_pose_with_mat(mat,px,py,pz,x,y,z,w)
             matched = True
       elif(mode_opti):
-        if(l__.find('full stat')>=0):
+        if(l__.find('Current full status:')>=0):
             orient = map(float,l__.split('|')[1].split(','))
             pos = map(float,l__.split('|')[2].split(','))
             px,py,pz = pos
@@ -113,9 +90,9 @@ if __name__ == '__main__':
         py_list.append(py)
 
         #sleep(0.001)
-        #sleep(0.01)
+        sleep(0.01)
         #sleep(0.05)
-        #odom_pub.publish(o)
+        odom_pub.publish(o)
 
     import matplotlib.pyplot as plt
     #step<1> 显示r p y三个角度的曲线图.
