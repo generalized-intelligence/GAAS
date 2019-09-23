@@ -90,9 +90,8 @@ if __name__ == '__main__':
         py_list.append(py)
 
         #sleep(0.001)
-        sleep(0.01)
-        #sleep(0.05)
-        odom_pub.publish(o)
+        #sleep(0.01)
+        #odom_pub.publish(o)
 
     import matplotlib.pyplot as plt
     #step<1> 显示r p y三个角度的曲线图.

@@ -399,6 +399,35 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
         else
         {//常规操作.
             LOG(INFO)<<"addingGPSBlock():In ordinary mode."<<endl;
+
+            bool should_update_yaw_correction = p_state_tranfer_manager->get_should_update_yaw_correction(this->slam_vertex_index-1); //检查是否建议更新yaw.
+            if(should_update_yaw_correction)
+            {
+                int last_slam_id_out,last_match_id_out;//这两个是上一次纠正的最后id.
+                this->p_state_tranfer_manager->get_last_yaw_correction_slam_id(last_slam_id_out,last_match_id_out);//从这一点开始匹配.
+                //尝试进行GPS-SLAM 匹配.如果成功:更新.否则反复尝试.
+                bool update_success_output= false;
+                int last_match_stored_in_matcher_id = this->p_gps_slam_matcher->matchLen()-1;
+                double new_deg_output,new_deg_output_variance;
+                this->p_gps_slam_matcher->check2IndexAndCalcDeltaDeg(last_match_id_out,last_match_stored_in_matcher_id,//id
+                                                       GPS_coord,update_success_output,new_deg_output,new_deg_output_variance
+                                                         );//尝试计算yaw.
+                if(update_success_output)
+                {
+                    double _rad = new_deg_output*180/3.1415926535;
+                    double _rad_variance = new_deg_output_variance*180/3.1415926535;
+                    LOG(INFO)<<"YAW_FIX_SUCCESS in match between match_id:"<<last_match_id_out<<","<<last_match_stored_in_matcher_id<<endl;
+                    LOG(INFO)<<"YAW_NEWEST_VAL:"<<new_deg_output<<" deg.Variance:"<<new_deg_output_variance<<" deg."<<endl;
+                    //插入优化器:(可能需要新建Edge类型)
+                    //graph.emplace .... Symbol('y',...)
+                    this->p_state_tranfer_manager->set_last_slam_yaw_correction_id(this->slam_vertex_index-1,last_match_stored_in_matcher_id);
+                }
+                else
+                {
+                    LOG(INFO)<<"YAW_FIX_FAILED.ID:"<< last_match_id_out<<","<<last_match_stored_in_matcher_id<<";Values:"<<new_deg_output<<" deg.Variance:"<<new_deg_output_variance<<" deg."<<endl;
+                }
+            }
+
             double delta_lon = GPS_msg.longitude - GPS_coord.getLon();
             double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
             double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
@@ -656,9 +685,9 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
             {
                 LOG(WARNING)<<"In addBlockSLAM():GPS not stable;adding slam prior pose restriction."<<endl;
                 auto p__ = SLAM_msg.pose.position;
-                noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.3,0.3,0.01744*10)); //0.3m,10度.
+                noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.1,0.1,0.01744*10)); //0.1m,10度.
                 graph.emplace_shared<PriorFactor<Pose2> >(Symbol('x',slam_vertex_index),Pose2(p__.x,p__.y,get_yaw_from_slam_msg(SLAM_msg)),priorNoise_Absolute);//位置和朝向角都初始化成0.
-                noiseModel::Diagonal::shared_ptr priorNoise_Height = noiseModel::Diagonal::Sigmas(Vector2(1.0,0.0));
+                noiseModel::Diagonal::shared_ptr priorNoise_Height = noiseModel::Diagonal::Sigmas(Vector2(1.0,0.0)); //高度方差:1.
                 graph.emplace_shared<PriorFactor<Point2> >(Symbol('h',slam_vertex_index),Point2(p__.z,0),priorNoise_Height);//高度初始化成0
             }
         }
