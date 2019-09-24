@@ -184,6 +184,9 @@ private:
     int last_gps_vel_index = -1;
     int last_baro_vertex_index = -1;
     double yaw_init_to_slam = 0.0; //GOG初始的y轴 转向 slam的y轴夹角.
+
+
+    double current_yaw_slam_drift = 0;
     //double yaw_init_to_gps = 0.0; //GOG的y轴 到 gps的北 夹角.
     
     //message buffers.
@@ -399,35 +402,6 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
         else
         {//常规操作.
             LOG(INFO)<<"addingGPSBlock():In ordinary mode."<<endl;
-
-            bool should_update_yaw_correction = p_state_tranfer_manager->get_should_update_yaw_correction(this->slam_vertex_index-1); //检查是否建议更新yaw.
-            if(should_update_yaw_correction)
-            {
-                int last_slam_id_out,last_match_id_out;//这两个是上一次纠正的最后id.
-                this->p_state_tranfer_manager->get_last_yaw_correction_slam_id(last_slam_id_out,last_match_id_out);//从这一点开始匹配.
-                //尝试进行GPS-SLAM 匹配.如果成功:更新.否则反复尝试.
-                bool update_success_output= false;
-                int last_match_stored_in_matcher_id = this->p_gps_slam_matcher->matchLen()-1;
-                double new_deg_output,new_deg_output_variance;
-                this->p_gps_slam_matcher->check2IndexAndCalcDeltaDeg(last_match_id_out,last_match_stored_in_matcher_id,//id
-                                                       GPS_coord,update_success_output,new_deg_output,new_deg_output_variance
-                                                         );//尝试计算yaw.
-                if(update_success_output)
-                {
-                    double _rad = new_deg_output*180/3.1415926535;
-                    double _rad_variance = new_deg_output_variance*180/3.1415926535;
-                    LOG(INFO)<<"YAW_FIX_SUCCESS in match between match_id:"<<last_match_id_out<<","<<last_match_stored_in_matcher_id<<endl;
-                    LOG(INFO)<<"YAW_NEWEST_VAL:"<<new_deg_output<<" deg.Variance:"<<new_deg_output_variance<<" deg."<<endl;
-                    //插入优化器:(可能需要新建Edge类型)
-                    //graph.emplace .... Symbol('y',...)
-                    this->p_state_tranfer_manager->set_last_slam_yaw_correction_id(this->slam_vertex_index-1,last_match_stored_in_matcher_id);
-                }
-                else
-                {
-                    LOG(INFO)<<"YAW_FIX_FAILED.ID:"<< last_match_id_out<<","<<last_match_stored_in_matcher_id<<";Values:"<<new_deg_output<<" deg.Variance:"<<new_deg_output_variance<<" deg."<<endl;
-                }
-            }
-
             double delta_lon = GPS_msg.longitude - GPS_coord.getLon();
             double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
             double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
@@ -463,6 +437,45 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             graph.add(GPSAltitudeFactor(Symbol('h',slam_vertex_index-1),Point2(dh,0.0)//第二个数没用到,随便填的
                  ,gps_altitude_model));//GPS高程变化量.
             //graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',slam_vertex_index-1),Symbol('h',slam_vertex_index),....);//计算GPS高程变化量.
+
+
+
+            //插入优化器:(可能需要新建Edge类型)
+            const double loop_variance_deg = 1; //TODO:move into config file.
+            noiseModel::Diagonal::shared_ptr model_yaw_fix = noiseModel::Diagonal::Sigmas(Vector3(GPS_msg.position_covariance[0],GPS_msg.position_covariance[4],0.01744*loop_variance_deg));
+            double yaw_slam_diff = get_yaw_from_slam_msg(pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(this->p_gps_slam_matcher->at(0).slam_index));
+            graph.emplace_shared<BetweenFactor<Pose2>>(Symbol('x',this->p_gps_slam_matcher->at(0).slam_index),Symbol('x',slam_vertex_index-1),Pose2(dx,dy,yaw_slam_diff - this->current_yaw_slam_drift),model_yaw_fix);
+
+
+            //calc YAW correction.
+            bool should_update_yaw_correction = p_state_tranfer_manager->get_should_update_yaw_correction(this->slam_vertex_index-1); //检查是否建议更新yaw.
+            if(should_update_yaw_correction)
+            {
+                int last_slam_id_out,last_match_id_out;//这两个是上一次纠正的最后id.
+                this->p_state_tranfer_manager->get_last_yaw_correction_slam_id(last_slam_id_out,last_match_id_out);//从这一点开始匹配.
+                //尝试进行GPS-SLAM 匹配.如果成功:更新.否则反复尝试.
+                bool update_success_output= false;
+                int last_match_stored_in_matcher_id = this->p_gps_slam_matcher->matchLen()-1;
+                double new_deg_output,new_deg_output_variance;
+                this->p_gps_slam_matcher->check2IndexAndCalcDeltaDeg(last_match_id_out,last_match_stored_in_matcher_id,//id
+                                                       GPS_coord,update_success_output,new_deg_output,new_deg_output_variance
+                                                         );//尝试计算yaw.
+                if(update_success_output)
+                {
+                    double _rad = new_deg_output*180/3.1415926535;
+                    double _rad_variance = new_deg_output_variance*180/3.1415926535;
+                    LOG(INFO)<<"YAW_FIX_SUCCESS in match between match_id:"<<last_match_id_out<<","<<last_match_stored_in_matcher_id<<endl;
+                    LOG(INFO)<<"YAW_NEWEST_VAL:"<<new_deg_output<<" deg.Variance:"<<new_deg_output_variance<<" deg."<<endl;
+                    this->current_yaw_slam_drift = new_deg_output*3.1415926535/180.0 - yaw_init_to_gps; //update drift.
+                    LOG(INFO)<<"Insert yaw measurement fix in GPS-local Loop.Fix Value:"<<this->current_yaw_slam_drift*180/3.1415926535<<"deg."<<endl;
+                    this->p_state_tranfer_manager->set_last_slam_yaw_correction_id(this->slam_vertex_index-1,last_match_stored_in_matcher_id);
+                }
+                else
+                {
+                    LOG(INFO)<<"YAW_FIX_FAILED.ID:"<< last_match_id_out<<","<<last_match_stored_in_matcher_id<<";Values:"<<new_deg_output<<" deg.Variance:"<<new_deg_output_variance<<" deg."<<endl;
+                }
+            }
+
 
             cout <<"insert pos at "<<slam_vertex_index-1<<"."<<endl;
             cout <<"slam buffer size():"<<pSLAM_Buffer->size()<<endl;
@@ -672,7 +685,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         double diff_yaw = (get_yaw_from_slam_msg(SLAM_msg) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(slam_vertex_index-1)));
         //调调参数.
         //noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.2,0.2,0.1));//for slam diff rotation and translation.
-        noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.001,0.001,0.01744*0.01));// 1mm/帧 0.01744 1度.100帧一度.
+        noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(Vector3(0.01,0.01,0.01744*1.5));// 10mm/帧 0.01744 1.5度1帧.
         noiseModel::Diagonal::shared_ptr model_relative_height_ = noiseModel::Diagonal::Sigmas(Vector2(0.001,0));//1mm/帧,第二个没用.
         //'x':xOy平面位置;'h':高度;'y':朝向角偏差.
         graph.emplace_shared<BetweenFactor<Pose2> >(Symbol('x', slam_vertex_index-1),Symbol('x',slam_vertex_index),Pose2( diff_x,diff_y,diff_yaw),model_relative_movement);
@@ -789,9 +802,11 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
 				)); //here we use basic_vertex_id to represent vehicle position vertex id
         initialEstimate.insert(Symbol('h',slam_vertex_index),Point2(0,0));//initial guess of height:0.//TODO.
         LOG(INFO)<<"Initializing slam factor."<<endl;
-        noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.3,0.3,0.01744*5));//初始化角度方差5度. 0.3m.
+        //noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.3,0.3,0.01744*5));//初始化角度方差5度. 0.3m.
+        noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(Vector3(0.00001,0.00001,0.01744*0.00001)); //0.1m,10度.
         graph.emplace_shared<PriorFactor<Pose2> >(Symbol('x',0),Pose2(0,0,0),priorNoise_Absolute);//位置和朝向角都初始化成0.
-        noiseModel::Diagonal::shared_ptr priorNoise_Height = noiseModel::Diagonal::Sigmas(Vector2(1.0,0.0));
+        //noiseModel::Diagonal::shared_ptr priorNoise_Height = noiseModel::Diagonal::Sigmas(Vector2(1.0,0.0));
+        noiseModel::Diagonal::shared_ptr priorNoise_Height = noiseModel::Diagonal::Sigmas(Vector2(0.00001,0.0));
         graph.emplace_shared<PriorFactor<Point2> >(Symbol('h',0),Point2(0,0),priorNoise_Height);//高度初始化成0
 
         noiseModel::Isotropic::shared_ptr model = noiseModel::Isotropic::Sigma(1,0);

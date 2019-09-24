@@ -49,8 +49,8 @@ if __name__ == '__main__':
     #mat = np.matrix([[0,0,1],[1,0,0],[0,1,0]])
     #mat = np.matrix([[0,1,0],[0,0,1],[1,0,0]])
     rs,ps,ys,px_list,py_list = [],[],[],[],[]
-    mode_slam =  False#True#False
-    mode_opti = True#False#True
+    mode_slam =  True#False
+    mode_opti = False#True
     #mat = np.matrix([[0,0,1],[1,0,0],[0,1,0]])  # ygz 旋转阵右乘这个,平移不动.
     for l__ in lines:
       px,py,pz = 0,0,0
