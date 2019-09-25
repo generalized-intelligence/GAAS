@@ -64,14 +64,12 @@ void Scene::loadFile(const std::string &filename)
     {
         boost::archive::text_iarchive ia(ifs);
         ia >> *this;
-        cout << "Deserialization finished" << endl;
     }
 
+    cout << "Deserialization finished" << endl;
     this->test();
 
 //    this->removeEmptyElement();
-//    this->test();
-
 }
 
 void Scene::saveDeserializedPoseToCSV()
@@ -112,11 +110,36 @@ void Scene::test(bool savePosition)
     cout<<"vec_t size: "<<mVecT.size()<<endl;
     
     cout<<"---------------Current scene info---------------"<<endl;
-    
+
     if (savePosition)
     {
         saveDeserializedPoseToCSV();
     }
+
+    ofstream p2d, p3d, vecR, vecT;
+    p2d.open("p2d.log");
+    p3d.open("p3d.log");
+    vecR.open("vecR.log");
+    vecT.open("vecT.log");
+
+    for(auto& p2dpts : vec_p2d)
+    {
+      for(auto& p2dpt : p2dpts)
+      {
+        p2d << p2dpt.pt.x<<", "<<p2dpt.pt.y <<endl;
+      }
+    }
+
+    for(auto& p3dpts : vec_p3d)
+    {
+      for(auto& p3dpt : p3dpts)
+      {
+        p3d << p3dpt.x<<", "<<p3dpt.y<<", "<<p3dpt.z<<endl;
+      }
+    }
+
+    p2d.close();
+    p3d.close();
 
 }
 
@@ -196,10 +219,7 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
 {
     this->original_scene.loadFile(scene_file);
 
-//    this->ploop_closing_manager_of_scene = new LoopClosingManager(voc);
     this->ploop_closing_manager_of_scene = shared_ptr<LoopClosingManager>(new LoopClosingManager(voc));
-
-//    mpCv_helper = new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554);
 
     this->mpCv_helper = shared_ptr<cv_helper>(new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554));
     this->mpCv_helper->setMask("mask.png");
@@ -225,18 +245,12 @@ void SceneRetriever::_init_retriever()
         pfr->keypoints = p2d[frame_index];
 	    pfr->descriptors = this->original_scene.getDespByIndex(frame_index);
 
-
-	    cout<<"pfr->keypoints size: "<<pfr->keypoints.size()<<endl;
-	    cout<<"pfr->descriptors size: "<<pfr->descriptors.size()<<endl;
-
-
         ptr_frameinfo frame_info(pfr);
         
         this->ploop_closing_manager_of_scene->addKeyFrame(frame_info);
     }
 
     cout<<"frameinfo_list.size()"<<this->ploop_closing_manager_of_scene->frameinfo_list.size()<<endl;
-
     cout<<"loaded database information: "<<this->ploop_closing_manager_of_scene->frame_db<<endl;
 }
 
@@ -309,7 +323,8 @@ void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& cur
 }
 
 
-int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect, cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
+float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
+                                                 cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
 {
     this->LoopClosureDebugIndex ++;
 
@@ -325,12 +340,12 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
     mpCv_helper->applyMask(image_right_rect);
     mpCv_helper->applyMask(image_left_rect);
     
-//    cv::imshow("left image", image_left_rect);
-//    cv::waitKey(5);
+    //cv::imshow("left image", image_left_rect);
+    //cv::waitKey(5);
 
     this->mCurrentImage = image_left_rect;
 
-    //<1>-(1) match left image with scene.
+    //step 1, match left image with scene.
     std::vector<cv::DMatch> good_matches_output;
     ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
 
@@ -360,22 +375,34 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
         return -1;
     }
 
-
     cout<<"icp fetch old frame camera points and desps"<<endl;
 
     //step 2, fetch old frame camera points and desps
     cv::Mat old_image_left = this->fetchImage(loop_index, 1);
     cv::Mat old_image_right = this->fetchImage(loop_index, 0);
-    vector<cv::KeyPoint> old_kps_left;
-    vector<cv::Point3f> old_camera_pts;
-    cv::Mat old_frame_desps;
-    cout<<"old_image_left size: "<<old_image_left.size()<<endl;
-    if(!mpCv_helper->StereoImage2CamPoints(old_image_left, old_image_right, old_kps_left, old_camera_pts, old_frame_desps))
-    {
-        match_success = false;
-        return -1;
-    }
 
+    // ------------------------------------------------------------------------------------------------------------------------------------
+    // NOTE real time computed elements
+//    vector<cv::KeyPoint> old_kps_left;
+//    vector<cv::Point3f> old_camera_pts;
+//    cv::Mat old_frame_desps;
+//    cout<<"old_image_left size: "<<old_image_left.size()<<endl;
+//    if(!mpCv_helper->StereoImage2CamPoints(old_image_left, old_image_right, old_kps_left, old_camera_pts, old_frame_desps))
+//    {
+//        match_success = false;
+//        return -1;
+//    }
+
+    // NOTE, previously computed elements
+    auto old_kps_left = original_scene.vec_p2d[loop_index];
+    auto old_camera_pts_3d = original_scene.vec_p3d[loop_index];
+    auto old_camera_pts = pts3dto3f(old_camera_pts_3d);
+    auto old_frame_desps = original_scene.point_desps[loop_index];
+    cout<<"old_kps_left size: "<<old_kps_left.size()<<endl;
+    cout<<"old_camera_pts_3d size: "<<old_camera_pts_3d.size()<<endl;
+    cout<<"old_frame_desps size: "<<old_frame_desps.size()<<endl;
+
+    // ------------------------------------------------------------------------------------------------------------------------------------
 
     //step 3, match current and old features
     vector<cv::DMatch> result_matches;
@@ -414,8 +441,14 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
     cout<<"icp GeneralICP and std::to_string(this->LoopClosureDebugIndex): "<<std::to_string(this->LoopClosureDebugIndex)<<endl;
 
     Eigen::Matrix4f result;
-    int result_size = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
+    float fitnesscore = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
 
+    if(fitnesscore > 100)
+    {
+      return fitnesscore;
+    }
+
+    cout<<"get fitness score: "<<fitnesscore<<endl;
     cout<<"icp given old T and relative loop closure T, get new T"<<endl;
     cout<<"Calculated transform matrix is: \n"<<result<<endl;
 
@@ -427,13 +460,11 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
 
 
     //step 8, given old left image and current left image, compute relative R vec from rodrigues by essential mat
-    cout<<"icp step 8"<<endl;
     if(current_kps_left.size() < 30 && old_kps_left.size() < 30)
         return -1;
 
-    cout<<"icp step 9"<<endl;
     cv::Mat essentialR = mpCv_helper->getRotationfromEssential(matched_current_kps, matched_old_kps);
-    cout<<"icp step 10"<<endl;
+
     cv::Mat essentialRvec, RrelativeVec;
     cv::Rodrigues (essentialR, essentialRvec);
     cv::Rodrigues (result_R, RrelativeVec);
@@ -452,6 +483,8 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
     //fetch old frame R and t
     cv::Mat R = this->original_scene.getR(loop_index);
     cv::Mat t = this->original_scene.getT(loop_index);
+
+    cout<<"R and t old are: "<<R<<", "<<t<<endl;
 
     cv::Mat old_T = cv::Mat::zeros(4,4, CV_64FC1);
 
@@ -484,10 +517,14 @@ int SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::M
 
     cout<<"new T:\n"<<new_T<<endl;
 
-    this->mpCv_helper->publishPose(new_R, new_t, 0);
-    RT_mat_of_stereo_cam_output = new_T;
-
-    return result_size;
+    if (fitnesscore < 0.5)
+    {
+        this->mpCv_helper->publishPose(new_R, new_t, 0);
+        RT_mat_of_stereo_cam_output = new_T;
+        return fitnesscore;
+    } else{
+        return fitnesscore;
+    }
 }
 
 

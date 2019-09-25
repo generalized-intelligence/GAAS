@@ -30,9 +30,12 @@ int main(int argc,char** argv)
     cout<<"Q_mat_path: "<<Q_mat_path<<endl;
     
     cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
-    cv::Mat Q_mat;
-    fsSettings["Q_mat"] >> Q_mat;
-        
+
+    cv::Mat Q_mat = cv::Mat::eye(4, 4, CV_8U);
+
+    cout<<"Q_mat 1"<<endl;
+
+    cout<<"Q_mat 2"<<endl;
     if (Q_mat.empty())
     {
         cout<<"Q mat empty, exit."<<endl;
@@ -43,9 +46,9 @@ int main(int argc,char** argv)
     cout<<"Q_mat: "<<endl<<Q_mat<<endl;
     
     cv::Mat RT_mat = (cv::Mat_<float >(4,4) << 1, 0, 0, 0,
-                                           0, 1, 0, 1,
-                                           0, 0, 1, 0,
-                                           0, 0, 0, 1);
+                                               0, 1, 0, 1,
+                                               0, 0, 1, 0,
+                                               0, 0, 0, 1);
 
     bool match_success;
 
@@ -82,8 +85,13 @@ int main(int argc,char** argv)
         }
         else
         {
-            int inliers = pSceneRetriever->retrieveSceneFromStereoImage(left_image, right_image, Q_mat, RT_mat, match_success);
+            float fitness_score = pSceneRetriever->retrieveSceneFromStereoImage(left_image, right_image, Q_mat, RT_mat, match_success);
             cout<<"retrieveSceneFromStereoImage 2"<<endl;
+
+            if(fitness_score > 10)
+            {
+              continue;
+            }
 
             if(match_success)
             {

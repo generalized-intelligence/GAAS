@@ -15,6 +15,7 @@
 #include <pcl/registration/gicp.h>
 #include <pcl/conversions.h>
 #include <pcl/PCLPointCloud2.h>
+#include <pcl/filters/filter.h>
 
 #include <Eigen/Core>
 #include <opencv2/core/eigen.hpp>
@@ -301,22 +302,18 @@ public:
     {
 
         //step 1, detect and compute kps and desp
-        cout<<"StereoImage2CamPoints 1"<<endl;
-        cout<<"image_left_rect size: "<<image_left_rect.size()<<endl;
         this->image2KpAndDesp(image_left_rect, Keypoints_left, descriptors_left);
-        cout<<"StereoImage2CamPoints 2"<<endl;
         if(Keypoints_left.size()< 10)
             return false;
 
         //step 2, convert kps to pt2f
         vector<cv::Point2f> InputKeypoints;
         cv::KeyPoint::convert(Keypoints_left, InputKeypoints);
-        cout<<"StereoImage2CamPoints 3"<<endl;
+
         //step 3, conduct LK flow
         std::vector<unsigned char> PyrLKResults;
         std::vector<float> err;
         std::vector<cv::Point2f> PyrLKmatched_points;
-
         cv::calcOpticalFlowPyrLK(image_left_rect,
                                  image_right_rect,
                                  InputKeypoints,
@@ -325,7 +322,6 @@ public:
                                  err
         );
 
-        cout<<"StereoImage2CamPoints 4"<<endl;
         //step 4, eliminate good points and only keep matched ones
         std::vector<cv::Point2f> matched_points;
         std::vector<float> disparity_of_points;
@@ -339,11 +335,8 @@ public:
             }
         }
 
-
         //step 5, given pts2f, disps, R and t, compute mps
         Camera_pts_left = this->image2cam(matched_points, disparity_of_points);
-        cout<<"StereoImage2CamPoints 5"<<endl;
-        cout<<"KeyPoint size: "<<Keypoints_left.size()<<endl;
         return true;
     }
 
@@ -372,13 +365,9 @@ public:
             mark.color.b = 0.0;
         }
 
-        cout<<"publish pose 1"<<endl;
-
         mark.pose.position.x = t.at<double> (0,0);
         mark.pose.position.y = t.at<double> (1,0);
         mark.pose.position.z = t.at<double> (2,0);
-
-        cout<<"publish pose 2"<<endl;
 
 //        mark.pose.orientation.x = quat.x();
 //        mark.pose.orientation.y = quat.y();
@@ -674,7 +663,7 @@ public:
     // a wrapper for pcl::GeneralizedIterativeClosestPoint to return the transformation matrix between a input point cloud and a
     // target point cloud
     // input points cloud size should be greater than 20
-    int GeneralICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 50, double transformationEpsilon = 1e-8)
+    float GeneralICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 50, double transformationEpsilon = 1e-8)
     {
 
         cout<<"cv helper::GeneralICP points size: "<<input_cloud.size()<<", "<<target_cloud.size()<<endl;
@@ -690,6 +679,28 @@ public:
         pcl::PointCloud<PointT>::Ptr tgt (new pcl::PointCloud<PointT>);
         pcl::PointCloud<PointT> tgt_cloud = this->PtsVec2PointCloud(target_cloud);
         *tgt = tgt_cloud;
+
+        std::vector<int> indices_1, indices_2;
+        pcl::removeNaNFromPointCloud(*src, *src, indices_1);
+        pcl::removeNaNFromPointCloud(*tgt, *tgt, indices_2);
+
+        for(auto& pt : src->points)
+        {
+          if (pt.x ==0 || pt.y ==0 || pt.z ==0 || !pcl::isFinite(pt) ||
+              abs(pt.x) > 1e6 || abs(pt.y) > 1e6 || abs(pt.z) > 1e6)
+          {
+            return 100;
+          }
+        }
+
+        for(auto& pt : tgt->points)
+        {
+          if ( pt.x ==0 || pt.y ==0 ||pt.z ==0 || !pcl::isFinite(pt) ||
+               abs(pt.x) > 1e6 || abs(pt.y) > 1e6 || abs(pt.z) > 1e6)
+          {
+            return 100;
+          }
+        }
 
         // define output point cloud
         pcl::PointCloud<PointT> output;
@@ -714,8 +725,10 @@ public:
         result = transformation;
 
 
-        vector<int> Indices = *(reg.getIndices());
-        return Indices.size();
+        return reg.getFitnessScore();
+
+//        vector<int> Indices = *(reg.getIndices());
+//        return Indices.size();
     }
 
     //not implemented
