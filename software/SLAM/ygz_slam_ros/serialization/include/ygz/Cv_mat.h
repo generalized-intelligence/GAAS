@@ -57,7 +57,7 @@ namespace boost{
 		void save (Archive &ar, const cv::KeyPoint &kp, const unsigned int version)
 		{
 			float kx = kp.pt.x,
-				ky = kp.pt.y;
+			      ky = kp.pt.y;
 
 			ar & kx;
 			ar & ky;
@@ -95,21 +95,20 @@ namespace boost{
 		template <class Archive>
 		void save (Archive &ar, const cv::Point3d &kp, const unsigned int version)
 		{
-			float kx = kp.x,
-				  ky = kp.y;
 
-			ar & kx;
-			ar & ky;
+			ar & kp.x;
+			ar & kp.y;
+			ar & kp.z;
 
 		}
 
 		template <class Archive>
 		void load (Archive &ar, cv::Point3d &kp, const unsigned int version)
 		{
-			float kx, ky;
 
-			ar & kx;
-			ar & ky;
+			ar & kp.x;
+			ar & kp.y;
+                        ar & kp.z;
             
 		}
 	}
