@@ -31,11 +31,22 @@ int main(int argc,char** argv)
     
     cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
 
+
+    ///MERGE_ERROR: ???????
+/*<<<<<<< HEAD
+
     cv::Mat Q_mat = cv::Mat::eye(4, 4, CV_8U);
 
     cout<<"Q_mat 1"<<endl;
 
     cout<<"Q_mat 2"<<endl;
+=======*/
+    cv::Mat Q_mat;
+    fsSettings["Q_mat"] >> Q_mat;
+        
+//>>>>>>> dev
+
+
     if (Q_mat.empty())
     {
         cout<<"Q mat empty, exit."<<endl;

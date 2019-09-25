@@ -32,19 +32,20 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 #   Find Dependencies
 # ----------------------------------------------------------------------------
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 3.3.1 REQUIRED) # same with ros.
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
-#                                cv_bridge
-#                                image_transport
+                                cv_bridge
+                                image_transport
                                 roscpp
                                 sensor_msgs
 				geometry_msgs
+                                roseus
 #                                nav_msgs
 #                                std_msgs
 #                                octomap_msgs
 #                                octomap_rviz_plugins
-                               visualization_msgs
+                                visualization_msgs
 #                               tf
 				)
 
@@ -54,6 +55,7 @@ find_package(PCL REQUIRED)
 
 
 find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
+find_package (Glog REQUIRED)
 IF(USE_CONTRIB)
 add_definitions(-DUSE_CONTRIB)
 ENDIF()
@@ -75,7 +77,7 @@ include_directories(${OpenCV_INCLUDE_DIRS}
                         )
 
 MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS})
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES})
 
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION

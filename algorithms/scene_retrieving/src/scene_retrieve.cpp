@@ -110,7 +110,6 @@ void Scene::test(bool savePosition)
     cout<<"vec_t size: "<<mVecT.size()<<endl;
     
     cout<<"---------------Current scene info---------------"<<endl;
-
     if (savePosition)
     {
         saveDeserializedPoseToCSV();
@@ -213,13 +212,24 @@ void Scene::removeEmptyElement()
 //---------------------------------------class SceneRetriever------------------------------------
 
 SceneRetriever::SceneRetriever(){};
+SceneRetriever::SceneRetriever(const string& voc)
+{
+    this->original_scene = Scene();
+    this->ploop_closing_manager_of_scene = shared_ptr<LoopClosingManager>(new LoopClosingManager(voc));
+    this->mpCv_helper = shared_ptr<cv_helper>(new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554));
+    this->mpCv_helper->setMask("mask.png");
 
+    this->_init_retriever();
+
+}
 
 SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
 {
     this->original_scene.loadFile(scene_file);
-
+//    this->ploop_closing_manager_of_scene = new LoopClosingManager(voc);
     this->ploop_closing_manager_of_scene = shared_ptr<LoopClosingManager>(new LoopClosingManager(voc));
+
+//    mpCv_helper = new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554);
 
     this->mpCv_helper = shared_ptr<cv_helper>(new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554));
     this->mpCv_helper->setMask("mask.png");
@@ -243,7 +253,12 @@ void SceneRetriever::_init_retriever()
         struct FrameInfo* pfr = new struct FrameInfo;
 	    
         pfr->keypoints = p2d[frame_index];
-	    pfr->descriptors = this->original_scene.getDespByIndex(frame_index);
+        pfr->descriptors = this->original_scene.getDespByIndex(frame_index);
+
+
+        cout<<"pfr->keypoints size: "<<pfr->keypoints.size()<<endl;
+        cout<<"pfr->descriptors size: "<<pfr->descriptors.size()<<endl;
+
 
         ptr_frameinfo frame_info(pfr);
         
@@ -324,7 +339,7 @@ void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& cur
 
 
 float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
-                                                 cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success)
+                                                 cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success,int* pMatchedIndexID_output)
 {
     this->LoopClosureDebugIndex ++;
 
@@ -340,12 +355,12 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     mpCv_helper->applyMask(image_right_rect);
     mpCv_helper->applyMask(image_left_rect);
     
-    //cv::imshow("left image", image_left_rect);
-    //cv::waitKey(5);
+//    cv::imshow("left image", image_left_rect);
+//    cv::waitKey(5);
 
     this->mCurrentImage = image_left_rect;
 
-    //step 1, match left image with scene.
+    //<1>-(1) match left image with scene.
     std::vector<cv::DMatch> good_matches_output;
     ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
 
@@ -403,6 +418,17 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     cout<<"old_frame_desps size: "<<old_frame_desps.size()<<endl;
 
     // ------------------------------------------------------------------------------------------------------------------------------------
+    /*
+    vector<cv::KeyPoint> old_kps_left;
+    vector<cv::Point3f> old_camera_pts;
+    cv::Mat old_frame_desps;
+    cout<<"old_image_left size: "<<old_image_left.size()<<endl;
+    if(!mpCv_helper->StereoImage2CamPoints(old_image_left, old_image_right, old_kps_left, old_camera_pts, old_frame_desps))
+    {
+        match_success = false;
+        return -1;
+    }
+    */
 
     //step 3, match current and old features
     vector<cv::DMatch> result_matches;
@@ -445,10 +471,14 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
     if(fitnesscore > 100)
     {
+      //[MERGE_ERROR]What about match_success value????? LEAVE THIS COMPILE ERROR FOR YOU.
+      match_success = false;//IS THIS CORRECT????
       return fitnesscore;
     }
 
     cout<<"get fitness score: "<<fitnesscore<<endl;
+    //int result_size = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
+
     cout<<"icp given old T and relative loop closure T, get new T"<<endl;
     cout<<"Calculated transform matrix is: \n"<<result<<endl;
 
@@ -461,8 +491,10 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
     //step 8, given old left image and current left image, compute relative R vec from rodrigues by essential mat
     if(current_kps_left.size() < 30 && old_kps_left.size() < 30)
+    {
+        match_success = false;//[MERGE_ERROR] is this correct??
         return -1;
-
+    }
     cv::Mat essentialR = mpCv_helper->getRotationfromEssential(matched_current_kps, matched_old_kps);
 
     cv::Mat essentialRvec, RrelativeVec;
@@ -517,19 +549,27 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
     cout<<"new T:\n"<<new_T<<endl;
 
-    if (fitnesscore < 0.5)
+    if (fitnesscore < 0.5) //TODO:move this into a config.
     {
         this->mpCv_helper->publishPose(new_R, new_t, 0);
         RT_mat_of_stereo_cam_output = new_T;
+        match_success = true;
+        if(pMatchedIndexID_output != nullptr)
+        {
+            *pMatchedIndexID_output = loop_index;
+        }
         return fitnesscore;
-    } else{
+    }
+    else
+    {
+        match_success = false;
         return fitnesscore;
     }
 }
 
 
 
-int SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect, cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success)
+float SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect, cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,int* pMatchedIndexID_output)
 {
     if(this->original_scene.hasScale == false)
     {
@@ -617,6 +657,10 @@ int SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect,
             cout<<"solve pnp finished, publishing the result finished."<<endl;
 
             match_success = true;
+            if(pMatchedIndexID_output!=nullptr)
+            {
+                *pMatchedIndexID_output = loop_index;
+            }
             return pnpResult;
         }
         else

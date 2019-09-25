@@ -302,14 +302,17 @@ public:
     {
 
         //step 1, detect and compute kps and desp
+        cout<<"StereoImage2CamPoints 1"<<endl;
+        cout<<"image_left_rect size: "<<image_left_rect.size()<<endl;
         this->image2KpAndDesp(image_left_rect, Keypoints_left, descriptors_left);
+        cout<<"StereoImage2CamPoints 2"<<endl;
         if(Keypoints_left.size()< 10)
             return false;
 
         //step 2, convert kps to pt2f
         vector<cv::Point2f> InputKeypoints;
         cv::KeyPoint::convert(Keypoints_left, InputKeypoints);
-
+        cout<<"StereoImage2CamPoints 3"<<endl;
         //step 3, conduct LK flow
         std::vector<unsigned char> PyrLKResults;
         std::vector<float> err;
@@ -322,6 +325,7 @@ public:
                                  err
         );
 
+        cout<<"StereoImage2CamPoints 4"<<endl;
         //step 4, eliminate good points and only keep matched ones
         std::vector<cv::Point2f> matched_points;
         std::vector<float> disparity_of_points;
@@ -337,6 +341,11 @@ public:
 
         //step 5, given pts2f, disps, R and t, compute mps
         Camera_pts_left = this->image2cam(matched_points, disparity_of_points);
+
+        //step 5, given pts2f, disps, R and t, compute mps
+        Camera_pts_left = this->image2cam(matched_points, disparity_of_points);
+        cout<<"StereoImage2CamPoints 5"<<endl;
+        cout<<"KeyPoint size: "<<Keypoints_left.size()<<endl;
         return true;
     }
 
@@ -365,9 +374,13 @@ public:
             mark.color.b = 0.0;
         }
 
+        cout<<"publish pose 1"<<endl;
+
         mark.pose.position.x = t.at<double> (0,0);
         mark.pose.position.y = t.at<double> (1,0);
         mark.pose.position.z = t.at<double> (2,0);
+
+        cout<<"publish pose 2"<<endl;
 
 //        mark.pose.orientation.x = quat.x();
 //        mark.pose.orientation.y = quat.y();
@@ -723,8 +736,6 @@ public:
         cout<<"GeneralICP::transformation matrix: \n"<<transformation<<endl;
 
         result = transformation;
-
-
         return reg.getFitnessScore();
 
 //        vector<int> Indices = *(reg.getIndices());
