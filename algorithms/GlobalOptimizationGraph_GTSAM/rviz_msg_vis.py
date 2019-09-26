@@ -48,9 +48,9 @@ if __name__ == '__main__':
     mat = np.matrix([[1,0,0],[0,1,0],[0,0,1]])
     #mat = np.matrix([[0,0,1],[1,0,0],[0,1,0]])
     #mat = np.matrix([[0,1,0],[0,0,1],[1,0,0]])
-    rs,ps,ys,px_list,py_list = [],[],[],[],[]
-    mode_slam =  True#False
-    mode_opti = False#True
+    rs,ps,ys,px_list,py_list,pz_list = [],[],[],[],[],[]
+    mode_slam =  False#True#False
+    mode_opti = True#False#True
     #mat = np.matrix([[0,0,1],[1,0,0],[0,1,0]])  # ygz 旋转阵右乘这个,平移不动.
     for l__ in lines:
       px,py,pz = 0,0,0
@@ -88,7 +88,7 @@ if __name__ == '__main__':
         ys.append(Y_)
         px_list.append(px)
         py_list.append(py)
-
+        pz_list.append(pz)
         #sleep(0.001)
         #sleep(0.01)
         #odom_pub.publish(o)
@@ -102,7 +102,8 @@ if __name__ == '__main__':
 
     #step<2> 显示x,y位置关系曲线图.
     ax = plt.plot(px_list,'r',linewidth = 1)
-    ax = plt.plot(py_list,'b',linewidth = 1)
+    ax = plt.plot(py_list,'y',linewidth = 1)
+    ax = plt.plot(pz_list,'b',linewidth = 1)
     plt.show()
             
 
