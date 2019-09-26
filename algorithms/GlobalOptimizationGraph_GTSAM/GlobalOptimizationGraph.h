@@ -51,6 +51,7 @@
 #include "modules/Barometer_module.h"
 #include "modules/RPY_Quat_utils.h"
 #include "modules/Optimizer_utils.h"
+#include "modules/Loop_utils.h"
 
 using namespace std;
 using namespace ygz;
@@ -117,7 +118,8 @@ public:
     void addBlockBarometer(int msg_index);
     void addBlockVelocity(int msg_index);//(const geometry_msgs::TwistStamped& velocity_msg);
     void addBlockQRCode();
-    void addBlockSceneRetriever();
+    //void addBlockSceneRetriever();
+    void addBlockLoop(int msg_index);
     void addBlockFCAttitude();
     
     //SLAM msg as edge prv and vertexspeed.
@@ -843,12 +845,26 @@ void GlobalOptimizationGraph::addBlockQRCode()
 void addBlockSceneRetriever_StrongCoupling(); //Solve se(3) from multiple points PRXYZ;
 void addBlockSceneRetriever_WeakCoupling();//just do square dist calc.
 
-void GlobalOptimizationGraph::addBlockSceneRetriever()
+//void GlobalOptimizationGraph::addBlockSceneRetriever()
+void GlobalOptimizationGraph::addBlockLoop(const LoopMessage& msg)
 {
-    ;//TODO
-    //step<1>.add vertex PR for scene.
-    //set infomation matrix that optimize Rotation and altitude.Do not change longitude and latitude.
-    //pBlockSceneRetriever = 
+    Quaterniond quat_;
+    quat_.x() = msg.x;quat_.y() = msg.y;quat_.z() = msg.z;quat_.w() = msg.w;
+    //here we solve yaw first, then calc yaw diff again.
+    //caution:no yaw info inside loop_msg,so maybe we should change the logic of ros_global_optimization.cpp in scene_retriever.
+
+    //
+    auto Mat1 = this->pSLAM_Buffer->at(msg.prev_gog_frame_id).orientation.toRotationMatrix....;//todo:syntax....
+    auto Mat2 = Mat1* quat_.toRotationMatrix();
+    double yaw2 = get_yaw_from_Mat(Mat2);//estimation of fixed yaw.//todo:get_yaw_from_Mat...
+
+    //TODO:we could check pitch and roll of Mat2, and judge if this loop is correct.if pitch and roll of mat2 is too far from get_rpy_from_slam_msg(this->pSLAM_Buffer->at(msg.loop_gog_frame_id)), this loop may be a false-positive.
+    double yaw1 = get_yaw_from_slam_msg(this->pSLAM_Buffer->at(msg.prev_gog_frame_id));
+
+    double diff_yaw = yaw2 - yaw1;    
+    graph.emplace_shared<BetweenFactor<Pose2> >(Symbol('x',msg.prev_gog_frame_id),Symbol('x',msg.loop_gog_frame_id),Pose2(msg.x,msg.y,diff_yaw),noise_model_loop_movement_xy);
+    graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',msg.prev_gog_frame_id),Symbol('h',msg.loop_gog_frame_id),Point2(msg.z,0),noise_model_loop_movement_height);
+    LOG(INFO)<<"Added Block Loop in optimization graph."<<endl;
 }
 bool GlobalOptimizationGraph::tryInitVelocity()
 {

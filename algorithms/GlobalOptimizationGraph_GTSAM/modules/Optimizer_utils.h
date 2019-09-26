@@ -1,3 +1,5 @@
+#ifndef OPTIMIZER_UTILS_H
+#define OPTIMIZER_UTILS_H
 #include <gtsam/slam/BetweenFactor.h>
 #include <gtsam/sam/BearingRangeFactor.h>
 #include <gtsam/slam/dataset.h>
@@ -33,4 +35,4 @@ double chi2_red(const gtsam::NonlinearFactorGraph& graph, const gtsam::Values& c
   return 2. * graph.error(config) / dof; // kaess: added factor 2, graph.error returns half of actual error
 }
 
-
+#endif
