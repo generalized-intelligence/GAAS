@@ -48,7 +48,7 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 # ----------------------------------------------------------------------------
 #   Find Dependencies
 # ----------------------------------------------------------------------------
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 3.4.5 REQUIRED)
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
 IF(USE_CONTRIB)
 add_definitions(-DUSE_CONTRIB)

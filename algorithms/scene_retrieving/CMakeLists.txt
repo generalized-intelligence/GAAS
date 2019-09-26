@@ -28,6 +28,10 @@ OPTION(BUILD_UTILS	"Set to OFF to not build utils" ON)
 OPTION(USE_CONTRIB 	"Set to ON if contrib are installed" OFF)
 OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+
 # ----------------------------------------------------------------------------
 #   Find Dependencies
 # ----------------------------------------------------------------------------
@@ -225,7 +229,7 @@ SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${EXTRA_EXE_LI
 #------------------------------------------------
 
 ADD_SUBDIRECTORY(src)
-
+ADD_SUBDIRECTORY(src/PointAndFlyController)
 
 #target_link_libraries(demo ${PROJECT_NAME} ${OpenCV_LIBS})
 #  file(COPY demo/images DESTINATION ${CMAKE_BINARY_DIR}/)
@@ -259,6 +263,9 @@ MESSAGE( STATUS "USE_CONTRIB= ${USE_CONTRIB}" )
 
 MESSAGE( STATUS "OpenCV_LIB_DIR=${OpenCV_LIB_DIR}")
 MESSAGE( STATUS "CMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}")
+
+
+
 
 
 
