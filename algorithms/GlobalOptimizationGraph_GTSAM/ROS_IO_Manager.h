@@ -109,6 +109,7 @@ public:
     cv::Mat SLAM_ROT_AND_TRANS;
     Matrix3d SLAM_ROTATION_EIGEN;
     Matrix3d SLAM_ROT_AND_TRANS_EIGEN;
+    bool invert_slam_z = false; 
 private:
     time_us_t start_time_us;
     double ros_start_time;
@@ -159,6 +160,8 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     pSettings->open(string(argv[1]),cv::FileStorage::READ);
     (*pSettings)["SLAM_ROTATION_MAT"] >> this->SLAM_ROTATION;
     (*pSettings)["SLAM_RT_TRANS_MAT"] >> this->SLAM_ROT_AND_TRANS;
+    int __inv_z = (*pSettings)["INVERT_SLAM_Z"];
+    this->invert_slam_z = (__inv_z>0);
     cv2eigen(this->SLAM_ROTATION,SLAM_ROTATION_EIGEN);
     cv2eigen(this->SLAM_ROT_AND_TRANS,SLAM_ROT_AND_TRANS_EIGEN);
     //step<2> init ros.

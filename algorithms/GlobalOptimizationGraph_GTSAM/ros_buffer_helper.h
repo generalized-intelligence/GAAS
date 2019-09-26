@@ -82,8 +82,14 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     new_msg = *slam_msg;
     new_msg.pose.position.x = xyz[0];
     new_msg.pose.position.y = xyz[1];
-    // new_msg.pose.position.z = xyz[2];
-    new_msg.pose.position.z = -1*xyz[2];
+    if(pRIM->invert_slam_z)
+    {
+        new_msg.pose.position.z = -1*xyz[2];
+    }
+    else
+    {
+        new_msg.pose.position.z = xyz[2];
+    }
     LOG(WARNING)<<"z invert only should be used for YGZ."<<endl;
 
     LOG(INFO)<<"Original SLAM xyz:"<<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<endl;
