@@ -37,6 +37,7 @@ void Controller::Run()
         {
             continue;
         }
+
         else if (mTARGET == NEW_TARGET)
         {
 
@@ -223,7 +224,7 @@ bool Controller::isMavrosPoseValid()
     float speed = sqrt(distance_squared) / delta_t;
     
     // the horizontal flight speed of drone is less than 12 by default
-    if (speed > 15)
+    if (speed > 10)
     {
         mSTATE = MAVROS_STATE_ERROR;
         return false;
@@ -251,12 +252,10 @@ bool Controller::isMavrosPoseValid()
 
     float yaw_rate = (cur_yaw - prev_yaw) / delta_t;
 
-    cout<<"distance_squared: "<<distance_squared<<endl;
-    cout<<"delta_t: "<<delta_t<<endl;
     cout<<"Current Drone speed: "<<speed<<", yaw rate: "<<yaw_rate<<endl;
     
     // the yaw change rate is less than pi by default
-    if (yaw_rate > 5.0)
+    if (yaw_rate > 3.1415926)
     {
         mSTATE = MAVROS_STATE_ERROR;
         return false;

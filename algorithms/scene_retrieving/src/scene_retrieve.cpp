@@ -1,4 +1,6 @@
 #include "scene_retrieve.h"
+#include "scene_retrieve.h"
+
 
 /*SceneRetriever::SceneRetriever(Scene& original_scene_input)
 {
