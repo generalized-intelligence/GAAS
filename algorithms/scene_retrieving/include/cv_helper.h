@@ -374,13 +374,9 @@ public:
             mark.color.b = 0.0;
         }
 
-        cout<<"publish pose 1"<<endl;
-
         mark.pose.position.x = t.at<double> (0,0);
         mark.pose.position.y = t.at<double> (1,0);
         mark.pose.position.z = t.at<double> (2,0);
-
-        cout<<"publish pose 2"<<endl;
 
 //        mark.pose.orientation.x = quat.x();
 //        mark.pose.orientation.y = quat.y();

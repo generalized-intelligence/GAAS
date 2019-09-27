@@ -30,27 +30,41 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
         imgL = cv_ptrLeft->image;
         imgR = cv_ptrRight->image;
 
+        if(imgL.empty() || imgR.empty())
+        {
+          return;
+        }
+
         cv::Mat Q_mat, RT_mat;
         bool match_success;
         int* loop_index;
         float fitness_score = pSceneRetrieve->retrieveSceneFromStereoImage(imgL, imgR, Q_mat, RT_mat, match_success, loop_index);
 
-        if(fitness_score >= 0 && fitness_score <= 1.0)
+        cout<<"fitness_score: "<<fitness_score<<endl;
+
+        if(fitness_score >= 0 && fitness_score <= 1.0 && !RT_mat.empty())
         {
 
           cout<<"RT_mat type: "<<RT_mat.type()<<endl;
+          cout<<"RT_mat: "<<RT_mat<<endl;
+
           Eigen::Matrix3f rotation_matrix;
           cv::cv2eigen(RT_mat, rotation_matrix);
           Vector3f EulerAngle = rotation_matrix.eulerAngles(0, 1, 2);
 
-          Eigen::Vector4f position_yaw(RT_mat.at<float>(0, 3),
-                                       RT_mat.at<float>(1, 3),
-                                       RT_mat.at<float>(2, 3),
+          Eigen::Vector4f position_yaw(RT_mat.at<double>(0, 3),
+                                       RT_mat.at<double>(1, 3),
+                                       RT_mat.at<double>(2, 3),
                                        EulerAngle[2]);
 
-          cout<<"rotation mat and rotation matrix: "<<rotation_matrix<<", "<<RT_mat<<endl;
+          cout<<"rotation mat: "<<rotation_matrix<<endl;
+          cout<<"result mat: "<<RT_mat<<endl;
 
           pController->AddRetrievedPose(position_yaw);
+        }
+        else
+        {
+          return;
         }
 
 }
@@ -90,12 +104,13 @@ int main(int argc, char **argv) {
     auto* controller = new Controller(nh);
     pController = controller;
 
-    ros::MultiThreadedSpinner spinner(4);
+//    ros::MultiThreadedSpinner spinner(4);
 
     ros::Rate rate(10);
     while (ros::ok())
     {
-        spinner.spin(); // the missing call
+//        spinner.spin(); // the missing call
+        ros::spin();
         rate.sleep();
     }
     return 0;
