@@ -676,7 +676,7 @@ public:
     // a wrapper for pcl::GeneralizedIterativeClosestPoint to return the transformation matrix between a input point cloud and a
     // target point cloud
     // input points cloud size should be greater than 20
-    float GeneralICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 50, double transformationEpsilon = 1e-8)
+    float GeneralICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 20, double transformationEpsilon = 1e-8)
     {
 
         cout<<"cv helper::GeneralICP points size: "<<input_cloud.size()<<", "<<target_cloud.size()<<endl;
@@ -702,7 +702,7 @@ public:
           if (pt.x ==0 || pt.y ==0 || pt.z ==0 || !pcl::isFinite(pt) ||
               abs(pt.x) > 1e6 || abs(pt.y) > 1e6 || abs(pt.z) > 1e6)
           {
-            return 100;
+            return -1;
           }
         }
 
@@ -711,7 +711,7 @@ public:
           if ( pt.x ==0 || pt.y ==0 ||pt.z ==0 || !pcl::isFinite(pt) ||
                abs(pt.x) > 1e6 || abs(pt.y) > 1e6 || abs(pt.z) > 1e6)
           {
-            return 100;
+            return -1;
           }
         }
 

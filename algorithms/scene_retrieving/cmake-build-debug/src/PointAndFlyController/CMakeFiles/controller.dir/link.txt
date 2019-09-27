@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC      -g3 -O0 -DDEBUG -D_DEBUG -W -Wextra -Wno-return-type    -std=c++11   -shared -Wl,-soname,libcontroller.so -o ../../../lib/libcontroller.so CMakeFiles/controller.dir/controller.cpp.o  -L/usr/local/lib 

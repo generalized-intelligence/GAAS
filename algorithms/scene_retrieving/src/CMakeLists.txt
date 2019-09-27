@@ -1,42 +1,31 @@
-
-
-
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(nlohmann_json)
 
 add_library(scene_retrieve scene_retrieve.cpp)
 
-
 link_libraries("${PROJECT_SOURCE_DIR}/../loop_closing/DBow3/build/libloopclosingmanager.so")
 target_link_libraries(scene_retrieve
 			${REQUIRED_LIBRARIES}
-			#../../loop_closing/DBow3/build/
-			#libloopclosingmanager.so
 			)
 
-#add_executable(demo demo.cpp)
-
-#target_link_libraries(demo
-#			${REQUIRED_LIBRARIES}
-#)
 
 add_definitions(${PCL_DEFINITIONS})
 
 add_executable(MakeSceneFromOpenSfMModel 
                         MakeSceneFromOpenSfMModel.cpp)
-
 target_link_libraries(MakeSceneFromOpenSfMModel
                       ${REQUIRED_LIBRARIES}
                       scene_retrieve
                       )
-
 target_link_libraries(MakeSceneFromOpenSfMModel PRIVATE nlohmann_json::nlohmann_json)
+
 
 add_executable(demo_stereo
                demo_stereo_main.cpp)
 target_link_libraries(demo_stereo
 			${REQUIRED_LIBRARIES}
 			scene_retrieve)
+
 add_executable(demo_mono
                demo_mono_main.cpp ../include/cv_helper.h)
 target_link_libraries(demo_mono
@@ -62,22 +51,11 @@ target_link_libraries(ros_global_optimization PRIVATE nlohmann_json::nlohmann_js
                         scene_retrieve
 )
 
-
-#add_executable(demo_mono_multi_scene_retriever
-#               demo_mono_multi_scene_retriever.cpp)
-#target_link_libraries(demo_mono_multi_scene_retriever
-#			${REQUIRED_LIBRARIES}
-#			scene_retrieve
-#                        multi_scene_retriever)
-
-#add_executable(demo_stereo_multi_scene_retriever
-#               demo_stereo_multi_scene_retriever.cpp)
-
-#target_link_libraries(demo_stereo_multi_scene_retriever
-#                        ${REQUIRED_LIBRARIES}
-#                        scene_retrieve
-#                        multi_scene_retriever)
-
+add_executable(controller_node controller_node.cpp controller.cpp )
+target_link_libraries(controller_node
+		scene_retrieve
+		${REQUIRED_LIBRARIES}
+		)
 
 
 

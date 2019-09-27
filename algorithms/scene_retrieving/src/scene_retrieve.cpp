@@ -1,5 +1,4 @@
 #include "scene_retrieve.h"
-#include "scene_retrieve.h"
 
 
 /*SceneRetriever::SceneRetriever(Scene& original_scene_input)
@@ -341,7 +340,7 @@ void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& cur
 
 
 float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
-                                                 cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success,int* pMatchedIndexID_output)
+                                                   cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success, int* pMatchedIndexID_output)
 {
     this->LoopClosureDebugIndex ++;
 
@@ -354,8 +353,8 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     }
 
     // apply mask to input image
-    mpCv_helper->applyMask(image_right_rect);
-    mpCv_helper->applyMask(image_left_rect);
+//    mpCv_helper->applyMask(image_right_rect);
+//    mpCv_helper->applyMask(image_left_rect);
     
 //    cv::imshow("left image", image_left_rect);
 //    cv::waitKey(5);
@@ -471,10 +470,9 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     Eigen::Matrix4f result;
     float fitnesscore = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
 
-    if(fitnesscore > 100)
+    if(fitnesscore < -1)
     {
-      //[MERGE_ERROR]What about match_success value????? LEAVE THIS COMPILE ERROR FOR YOU.
-      match_success = false;//IS THIS CORRECT????
+      match_success = false;
       return fitnesscore;
     }
 

@@ -83,10 +83,12 @@ int main(int argc,char** argv)
         }
         else
         {
-            float fitness_score = pSceneRetriever->retrieveSceneFromStereoImage(left_image, right_image, Q_mat, RT_mat, match_success);
+
+            int* loop_index;
+            float fitness_score = pSceneRetriever->retrieveSceneFromStereoImage(left_image, right_image, Q_mat, RT_mat, match_success, loop_index);
             cout<<"retrieveSceneFromStereoImage 2"<<endl;
 
-            if(fitness_score > 10)
+            if(fitness_score < -1.0)
             {
               continue;
             }

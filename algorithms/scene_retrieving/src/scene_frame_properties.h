@@ -1,5 +1,6 @@
 #ifndef SCENE_FRAME_PROPERTIES_H
 #define SCENE_FRAME_PROPERTIES_H
+
 class SceneFrame_Properties
 {
 public:

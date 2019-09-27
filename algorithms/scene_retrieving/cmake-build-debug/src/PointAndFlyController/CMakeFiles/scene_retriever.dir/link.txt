@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC      -g3 -O0 -DDEBUG -D_DEBUG -W -Wextra -Wno-return-type    -std=c++11   -shared -Wl,-soname,libscene_retriever.so -o ../../../lib/libscene_retriever.so CMakeFiles/scene_retriever.dir/__/scene_retrieve.cpp.o  -L/usr/local/lib 
