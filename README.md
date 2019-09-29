@@ -14,6 +14,8 @@
 [<img width="280" src = "https://s2.ax1x.com/2019/06/20/Vvmy6A.png" >](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvmsld.png"/>](https://bit.ly/2Ky8VbV)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvm6OI.png"/>](https://discord.gg/cUxYsRc)
 <img src="https://s2.ax1x.com/2019/09/20/nXrXjK.png">
 
+
+
 - [What is GAAS?](#what-is-gaas)
   * [Tutorial for GAAS](#tutorial-for-gaas)
   * [Installation](#installation)
@@ -21,15 +23,10 @@
   * [Contribute](#contribute)
   * [Meta](#meta)
   * [Special Thanks](#special-thanks)
-- [GAAS 是什么？](#gaas-是什么)
-  * [使用教程：](#使用教程)
-  * [安装](#安装)
-  * [项目总览](#项目总览)
-  * [相关硬件](#相关硬件)
-  * [为项目做贡献](#为项目做贡献)
-  * [其它](#其它)
-  * [特别感谢](#特别感谢)
 
+[中文 readme.md](https://github.com/generalized-intelligence/GAAS/blob/master/readme_zh.md)
+
+[Progress Report 2019.08.01-2019.08.28](https://forum.gaas.dev/t/progress-update-2019-08-01-2019-08-28/30)
 
 # What is GAAS?
 
