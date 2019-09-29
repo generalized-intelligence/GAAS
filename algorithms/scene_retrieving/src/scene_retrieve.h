@@ -197,16 +197,17 @@ public:
 
 
 
-SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr, const cv::Mat& RotationMat, const cv::Mat& TranslationMat, const cv::Mat& Q_mat)
+SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr, const cv::Mat& RotationMat, const cv::Mat& TranslationMat, const cv::Mat& Q_mat,LoopClosingManager& lcm)
 {
     
     std::vector<cv::KeyPoint> key_points2d_candidate;
     std::vector<cv::KeyPoint> key_points2d_final;
     std::vector<cv::Point3d> points3d;
     cv::Mat feature;
-    
-    LoopClosingManager lcm("./voc/brief_k10L6.bin");
+    //LOG(INFO)<<"generating temp LoopClosingManager in generateSceneFrameFromStereoImage()"<<endl;
+    //LoopClosingManager lcm("./config/orbvoc.dbow3");
 
+    //LOG(INFO)<<"temp LoopClosingManager extracting feature."<<endl;
     ptr_frameinfo pleft_image_info = lcm.extractFeature(imgl);
     ptr_frameinfo pright_image_info = lcm.extractFeature(imgr);
     
@@ -216,6 +217,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     
     std::vector<int> good_2dmatches_index;
 
+    LOG(INFO)<<"FlannBasedMatcher matching."<<endl;
     cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12,20,2));
     //cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<flann::IndexParams>(12,20,2));
     //cv::FlannBasedMatcher matcher = FlannBasedMatcher();
@@ -235,7 +237,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     std::vector< cv::DMatch > good_matches;
     for( int i = 0; i < matches.size(); i++ )
     {
-        if( matches[i].distance <= 2*min_dist && matches[i].distance< 10) // 3.0 too large;2.0 too large.
+        if( matches[i].distance <= 4*min_dist && matches[i].distance< 10) // 3.0 too large;2.0 too large.
         {
             good_matches.push_back( matches[i]); 
         }
@@ -259,6 +261,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
 
     std::vector<unsigned char> PyrLKResults;
     std::vector<float> optflow_err;
+    LOG(INFO)<<"Calcing opt flow pyrlk."<<endl;
     cv::calcOpticalFlowPyrLK(imgl,
                             imgr,
                             lk_input_keypoints,
@@ -271,9 +274,9 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     
     if (lk_input_keypoints.size() < 5 || lk_output_keypoints.size() < 5 || PyrLKResults.size() < 5)
     {
-        cout<<"lk_input_keypoints.size() == 0: "<<(lk_input_keypoints.size() == 0)<<endl;
-        cout<<"lk_output_keypoints.size() == 0: "<<(lk_output_keypoints.size() == 0)<<endl;
-        cout<<"PyrLKResults.size() == 0: "<<(PyrLKResults.size() == 0)<<endl;
+        LOG(INFO)<<"lk_input_keypoints.size() == 0: "<<(lk_input_keypoints.size() == 0)<<endl;
+        LOG(INFO)<<"lk_output_keypoints.size() == 0: "<<(lk_output_keypoints.size() == 0)<<endl;
+        LOG(INFO)<<"PyrLKResults.size() == 0: "<<(PyrLKResults.size() == 0)<<endl;
         
 //         SceneFrame temp;
 //         return temp;
@@ -287,7 +290,13 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     
     for(int index = 0; index<lk_input_keypoints.size(); index++)
     {
-        if(PyrLKResults[index] == 1)
+        //if(!PyrLKResults[index])
+        if(false)
+        {
+            continue;
+        }
+        //if(PyrLKResults[index] == 1)
+        else
         {
             matched_points.push_back(lk_input_keypoints[index]);
             disparity_of_points.push_back(lk_output_keypoints[index].x-lk_input_keypoints[index].x);
@@ -305,13 +314,13 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     std::vector<cv::Point3f> points3f;
     
     cv::reprojectImageTo3D(disparity_of_points, points3f, Q_mat);
-    
+    points3d.resize(points3f.size());
     
     
     //do rotation and translation to points3d.
-    for(int i = 0;i<points3d.size();i++)
+    for(int i = 0;i<points3f.size();i++)
     {
-        cv::Mat point3d_temp(points3d[i]);
+        cv::Mat point3d_temp(points3f[i]);
         
         Eigen::Matrix3f rotation;
         Eigen::Vector3f translation;
@@ -337,8 +346,8 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     
     cv::KeyPoint::convert(matched_points,key_points2d_final);
     
-    cout<<"key_points2d_final size: "<<key_points2d_final.size()<<endl;
-    cout<<"points3d size: "<<points3d.size()<<endl;
+    LOG(INFO)<<"key_points2d_final size: "<<key_points2d_final.size()<<endl;
+    LOG(INFO)<<"points3d size: "<<points3d.size()<<endl;
     
     return std::make_tuple(key_points2d_final, points3d, descriptors_reserved, RotationMat, TranslationMat);
 }
@@ -363,18 +372,25 @@ public:
 
     inline int addFrameToScene(const std::vector<cv::KeyPoint>& points2d_in, const std::vector<cv::Point3d>points3d_in,const cv::Mat& point_desp_in, const cv::Mat R, const cv::Mat t)
     {
+        LOG(INFO)<<"in addFrameToScene():"<<endl;
         if(!this->ploop_closing_manager_of_scene )
         {
             LOG(ERROR)<<"Calling addFrameToScene() without initiated loop closing manager!"<<endl;
             return -1;
         }
+        LOG(INFO)<<"in addFrameToScene() call addFrame():"<<endl;
+        LOG(INFO)<<"size of point2d ,point3d:"<<points2d_in.size()<<","<<points3d_in.size()<<endl;
         this->original_scene.addFrame(points2d_in,points3d_in,point_desp_in,R,t);
         struct FrameInfo* pfr = new struct FrameInfo;
-        pfr->keypoints = this->original_scene.getP2D()[this->original_scene.getCurrentIndex()];
-        pfr->descriptors = this->original_scene.getDespByIndex(original_scene.getCurrentIndex());
+        LOG(INFO)<<"in addFrameToScene() query current index:"<<endl;
+        LOG(INFO)<<"        index:"<<this->original_scene.getCurrentIndex()<<"obj size of p2d and desp:"<<this->original_scene.getP2D().size()<<","<<this->original_scene.point_desps.size()<<endl;
+        pfr->keypoints = this->original_scene.getP2D()[this->original_scene.getCurrentIndex()-1];
+        pfr->descriptors = this->original_scene.getDespByIndex(original_scene.getCurrentIndex()-1);
         cout<<"pfr->keypoints size: "<<pfr->keypoints.size()<<endl;
         cout<<"pfr->descriptors size: "<<pfr->descriptors.size()<<endl;
+        LOG(INFO)<<"in addFrameToScene() forming frame_info:"<<endl;
         ptr_frameinfo frame_info(pfr);
+        LOG(INFO)<<"in addFrameToScene() adding KFrame:"<<endl;
         this->ploop_closing_manager_of_scene->addKeyFrame(frame_info);
         LOG(INFO)<<"addFrameToScene() successfully!";
         return 0;

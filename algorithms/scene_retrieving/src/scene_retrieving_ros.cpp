@@ -1,5 +1,7 @@
 //receive ros msg:1.image_l,image_r   2.position.
 //output:scene struct.
+
+#include <glog/logging.h>
 #include <memory>
 #include <opencv2/opencv.hpp>
 #include "scene_retrieve.h"
@@ -19,7 +21,8 @@
 using namespace std;
 
 std::shared_ptr<SceneRetriever> pSceneRetriever;
-
+cv::Mat* pQ_mat;
+LoopClosingManager* plcm;
 ros::Publisher Pub;
 
 void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight)
@@ -41,15 +44,26 @@ void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::
     {
         return;
     }
-
-
-    cv::Mat RT_mat, Q_mat;
+    LOG(INFO)<<"Forming empty rt mat."<<endl;
+    cv::Mat r_mat = cv::Mat::eye(3,3,CV_32F);
+    cv::Mat t_mat = cv::Mat::zeros(3,1,CV_32F);
+    LOG(INFO)<<"Generating frame..."<<endl;
+    auto current_scene_frame = generateSceneFrameFromStereoImage(curLeftImage,curRightImage,r_mat,t_mat,*pQ_mat,*plcm);
+    LOG(INFO)<<"adding frame into scene..."<<endl;
+    pSceneRetriever->addFrameToScene(std::get<0>(current_scene_frame),std::get<1>(current_scene_frame),std::get<2>(current_scene_frame),std::get<3>(current_scene_frame),std::get<4>(current_scene_frame));
+    LOG(INFO)<<"In ImageCallback():adding frame to scene by stereo..."<<endl;
     bool match_success;
-    int inliers = pSceneRetriever->retrieveSceneFromStereoImage(curLeftImage, curRightImage, Q_mat, RT_mat, match_success);
+    cv::Mat RT_mat;
+    //int inliers = pSceneRetriever->retrieveSceneFromStereoImage(curLeftImage, curRightImage, *pQ_mat, RT_mat, match_success);
+    cv::Mat cam_matrix = (cv::Mat_<float >(3,3) << 376, 0, 376, 
+            0, 376, 240, 
+            0, 0, 1);
+    int loop_id;
+    int inliers = pSceneRetriever->retrieveSceneWithScaleFromMonoImage(curLeftImage,cam_matrix,RT_mat,match_success,&loop_id);
 
     if(match_success)
     {
-        cout<<" Match success! RT mat is: \n"<<RT_mat<<endl;
+        LOG(INFO)<<"In scene_retrieving_ros ImageCallback():Match success! RT mat is: \n"<<RT_mat<<endl;
         //TODO:publish RT mat!
         std_msgs::String str;
         stringstream ss;
@@ -61,6 +75,7 @@ void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::
     }
     else
     {
+        LOG(INFO)<<"Match failed."<<endl;
         return;
     }
 
@@ -71,19 +86,17 @@ void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::
 
 int main(int argc,char** argv)
 {
-
-    if (argc!=5)
+    google::InitGoogleLogging(argv[0]);
+    if (argc!=3)
     {
-        cout<<"Usage: demo [scene_file_path] [voc_file_path] [l_image_path] [r_image_path] [Q_mat_file_path]"<<endl;
+        //cout<<"Usage: demo [scene_file_path] [voc_file_path] [l_image_path] [r_image_path] [Q_mat_file_path]"<<endl;
+        cout<<"Usage: demo [voc_file_path] [Q_mat_file_path]"<<endl;
     }
+    LoopClosingManager lcm("./config/orbvoc.dbow3");
+    plcm = &lcm;
+    std::string voc_file_path(argv[1]) ,Q_mat_path(argv[2]);
 
-
-    std::string scene_path(argv[1]), voc_file_path(argv[2]) , l_img_path(argv[3]), r_img_path(argv[4]), Q_mat_path(argv[5]);
-
-    cout<<"scene path: "<<scene_path<<endl;
     cout<<"voc_file_path: "<<voc_file_path<<endl;
-    cout<<"l_img_path: "<<l_img_path<<endl;
-    cout<<"r_img_path: "<<r_img_path<<endl;
     cout<<"Q_mat_path: "<<Q_mat_path<<endl;
 
     cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
@@ -98,6 +111,7 @@ int main(int argc,char** argv)
 
 
     cout<<"Q_mat: "<<endl<<Q_mat<<endl;
+    pQ_mat = &Q_mat;
 
     cv::Mat RT_mat = (cv::Mat_<float >(4,4) << 1, 0, 0, 0,
             0, 1, 0, 1,
@@ -112,7 +126,8 @@ int main(int argc,char** argv)
 
 
     Pub = nh.advertise<std_msgs::String>("/gaas/scene_retrieving",10);
-    std::shared_ptr<SceneRetriever> pSceneRetrieve(new SceneRetriever(voc_file_path, scene_path));
+    std::shared_ptr<SceneRetriever> pSceneRetrieve(new SceneRetriever(voc_file_path));
+    pSceneRetrieve->getScene().setHasScale(true);
     pSceneRetriever = pSceneRetrieve;
 
 
@@ -124,7 +139,7 @@ int main(int argc,char** argv)
     sync.setMaxIntervalDuration(ros::Duration(0.01));
     sync.registerCallback(boost::bind(ImageCallback, _1, _2));
 
-
+    ros::spin();
 
     return 0;
 }

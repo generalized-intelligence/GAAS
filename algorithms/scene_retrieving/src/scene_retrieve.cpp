@@ -533,8 +533,10 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
 float SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect, cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,int* pMatchedIndexID_output)
 {
+    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage()."<<endl;
     if(this->original_scene.hasScale == false)
     {
+        LOG(ERROR)<<"ERROR in retrieveSceneWithScaleFromMonoImage():scene is set with no scale.check your config!!!!"<<endl;
         match_success = false;
         return -1;
     }
@@ -545,7 +547,7 @@ float SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rec
     //step<1> generate sparse pointcloud of image pair input and scene.
     if (image_left_rect.empty())
     {
-        cout<<"Left or Right image is empty, return."<<endl;
+        LOG(WARNING)<<"Left or Right image is empty, return."<<endl;
         match_success = false;
         return -1;
     }
@@ -560,19 +562,22 @@ float SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rec
 
     //<1>-(1) match left image with scene.
     std::vector<cv::DMatch> good_matches_output;
+    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage:Extracting feature."<<endl;
     ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
 
+    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage:detecting loop."<<endl;
     int loop_index= this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(frameinfo_left, good_matches_output, true);
 
-    cout<<"Loop Index: "<<loop_index<<endl;
     if(loop_index<0)
     {
         match_success = false;
         return -1;
     }
 
+    LOG(INFO)<<"find loop.loop Index: "<<loop_index<<endl;
     //NOTE display feature matches between current frame and detected old frame
     cout << "good_matches_output: " << good_matches_output.size() << endl;
+    LOG(INFO) << "good_matches_output: " << good_matches_output.size() << endl;
 
     if (good_matches_output.size() > 10) {
         this->displayFeatureMatches(loop_index, frameinfo_left, good_matches_output);
@@ -593,6 +598,7 @@ float SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rec
     if (old_image_right.empty() || old_image_left.empty() || R.empty() || t.empty())
     {
         cout<<"Image empty or Rt empty before solvePnP"<<endl;
+        LOG(INFO)<<"Image empty or Rt empty before solvePnP!"<<endl;
         match_success = false;
         return -1;
     }
@@ -617,7 +623,7 @@ float SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rec
             this->mpCv_helper->publishPose(-result_R.t(), temp_t, 0);
 
             cout<<"solve pnp finished, publishing the result finished."<<endl;
-
+            LOG(INFO)<<"Match success in retrieveSceneWithScaleFromMonoImage()!"<<endl;
             match_success = true;
             if(pMatchedIndexID_output!=nullptr)
             {
