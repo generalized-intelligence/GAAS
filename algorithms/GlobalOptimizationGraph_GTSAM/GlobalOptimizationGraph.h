@@ -119,7 +119,7 @@ public:
     void addBlockVelocity(int msg_index);//(const geometry_msgs::TwistStamped& velocity_msg);
     void addBlockQRCode();
     //void addBlockSceneRetriever();
-    void addBlockLoop(int msg_index);
+    void addBlockLoop(const LoopMessage& msg);
     void addBlockFCAttitude();
     
     //SLAM msg as edge prv and vertexspeed.
@@ -179,6 +179,7 @@ private:
     //NonlinearISAM* p_isam;//(relinearizeInterval);
     //NonlinearISAM* p_isam;
     ISAM2* p_isam;
+    bool online_mode = true;
 
     int status = STATUS_NO_GPS_NO_SCENE;
 
@@ -240,8 +241,16 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     int relinearizeSkip_num = this->fSettings["RELINEARIZE_SKIP_NUM"];
     isam2_params_.relinearizeSkip = relinearizeSkip_num;//1;//多少个变量之后,relinearize.
     isam2_params_.enableRelinearization = enable_relinearize;//false;//禁止relinearize.
-
-    p_isam = new ISAM2(isam2_params_);
+    int online_mode_i = fSettings["ONLINE_MODE"];
+    if(online_mode_i)
+    {
+        p_isam = new ISAM2(isam2_params_);
+        this->online_mode = true;
+    }
+    else
+    {
+        this->online_mode = false;
+    }
     
 }
 bool gps_msg_is_valid(const sensor_msgs::NavSatFix& gps)
@@ -719,95 +728,136 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
         }
         //graph.emplace_shared<BetweenFactor<Rot2> >(Symbol('y',slam_vertex_index-1),Symbol('y',slam_vertex_index),....);//朝向角的偏移量.
         slam_vertex_index++;
-        p_isam->update(graph,initialEstimate);
-
-        //FEJ实现:设置parameters.relinearizeSkip
-        //ISAM2Params params_; //在定義ISAM2例項的時候儲存引數的。
-	//  parameters.relinearizeThreshold = 0.01;
-  	// parameters.relinearizeSkip = 1;
-
-        Values currentEstimate = p_isam->calculateEstimate();//p_isam->estimate();
-        int current_dof = 0;
-        double current_chi2 = chi2_red(graph,currentEstimate,current_dof);
-        LOG(INFO)<<"[Optimizer INFO] Current dof and chi2:"<<current_dof<<","<<current_chi2<<endl;
-        LOG(INFO)<<"current yaw_init_to_slam:"<<yaw_init_to_slam*180/3.14159<<" deg."<<endl;
-        cout <<"last state:"<<endl;
-        const Pose2* p_obj = &(currentEstimate.at(Symbol('x',slam_vertex_index-1)).cast<Pose2>());
-                       //dynamic_cast<Pose2*>( &(currentEstimate.at(slam_vertex_index-1)) );//这几个值都不对,应该是内存错误.
-                       //(Pose2*) (&p_isam->calculateEstimate(slam_vertex_index-1));
-                       //dynamic_cast<Pose2> (currentEstimate.at(slam_vertex_index-1));
-        LOG(INFO)<<"Current NODE ESTIMATED STATE at index:"<<slam_vertex_index-1<< " x:"<<p_obj->x()<<",y:"<<p_obj->y()<<",theta:"<<p_obj->theta()<<endl;
-        LOG(INFO)<<"Current NODE ESTIMATED Position for visualizer:"<<p_obj->x()<<","<<p_obj->y()<<","<<p_obj->theta()*10<<endl;
-        currentEstimate.print("Current estimate: ");
-        //取出优化器里的量.
-        {//在新的作用域里搞,不动外面的东西.将来可以挪到新函数里去.
-            state_mutex.lock();
-            LOG(INFO)<<"Changing current_status output."<<endl;
-            //    bool state_correct = false;
-            //    Quaterniond ret_val_R;
-            //    Vector3d ret_val_t;
-            //    std_msgs::Header header_;
-            //    int innerID_of_GOG;
-            this->current_status.state_correct = true;//TODO.
-            auto Q__ = SLAM_msg.pose.orientation;
-            const Pose2 current_pose2d = currentEstimate.at(Symbol('x',slam_vertex_index-1)).cast<Pose2>();
-            double new_yaw_rad = current_pose2d.theta();
-            this->yaw_rad_current_estimate = new_yaw_rad;
-            double newx,newy,newz,neww;
-            //LOG(WARNING)<<"CHANGING newxyzw for DEBUG QUAT ONLY!!!"<<endl;
-            //newx = Q__.x;newy=Q__.y;newz=Q__.z;neww=Q__.w;//Debug.
-            //尝试如果不改变xyzw,是否坐标系仍然不正常.
-            getNewQuaternionFromOriginalQuaternionAndNewYawAngle(Q__.x,Q__.y,Q__.z,Q__.w,new_yaw_rad,
-                                                         newx,newy,newz,neww);
-            
-            current_status.ret_val_R.x() = newx;//生成一个.
-            current_status.ret_val_R.y() = newy;
-            current_status.ret_val_R.z() = newz;
-            current_status.ret_val_R.w() = neww;
-
-            current_status.ret_val_t[0] = current_pose2d.x();
-            current_status.ret_val_t[1] = current_pose2d.y();
-            Point2 current_height = currentEstimate.at(Symbol('h',slam_vertex_index-1)).cast<Point2>();
-            current_status.ret_val_t[2] = current_height.x();//y没用.
-            current_status.header_ = SLAM_msg.header;
-            current_status.innerID_of_GOG = this->slam_vertex_index-1;
-            //TODO:dump current_status to a log file.
-            LOG(INFO)<<"Current_status output changed!"<<endl;
-            state_mutex.unlock();
-        }
-
-
-        /*if(slam_vertex_index%1000 == 0)
+        if(online_mode)
         {
-            GaussNewtonParams parameters;
-            // Stop iterating once the change in error between steps is less than this value
-            parameters.relativeErrorTol = 1e-5;
-            // Do not perform more than N iteration steps
-            parameters.maxIterations = 10000;
-            // Create the optimizer ...
-            GaussNewtonOptimizer optimizer(graph, initialEstimate, parameters);
-            Values result= optimizer.optimize();
-        }*/
+            p_isam->update(graph,initialEstimate);
+    
+            //FEJ实现:设置parameters.relinearizeSkip
+            //ISAM2Params params_; //在定義ISAM2例項的時候儲存引數的。
+    	//  parameters.relinearizeThreshold = 0.01;
+      	// parameters.relinearizeSkip = 1;
+    
+            Values currentEstimate = p_isam->calculateEstimate();//p_isam->estimate();
+            int current_dof = 0;
+            double current_chi2 = chi2_red(graph,currentEstimate,current_dof);
+            LOG(INFO)<<"[Optimizer INFO] Current dof and chi2:"<<current_dof<<","<<current_chi2<<endl;
+            LOG(INFO)<<"current yaw_init_to_slam:"<<yaw_init_to_slam*180/3.14159<<" deg."<<endl;
+            cout <<"last state:"<<endl;
+            const Pose2* p_obj = &(currentEstimate.at(Symbol('x',slam_vertex_index-1)).cast<Pose2>());
+                           //dynamic_cast<Pose2*>( &(currentEstimate.at(slam_vertex_index-1)) );//这几个值都不对,应该是内存错误.
+                           //(Pose2*) (&p_isam->calculateEstimate(slam_vertex_index-1));
+                           //dynamic_cast<Pose2> (currentEstimate.at(slam_vertex_index-1));
+            LOG(INFO)<<"Current NODE ESTIMATED STATE at index:"<<slam_vertex_index-1<< " x:"<<p_obj->x()<<",y:"<<p_obj->y()<<",theta:"<<p_obj->theta()<<endl;
+            LOG(INFO)<<"Current NODE ESTIMATED Position for visualizer:"<<p_obj->x()<<","<<p_obj->y()<<","<<p_obj->theta()*10<<endl;
+            currentEstimate.print("Current estimate: ");
+            //取出优化器里的量.
+            {//在新的作用域里搞,不动外面的东西.将来可以挪到新函数里去.
+                state_mutex.lock();
+                LOG(INFO)<<"Changing current_status output."<<endl;
+                //    bool state_correct = false;
+                //    Quaterniond ret_val_R;
+                //    Vector3d ret_val_t;
+                //    std_msgs::Header header_;
+                //    int innerID_of_GOG;
+                this->current_status.state_correct = true;//TODO.
+                auto Q__ = SLAM_msg.pose.orientation;
 
-        if(slam_vertex_index%300 == 0)
-        {
-            stringstream ss;
-            ss<<"Pose2SLAMExample_"<<slam_vertex_index/300<<".dot";
-            string path;
-            ss>>path;
-            ofstream os(path.c_str());
-            //graph.bayesTree().saveGraph(os, currentEstimate);
-            p_isam->saveGraph(path.c_str());
-            //导出g2o图文件.
-            stringstream ss_g2o;
-            ss_g2o<<"Pose2SLAMExample_"<<slam_vertex_index/300<<".g2o";
-            string g2o_path;
-            ss_g2o>>g2o_path;
-            writeG2o(graph,currentEstimate,g2o_path.c_str());
+                //only affect the output message;will not change anything in optimization graph itself.
+                const Pose2 current_pose2d = currentEstimate.at(Symbol('x',slam_vertex_index-1)).cast<Pose2>();
+                double new_yaw_rad = current_pose2d.theta();
+                this->yaw_rad_current_estimate = new_yaw_rad;
+                double newx,newy,newz,neww;
+                //LOG(WARNING)<<"CHANGING newxyzw for DEBUG QUAT ONLY!!!"<<endl;
+                //newx = Q__.x;newy=Q__.y;newz=Q__.z;neww=Q__.w;//Debug.
+                //尝试如果不改变xyzw,是否坐标系仍然不正常.
+                getNewQuaternionFromOriginalQuaternionAndNewYawAngle(Q__.x,Q__.y,Q__.z,Q__.w,new_yaw_rad,
+                                                             newx,newy,newz,neww);
+                
+                current_status.ret_val_R.x() = newx;//生成一个.
+                current_status.ret_val_R.y() = newy;
+                current_status.ret_val_R.z() = newz;
+                current_status.ret_val_R.w() = neww;
+    
+                current_status.ret_val_t[0] = current_pose2d.x();
+                current_status.ret_val_t[1] = current_pose2d.y();
+                Point2 current_height = currentEstimate.at(Symbol('h',slam_vertex_index-1)).cast<Point2>();
+                current_status.ret_val_t[2] = current_height.x();//y没用.
+                current_status.header_ = SLAM_msg.header;
+                current_status.innerID_of_GOG = this->slam_vertex_index-1;
+                //TODO:dump current_status to a log file.
+                LOG(INFO)<<"Current_status output changed!"<<endl;
+                state_mutex.unlock();
+            }
+    
+    
+            /*if(slam_vertex_index%1000 == 0)
+            {
+                GaussNewtonParams parameters;
+                // Stop iterating once the change in error between steps is less than this value
+                parameters.relativeErrorTol = 1e-5;
+                // Do not perform more than N iteration steps
+                parameters.maxIterations = 10000;
+                // Create the optimizer ...
+                GaussNewtonOptimizer optimizer(graph, initialEstimate, parameters);
+                Values result= optimizer.optimize();
+            }*/
+    
+            if(slam_vertex_index%300 == 0)
+            {
+                stringstream ss;
+                ss<<"Pose2SLAMExample_"<<slam_vertex_index/300<<".dot";
+                string path;
+                ss>>path;
+                ofstream os(path.c_str());
+                //graph.bayesTree().saveGraph(os, currentEstimate);
+                p_isam->saveGraph(path.c_str());
+                //导出g2o图文件.
+                stringstream ss_g2o;
+                ss_g2o<<"Pose2SLAMExample_"<<slam_vertex_index/300<<".g2o";
+                string g2o_path;
+                ss_g2o>>g2o_path;
+                writeG2o(graph,currentEstimate,g2o_path.c_str());
+            }
+            graph.resize(0);
+            initialEstimate.clear();
+            cout<<"-------- ---------------------------------- --------"<<endl;
         }
-        graph.resize(0);
-        initialEstimate.clear();
-        cout<<"-------- ---------------------------------- --------"<<endl;
+        else
+        {
+            const int optimize_count = 1800;
+            if(slam_vertex_index==optimize_count)
+            {
+                LOG(INFO)<<"In offline mode:index == "<<optimize_count<<".start optimization."<<endl;
+                GaussNewtonParams parameters;
+                // Stop iterating once the change in error between steps is less than this value
+                parameters.relativeErrorTol = 1e-5;
+                // Do not perform more than N iteration steps
+                parameters.maxIterations = 1000;
+                // Create the optimizer ...
+                //p_offline_optimizer = new GaussNewtonOptimizer(graph, initialEstimate, parameters);
+                GaussNewtonOptimizer optimizer(graph, initialEstimate, parameters);
+                Values offline_result = optimizer.optimize();
+                for(int i = 0;i<optimize_count;i++)
+                {
+                    Pose2 var_x = offline_result.at(Symbol('x',i)).cast<Pose2>();
+                    Point2 var_h = offline_result.at(Symbol('h',i)).cast<Point2>();
+                    LOG(INFO)<<"    [OFFLINE OPTIMIZED RESULT] node_id:"<<i<<";xyz:"<<var_x.x()<<","<<var_x.y()<<","<<var_h.x()<<";yaw:"<<var_x.theta()*180/3.1415926535<<" deg."<<endl;
+                }
+                offline_result.print("Final Result:\n");
+                stringstream ss; 
+                ss<<"Offline_"<<optimize_count<<".dot";
+                string path;
+                ss>>path;
+                ofstream os(path.c_str());
+                graph.saveGraph(os);
+                //导出g2o图文件.
+                stringstream ss_g2o;
+                ss_g2o<<"Offline_"<<optimize_count<<".g2o";
+                string g2o_path;
+                ss_g2o>>g2o_path;
+                writeG2o(graph,offline_result,g2o_path.c_str());
+            }
+        }
     }
     else
     //SLAM输入初始化。
@@ -847,7 +897,7 @@ void addBlockSceneRetriever_WeakCoupling();//just do square dist calc.
 
 //void GlobalOptimizationGraph::addBlockSceneRetriever()
 void GlobalOptimizationGraph::addBlockLoop(const LoopMessage& msg)
-{
+{/*
     Quaterniond quat_;
     quat_.x() = msg.x;quat_.y() = msg.y;quat_.z() = msg.z;quat_.w() = msg.w;
     //here we solve yaw first, then calc yaw diff again.
@@ -864,7 +914,7 @@ void GlobalOptimizationGraph::addBlockLoop(const LoopMessage& msg)
     double diff_yaw = yaw2 - yaw1;    
     graph.emplace_shared<BetweenFactor<Pose2> >(Symbol('x',msg.prev_gog_frame_id),Symbol('x',msg.loop_gog_frame_id),Pose2(msg.x,msg.y,diff_yaw),noise_model_loop_movement_xy);
     graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',msg.prev_gog_frame_id),Symbol('h',msg.loop_gog_frame_id),Point2(msg.z,0),noise_model_loop_movement_height);
-    LOG(INFO)<<"Added Block Loop in optimization graph."<<endl;
+    LOG(INFO)<<"Added Block Loop in optimization graph."<<endl;*/
 }
 bool GlobalOptimizationGraph::tryInitVelocity()
 {

@@ -68,6 +68,10 @@ GPS_RECATCH_PATIENCE: 30
 
 #----
 #optimization relinearize options:
+ONLINE_MODE : 0
+
+
+#these params controls online isam only.
 ENABLE_RELINEARIZE: 0
 RELINEARIZE_THRES: 0.01
 RELINEARIZE_SKIP_NUM: 1
