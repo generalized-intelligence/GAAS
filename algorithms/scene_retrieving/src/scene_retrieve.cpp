@@ -280,8 +280,11 @@ void SceneRetriever::setImageVecPath(vector<string>& imageVec, int left)
 
 cv::Mat SceneRetriever::fetchImage(size_t index, int left)
 {
+    LOG(INFO)<<"fetchImage: "<<index<<", "<<left<<endl;
+    LOG(INFO)<<"this->mVecLeftImagePath.size(): "<<this->mVecLeftImagePath.size()<<endl;
     cout<<"fetchImage: "<<index<<", "<<left<<endl;
     cout<<"this->mVecLeftImagePath.size(): "<<this->mVecLeftImagePath.size()<<endl;
+
 
     if(left)
     {
@@ -533,176 +536,204 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
 float SceneRetriever::retrieveSceneWithScaleFromMonoImage(cv::Mat image_left_rect, cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,int* pMatchedIndexID_output)
 {
-    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage()."<<endl;
-    if(this->original_scene.hasScale == false)
-    {
-        LOG(ERROR)<<"ERROR in retrieveSceneWithScaleFromMonoImage():scene is set with no scale.check your config!!!!"<<endl;
-        match_success = false;
-        return -1;
-    }
-
-    // NOTE this is the working version of SHR
-    this->LoopClosureDebugIndex ++;
-
-    //step<1> generate sparse pointcloud of image pair input and scene.
-    if (image_left_rect.empty())
-    {
-        LOG(WARNING)<<"Left or Right image is empty, return."<<endl;
-        match_success = false;
-        return -1;
-    }
-
-    // apply mask to input image
-    mpCv_helper->applyMask(image_left_rect);
-
-//    cv::imshow("left image", image_left_rect);
-//    cv::waitKey(5);
-
-    this->mCurrentImage = image_left_rect;
-
-    //<1>-(1) match left image with scene.
-    std::vector<cv::DMatch> good_matches_output;
-    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage:Extracting feature."<<endl;
-    ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
-
-    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage:detecting loop."<<endl;
-    int loop_index= this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(frameinfo_left, good_matches_output, true);
-
-    if(loop_index<0)
-    {
-        match_success = false;
-        return -1;
-    }
-
-    LOG(INFO)<<"find loop.loop Index: "<<loop_index<<endl;
-    //NOTE display feature matches between current frame and detected old frame
-    cout << "good_matches_output: " << good_matches_output.size() << endl;
-    LOG(INFO) << "good_matches_output: " << good_matches_output.size() << endl;
-
-    if (good_matches_output.size() > 10) {
-        this->displayFeatureMatches(loop_index, frameinfo_left, good_matches_output);
-    }
-
-    //fetch left and right image
-    cv::Mat old_image_left = this->fetchImage(loop_index, 1);
-    cv::Mat old_image_right = this->fetchImage(loop_index, 0);
-
-    //fetch old frame R and t
-    cv::Mat R = this->original_scene.getR(loop_index);
-    cv::Mat t = this->original_scene.getT(loop_index);
-
-    //initialize PnP result
-    cv::Mat result_R, result_t;
-
-    //conduct pnp
-    if (old_image_right.empty() || old_image_left.empty() || R.empty() || t.empty())
-    {
-        cout<<"Image empty or Rt empty before solvePnP"<<endl;
-        LOG(INFO)<<"Image empty or Rt empty before solvePnP!"<<endl;
-        match_success = false;
-        return -1;
-    }
-    else
-    {
-        int pnpResult = this->mpCv_helper->solvePnP(old_image_left,
-                                                     old_image_right,
-                                                     image_left_rect,
-                                                     R, t,
-                                                     result_R, result_t);
-
-        cout<<"pnpresult: "<<pnpResult<<endl;
-        cout<<"pnpresult: "<<bool(pnpResult)<<endl;
-        if(pnpResult>0 && !result_R.empty() && !result_t.empty())
-        {
-            cout<<"pnp result are: \n: "<<result_R<<endl<<result_t<<endl;
-            cout<<"solve pnp finished, publishing the result."<<endl;
-
-            cv::Mat temp_t =  -result_R.t()*result_t;
-
-            //this->mpCv_helper->publishPose(result_R, result_t, 0);
-            this->mpCv_helper->publishPose(-result_R.t(), temp_t, 0);
-
-            cout<<"solve pnp finished, publishing the result finished."<<endl;
-            LOG(INFO)<<"Match success in retrieveSceneWithScaleFromMonoImage()!"<<endl;
-            match_success = true;
-            if(pMatchedIndexID_output!=nullptr)
-            {
-                *pMatchedIndexID_output = loop_index;
-            }
-            return pnpResult;
-        }
-        else
-        {
-            match_success = false;
-            return -1;
-        }
-
-    }
-
+  //    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage()."<<endl;
+  //    if(this->original_scene.hasScale == false)
+  //    {
+  //        LOG(ERROR)<<"ERROR in retrieveSceneWithScaleFromMonoImage():scene is set with no scale.check your config!!!!"<<endl;
+  //        match_success = false;
+  //        return -1;
+  //    }
+  //
+  //    // NOTE this is the working version of SHR
+  //    this->LoopClosureDebugIndex ++;
+  //
+  //    //step<1> generate sparse pointcloud of image pair input and scene.
+  //    if (image_left_rect.empty())
+  //    {
+  //        LOG(WARNING)<<"Left or Right image is empty, return."<<endl;
+  //        match_success = false;
+  //        return -1;
+  //    }
+  //    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage(): will applyMask()."<<endl;
+  //    // apply mask to input image
+  //    //mpCv_helper->applyMask(image_left_rect);
+  //
+  ////    cv::imshow("left image", image_left_rect);
+  ////    cv::waitKey(5);
+  //
+  //    this->mCurrentImage = image_left_rect;
+  //
+  //    //<1>-(1) match left image with scene.
+  //    std::vector<cv::DMatch> good_matches_output;
+  //    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage:Extracting feature."<<endl;
+  //    ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
+  //
+  //    LOG(INFO)<<"in retrieveSceneWithScaleFromMonoImage:detecting loop."<<endl;
+  //    int loop_index= this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(frameinfo_left, good_matches_output, true);
+  //
+  //    if(loop_index<0)
+  //    {
+  //        match_success = false;
+  //        return -1;
+  //    }
+  //
+  //    LOG(INFO)<<"find loop.loop Index: "<<loop_index<<endl;
+  //    //NOTE display feature matches between current frame and detected old frame
+  //    LOG(INFO) << "good_matches_output: " << good_matches_output.size() << endl;
+  //    cout << "good_matches_output: " << good_matches_output.size() << endl;
+  //
+  //    if (good_matches_output.size() > 10) {
+  //        ;//this->displayFeatureMatches(loop_index, frameinfo_left, good_matches_output); //TODO: ?????
+  //    }
+  //
+  //    //fetch left and right image
+  //    cv::Mat old_image_left = this->fetchImage(loop_index, 1);
+  //    cv::Mat old_image_right = this->fetchImage(loop_index, 0);
+  //
+  //    //fetch old frame R and t
+  //    cv::Mat R = this->original_scene.getR(loop_index);
+  //    cv::Mat t = this->original_scene.getT(loop_index);
+  //
+  //    //initialize PnP result
+  //    cv::Mat result_R, result_t;
+  //
+  //    //conduct pnp
+  //    if (old_image_right.empty() || old_image_left.empty() || R.empty() || t.empty())
+  //    {
+  //        LOG(INFO)<<"Image empty or Rt empty before solvePnP!"<<endl;
+  //        LOG(INFO)<<"l,r,R,t:"<<old_image_left<<";"<<old_image_right<<";"<<R<<";"<<t<<endl;
+  //        cout<<"Image empty or Rt empty before solvePnP"<<endl;
+  //        match_success = false;
+  //        return -1;
+  //    }
+  //    else
+  //    {
+  //        int pnpResult = this->mpCv_helper->solvePnP(old_image_left,
+  //                                                     old_image_right,
+  //                                                     image_left_rect,
+  //                                                     R, t,
+  //                                                     result_R, result_t);
+  //
+  //        cout<<"pnpresult: "<<pnpResult<<endl;
+  //        cout<<"pnpresult: "<<bool(pnpResult)<<endl;
+  //        if(pnpResult>0 && !result_R.empty() && !result_t.empty())
+  //        {
+  //            cout<<"pnp result are: \n: "<<result_R<<endl<<result_t<<endl;
+  //            cout<<"solve pnp finished, publishing the result."<<endl;
+  //
+  //            cv::Mat temp_t =  -result_R.t()*result_t;
+  //
+  //            //this->mpCv_helper->publishPose(result_R, result_t, 0);
+  //            this->mpCv_helper->publishPose(-result_R.t(), temp_t, 0);
+  //
+  //            cout<<"solve pnp finished, publishing the result finished."<<endl;
+  //            LOG(INFO)<<"Match success in retrieveSceneWithScaleFromMonoImage()!"<<endl;
+  //            match_success = true;
+  //            if(pMatchedIndexID_output!=nullptr)
+  //            {
+  //                *pMatchedIndexID_output = loop_index;
+  //            }
+  //            return pnpResult;
+  //        }
+  //        else
+  //        {
+  //            match_success = false;
+  //            return -1;
+  //        }
+  //
+  //    }
+  //
 
 
     // NOTE this is the original version of WHY
+    match_success = false;
+    cv::Mat& image_in_rect = image_left_rect;
+    ptr_frameinfo mono_image_info = this->ploop_closing_manager_of_scene->extractFeature(image_in_rect);
+    std::vector <cv::DMatch> good_matches;
 
-//    ptr_frameinfo mono_image_info = this->ploop_closing_manager_of_scene->extractFeature(image_in_rect);
-//    std::vector <cv::DMatch> good_matches;
-//
-//    int loop_index = this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(mono_image_info,good_matches,false);
-//
-//    if (loop_index<0)
-//    {
-//        return -1;//Loop not found!
-//    }
-//
-//    //query 3d points and do 2d-3d matching by PnP ransac.
-//    std::vector<cv::Point3f> points3d;
-//    std::vector<cv::Point2f> projectedPoints2d;
-//
-//    for(auto &match:good_matches)
-//    {
-//        auto pt1 = mono_image_info->keypoints[match.queryIdx].pt;//image point 2d.
-//        projectedPoints2d.push_back(pt1);
-//        auto pt2 = this->original_scene.getP3D().at(loop_index)[match.trainIdx];//scene point 3d.
-//		    //image point 2d of scene: this->loop_closing_manager_of_scene.getFrameInfoById(loop_index)->keypoints[match.trainIdx].pt;
-//        points3d.push_back(pt2);
-//    }
-//
-//    cv::Mat distCoeffs = cv::Mat::zeros(4, 1, CV_64FC1);
-//    cv::Mat rvec,tvec,inliers;
-//
-//    bool cv_solvepnpransac_result = cv::solvePnPRansac (points3d,//3d
-//        projectedPoints2d,//2d
-//        cameraMatrix,
-//        distCoeffs,
-//        rvec,
-//        tvec,
-//        //bool useExtrinsicGuess =
-//        false,
-//        //int iterationsCount =
-//	100,
-//        //float reprojectionError =
-//	8.0,
-//        //double  confidence =
-//	0.99,
-//        inliers,
-//        //int flags =
-//	cv::SOLVEPNP_ITERATIVE
-//        );
-//    //check inliers.
-//    cv::Mat R,retMat;
-//    if(cv_solvepnpransac_result )//&& inliers.size()>8)
-//    {
-//      cv::Rodrigues(rvec,R);//match success
-//      retMat=cv::Mat::eye(4,4,CV_32F);
-//      retMat.rowRange(cv::Range(0,3)).colRange(cv::Range(0,3)) = R;
-//      retMat.colRange(3,1).rowRange(0,3) = tvec;
-//      RT_mat_of_mono_cam_output = retMat;
-//      return loop_index;
-//    }
-//    else
-//    {
-//        return -1;
-//    }
-//    //return.
+    int loop_index = this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(mono_image_info,good_matches,true);//false); // the last parameter decrepted.WTF is that???
+
+    if (loop_index<0)
+    {
+        LOG(INFO)<<"    in retrieveSceneWithScaleFromMonoImage():loop_index <0;detect loop failed!"<<endl;
+        return -1;//Loop not found!
+    }
+    LOG(INFO)<<"    in retrieveSceneWithScaleFromMonoImage():loop_index:"<<loop_index<<";detect loop success!"<<endl;
+
+    //query 3d points and do 2d-3d matching by PnP ransac.
+    std::vector<cv::Point3f> points3d;
+    std::vector<cv::Point2f> projectedPoints2d;
+    LOG(INFO)<<"    generating good_match p2d ,p3d..."<<endl;
+    LOG(INFO)<<"    mono_image_info->keypoints.size():"<<mono_image_info->keypoints.size()<<endl;
+    for(auto &match:good_matches)
+    {
+        LOG(INFO)<<"    deref mono_image_info->keypoints at index:"<<match.queryIdx<<endl;
+        cv::Point2f pt1 = mono_image_info->keypoints[match.queryIdx].pt;//image point 2d.
+        projectedPoints2d.push_back(pt1);
+        LOG(INFO)<<"    p3d at loop index:"<<loop_index<<endl;
+        LOG(INFO)<<"    p3d size:"<<this->original_scene.getP3D().at(loop_index).size()<<";deref p3d index:"<<match.trainIdx<<endl;
+        cv::Point3f pt2 = this->original_scene.getP3D().at(loop_index)[match.trainIdx];//scene point 3d.
+		    //image point 2d of scene: this->loop_closing_manager_of_scene.getFrameInfoById(loop_index)->keypoints[match.trainIdx].pt;
+        points3d.push_back(pt2);
+    }
+
+    //cv::Mat distCoeffs = cv::Mat::zeros(4, 1, CV_64FC1);
+    cv::Mat distCoeffs = cv::Mat::zeros(4, 1, CV_32FC1);
+    cv::Mat rvec,tvec,inliers;
+    LOG(INFO)<<"    preparing for solvePnPRansac()..."<<endl;
+    LOG(INFO)<<"    points3d,projectedPoints2d size:"<<points3d.size()<<","<<projectedPoints2d.size()<<endl;
+    if(points3d.size() == 0 || projectedPoints2d.size() == 0)
+    {
+        LOG(INFO)<<"    before cv::solvePnPRansac(): 3d or 2d points vec size ==0.Failed.Abort."<<endl;
+        return -1;
+    }
+    bool cv_solvepnpransac_result = cv::solvePnPRansac (points3d,//3d
+        projectedPoints2d,//2d
+        cameraMatrix,
+        distCoeffs,
+        rvec,
+        tvec,
+        //bool useExtrinsicGuess =
+        false,
+        //int iterationsCount =
+	100,
+        //float reprojectionError =
+	8.0,
+        //double  confidence =
+	0.99,
+        inliers,
+        //int flags =
+	cv::SOLVEPNP_ITERATIVE
+        );
+    //check inliers.
+    cv::Mat R;
+    if(cv_solvepnpransac_result )//&& inliers.size()>8)
+    {
+      LOG(INFO)<<"    in retrieveSceneWithScaleFromMonoImage():Ransac success!!rvec,tvec"<<rvec<<";"<<tvec<<endl;
+      cv::Rodrigues(rvec,R);//match success
+      LOG(INFO)<<"    in retrieveSceneWithScaleFromMonoImage():after rodrigues R:"<<R<<";"<<tvec<<endl;
+      //cv::Mat retMat = cv::Mat::eye(4,4,CV_32F);
+      //retMat.convertTo(retMat, CV_64F);
+      cv::Mat retMat = cv::Mat(4, 4, R.type(), cv::Scalar(0)); 
+      R.copyTo(retMat.rowRange(0,3).colRange(0,3)); 
+      //retMat.rowRange(0,3).colRange(0,3) = R;
+      //retMat.colRange(3,1).rowRange(0,3) = tvec;
+      LOG(INFO)<<"    in retrieveSceneWithScaleFromMonoImage():after replacing retMat,will write retMat into RT_mat_of_mono_cam_output."<<endl;
+      RT_mat_of_mono_cam_output = retMat;
+      match_success = true;
+      if(pMatchedIndexID_output!=nullptr)
+      {
+          *pMatchedIndexID_output = loop_index;
+      }
+      LOG(INFO)<<"    in retrieveSceneWithScaleFromMonoImage():return true."<<endl;
+      return loop_index;
+    }
+    else
+    {
+        LOG(INFO)<<"    in retrieveSceneWithScaleFromMonoImage():Ransac failed!!"<<endl;
+        return -1;
+    }
+    //return.
     
 }
 

@@ -50,6 +50,7 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 # ----------------------------------------------------------------------------
 find_package(OpenCV 3.3.1 REQUIRED)
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
+find_package(Glog REQUIRED)
 IF(USE_CONTRIB)
 add_definitions(-DUSE_CONTRIB)
 ENDIF()
@@ -62,7 +63,7 @@ ENDIF()
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS})
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${GLOG_LIBRARIES})
 
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION

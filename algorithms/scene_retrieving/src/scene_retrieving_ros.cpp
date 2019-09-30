@@ -31,8 +31,12 @@ void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::
 
     try
     {
-        curLeftImage = cv_bridge::toCvShare(msgLeft)->image;
-        curRightImage = cv_bridge::toCvShare(msgRight)->image;
+        //curLeftImage = cv_bridge::toCvShare(msgLeft)->image;
+        //curRightImage = cv_bridge::toCvShare(msgRight)->image;
+        //auto l_im& = cv_bridge::toCvShare(msgLeft)->image;
+        
+        cv::cvtColor(cv_bridge::toCvShare(msgLeft)->image, curLeftImage, CV_BGR2GRAY);
+        cv::cvtColor(cv_bridge::toCvShare(msgRight)->image, curRightImage, CV_BGR2GRAY);
     }
     catch(cv_bridge::Exception &e)
     {
@@ -48,7 +52,13 @@ void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::
     cv::Mat r_mat = cv::Mat::eye(3,3,CV_32F);
     cv::Mat t_mat = cv::Mat::zeros(3,1,CV_32F);
     LOG(INFO)<<"Generating frame..."<<endl;
-    auto current_scene_frame = generateSceneFrameFromStereoImage(curLeftImage,curRightImage,r_mat,t_mat,*pQ_mat,*plcm);
+    bool success_gen = false;
+    auto current_scene_frame = generateSceneFrameFromStereoImage(curLeftImage,curRightImage,r_mat,t_mat,*pQ_mat,*plcm,success_gen);
+    if(!success_gen)
+    {
+        LOG(INFO)<<"    after generateSceneFrameFromStereoImage():generate failed!"<<endl;
+        return;
+    }
     LOG(INFO)<<"adding frame into scene..."<<endl;
     pSceneRetriever->addFrameToScene(std::get<0>(current_scene_frame),std::get<1>(current_scene_frame),std::get<2>(current_scene_frame),std::get<3>(current_scene_frame),std::get<4>(current_scene_frame));
     LOG(INFO)<<"In ImageCallback():adding frame to scene by stereo..."<<endl;
@@ -92,9 +102,10 @@ int main(int argc,char** argv)
         //cout<<"Usage: demo [scene_file_path] [voc_file_path] [l_image_path] [r_image_path] [Q_mat_file_path]"<<endl;
         cout<<"Usage: demo [voc_file_path] [Q_mat_file_path]"<<endl;
     }
-    LoopClosingManager lcm("./config/orbvoc.dbow3");
-    plcm = &lcm;
     std::string voc_file_path(argv[1]) ,Q_mat_path(argv[2]);
+    LoopClosingManager lcm(voc_file_path);
+    plcm = &lcm;
+
 
     cout<<"voc_file_path: "<<voc_file_path<<endl;
     cout<<"Q_mat_path: "<<Q_mat_path<<endl;

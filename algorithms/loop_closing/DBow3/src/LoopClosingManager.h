@@ -1,6 +1,7 @@
 #ifndef LOOPCLOSINGMANAGER_H
 #define LOOPCLOSINGMANAGER_H
 
+#include <glog/logging.h>
 #include <iostream>
 #include <vector>
 

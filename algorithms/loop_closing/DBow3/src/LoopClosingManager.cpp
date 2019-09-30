@@ -10,7 +10,8 @@ LoopClosingManager::LoopClosingManager(const std::string &voc_path)
     this->loop_id = 0;
     //this->orb = cv::ORB::create();
     this->loadVoc(voc_path);
-    this->frame_db = DBoW3::Database(this->voc, false, 0);
+    //this->frame_db = DBoW3::Database(this->voc, false, 0);
+    this->frame_db = DBoW3::Database(this->voc, true, 0);
 }
 
 LoopClosingManager::LoopClosingManager(const std::string &voc_path,const std::string &frame_db_path)
@@ -32,10 +33,12 @@ void LoopClosingManager::addKeyFrame(const ptr_frameinfo& info)
 //        frameinfo_list.push_back(info);
 //        this->frame_index++;
 //    }
-
+    LOG(INFO)<<"    in LoopClosingManager::addKeyFrame()!"<<endl;
+    LOG(INFO)<<"    content:"<<info->descriptors;
     this->frame_db.add(info->descriptors);
     this->frameinfo_list.push_back(info);
     this->frame_index++;
+    LOG(INFO)<<"    LoopClosingManager frame len:"<<frameinfo_list.size()<<endl;
 }
 
 
@@ -51,8 +54,10 @@ QueryResults LoopClosingManager::queryKeyFrames(ptr_frameinfo info)
     QueryResults results;
     //this->frame_db.query(info->descriptors, results, RET_QUERY_LEN, this->frame_index - TOO_CLOSE_THRES);
 
-    this->frame_db.query(info->descriptors, results, 4, this->curFrameIndex - TOO_CLOSE_THRES);
+    //this->frame_db.query(info->descriptors, results, 4, this->curFrameIndex - TOO_CLOSE_THRES);
     //this->frame_db.query(info->descriptors, results, 4, -1);
+    this->frame_db.query(info->descriptors, results, 4);
+    LOG(WARNING)<<"removed too close detection!!"<<endl;
 
     return results;
 }
@@ -61,9 +66,9 @@ QueryResults LoopClosingManager::queryKeyFrames(ptr_frameinfo info)
 int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv::DMatch>& good_matches_output, bool current_frame_has_index = true)
 {
     int ret_index = -1; // Not found!
-
+    LOG(INFO)<<"in LoopClosingManager::detectLoopByKeyFrame:detecting..."<<endl;
     QueryResults results= this->queryKeyFrames(info);
-
+    LOG(INFO)<<"LoopClosingManager::detectLoopByKeyFrame: query results.size = "<<results.size();
     std::vector<cv::DMatch> matches_out;
 
     //NOTE method 1 will introduce too many outliers
@@ -76,6 +81,7 @@ int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv:
 
     for(int wind_index =0; wind_index<results.size(); wind_index++)
     {
+        LOG(INFO)<<"     index:"<<wind_index<<" match score:"<<results[wind_index].Score<<endl;
         //results[wind_index].Score>DB_QUERY_SCORE_THRES
         if (results[wind_index].Score>0.05)
         {
@@ -86,7 +92,7 @@ int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv:
                 if (match_2_images_flann(info, results[wind_index].Id, this->loop_id, results[wind_index].Score, this->frameinfo_list, matches_out))
                 {
                     cout<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[wind_index].Id<<"]"<<endl;
-
+                    LOG(INFO)<<"Loop between [ current Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[wind_index].Id<<"]"<<endl;
 
                     int current_match_size = matches_out.size();
                     ret_index = results[wind_index].Id;

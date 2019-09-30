@@ -197,7 +197,7 @@ public:
 
 
 
-SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr, const cv::Mat& RotationMat, const cv::Mat& TranslationMat, const cv::Mat& Q_mat,LoopClosingManager& lcm)
+SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr, const cv::Mat& RotationMat, const cv::Mat& TranslationMat, const cv::Mat& Q_mat,LoopClosingManager& lcm,bool& success)
 {
     
     std::vector<cv::KeyPoint> key_points2d_candidate;
@@ -255,6 +255,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     if (lk_input_keypoints.size()<=5)
     {
         SceneFrame failed;
+        success = false;
         return failed;
     }
 
@@ -271,15 +272,18 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     
     cout<<"lk_output_keypoints.size() == 0: "<<(lk_output_keypoints.size())<<endl;
     cout<<"PyrLKResults.size() == 0: "<<(PyrLKResults.size())<<endl;
-    
+
+    LOG(INFO)<<"lk_input_keypoints.size():"<<lk_input_keypoints.size()<<endl;
+    LOG(INFO)<<"lk_output_keypoints.size():"<<lk_output_keypoints.size()<<endl;
+    LOG(INFO)<<"PyrLKResults.size():"<<PyrLKResults.size()<<endl;
+    LOG(INFO)<<"good_2d_index_matches.size()"<<good_2dmatches_index.size()<<endl; 
+   
     if (lk_input_keypoints.size() < 5 || lk_output_keypoints.size() < 5 || PyrLKResults.size() < 5)
     {
-        LOG(INFO)<<"lk_input_keypoints.size() == 0: "<<(lk_input_keypoints.size() == 0)<<endl;
-        LOG(INFO)<<"lk_output_keypoints.size() == 0: "<<(lk_output_keypoints.size() == 0)<<endl;
-        LOG(INFO)<<"PyrLKResults.size() == 0: "<<(PyrLKResults.size() == 0)<<endl;
         
-//         SceneFrame temp;
-//         return temp;
+         success = false;
+         SceneFrame temp;
+         return temp;
     }
         
     
@@ -287,23 +291,27 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     std::vector<float> disparity_of_points;
     cv::Mat descriptors_reserved;
 
-    
+    LOG(INFO)<<"Descriptor size of left img: col,row:"<<pleft_image_info->descriptors.cols<<","<<pleft_image_info->descriptors.rows<<endl;
     for(int index = 0; index<lk_input_keypoints.size(); index++)
     {
-        //if(!PyrLKResults[index])
-        if(false)
+        if(!PyrLKResults[index])
         {
+            LOG(INFO)<<"pyrlk result index:"<<index<<"invalid.continue."<<endl;
             continue;
         }
         //if(PyrLKResults[index] == 1)
         else
         {
+            LOG(INFO)<<"        adding pyrlk result index:"<<index<<"!"<<endl;
+            LOG(INFO)<<"        result index in good_match:"<<good_2dmatches_index[index]<<"!"<<endl;
             matched_points.push_back(lk_input_keypoints[index]);
             disparity_of_points.push_back(lk_output_keypoints[index].x-lk_input_keypoints[index].x);
             
-            //Mat desp_reserved = pleft_image_info->descriptors.colRange(good_2dmatches_index[index], good_2dmatches_index[index]+1).clone().reshape(0);
-            //Mat desp_reserved = pleft_image_info->descriptors.col(good_2dmatches_index[index]).clone().reshape(0);
-            //descriptors_reserved.push_back(desp_reserved);//get this row out of mat.
+            LOG(INFO)<<"        in generateSceneFrameFromStereoImage() stage<1> split row"<<endl;
+            cv::Mat desp_reserved = pleft_image_info->descriptors.rowRange(good_2dmatches_index[index], good_2dmatches_index[index]+1).clone().reshape(0,1);
+            //cv::Mat desp_reserved = pleft_image_info->descriptors.row(good_2dmatches_index[index]).clone().reshape(0,1);
+            LOG(INFO)<<"        in generateSceneFrameFromStereoImage() stage<2> add to mat."<<endl;
+            descriptors_reserved.push_back(desp_reserved);//get this row out of mat.
             
             
             //push_back(pleft_image_info->descriptors[good_2dmatches_index[index]]);
@@ -348,7 +356,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     
     LOG(INFO)<<"key_points2d_final size: "<<key_points2d_final.size()<<endl;
     LOG(INFO)<<"points3d size: "<<points3d.size()<<endl;
-    
+    success = true;  
     return std::make_tuple(key_points2d_final, points3d, descriptors_reserved, RotationMat, TranslationMat);
 }
 
@@ -372,6 +380,7 @@ public:
 
     inline int addFrameToScene(const std::vector<cv::KeyPoint>& points2d_in, const std::vector<cv::Point3d>points3d_in,const cv::Mat& point_desp_in, const cv::Mat R, const cv::Mat t)
     {
+        LOG(INFO)<<"    content of desp in addFrameToScene():"<<point_desp_in<<endl;
         LOG(INFO)<<"in addFrameToScene():"<<endl;
         if(!this->ploop_closing_manager_of_scene )
         {
@@ -384,7 +393,7 @@ public:
         struct FrameInfo* pfr = new struct FrameInfo;
         LOG(INFO)<<"in addFrameToScene() query current index:"<<endl;
         LOG(INFO)<<"        index:"<<this->original_scene.getCurrentIndex()<<"obj size of p2d and desp:"<<this->original_scene.getP2D().size()<<","<<this->original_scene.point_desps.size()<<endl;
-        pfr->keypoints = this->original_scene.getP2D()[this->original_scene.getCurrentIndex()-1];
+        pfr->keypoints = this->original_scene.getP2D().back();//this->original_scene.getP2D()[this->original_scene.getCurrentIndex()-1];
         pfr->descriptors = this->original_scene.getDespByIndex(original_scene.getCurrentIndex()-1);
         cout<<"pfr->keypoints size: "<<pfr->keypoints.size()<<endl;
         cout<<"pfr->descriptors size: "<<pfr->descriptors.size()<<endl;
