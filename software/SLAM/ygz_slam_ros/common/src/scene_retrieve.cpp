@@ -9,7 +9,7 @@
 Scene::Scene()
 {
 
-    mpCv_helper = new cv_helper(360.0652, 363.2195, 406.6650, 256.2053, 39.9554);
+    mpCv_helper = new cv_helper(376.0, 376.0, 376.0, 240.0, 45.12);
 
     return;//TODO:fill in init functions.
 }
