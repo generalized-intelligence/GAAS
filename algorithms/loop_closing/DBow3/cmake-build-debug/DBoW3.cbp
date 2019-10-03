@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="DBoW3"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\..\;CMake Files\..\..\..\..\;CMake Files\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\..\..\;CMake Files\..\..\..\..\..\..\..\..\usr\;CMake Files\..\..\..\..\..\..\..\..\usr\local\;CMake Files\..\..\..\..\..\..\..\..\usr\local\lib\;CMake Files\..\..\..\..\..\..\..\..\usr\local\lib\cmake\;CMake Files\..\..\..\..\..\..\..\..\usr\local\lib\cmake\opencv4\;CMake Files\..\..\..\..\..\..\..\..\usr\local\share\;CMake Files\..\..\..\..\..\..\..\..\usr\local\share\OpenCV\;CMake Files\cmake-modules\;CMake Files\src\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/strip">
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/strip"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/local">
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/local"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="loopclosingmanager">
+				<Option output="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/libloopclosingmanager.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DOPENCV_VERSION_3"/>
+					<Add directory="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 loopclosingmanager"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="loopclosingmanager/fast">
+				<Option output="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/libloopclosingmanager.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DOPENCV_VERSION_3"/>
+					<Add directory="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 loopclosingmanager/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="uninstall">
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 uninstall"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install">
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 install"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="DBoW3">
+				<Option output="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/libDBoW3.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DOPENCV_VERSION_3"/>
+					<Add directory="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/."/>
+					<Add directory="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/./utils"/>
+					<Add directory="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 DBoW3"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="DBoW3/fast">
+				<Option output="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/libDBoW3.so" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DOPENCV_VERSION_3"/>
+					<Add directory="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/."/>
+					<Add directory="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/./utils"/>
+					<Add directory="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src"/>
+					<Add directory="/usr/local/include/opencv"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 DBoW3/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug/src/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/BRIEF.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/BowVector.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/BowVector.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/DBoW3.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/DException.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/DUtils.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/DVision.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/Database.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/Database.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/DescManip.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/DescManip.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/FeatureVector.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.cpp">
+			<Option target="loopclosingmanager"/>
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/LoopClosingManager.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/QueryResults.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/Random.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/Random.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/ScoringObject.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/Timestamp.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.cpp">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/Vocabulary.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/config.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/exports.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/quicklz.c">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/quicklz.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/timers.h">
+			<Option target="DBoW3"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake_uninstall.cmake.in">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/config.cmake.in">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/../../../../../../../../usr/local/lib/cmake/opencv4/OpenCVConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\..\usr\local\lib\cmake\opencv4\"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/../../../../../../../../usr/local/share/OpenCV/OpenCVConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/../../../../../../../../usr/local/share/OpenCV/OpenCVConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/../../../../../../../../usr/local/share/OpenCV/OpenCVModules-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/../../../../../../../../usr/local/share/OpenCV/OpenCVModules.cmake">
+			<Option virtualFolder="CMake Files\..\..\..\..\..\..\..\..\usr\local\share\OpenCV\"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-modules/FindGlog.cmake">
+			<Option virtualFolder="CMake Files\cmake-modules\"/>
+		</Unit>
+		<Unit filename="/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

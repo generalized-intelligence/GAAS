@@ -7,7 +7,6 @@
 
 // DBoW2/3
 #include "../src/DBoW3.h" // defines OrbVocabulary and OrbDatabase
-//#include "src/DBoW3.h"
 
 // OpenCV
 #include <opencv2/core.hpp>
@@ -17,14 +16,13 @@
 #include <opencv2/features2d/features2d.hpp>
 #include "opencv2/calib3d.hpp"
 #include <memory>
-//#include<boost/smart_ptr.hp0p>
-//#include "opencv2/xfeatures2d.hpp"
+
+#include "opencv2/xfeatures2d.hpp"
 
 #include <vector>
 #include <algorithm>
 
-//NOTE GMS feature matcher
-#include "Thirdparty/GMS/gms_matcher.h"
+
 
 
 using namespace DBoW3;

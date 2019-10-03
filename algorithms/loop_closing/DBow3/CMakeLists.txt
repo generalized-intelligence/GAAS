@@ -48,7 +48,9 @@ OPTION(BUILD_SHARED_LIBS 	"Set to OFF to build static libraries" ON)
 # ----------------------------------------------------------------------------
 #   Find Dependencies
 # ----------------------------------------------------------------------------
-find_package(OpenCV 3.3.1 REQUIRED)
+LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
+
+find_package(OpenCV 3.4.5 REQUIRED)
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
 find_package(Glog REQUIRED)
 IF(USE_CONTRIB)

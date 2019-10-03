@@ -1,0 +1,57 @@
+/home/gishr/Downloads/CLion-2019.2.1/clion-2019.2.1/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3
+-- The C compiler identification is GNU 7.4.0
+-- The CXX compiler identification is GNU 7.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+LIB_INSTALL_DIR: 
+-- Found OpenCV: /usr/local (found suitable version "3.4.5", minimum required is "3.4.5") 
+-- Boost version: 1.65.1
+-- Found the following Boost libraries:
+--   serialization
+--   wserialization
+--   system
+-- Found Glog: /usr/include  
+-- -------------------------------------------------------------------------------
+-- GNU COMPILER
+-- -------------------------------------------------------------------------------
+-- 
+-- -------------------------------------------------------------------------------
+-- General configuration for DBoW3 0.0.1
+-- -------------------------------------------------------------------------------
+    Built as dynamic libs?:ON
+    Compiler:/usr/bin/c++
+-- Build Type: Debug
+-- C++ flags (Release):          -fomit-frame-pointer -O3 -mmmx -msse -msse2 -msse3 -DNDEBUG    -std=c++11
+-- C++ flags (Debug):            -g3 -O0 -DDEBUG -D_DEBUG -W -Wextra -Wno-return-type    -std=c++11
+-- C++ flags (Relase+Debug):           -fomit-frame-pointer -O3 -mmmx -msse -msse2 -msse3 -DNDEBUG    -std=c++11   -g3 -O0 -DDEBUG -D_DEBUG -W -Wextra -Wno-return-type    -std=c++11
+-- CMAKE_CXX_FLAGS:         
+-- CMAKE_BINARY_DIR:         /home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug
+-- 
+-- CMAKE_SYSTEM_PROCESSOR = x86_64
+-- CMAKE_INSTALL_PREFIX = /usr/local
+-- CMAKE_BUILD_TYPE = Debug
+-- CMAKE_MODULE_PATH = /usr/local/lib/cmake/;/usr/lib/cmake;/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-modules
+-- BUILD_UTILS= ON
+-- BUILD_TESTS= 
+-- OPENCV_DIR= /usr/local/share/OpenCV VERSION=3.4.5
+-- USE_CONTRIB= OFF
+-- 
+-- OpenCV_LIB_DIR=
+-- CMAKE_INSTALL_PREFIX=/home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug
+-- 
+-- 
+-- Change a value with: cmake -D<Variable>=<Value>
+-- 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/gishr/software/GAAS_master/GAAS/algorithms/loop_closing/DBow3/cmake-build-debug

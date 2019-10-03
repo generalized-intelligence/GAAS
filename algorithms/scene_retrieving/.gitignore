@@ -15,6 +15,7 @@
 .idea
 image
 image2
+cmake-build-debug
 ./loopclosure_result2/*
 ./loopclosure_result2/*
 test.log

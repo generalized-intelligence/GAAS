@@ -40,13 +40,13 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
         int* loop_index;
         float fitness_score = pSceneRetrieve->retrieveSceneFromStereoImage(imgL, imgR, Q_mat, RT_mat, match_success, loop_index);
 
-        cout<<"fitness_score: "<<fitness_score<<endl;
+        LOG(INFO)<<"fitness_score: "<<fitness_score<<endl;
 
-        if(fitness_score >= 0 && fitness_score <= 1.0 && !RT_mat.empty())
+        if(fitness_score >= 0 && fitness_score <= 2.0 && !RT_mat.empty())
         {
 
-          cout<<"RT_mat type: "<<RT_mat.type()<<endl;
-          cout<<"RT_mat: "<<RT_mat<<endl;
+          LOG(INFO)<<"RT_mat type: "<<RT_mat.type()<<endl;
+          LOG(INFO)<<"RT_mat: "<<RT_mat<<endl;
 
           Eigen::Matrix3f rotation_matrix;
           cv::cv2eigen(RT_mat, rotation_matrix);
@@ -57,8 +57,8 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
                                        RT_mat.at<double>(2, 3),
                                        EulerAngle[2]);
 
-          cout<<"rotation mat: "<<rotation_matrix<<endl;
-          cout<<"result mat: "<<RT_mat<<endl;
+          LOG(INFO)<<"rotation mat: "<<rotation_matrix<<endl;
+          LOG(INFO)<<"result mat: "<<RT_mat<<endl;
 
           pController->AddRetrievedPose(position_yaw);
         }
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 
     if (argc!=3)
     {
-      cout<<"Usage: demo [scene_file_path] [voc_file_path]"<<endl;
+      LOG(INFO)<<"Usage: demo [scene_file_path] [voc_file_path]"<<endl;
     }
 
     ros::init(argc, argv, "controller_node");
@@ -85,8 +85,8 @@ int main(int argc, char **argv) {
                                                0, 0, 1, 0,
                                                0, 0, 0, 1);
 
-    cout<<"scene path: "<<argv[1]<<endl;
-    cout<<"voc path: "<<argv[2]<<endl;
+    LOG(INFO)<<"scene path: "<<argv[1]<<endl;
+    LOG(INFO)<<"voc path: "<<argv[2]<<endl;
 
     string scene_path = argv[1];
     string voc_path = argv[2];

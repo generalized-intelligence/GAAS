@@ -34,7 +34,7 @@ void LoopClosingManager::addKeyFrame(const ptr_frameinfo& info)
 //        this->frame_index++;
 //    }
     LOG(INFO)<<"    in LoopClosingManager::addKeyFrame()!"<<endl;
-    LOG(INFO)<<"    content:"<<info->descriptors;
+    //LOG(INFO)<<"    content:"<<info->descriptors;
     this->frame_db.add(info->descriptors);
     this->frameinfo_list.push_back(info);
     this->frame_index++;
@@ -91,15 +91,12 @@ int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv:
                 // check if this loop candidate satisfies Epipolar Geometry constrain.
                 if (match_2_images_flann(info, results[wind_index].Id, this->loop_id, results[wind_index].Score, this->frameinfo_list, matches_out))
                 {
-                    cout<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[wind_index].Id<<"]"<<endl;
+                    LOG(INFO)<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[wind_index].Id<<"]"<<endl;
                     LOG(INFO)<<"Loop between [ current Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[wind_index].Id<<"]"<<endl;
 
                     int current_match_size = matches_out.size();
                     ret_index = results[wind_index].Id;
 
-//                    VecMatchSizes.push_back(current_match_size);
-//                    VecIDs.push_back(ret_index);
-//                    VecMatches.push_back(matches_out);
                 }
             }
         }
@@ -131,8 +128,8 @@ int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv:
 //                // check if this loop candidate satisfies Epipolar Geometry constrain.
 //                if (match_2_images_flann(info, results[0].Id, this->loop_id, results[0].Score, this->frameinfo_list, matches_out))
 //                {
-//                    //cout<<"Loop between ["<<this->frame_index<<"\t"<<results[wind_index].Id<<"]"<<endl;
-//                    cout<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[0].Id<<"]"<<endl;
+//                    //LOG(INFO)<<"Loop between ["<<this->frame_index<<"\t"<<results[wind_index].Id<<"]"<<endl;
+//                    LOG(INFO)<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[0].Id<<"]"<<endl;
 //
 //                    ret_index = results[0].Id;
 //                }
@@ -179,7 +176,7 @@ ptr_frameinfo LoopClosingManager::extractFeature(const cv::Mat& image)
     auto pframeinfo = shared_ptr<FrameInfo>(new FrameInfo);
 
     cv::Ptr<cv::ORB> orb;
-    orb = cv::ORB::create();
+    orb = cv::ORB::create(1000);
     orb->detectAndCompute(image, mask, pframeinfo->keypoints, pframeinfo->descriptors);
 
     //orb->detect(image,keypoints);
@@ -220,43 +217,15 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
 
 
-    cout<<"frameinfo_list[index2]->descriptors size: "<<frameinfo_list[index2]->descriptors.size()<<endl;
-    cout<<"frameinfo_list[index2]->keypoints size: "<<frameinfo_list[index2]->keypoints.size()<<endl;
+    LOG(INFO)<<"frameinfo_list[index2]->descriptors size: "<<frameinfo_list[index2]->descriptors.size()<<endl;
+    LOG(INFO)<<"frameinfo_list[index2]->keypoints size: "<<frameinfo_list[index2]->keypoints.size()<<endl;
 
-    cout<<"current_frame->descriptors size: "<<current_frame->descriptors.size()<<endl;
-    cout<<"current_frame->keypoints size: "<<current_frame->keypoints.size()<<endl;
+    LOG(INFO)<<"current_frame->descriptors size: "<<current_frame->descriptors.size()<<endl;
+    LOG(INFO)<<"current_frame->keypoints size: "<<current_frame->keypoints.size()<<endl;
 
     if(index2<frameinfo_list.size() && !current_frame->descriptors.empty()) {
         matcher.match(current_frame->descriptors, frameinfo_list[index2]->descriptors, matches);
     }
-
-    //GMS
-//    vector<cv::DMatch> matches_gms;
-//    int GMS_Feature_Matches = 0;
-//
-//    std::vector<bool> vbInliers;
-//    gms_matcher gms(current_frame->keypoints, cv::Size(200, 200), frameinfo_list[index2]->keypoints, cv::Size(200, 200), matches);
-//
-//    int num_inliers = gms.GetInlierMask(vbInliers, false, false);
-//    cout << "GMS Get total " << num_inliers << " matches." << endl;
-//
-//    // collect matches
-//    for (size_t i = 0; i < vbInliers.size(); ++i)
-//    {
-//        if (vbInliers[i] == true)
-//        {
-//            cout<<"??? 1"<<endl;
-//            matches_gms.push_back(matches[i]);
-//            GMS_Feature_Matches ++;
-//            cout<<"??? 2"<<endl;
-//        }
-//    }
-//
-//
-//    matches = matches_gms;
-
-//    if(matches.size()<30)
-//        return false;
 
     double max_dist = 0; double min_dist = 100;
     for( int i = 0; i < matches.size(); i++ )
@@ -266,15 +235,21 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
         if( dist > max_dist ) max_dist = dist;
     }
     
-    cout<<"min_dist:"<<min_dist<<endl;
+    LOG(INFO)<<"min_dist:"<<min_dist<<endl;
     std::vector< cv::DMatch > good_matches;
 
-    cout<<"raw matches size: "<<matches.size()<<endl;
+    LOG(INFO)<<"raw matches size: "<<matches.size()<<endl;
+
+    //GMS
+    cv::xfeatures2d::matchGMS(cv::Size(752, 480), cv::Size(752, 480),
+                              current_frame->keypoints, frameinfo_list[index2]->keypoints,
+                              matches, matches,
+                              true, true);
 
 
     for( int i = 0; i < matches.size(); i++ )
     {
-        if( matches[i].distance <= 2*min_dist && matches[i].distance< 15) // 3.0 too large;2.0 too large.
+        if( matches[i].distance <= 2*min_dist || matches[i].distance< 10) // 3.0 too large;2.0 too large.
         {
             good_matches.push_back( matches[i]);
         }
@@ -283,11 +258,11 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     std::vector<cv::Point2f> match_points1;
     std::vector<cv::Point2f> match_points2;
 
-    cout<<"Good matches size:"<<good_matches.size()<<"."<<endl;
+    LOG(INFO)<<"Good matches size:"<<good_matches.size()<<"."<<endl;
 
     if(good_matches.size()<STEP1_KP_NUM) // 8 -> 12
     {
-        cout<<"Good matches count:"<<good_matches.size()<<"< 8,MATCH FAILED."<<endl;
+        LOG(INFO)<<"Good matches count:"<<good_matches.size()<<"< 8,MATCH FAILED."<<endl;
         return false;
     }
     
@@ -302,7 +277,7 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
 //    return true;
 
 
-    cout<<"match_2_images_flann, step 2 sizes are: "<<match_points1.size()<<", "<<match_points2.size()<<endl;
+    LOG(INFO)<<"match_2_images_flann, step 2 sizes are: "<<match_points1.size()<<", "<<match_points2.size()<<endl;
 
     cv::Mat isOutlierMask;
     cv::Mat fundamental_matrix = findFundamentalMat(match_points1, match_points2, cv::FM_RANSAC, 3, 0.99, isOutlierMask);
@@ -323,7 +298,7 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     if(final_good_matches_count>STEP2_KP_NUM)
     {
         //saveImagePair(index1,index2,save_index,final_good_matches,score, frameinfo_list);  //for debug only.
-        cout<<"MATCH SUCCEED!"<<endl;
+        LOG(INFO)<<"MATCH SUCCEED!"<<endl;
         good_matches_output = final_good_matches;
         return true;
     }
