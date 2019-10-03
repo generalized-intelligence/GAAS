@@ -11,5 +11,6 @@
 *.bag
 */*/build/*
 *.kdev*
+cmake-build-debug
 */src/cmake-build-debug
 */src/cmake-build-debug/*

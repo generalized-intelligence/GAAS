@@ -8,5 +8,6 @@ MapSerialization.bin
 *.kdev4
 ./Thirdparty/DBow3/build
 ./Thirdparty/fast/build
+cmake-build-debug
 *.log
 *.csv

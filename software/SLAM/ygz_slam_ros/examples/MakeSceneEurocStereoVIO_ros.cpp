@@ -4,6 +4,7 @@
 */
 #include <math.h>
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
@@ -433,8 +434,6 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
     }
-    
-//    cv::Mat CurrentLeftImage, CurrentRightImage;
 
     //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
     //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
@@ -447,12 +446,7 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     atti.q.y() = posemsg.pose.orientation.y;
     atti.q.z() = posemsg.pose.orientation.z;
     atti.q.w() = posemsg.pose.orientation.w;
-    /*if(do_reform)
-    {
-        atti.q = atti.q*(init_atti.q.inverse());
-    }*/
-    //LOG(WARNING)<<"Attitude input:\n\n"<<endl;
-    //LOG(WARNING)<<atti.q.toRotationMatrix()<<endl;
+
     atti.time_ms = posemsg.header.stamp.toNSec();
     pos_and_atti = system.AddStereoIMU(CurrentLeftImage, CurrentRightImage, cv_ptrLeft->header.stamp.toNSec(),temp_vimu,
                                            0,0,0,false,atti,true,0,false);
@@ -476,12 +470,21 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     pose_atti.y = quat.y();
     pose_atti.z = quat.z();
     SLAMpose->publish(SlamPose);
-    //add scene frame to scene
+
+    Eigen::Quaterniond mavros_quaterion(posemsg.pose.orientation.w,
+                                        posemsg.pose.orientation.x,
+                                        posemsg.pose.orientation.y,
+                                        posemsg.pose.orientation.z);
+
+    Eigen::Matrix3d mavros_rotation_matrix = mavros_quaterion.toRotationMatrix();
+
+    Eigen::Vector3d mavros_position(posemsg.pose.position.x,
+                                    posemsg.pose.position.y,
+                                    posemsg.pose.position.z);
+
     cv::Mat rotationmat,translationmat;
-    cv::eigen2cv(mat,rotationmat); // inverse operation:eigen2cv.
-    cv::eigen2cv(pos,translationmat);
-
-
+    cv::eigen2cv(mavros_rotation_matrix, rotationmat);
+    cv::eigen2cv(mavros_position,translationmat);
 
     //NOTE not used
     cv::Mat Q_mat = (Mat_<float>(4,4) << 1, 0, 0, 0,
@@ -642,10 +645,7 @@ int main(int argc, char **argv) {
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image,geometry_msgs::PoseStamped> sync_pol;
     message_filters::Subscriber<geometry_msgs::PoseStamped> px4_attitude_sub(nh, "/mavros/local_position/pose", 10);
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub,px4_attitude_sub);
-    sync.registerCallback(//boost::bind(
-            TEMP_FetchImageAndAttitudeCallback
-            //,_1,_2,_3)
-            );
+    sync.registerCallback(TEMP_FetchImageAndAttitudeCallback);
     
     
     //NOTE for test

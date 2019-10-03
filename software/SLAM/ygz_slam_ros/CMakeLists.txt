@@ -23,6 +23,8 @@ else()
 endif()
 
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 # Check C++11 or C++0x support
 include(CheckCXXCompilerFlag)
@@ -49,7 +51,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -msse2 -march=native")
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 
 # thirdparty libs 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 3.4.5 REQUIRED)
 MESSAGE("OPENCV PATH: ${OpenCV_INCLUDE_DIRS}")
 
 find_package(Eigen3 3.1.0 REQUIRED)

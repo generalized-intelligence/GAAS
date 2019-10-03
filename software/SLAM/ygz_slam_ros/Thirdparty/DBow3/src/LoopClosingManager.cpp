@@ -98,7 +98,7 @@ ptr_frameinfo LoopClosingManager::extractFeature(const cv::Mat& image)
     //ptr_frameinfo->keypoints
     //vector<cv::KeyPoint> keypoints;
     cv::Ptr<cv::ORB> orb;
-    orb = cv::ORB::create();
+    orb = cv::ORB::create(1000);
     orb->detectAndCompute(image, mask, pframeinfo->keypoints,pframeinfo->descriptors);
     //orb->detect(image,keypoints);
     //brief->compute(image,keypoints,descriptors);
