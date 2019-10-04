@@ -110,6 +110,10 @@ ros::Publisher* pExternalEstimate;
 ros::Publisher* SLAMpose;
 ros::Publisher* pFakeGPS;
 
+ros::Publisher* tmm;
+ros::Publisher* tii;
+ros::Publisher* tss;
+
 int VisualOdomMSGindex;
 
 SE3d pos_and_atti;
@@ -471,6 +475,8 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     pose_atti.z = quat.z();
     SLAMpose->publish(SlamPose);
 
+    tss->publish(SlamPose);
+
     Eigen::Quaterniond mavros_quaterion(posemsg.pose.orientation.w,
                                         posemsg.pose.orientation.x,
                                         posemsg.pose.orientation.y,
@@ -501,7 +507,8 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
         //pts2d_in    pts3d_in    desp,   R,    t
         //typedef  std::tuple<std::vector<cv::KeyPoint>, std::vector<cv::Point3d>, cv::Mat, cv::Mat, cv::Mat> SceneFrame;
 
-        SceneFrame scene_frame = pScene->generateSceneFrameFromStereoImage(CurrentLeftImage, CurrentRightImage, rotationmat, translationmat, Q_mat);
+        //SceneFrame scene_frame = pScene->generateSceneFrameFromStereoImage(CurrentLeftImage, CurrentRightImage, rotationmat, translationmat, Q_mat);
+        SceneFrame scene_frame = pScene->generateSceneFrameFromStereoImageCamera(CurrentLeftImage, CurrentRightImage, rotationmat, translationmat, Q_mat);
 
         //save scene
         pScene->addFrame(scene_frame);
@@ -521,6 +528,16 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     
 }
 
+
+void test_mavros_callback(geometry_msgs::PoseStamped posemsg)
+{
+    tmm->publish(posemsg);
+}
+
+void test_imu_callback(sensor_msgs::Imu IMUmsg)
+{
+    tii->publish(IMUmsg);
+}
 
 int main(int argc, char **argv) {
     
@@ -605,11 +622,10 @@ int main(int argc, char **argv) {
              tbc.at<double>(0, 0), tbc.at<double>(1, 0), tbc.at<double>(2, 0); 
 
         setting::TBC = SE3d(Rbc_, tbc_);
-    }    
-    
-
+    }
 
     ros::init(argc, argv, "ygz_with_gps", ros::init_options::NoSigintHandler);
+
     ros::NodeHandle nh;
     
     signal(SIGINT, mySigintHandler);
@@ -665,12 +681,28 @@ int main(int argc, char **argv) {
     
     //NOTE external heading subscriber
     //ros::Subscriber heading_sub = nh.subscribe<mavros_msgs::State>("mavros/state", 10, heading_cb);
-    
-    
+
     //NOTE drone onboard imu data
     ros::Subscriber pixhawk_imu_sub = nh.subscribe("/mavros/imu/data", 5, pixhawkIMU_sub);
-    
-    
+
+
+    // for test
+    ros::Subscriber test_mavros_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose", 10, test_mavros_callback);
+    ros::Publisher test_mavros_pub = nh.advertise<geometry_msgs::PoseStamped>("/test_pose",10);
+    tmm = &test_mavros_pub;
+
+    //sensor_msgs::Imu
+    ros::Subscriber test_imu_sub = nh.subscribe<sensor_msgs::Imu>("/mavros/imu/data", 10, test_imu_callback);
+    ros::Publisher test_imu_pub = nh.advertise<sensor_msgs::Imu>("/test_imu",10);
+    tii = &test_imu_pub;
+
+    //slam
+    ros::Publisher test_slam_pub = nh.advertise<geometry_msgs::PoseStamped>("/test_slam",10);
+    tss = &test_slam_pub;
+
+
+
+
     ros::spin();
 
     return 0;

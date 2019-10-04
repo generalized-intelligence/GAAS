@@ -230,15 +230,8 @@ public:
 
     void image2KpAndDesp(cv::Mat& image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
     {
-
-        LOG(INFO)<<"image2KpAndDesp 1"<<endl;
         cv::Ptr<cv::ORB> orb = cv::ORB::create(1000);
-        LOG(INFO)<<"image2KpAndDesp 2"<<endl;
-
-        LOG(INFO)<<"image size: "<<image.size()<<endl;
-
         orb->detectAndCompute(image, cv::Mat(), keypoints, descriptors);
-        LOG(INFO)<<"image2KpAndDesp size: "<<keypoints.size()<<", "<<descriptors.size()<<endl;
     }
 
 
@@ -405,8 +398,6 @@ public:
                       vector<cv::DMatch>& result_matches)
     {
 
-        LOG(INFO)<<"match2images 1"<<endl;
-
         //step 1, match raw desps
         std::vector<cv::DMatch> matches;
 
@@ -415,9 +406,7 @@ public:
 
         matcher.match(desps1, desps2, matches);
 
-        LOG(INFO)<<"desps1 shape: "<<desps1.size()<<endl;
-        LOG(INFO)<<"desps2 shape: "<<desps2.size()<<endl;
-        LOG(INFO)<<"match2Images 2: matches.size() "<<matches.size()<<endl;
+        LOG(INFO)<<"match2Images: matches.size() "<<matches.size()<<endl;
 
         //step 2, find first bunch of good matches using desp distance
         double max_dist = 0;
@@ -432,14 +421,6 @@ public:
         }
 
         std::vector< cv::DMatch > good_matches;
-
-//        for( int i = 0; i < matches.size(); i++ )
-//        {
-//            if( matches[i].distance <= 2*min_dist && matches[i].distance< 20) // 3.0 too large;2.0 too large.
-//            {
-//                good_matches.push_back( matches[i]);
-//            }
-//        }
 
         for( int i = 0; i < matches.size(); i++ )
         {
@@ -663,7 +644,7 @@ public:
     // a wrapper for pcl::GeneralizedIterativeClosestPoint to return the transformation matrix between a input point cloud and a
     // target point cloud
     // input points cloud size should be greater than 20
-    float GeneralICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 20, double transformationEpsilon = 1e-8)
+    float GeneralICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 20, double transformationEpsilon = 1e-4)
     {
 
         LOG(INFO)<<"cv helper::GeneralICP points size: "<<input_cloud.size()<<", "<<target_cloud.size()<<endl;
@@ -686,24 +667,25 @@ public:
 
         for(auto& pt : src->points)
         {
-          if (!pcl::isFinite(pt) ||
-              abs(pt.x) > 1e6 || abs(pt.y) > 1e6 || abs(pt.z) > 1e6)
+          if (!pcl::isFinite(pt) || abs(pt.x) > 1e3 || abs(pt.y) > 1e3 || abs(pt.z) > 1e3 || pt.z < 0)
           {
-            return -1;
+              return -1.0;
           }
         }
+
+        cout<<"===================================="<<endl;
 
         for(auto& pt : tgt->points)
         {
-          if (!pcl::isFinite(pt) ||
-               abs(pt.x) > 1e6 || abs(pt.y) > 1e6 || abs(pt.z) > 1e6)
+          if (!pcl::isFinite(pt) || abs(pt.x) > 1e3 || abs(pt.y) > 1e3 || abs(pt.z) > 1e3 || pt.z < 0)
           {
-            return -1;
+              return -1.0;
           }
+          cout<<pt<<endl;
         }
 
         if(src->points.size() < 20 || tgt->points.size() < 20)
-            return -1;
+            return -1.0;
 
         // define output point cloud
         pcl::PointCloud<PointT> output;

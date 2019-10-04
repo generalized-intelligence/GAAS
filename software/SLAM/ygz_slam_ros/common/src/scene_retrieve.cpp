@@ -128,8 +128,6 @@ void Scene::test()
 SceneFrame Scene::generateSceneFrameFromStereoImage(cv::Mat imgl, cv::Mat imgr, cv::Mat RotationMat, cv::Mat TranslationMat, cv::Mat Q_mat)
 {
 
-    cout<<"generateSceneFrameFromStereoImage 1"<<endl;
-
     LoopClosingManager lcm("./voc/brief_k10L6.bin");
 
     std::vector<cv::KeyPoint> key_points2d_candidate;
@@ -221,7 +219,6 @@ SceneFrame Scene::generateSceneFrameFromStereoImage(cv::Mat imgl, cv::Mat imgr, 
     std::vector<float> disparity_of_points;
     cv::Mat descriptors_reserved;
 
-
     for(int index = 0; index<lk_input_keypoints.size(); index++)
     {
         if(PyrLKResults[index] == 1)
@@ -239,49 +236,13 @@ SceneFrame Scene::generateSceneFrameFromStereoImage(cv::Mat imgl, cv::Mat imgr, 
 
     std::vector<cv::Point3f> points3f;
 
-//    points3f = mpCv_helper->image2world(lk_input_keypoints, disparity_of_points, RotationMat, TranslationMat);
-
     points3f = mpCv_helper->image2world(lk_input_keypoints, disparity_of_points, RotationMat, TranslationMat);
 
     points3d = mpCv_helper->Points3f2Points3d(points3f);
 
-
-//    cv::reprojectImageTo3D(disparity_of_points, points3f, Q_mat);
-//
-//
-//    //do rotation and translation to points3d.
-//    for(int i = 0;i<points3d.size();i++)
-//    {
-//        cv::Mat point3d_temp(points3d[i]);
-//
-//        Eigen::Matrix3f rotation;
-//        Eigen::Vector3f translation;
-//        Eigen::Vector3f point;
-//        Eigen::Vector3f result;
-//
-//        cv::cv2eigen(RotationMat, rotation);
-//        cv::cv2eigen(TranslationMat, translation);
-//        cv::cv2eigen(point3d_temp, point);
-//
-//        result = rotation * point + translation;
-//
-//        //cv::Mat transformed = RotationMat*point3d_temp + TranslationMat;
-//
-//        cv::Mat transformed;
-//        cv::eigen2cv(result, transformed);
-//
-//        Point3d output;
-//        output.x = transformed.at<float>(0);
-//        output.y = transformed.at<float>(1);
-//        output.z = transformed.at<float>(2);
-//        points3d[i] = output;//do transform in mat form.
-//    }
-
     cv::KeyPoint::convert(matched_points, key_points2d_final);
 
     cout<<"generate scene, points3d size: "<<points3d.size()<<endl;
-
-
 
 
     //TODO for debug purposes
@@ -293,7 +254,20 @@ SceneFrame Scene::generateSceneFrameFromStereoImage(cv::Mat imgl, cv::Mat imgr, 
 }
 
 
+SceneFrame Scene::generateSceneFrameFromStereoImageCamera(cv::Mat imgl, cv::Mat imgr, cv::Mat RotationMat, cv::Mat TranslationMat, cv::Mat Q_mat)
+{
+    vector<cv::KeyPoint> Keypoints_left;
+    vector<cv::Point3f> Camera_pts_left;
+    cv::Mat descriptors_left;
+    mpCv_helper->StereoImage2CamPoints(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
 
+    //pts2d_in    pts3d_in    desp,   R,    t
+    //typedef  std::tuple<std::vector<cv::KeyPoint>, std::vector<cv::Point3d>, cv::Mat, cv::Mat, cv::Mat> SceneFrame;
+    vector<cv::Point3d> Camera_pts_left_double;
+    Camera_pts_left_double = mpCv_helper->Points3f2Points3d(Camera_pts_left);
+
+    return std::make_tuple(Keypoints_left, Camera_pts_left_double, descriptors_left, RotationMat, TranslationMat);
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -70,7 +70,6 @@ void Scene::loadFile(const std::string &filename)
     LOG(INFO) << "Deserialization finished" << endl;
     this->test();
 
-//    this->removeEmptyElement();
 }
 
 void Scene::saveDeserializedPoseToCSV()
@@ -423,17 +422,34 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
         return -1;
     }
 
+    for(auto& pt : old_camera_pts)
+    {
+        cout<<"pt old_camera_pts: "<<pt<<endl;
+    }
 
     //step 5, update matched feature points and camera points
     vector<cv::KeyPoint> matched_current_kps, matched_old_kps;
     vector<cv::Point3f> matched_current_cam_pts, matched_old_cam_pts;
+
+    cout<<"result_matches size: "<<result_matches.size()<<endl;
+    cout<<"current_camera_pts size: "<<current_camera_pts.size()<<endl;
+    cout<<"old_camera_pts size: "<<old_camera_pts.size()<<endl;
+
     for(int i=0; i<result_matches.size(); i++)
     {
         matched_current_kps.push_back(current_kps_left[result_matches[i].queryIdx]);
         matched_current_cam_pts.push_back(current_camera_pts[result_matches[i].queryIdx]);
 
         matched_old_kps.push_back(old_kps_left[result_matches[i].trainIdx]);
-        matched_old_cam_pts.push_back(old_camera_pts[result_matches[i].trainIdx]);
+        matched_old_cam_pts.emplace_back(float(old_camera_pts[result_matches[i].trainIdx].x),
+                                         float(old_camera_pts[result_matches[i].trainIdx].y),
+                                         float(old_camera_pts[result_matches[i].trainIdx].z));
+
+        cout<<"result_matches[i].trainIdx: "<<result_matches[i].trainIdx<<endl;
+
+        cout<<"old_camera_pts[result_matches[i].trainIdx].x: "<<old_camera_pts[result_matches[i].trainIdx].x<<", "
+                                                              <<old_camera_pts[result_matches[i].trainIdx].y<<", "
+                                                              <<old_camera_pts[result_matches[i].trainIdx].z<<endl;
     }
 
 
@@ -446,11 +462,16 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
                                     result_matches, loop_index);
     }
 
+    for(auto& pt : matched_old_cam_pts)
+    {
+        cout<<"pt matched_old_cam_pts: "<<pt<<endl;
+    }
+
     //step 6, now that we have matched camera points we can conduct ICP, we can use either PCL method or opencv method
     Eigen::Matrix4f result;
     float fitnesscore = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
 
-    if(fitnesscore < -1)
+    if(fitnesscore == -1)
     {
       match_success = false;
       return fitnesscore;
@@ -479,8 +500,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     cv::Rodrigues (essentialR, essentialRvec);
     cv::Rodrigues (result_R, RrelativeVec);
 
-    LOG(INFO)<<"essentialRvec: "<<essentialRvec<<endl;
-    LOG(INFO)<<"RrelativeVec: "<<RrelativeVec<<endl;
 
     float distanceR = mpCv_helper->Vec3Distance(essentialRvec, RrelativeVec);
 
@@ -513,8 +532,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
     old_T.at<double>(3, 3) = 1.0;
 
-    LOG(INFO)<<"old T:\n"<<old_T<<endl;
-
     cv::Mat new_T;
 
     result_relative_T.convertTo(result_relative_T, CV_64F);
@@ -524,10 +541,12 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     cv::Mat new_R = new_T.colRange(0,3).rowRange(0,3);
     cv::Mat new_t = new_T.rowRange(0,3).col(3);
 
-    LOG(INFO)<<"new T:\n"<<new_T<<endl;
+    LOG(INFO)<<"old t: "<<t<<endl;
+    LOG(INFO)<<"result_t: "<<result_t<<endl;
+    LOG(INFO)<<"new_t: "<<new_t<<endl;
 
 
-    if (fitnesscore < 3.0) //TODO:move this into a config.
+    if (fitnesscore < 2.0) //TODO:move this into a config.
     {
         this->mpCv_helper->publishPose(new_R, new_t, 0);
         RT_mat_of_stereo_cam_output = new_T;
@@ -537,7 +556,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
         {
             *pMatchedIndexID_output = loop_index;
         }
-
     }
     else
     {

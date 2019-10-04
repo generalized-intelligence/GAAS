@@ -124,13 +124,6 @@ public:
     {
         cout << "scene saving started!" << endl;
 
-        //size_t mIndex = 0;
-        //std::vector<std::vector<cv::KeyPoint> > vec_p2d;
-        //std::vector<std::vector<cv::Point3d> > vec_p3d;
-        //std::vector <cv::Mat> point_desps;
-        //vector<cv::Mat> mVecR;
-        //vector<cv::Mat> mVecT;
-
         ar & mIndex;
         ar & hasScale;
         ar & vec_p2d;
@@ -158,7 +151,7 @@ public:
         
         ar & mVecR;
         ar & mVecT;
-        
+
         //ar & m_RT_Scene_Fix;
         //ar & point_cloud_of_scene;
 
@@ -317,10 +310,10 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
             //push_back(pleft_image_info->descriptors[good_2dmatches_index[index]]);
         }
     }
-    
-    
+
+
     std::vector<cv::Point3f> points3f;
-    
+
     cv::reprojectImageTo3D(disparity_of_points, points3f, Q_mat);
     points3d.resize(points3f.size());
     
@@ -440,8 +433,6 @@ public:
             pts3f.y = pts3d.y;
             pts3f.z = pts3d.z;
             result.emplace_back(pts3d.x, pts3d.y, pts3d.z);
-
-//            cout<<"pts3dto3f: "<<result[result.size()]<<endl;
         }
         return result;
     }

@@ -72,7 +72,7 @@ public:
       return this->vec_p3d;
     }
     
-    inline void addFrame(const std::vector<cv::KeyPoint>& points2d_in, const std::vector<cv::Point3d>points3d_in, const cv::Mat& point_desp_in, const cv::Mat R, const cv::Mat t)
+    inline void addFrame(const std::vector<cv::KeyPoint>& points2d_in, const std::vector<cv::Point3d>& points3d_in, const cv::Mat& point_desp_in, const cv::Mat& R, const cv::Mat& t)
     {
         cout<<"Adding frame: "<<R<<t<<endl;
         
@@ -111,7 +111,9 @@ public:
     void test();
 
     SceneFrame generateSceneFrameFromStereoImage(cv::Mat imgl, cv::Mat imgr, cv::Mat RotationMat, cv::Mat TranslationMat, cv::Mat Q_mat);
-    
+
+    SceneFrame generateSceneFrameFromStereoImageCamera(cv::Mat imgl, cv::Mat imgr, cv::Mat RotationMat, cv::Mat TranslationMat, cv::Mat Q_mat);
+
     /////////////////////////////////// serialization////////////////////////////////////
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 

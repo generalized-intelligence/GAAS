@@ -51,39 +51,32 @@ namespace boost {
 
 BOOST_SERIALIZATION_SPLIT_FREE(cv::KeyPoint)
 namespace boost{
-	namespace serialization {
+    namespace serialization {
 
-		template <class Archive>
-		void save (Archive &ar, const cv::KeyPoint &kp, const unsigned int version)
-		{
-			float kx = kp.pt.x,
-			      ky = kp.pt.y;
+        template <class Archive>
+        void save (Archive &ar, const cv::KeyPoint &kp, const unsigned int version)
+        {
+            ar & kp.pt.x;
+            ar & kp.pt.y;
+            ar & kp.size;
+            ar & kp.angle;
+            ar & kp.response;
+            ar & kp.octave;
+            ar & kp.class_id;
+        }
 
-			ar & kx;
-			ar & ky;
-			ar & kp.size;
-			ar & kp.angle;
-			ar & kp.response;
-			ar & kp.octave;
-			ar & kp.class_id;
-		}
-
-		template <class Archive>
-		void load (Archive &ar, cv::KeyPoint &kp, const unsigned int version)
-		{
-			float kx, ky;
-
-			ar & kx;
-			ar & ky;
-			ar & kp.size;
-			ar & kp.angle;
-			ar & kp.response;
-			ar & kp.octave;
-			ar & kp.class_id;
-			kp.pt.x = kx;
-			kp.pt.y = ky;
-		}
-	}
+        template <class Archive>
+        void load (Archive &ar, cv::KeyPoint &kp, const unsigned int version)
+        {
+            ar & kp.pt.x;
+            ar & kp.pt.y;
+            ar & kp.size;
+            ar & kp.angle;
+            ar & kp.response;
+            ar & kp.octave;
+            ar & kp.class_id;
+        }
+    }
 }
 
 
@@ -108,7 +101,7 @@ namespace boost{
 
 			ar & kp.x;
 			ar & kp.y;
-                        ar & kp.z;
+            ar & kp.z;
             
 		}
 	}

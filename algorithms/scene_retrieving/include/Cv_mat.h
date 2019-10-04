@@ -56,11 +56,8 @@ namespace boost{
 		template <class Archive>
 		void save (Archive &ar, const cv::KeyPoint &kp, const unsigned int version)
 		{
-			float kx = kp.pt.x;
-			float ky = kp.pt.y;
-
-			ar & kx;
-			ar & ky;
+			ar & kp.pt.x;
+			ar & kp.pt.y;
 			ar & kp.size;
 			ar & kp.angle;
 			ar & kp.response;
@@ -71,17 +68,13 @@ namespace boost{
 		template <class Archive>
 		void load (Archive &ar, cv::KeyPoint &kp, const unsigned int version)
 		{
-			float kx, ky;
-
-			ar & kx;
-			ar & ky;
+			ar & kp.pt.x;
+			ar & kp.pt.y;
 			ar & kp.size;
 			ar & kp.angle;
 			ar & kp.response;
 			ar & kp.octave;
 			ar & kp.class_id;
-			kp.pt.x = kx;
-			kp.pt.y = ky;
 		}
 	}
 }
@@ -105,11 +98,10 @@ namespace boost{
 		{
 			ar & kp.x;
 			ar & kp.y;
-                        ar & kp.z;
+			ar & kp.z;
 		}
 	}
 }
-
 
 
 #endif // _CV_MAT_H_
