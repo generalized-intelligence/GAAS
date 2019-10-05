@@ -3,11 +3,13 @@
   <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
     <generated>
       <config projectName="scene_retrieving" targetName="geometry_msgs_generate_messages_py" />
+      <config projectName="scene_retrieving" targetName="std_srvs_generate_messages_eus" />
       <config projectName="scene_retrieving" targetName="std_msgs_generate_messages_py" />
       <config projectName="scene_retrieving" targetName="ExperimentalStart" />
       <config projectName="scene_retrieving" targetName="roseus_generate_messages_lisp" />
       <config projectName="scene_retrieving" targetName="Experimental" />
       <config projectName="scene_retrieving" targetName="tf2_msgs_generate_messages_eus" />
+      <config projectName="scene_retrieving" targetName="std_srvs_generate_messages_cpp" />
       <config projectName="scene_retrieving" targetName="actionlib_tutorials_generate_messages_py" />
       <config projectName="scene_retrieving" targetName="actionlib_tutorials_generate_messages_cpp" />
       <config projectName="scene_retrieving" targetName="actionlib_msgs_generate_messages_nodejs" />
@@ -15,24 +17,24 @@
       <config projectName="scene_retrieving" targetName="ContinuousUpdate" />
       <config projectName="scene_retrieving" targetName="tf2_msgs_generate_messages_nodejs" />
       <config projectName="scene_retrieving" targetName="rosgraph_msgs_generate_messages_eus" />
+      <config projectName="scene_retrieving" targetName="demo_stereo" />
       <config projectName="scene_retrieving" targetName="visualization_msgs_generate_messages_lisp" />
       <config projectName="scene_retrieving" targetName="tf2_msgs_generate_messages_lisp" />
-      <config projectName="scene_retrieving" targetName="geometry_msgs_generate_messages_cpp" />
+      <config projectName="scene_retrieving" targetName="std_srvs_generate_messages_lisp" />
       <config projectName="scene_retrieving" targetName="run_tests" />
       <config projectName="scene_retrieving" targetName="geometry_msgs_generate_messages_nodejs" />
-      <config projectName="scene_retrieving" targetName="doxygen" />
       <config projectName="scene_retrieving" targetName="geometry_msgs_generate_messages_lisp" />
       <config projectName="scene_retrieving" targetName="actionlib_msgs_generate_messages_eus" />
       <config projectName="scene_retrieving" targetName="rosgraph_msgs_generate_messages_nodejs" />
       <config projectName="scene_retrieving" targetName="tf_generate_messages_eus" />
       <config projectName="scene_retrieving" targetName="gtest_main" />
       <config projectName="scene_retrieving" targetName="NightlyTest" />
-      <config projectName="scene_retrieving" targetName="std_msgs_generate_messages_nodejs" />
-      <config projectName="scene_retrieving" targetName="actionlib_tutorials_generate_messages_eus" />
       <config projectName="scene_retrieving" targetName="ExperimentalConfigure" />
       <config projectName="scene_retrieving" targetName="visualization_msgs_generate_messages_cpp" />
       <config projectName="scene_retrieving" targetName="NightlySubmit" />
       <config projectName="scene_retrieving" targetName="controller_node" />
+      <config projectName="scene_retrieving" targetName="actionlib_generate_messages_py" />
+      <config projectName="scene_retrieving" targetName="tests" />
       <config projectName="scene_retrieving" targetName="roscpp_generate_messages_nodejs" />
       <config projectName="scene_retrieving" targetName="geometry_msgs_generate_messages_eus" />
       <config projectName="scene_retrieving" targetName="NightlyMemoryCheck" />
@@ -43,8 +45,7 @@
       <config projectName="scene_retrieving" targetName="tf_generate_messages_py" />
       <config projectName="scene_retrieving" targetName="install_roseus" />
       <config projectName="scene_retrieving" targetName="ContinuousTest" />
-      <config projectName="scene_retrieving" targetName="Nightly" />
-      <config projectName="scene_retrieving" targetName="gmock_main" />
+      <config projectName="scene_retrieving" targetName="visualization_msgs_generate_messages_nodejs" />
       <config projectName="scene_retrieving" targetName="roseus_generate_messages_py" />
       <config projectName="scene_retrieving" targetName="NightlyUpdate" />
       <config projectName="scene_retrieving" targetName="roseus_generate_messages_eus" />
@@ -60,13 +61,14 @@
       <config projectName="scene_retrieving" targetName="NightlyCoverage" />
       <config projectName="scene_retrieving" targetName="ExperimentalCoverage" />
       <config projectName="scene_retrieving" targetName="ContinuousConfigure" />
+      <config projectName="scene_retrieving" targetName="actionlib_tutorials_generate_messages_nodejs" />
       <config projectName="scene_retrieving" targetName="ros_global_optimization" />
       <config projectName="scene_retrieving" targetName="sensor_msgs_generate_messages_nodejs" />
       <config projectName="scene_retrieving" targetName="NightlyBuild" />
       <config projectName="scene_retrieving" targetName="roscpp_generate_messages_lisp" />
       <config projectName="scene_retrieving" targetName="uninstall" />
       <config projectName="scene_retrieving" targetName="ExperimentalTest" />
-      <config projectName="scene_retrieving" targetName="std_srvs_generate_messages_cpp" />
+      <config projectName="scene_retrieving" targetName="actionlib_tutorials_generate_messages_eus" />
       <config projectName="scene_retrieving" targetName="MakeSceneFromOpenSfMModel" />
       <config projectName="scene_retrieving" targetName="rosgraph_msgs_generate_messages_py" />
       <config projectName="scene_retrieving" targetName="std_msgs_generate_messages_lisp" />
@@ -74,7 +76,6 @@
       <config projectName="scene_retrieving" targetName="actionlib_generate_messages_nodejs" />
       <config projectName="scene_retrieving" targetName="ContinuousBuild" />
       <config projectName="scene_retrieving" targetName="NightlyMemCheck" />
-      <config projectName="scene_retrieving" targetName="tf2_msgs_generate_messages_cpp" />
       <config projectName="scene_retrieving" targetName="std_msgs_generate_messages_cpp" />
       <config projectName="scene_retrieving" targetName="ExperimentalSubmit" />
       <config projectName="scene_retrieving" targetName="roscpp_generate_messages_eus" />
@@ -88,31 +89,30 @@
       <config projectName="scene_retrieving" targetName="ContinuousMemCheck" />
       <config projectName="scene_retrieving" targetName="NightlyStart" />
       <config projectName="scene_retrieving" targetName="Continuous" />
-      <config projectName="scene_retrieving" targetName="std_msgs_generate_messages_eus" />
-      <config projectName="scene_retrieving" targetName="visualization_msgs_generate_messages_nodejs" />
-      <config projectName="scene_retrieving" targetName="sensor_msgs_generate_messages_cpp" />
+      <config projectName="scene_retrieving" targetName="geometry_msgs_generate_messages_cpp" />
       <config projectName="scene_retrieving" targetName="tf_generate_messages_lisp" />
-      <config projectName="scene_retrieving" targetName="scene_retrieve" />
+      <config projectName="scene_retrieving" targetName="tf2_msgs_generate_messages_cpp" />
       <config projectName="scene_retrieving" targetName="sensor_msgs_generate_messages_lisp" />
-      <config projectName="scene_retrieving" targetName="actionlib_tutorials_generate_messages_nodejs" />
-      <config projectName="scene_retrieving" targetName="std_srvs_generate_messages_eus" />
+      <config projectName="scene_retrieving" targetName="gmock_main" />
+      <config projectName="scene_retrieving" targetName="doxygen" />
       <config projectName="scene_retrieving" targetName="multi_scene_retriever" />
-      <config projectName="scene_retrieving" targetName="tests" />
+      <config projectName="scene_retrieving" targetName="scene_retrieve" />
       <config projectName="scene_retrieving" targetName="sensor_msgs_generate_messages_py" />
       <config projectName="scene_retrieving" targetName="std_srvs_generate_messages_nodejs" />
       <config projectName="scene_retrieving" targetName="sensor_msgs_generate_messages_eus" />
-      <config projectName="scene_retrieving" targetName="actionlib_generate_messages_py" />
+      <config projectName="scene_retrieving" targetName="Nightly" />
       <config projectName="scene_retrieving" targetName="rosgraph_msgs_generate_messages_cpp" />
       <config projectName="scene_retrieving" targetName="NightlyConfigure" />
-      <config projectName="scene_retrieving" targetName="tf_generate_messages_nodejs" />
+      <config projectName="scene_retrieving" targetName="std_msgs_generate_messages_eus" />
       <config projectName="scene_retrieving" targetName="std_srvs_generate_messages_py" />
       <config projectName="scene_retrieving" targetName="gtest" />
       <config projectName="scene_retrieving" targetName="actionlib_tutorials_generate_messages_lisp" />
+      <config projectName="scene_retrieving" targetName="ContinuousSubmit" />
       <config projectName="scene_retrieving" targetName="scene_retrieving_ros" />
       <config projectName="scene_retrieving" targetName="ExperimentalBuild" />
-      <config projectName="scene_retrieving" targetName="std_srvs_generate_messages_lisp" />
-      <config projectName="scene_retrieving" targetName="demo_stereo" />
-      <config projectName="scene_retrieving" targetName="ContinuousSubmit" />
+      <config projectName="scene_retrieving" targetName="tf_generate_messages_nodejs" />
+      <config projectName="scene_retrieving" targetName="sensor_msgs_generate_messages_cpp" />
+      <config projectName="scene_retrieving" targetName="std_msgs_generate_messages_nodejs" />
       <config projectName="scene_retrieving" targetName="actionlib_msgs_generate_messages_cpp" />
     </generated>
   </component>
@@ -124,16 +124,8 @@
   <component name="ChangeListManager">
     <list default="true" id="4dcb950e-8026-46a0-854e-9fd2e7f1bc02" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/Cv_mat.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/Cv_mat.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/include/cv_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/cv_helper.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/scene_retrieve.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/include/ygz/cv_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/include/ygz/cv_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/include/ygz/scene_retrieve.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/include/ygz/scene_retrieve.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/common/src/scene_retrieve.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/examples/MakeSceneEurocStereoVIO_ros.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/examples/MakeSceneEurocStereoVIO_ros.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/serialization/include/ygz/Cv_mat.h" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/serialization/include/ygz/Cv_mat.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/small_voc.yml.gz" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/small_voc.yml.gz" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -915,6 +907,7 @@
       <workItem from="1570171864121" duration="2855000" />
       <workItem from="1570175042730" duration="1104000" />
       <workItem from="1570178714947" duration="1770000" />
+      <workItem from="1570238822339" duration="1873000" />
     </task>
     <servers />
   </component>

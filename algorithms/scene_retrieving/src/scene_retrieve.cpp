@@ -422,10 +422,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
         return -1;
     }
 
-    for(auto& pt : old_camera_pts)
-    {
-        cout<<"pt old_camera_pts: "<<pt<<endl;
-    }
 
     //step 5, update matched feature points and camera points
     vector<cv::KeyPoint> matched_current_kps, matched_old_kps;
@@ -444,12 +440,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
         matched_old_cam_pts.emplace_back(float(old_camera_pts[result_matches[i].trainIdx].x),
                                          float(old_camera_pts[result_matches[i].trainIdx].y),
                                          float(old_camera_pts[result_matches[i].trainIdx].z));
-
-        cout<<"result_matches[i].trainIdx: "<<result_matches[i].trainIdx<<endl;
-
-        cout<<"old_camera_pts[result_matches[i].trainIdx].x: "<<old_camera_pts[result_matches[i].trainIdx].x<<", "
-                                                              <<old_camera_pts[result_matches[i].trainIdx].y<<", "
-                                                              <<old_camera_pts[result_matches[i].trainIdx].z<<endl;
     }
 
 
@@ -462,10 +452,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
                                     result_matches, loop_index);
     }
 
-    for(auto& pt : matched_old_cam_pts)
-    {
-        cout<<"pt matched_old_cam_pts: "<<pt<<endl;
-    }
 
     //step 6, now that we have matched camera points we can conduct ICP, we can use either PCL method or opencv method
     Eigen::Matrix4f result;
@@ -489,17 +475,10 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
 
     //step 8, given old left image and current left image, compute relative R vec from rodrigues by essential mat
-    if(current_kps_left.size() < 30 && old_kps_left.size() < 30)
-    {
-        match_success = false;//[MERGE_ERROR] is this correct??
-        return -1;
-    }
     cv::Mat essentialR = mpCv_helper->getRotationfromEssential(matched_current_kps, matched_old_kps);
-
     cv::Mat essentialRvec, RrelativeVec;
     cv::Rodrigues (essentialR, essentialRvec);
     cv::Rodrigues (result_R, RrelativeVec);
-
 
     float distanceR = mpCv_helper->Vec3Distance(essentialRvec, RrelativeVec);
 
@@ -536,7 +515,19 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
     result_relative_T.convertTo(result_relative_T, CV_64F);
 
-    new_T = old_T * result_relative_T;
+    //NOTE previously computed ICP result is relative from current camera pose to fetched camera pose,
+    //computed relative ICP is in opencv image frame, x points to right, y points to down and z points up.
+    //we need to convert relative ICP results to the old_T frame, which is FLU
+    cv::Mat image_to_flu = (cv::Mat_<double>(4,4) << 0, 0, 1, 0,
+                                                                -1, 0, 0, 0,
+                                                                0, -1, 0, 0,
+                                                                0, 0, 0, 1);
+
+    //NOTE, result relative_T is relative from current to old camera frame, old_T is in global frame.
+    //we need to update computed current pose.
+
+    new_T = old_T * (image_to_flu * result_relative_T);
+    //new_T = old_T * result_relative_T;
 
     cv::Mat new_R = new_T.colRange(0,3).rowRange(0,3);
     cv::Mat new_t = new_T.rowRange(0,3).col(3);
@@ -546,7 +537,7 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     LOG(INFO)<<"new_t: "<<new_t<<endl;
 
 
-    if (fitnesscore < 2.0) //TODO:move this into a config.
+    if (fitnesscore < 1.0) //TODO:move this into a config.
     {
         this->mpCv_helper->publishPose(new_R, new_t, 0);
         RT_mat_of_stereo_cam_output = new_T;
