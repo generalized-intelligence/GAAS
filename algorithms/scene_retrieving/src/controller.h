@@ -32,6 +32,10 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
 
+#include <glog/logging.h>
+
+#include <opencv2/core/eigen.hpp>
+
 using namespace std;
 
 class Controller{
@@ -46,7 +50,7 @@ public:
 
     bool GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame=false);
 
-    void AddRetrievedPose(Eigen::Vector4f& retrieved_pose);
+    void AddRetrievedPose(cv::Mat& retrieved_pose);
 
     bool isSceneRecoveredMovementValid();
 
@@ -61,6 +65,54 @@ public:
     void UpdateTarget();
 
     void Hover();
+
+    inline cv::Mat PoseStampedToMat(const geometry_msgs::PoseStamped& pose)
+    {
+        Eigen::Quaterniond pose_q(pose.pose.orientation.w,
+                                  pose.pose.orientation.x,
+                                  pose.pose.orientation.y,
+                                  pose.pose.orientation.z);
+
+        Eigen::Matrix3d pose_R = pose_q.toRotationMatrix();
+
+        cv::Mat mat_R;
+        cv::eigen2cv(pose_R, mat_R);
+
+        cv::Mat T = cv::Mat::zeros(cv::Size(4,4), CV_64FC1);
+
+        T.at<double>(0, 0) = mat_R.at<double>(0, 0);
+        T.at<double>(0, 1) = mat_R.at<double>(0, 1);
+        T.at<double>(0, 2) = mat_R.at<double>(0, 2);
+        T.at<double>(1, 0) = mat_R.at<double>(1, 0);
+        T.at<double>(1, 1) = mat_R.at<double>(1, 1);
+        T.at<double>(1, 2) = mat_R.at<double>(1, 2);
+        T.at<double>(2, 0) = mat_R.at<double>(2, 0);
+        T.at<double>(2, 1) = mat_R.at<double>(2, 1);
+        T.at<double>(2, 2) = mat_R.at<double>(2, 2);
+
+        T.at<double>(0, 3) = pose.pose.position.x;
+        T.at<double>(1, 3) = pose.pose.position.y;
+        T.at<double>(2, 3) = pose.pose.position.z;
+        T.at<double>(3, 3) = 1;
+
+        cout<<"PoseStampedToMat: \n"<<T<<endl;
+
+        return T;
+    }
+
+    inline cv::Mat findRelativeTransform(cv::Mat& Twb1, cv::Mat& Twb2)
+    {
+        //NOTE they should be body to world, or Twb
+        cv::Mat Tb1b2;
+        cv::Mat Tb1w = Twb1.inv();
+        Tb1b2 = Tb1w * Twb2;
+
+        cout<<"Twb1: \n"<<Twb1<<endl;
+        cout<<"Twb2: \n"<<Twb2<<endl;
+        cout<<"Tb1b2: \n"<<Tb1b2<<endl;
+
+        return Tb1b2;
+    }
 
     enum mState{
         NO_SCENE_RETRIEVED_BEFORE,
@@ -82,16 +134,16 @@ private:
     geometry_msgs::PoseStamped mCurMavrosPose;
     geometry_msgs::PoseStamped mLastMavrosPose;
 
-    Eigen::Vector4f mSceneRetrievedPosition;
-    Eigen::Vector4f mSceneRetrievedLastPosition;
+    cv::Mat mSceneRetrievedPosition;
+    cv::Mat mSceneRetrievedLastPosition;
     geometry_msgs::PoseStamped mMavPoseLastRetrieved;
     geometry_msgs::PoseStamped mMavPoseCurRetrieved;
 
     geometry_msgs::PoseStamped mMavrosPose;
     geometry_msgs::PoseStamped mTargetPose;
 
-    Eigen::Vector4f mUpdatedCurrentPose;
-    Eigen::Vector4f mCurrentDistanceToTarget;
+    cv::Mat mUpdatedCurrentPose;
+    cv::Mat mCurrentDistanceToTarget;
 
     // Transformation from drone to scene
     cv::Mat mTscene_drone;
@@ -105,7 +157,8 @@ private:
     //    ros::Subscriber mSub;
     //    ros::Subscriber mSubCamera_3;
 
-    queue<Eigen::Vector4f> mRetrievedPoseQueue;
+    queue<cv::Mat> mRetrievedPoseQueue;
+    vector<cv::Mat> mRetrievedPoseVec;
 
     mState mSTATE;
     mTarget mTARGET;

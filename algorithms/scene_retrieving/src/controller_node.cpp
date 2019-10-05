@@ -1,7 +1,6 @@
 #include "scene_retrieve.h"
 #include "controller.h"
 
-
 #include <cv_bridge/cv_bridge.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -42,7 +41,7 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
 
         LOG(INFO)<<"fitness_score: "<<fitness_score<<endl;
 
-        if(fitness_score >= 0 && fitness_score <= 2.0 && !RT_mat.empty())
+        if(fitness_score >= 0 && fitness_score <= 1.0 && !RT_mat.empty())
         {
 
           LOG(INFO)<<"RT_mat type: "<<RT_mat.type()<<endl;
@@ -52,15 +51,15 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
           cv::cv2eigen(RT_mat, rotation_matrix);
           Vector3f EulerAngle = rotation_matrix.eulerAngles(0, 1, 2);
 
-          Eigen::Vector4f position_yaw(RT_mat.at<double>(0, 3),
-                                       RT_mat.at<double>(1, 3),
-                                       RT_mat.at<double>(2, 3),
-                                       EulerAngle[2]);
+          Eigen::Vector4f position_and_yaw(RT_mat.at<double>(0, 3),
+                                           RT_mat.at<double>(1, 3),
+                                           RT_mat.at<double>(2, 3),
+                                           EulerAngle[2]);
 
           LOG(INFO)<<"rotation mat: "<<rotation_matrix<<endl;
           LOG(INFO)<<"result mat: "<<RT_mat<<endl;
 
-          pController->AddRetrievedPose(position_yaw);
+          pController->AddRetrievedPose(RT_mat);
         }
         else
         {
@@ -76,6 +75,8 @@ int main(int argc, char **argv) {
     {
       LOG(INFO)<<"Usage: demo [scene_file_path] [voc_file_path]"<<endl;
     }
+
+    google::InitGoogleLogging(argv[0]);
 
     ros::init(argc, argv, "controller_node");
     ros::NodeHandle nh;
@@ -101,8 +102,11 @@ int main(int argc, char **argv) {
     sync.setMaxIntervalDuration(ros::Duration(0.01));
     sync.registerCallback(boost::bind(StereoImageCallback, _1, _2));
 
+    cout<<"before controller"<<endl;
     auto* controller = new Controller(nh);
     pController = controller;
+
+    cout<<"after controller"<<endl;
 
 //    ros::MultiThreadedSpinner spinner(4);
 

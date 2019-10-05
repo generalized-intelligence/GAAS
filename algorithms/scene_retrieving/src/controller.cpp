@@ -3,14 +3,13 @@
 
 Controller::Controller(ros::NodeHandle& nh)
 {
-
     mNH = nh;
     mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &Controller::MavrosPoseCallback, this);
     mTargetSetSub = mNH.subscribe("/move_base_simple/goal", 100, &Controller::TargetSetSubCallback, this);
     mPositionControlPub = mNH.advertise<geometry_msgs::PoseStamped>("gi/set_pose/position", 100);
     mYawControlPub = mNH.advertise<std_msgs::Float32>("gi/set_pose/orientation", 100);
 
-    mSceneRetrievedPosition.setZero();
+    mSceneRetrievedPosition = cv::Mat::zeros(cv::Size(4, 4), CV_64FC1);
     mTargetPose.pose.position.x = 0;
     mTargetPose.pose.position.y = 0;
     mTargetPose.pose.position.z = 0;
@@ -24,10 +23,11 @@ Controller::Controller(ros::NodeHandle& nh)
 
 void Controller::Run()
 {
-    //while (!ros::isShuttingDown())
-    while (ros::isShuttingDown())
+    ros::Rate rate(10.);
+    while (!ros::isShuttingDown())
     {
 
+        //constantly fetching information from MAVROS
         if(mSTATE == MAVROS_STATE_ERROR)
         {
             Hover();
@@ -37,33 +37,18 @@ void Controller::Run()
         {
             continue;
         }
-
         else if (mTARGET == NEW_TARGET)
         {
-
-            if(mRetrievedPoseQueue.empty())
+            if(!mRetrievedPoseQueue.empty())
             {
-                GoToTarget(mTargetPose);
+                UpdateTarget();
             }
-            else
-            {
-                Eigen::Vector4f latest_retrieved_pose = mRetrievedPoseQueue.back();
-                mRetrievedPoseQueue.pop();
-                
-                // if retrieved pose from scene is valid, we can use it to update target
-                if(isSceneRecoveredMovementValid())
-                {
-                    UpdateTarget();
-                    GoToTarget(mTargetPose);
-                }
-                // if retrieved pose from scene is not valid, ignore and continue current target
-                else
-                {
-                    GoToTarget(mTargetPose);
-                }
-            }
+            GoToTarget(mTargetPose);
         }
+
+        rate.sleep();
     }
+
     Hover();
 }
 
@@ -100,23 +85,33 @@ bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBo
     mPositionControlPub.publish(pose);
 }
 
-void Controller::AddRetrievedPose(Eigen::Vector4f& retrieved_pose)
+void Controller::AddRetrievedPose(cv::Mat& retrieved_pose)
 {
     mSceneRetrievedLastPosition = mSceneRetrievedPosition;
     mSceneRetrievedPosition = retrieved_pose;
 
-    // neglect the first retrieved pose
+    mMavPoseLastRetrieved = mMavPoseCurRetrieved;
+    mMavPoseCurRetrieved = mCurMavrosPose;
+
+    if (abs(mCurMavrosPose.pose.position.x)+
+        abs(mCurMavrosPose.pose.position.y)+
+        abs(mCurMavrosPose.pose.position.z)==0)
+        return;
+
+    cout<<"mCurMavrosPose: "<<mCurMavrosPose<<endl;
+
+    // the first retrieved pose
+    // NOTE assuming the first retrieved pose is "right" TODO, find a way to test if the first retrieved pose is right
     // set retrieved last position and retrieved current position
-    // set mavros pose when previously add retrieved pose and when current retrieved pose
+    // set drone position at present
+    // using retrieved drone position and current drone position to find a transform between
+    // current drone frame and scene frame
     if(mSTATE == NO_SCENE_RETRIEVED_BEFORE)
     {
-        mSceneRetrievedLastPosition = mSceneRetrievedPosition;
-        mSceneRetrievedPosition = retrieved_pose;
-
         mSTATE = SCENE_RETRIEVING_WORKING_NORMAL;
 
-        mMavPoseLastRetrieved = mMavPoseCurRetrieved;
-        mMavPoseCurRetrieved = mCurMavrosPose;
+        cv::Mat MavrosPoseMat = PoseStampedToMat(mMavPoseCurRetrieved);
+        cv::Mat RelativeTransform = findRelativeTransform(MavrosPoseMat, mSceneRetrievedPosition);
 
         return;
     }
@@ -125,11 +120,6 @@ void Controller::AddRetrievedPose(Eigen::Vector4f& retrieved_pose)
     // prev and current mavros pose at the time when scene was retrieved were set
     else if(mSTATE == SCENE_RETRIEVING_WORKING_NORMAL)
     {
-        mSceneRetrievedLastPosition = mSceneRetrievedPosition;
-        mSceneRetrievedPosition = retrieved_pose;
-
-        mMavPoseLastRetrieved = mMavPoseCurRetrieved;
-        mMavPoseCurRetrieved = mCurMavrosPose;
 
         if(isSceneRecoveredMovementValid())
         {
@@ -154,9 +144,9 @@ void Controller::AddRetrievedPose(Eigen::Vector4f& retrieved_pose)
 
 bool Controller::isSceneRecoveredMovementValid()
 {
-    float delta_retrieved = abs(mSceneRetrievedPosition[0] - mSceneRetrievedLastPosition[0]) +
-                            abs(mSceneRetrievedPosition[1] - mSceneRetrievedLastPosition[1]) +
-                            abs(mSceneRetrievedPosition[2] - mSceneRetrievedLastPosition[2]);
+    float delta_retrieved = abs(mSceneRetrievedPosition.at<double>(0, 3) - mSceneRetrievedLastPosition.at<double>(0, 3)) +
+                            abs(mSceneRetrievedPosition.at<double>(1, 3) - mSceneRetrievedLastPosition.at<double>(1, 3)) +
+                            abs(mSceneRetrievedPosition.at<double>(2, 3) - mSceneRetrievedLastPosition.at<double>(2, 3));
 
     float delta_mavros = abs(mMavPoseCurRetrieved.pose.position.x - mMavPoseLastRetrieved.pose.position.x) +
                          abs(mMavPoseCurRetrieved.pose.position.y - mMavPoseLastRetrieved.pose.position.y) +
@@ -177,22 +167,13 @@ void Controller::UpdateTarget()
     mMavPoseCurRetrieved = mCurMavrosPose;
 
     // delta x, y and z from retrieved pose to drone pose
-    float delta_x = mSceneRetrievedPosition[0] - mMavPoseCurRetrieved.pose.position.x;
-    float delta_y = mSceneRetrievedPosition[1] - mMavPoseCurRetrieved.pose.position.y;
-    float delta_z = mSceneRetrievedPosition[2] - mMavPoseCurRetrieved.pose.position.z;
+    float delta_x = mSceneRetrievedPosition.at<double>(0, 3) - mMavPoseCurRetrieved.pose.position.x;
+    float delta_y = mSceneRetrievedPosition.at<double>(2, 3) - mMavPoseCurRetrieved.pose.position.y;
+    float delta_z = mSceneRetrievedPosition.at<double>(3, 3) - mMavPoseCurRetrieved.pose.position.z;
 
     mTargetPose.pose.position.x = mTargetPose.pose.position.x - delta_x;
     mTargetPose.pose.position.y = mTargetPose.pose.position.y - delta_y;
     mTargetPose.pose.position.z = mTargetPose.pose.position.z - delta_z;
-}
-
-void Controller::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
-{
-    mLastMavrosPose = mCurMavrosPose;
-    mCurMavrosPose = pose;
-
-    if (!isMavrosPoseValid())
-        mSTATE = MAVROS_STATE_ERROR;
 }
 
 void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
@@ -206,10 +187,19 @@ void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
     mTARGET = NEW_TARGET;
 }
 
+void Controller::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
+{
+    mLastMavrosPose = mCurMavrosPose;
+    mCurMavrosPose = pose;
+
+    if (!isMavrosPoseValid())
+        mSTATE = MAVROS_STATE_ERROR;
+}
+
 bool Controller::isMavrosPoseValid()
 {
 
-    float  delta_t = (mCurMavrosPose.header.stamp - mLastMavrosPose.header.stamp).toSec();
+    float delta_t = (mCurMavrosPose.header.stamp - mLastMavrosPose.header.stamp).toSec();
 
     if(delta_t == 0)
     {
@@ -230,11 +220,7 @@ bool Controller::isMavrosPoseValid()
         return false;
     }
 
-    float cur_roll, cur_pitch, cur_yaw;
-    //tf::Matrix3x3(mCurMavrosPose.pose.orientation).getRPY(cur_roll, cur_pitch, cur_yaw);
-
-    float prev_roll, prev_pitch, prev_yaw;
-    //tf::Matrix3x3(mLastMavrosPose.pose.orientation).getRPY(prev_roll, prev_pitch, prev_yaw);
+    float cur_yaw, prev_yaw;
 
     Eigen::Quaternionf cur_rotation_matrix(mCurMavrosPose.pose.orientation.w,
                                            mCurMavrosPose.pose.orientation.x,
@@ -251,11 +237,9 @@ bool Controller::isMavrosPoseValid()
     prev_yaw = euler_prev[2];
 
     float yaw_rate = (cur_yaw - prev_yaw) / delta_t;
-
-    cout<<"Current Drone speed: "<<speed<<", yaw rate: "<<yaw_rate<<endl;
     
     // the yaw change rate is less than pi by default
-    if (yaw_rate > 3.1415926)
+    if (yaw_rate > 2*3.1415926)
     {
         mSTATE = MAVROS_STATE_ERROR;
         return false;
@@ -268,3 +252,6 @@ void Controller::Hover()
 {
 
 }
+
+//cv::Mat Controller::findRelativeTransform(cv::Mat& Twb1, cv::Mat& Twb2)
+

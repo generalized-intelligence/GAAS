@@ -536,7 +536,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     LOG(INFO)<<"result_t: "<<result_t<<endl;
     LOG(INFO)<<"new_t: "<<new_t<<endl;
 
-
     if (fitnesscore < 1.0) //TODO:move this into a config.
     {
         this->mpCv_helper->publishPose(new_R, new_t, 0);
