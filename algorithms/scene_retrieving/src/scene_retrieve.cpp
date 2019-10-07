@@ -231,16 +231,24 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
     this->mpCv_helper = shared_ptr<cv_helper>(new cv_helper(376.0, 376.0, 376.0, 240.0, 45.12));
     this->mpCv_helper->setMask("mask.png");
 
+
     this->_init_retriever();
 
+    LOG(INFO)<<"Publishing history pose started!"<<endl;
     this->publishPoseHistory();
+    LOG(INFO)<<"Publishing history pose finished!"<<endl;
 
     int image_num = 5000;
+
+
+
     for (int i=0; i<image_num; i++)
     {
         string left_path = "./image/left/" + to_string(i) + ".png";
         mVecLeftImagePath.push_back(left_path);
     }
+
+
 }
 
 
@@ -426,10 +434,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     //step 5, update matched feature points and camera points
     vector<cv::KeyPoint> matched_current_kps, matched_old_kps;
     vector<cv::Point3f> matched_current_cam_pts, matched_old_cam_pts;
-
-    cout<<"result_matches size: "<<result_matches.size()<<endl;
-    cout<<"current_camera_pts size: "<<current_camera_pts.size()<<endl;
-    cout<<"old_camera_pts size: "<<old_camera_pts.size()<<endl;
 
     for(int i=0; i<result_matches.size(); i++)
     {
@@ -767,8 +771,12 @@ void SceneRetriever::publishPoseHistory()
 
     vector<cv::Mat> vecT = this->original_scene.mVecT;
 
-    for(auto& t: this->original_scene.mVecT)
+    int posenum = this->original_scene.mVecT.size();
+    for(int i=0; i<posenum; i++)
     {
+
+        auto t = this->original_scene.mVecT[i];
+
         if(t.empty())
             continue;
 
@@ -777,4 +785,15 @@ void SceneRetriever::publishPoseHistory()
         cv::Mat R = cv::Mat::ones(3, 3, CV_32F);
         this->mpCv_helper->publishPose(R, t);
     }
+
+//    for(auto& t: this->original_scene.mVecT)
+//    {
+//        if(t.empty())
+//            continue;
+//
+//        LOG(INFO)<<"publishing pose: "<<t<<endl;
+//
+//        cv::Mat R = cv::Mat::ones(3, 3, CV_32F);
+//        this->mpCv_helper->publishPose(R, t);
+//    }
 }

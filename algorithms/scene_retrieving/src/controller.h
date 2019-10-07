@@ -100,19 +100,53 @@ public:
         return T;
     }
 
+    inline geometry_msgs::PoseStamped MatToPoseStamped(cv::Mat& pose_mat, string& frame_id)
+    {
+        cv::Mat rotation_mat = pose_mat.colRange(0, 3).rowRange(0, 3);
+        Eigen::Matrix3d rotation_eigen;
+        cv::cv2eigen(rotation_mat, rotation_eigen);
+        Eigen::Quaterniond quat(rotation_eigen);
+
+        geometry_msgs::PoseStamped result_pose;
+        result_pose.header.stamp = ros::Time::now();
+        result_pose.header.frame_id = frame_id;
+        result_pose.pose.orientation.w = quat.w();
+        result_pose.pose.orientation.x = quat.x();
+        result_pose.pose.orientation.y = quat.y();
+        result_pose.pose.orientation.z = quat.z();
+        result_pose.pose.position.x = pose_mat.at<double>(0, 3);
+        result_pose.pose.position.y = pose_mat.at<double>(1, 3);
+        result_pose.pose.position.z = pose_mat.at<double>(2, 3);
+
+        return result_pose;
+    }
+
     inline cv::Mat findRelativeTransform(cv::Mat& Twb1, cv::Mat& Twb2)
     {
+//        //NOTE they should be body to world, or Twb
+//        cv::Mat Tb1b2;
+//        cv::Mat Tb1w = Twb1.inv();
+//        Tb1b2 = Tb1w * Twb2;
+//
+//        cout<<"Twb1: \n"<<Twb1<<endl;
+//        cout<<"Twb2: \n"<<Twb2<<endl;
+//        cout<<"Tb1b2: \n"<<Tb1b2<<endl;
+//
+//        return Tb1b2;
+
         //NOTE they should be body to world, or Twb
-        cv::Mat Tb1b2;
-        cv::Mat Tb1w = Twb1.inv();
-        Tb1b2 = Tb1w * Twb2;
+        cv::Mat Tb2b1;
+        cv::Mat Tb2w = Twb2.inv();
+        Tb2b1 = Tb2w * Twb1;
 
         cout<<"Twb1: \n"<<Twb1<<endl;
         cout<<"Twb2: \n"<<Twb2<<endl;
-        cout<<"Tb1b2: \n"<<Tb1b2<<endl;
+        cout<<"Tb1b2: \n"<<Tb2b1<<endl;
 
-        return Tb1b2;
+        return Tb2b1;
+
     }
+
 
     enum mState{
         NO_SCENE_RETRIEVED_BEFORE,
@@ -136,6 +170,7 @@ private:
 
     cv::Mat mSceneRetrievedPosition;
     cv::Mat mSceneRetrievedLastPosition;
+
     geometry_msgs::PoseStamped mMavPoseLastRetrieved;
     geometry_msgs::PoseStamped mMavPoseCurRetrieved;
 
@@ -145,6 +180,9 @@ private:
     cv::Mat mUpdatedCurrentPose;
     cv::Mat mCurrentDistanceToTarget;
 
+    cv::Mat mInitialRelativeTransform;
+    cv::Mat mCurrentRelativeTransform;
+
     // Transformation from drone to scene
     cv::Mat mTscene_drone;
 
@@ -153,12 +191,15 @@ private:
     ros::Publisher mPositionControlPub;
     ros::Publisher mYawControlPub;
 
+    size_t mSceneRetrieveIndex = 0;
 
     //    ros::Subscriber mSub;
     //    ros::Subscriber mSubCamera_3;
 
     queue<cv::Mat> mRetrievedPoseQueue;
     vector<cv::Mat> mRetrievedPoseVec;
+
+    vector<cv::Mat> mRelativeTransforms;
 
     mState mSTATE;
     mTarget mTARGET;

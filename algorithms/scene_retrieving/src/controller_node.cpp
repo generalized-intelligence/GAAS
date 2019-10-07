@@ -76,6 +76,8 @@ int main(int argc, char **argv) {
       LOG(INFO)<<"Usage: demo [scene_file_path] [voc_file_path]"<<endl;
     }
 
+    google::SetLogDestination(google::GLOG_INFO, "./" );
+    FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
 
     ros::init(argc, argv, "controller_node");
@@ -102,11 +104,9 @@ int main(int argc, char **argv) {
     sync.setMaxIntervalDuration(ros::Duration(0.01));
     sync.registerCallback(boost::bind(StereoImageCallback, _1, _2));
 
-    cout<<"before controller"<<endl;
+
     auto* controller = new Controller(nh);
     pController = controller;
-
-    cout<<"after controller"<<endl;
 
 //    ros::MultiThreadedSpinner spinner(4);
 
