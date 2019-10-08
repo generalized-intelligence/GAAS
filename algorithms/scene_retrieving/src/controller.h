@@ -35,6 +35,7 @@
 #include <glog/logging.h>
 
 #include <opencv2/core/eigen.hpp>
+#include <visualization_msgs/Marker.h>
 
 using namespace std;
 
@@ -123,30 +124,51 @@ public:
 
     inline cv::Mat findRelativeTransform(cv::Mat& Twb1, cv::Mat& Twb2)
     {
-//        //NOTE they should be body to world, or Twb
-//        cv::Mat Tb1b2;
-//        cv::Mat Tb1w = Twb1.inv();
-//        Tb1b2 = Tb1w * Twb2;
-//
-//        cout<<"Twb1: \n"<<Twb1<<endl;
-//        cout<<"Twb2: \n"<<Twb2<<endl;
-//        cout<<"Tb1b2: \n"<<Tb1b2<<endl;
-//
-//        return Tb1b2;
-
-        //NOTE they should be body to world, or Twb
         cv::Mat Tb2b1;
         cv::Mat Tb2w = Twb2.inv();
         Tb2b1 = Tb2w * Twb1;
 
-        cout<<"Twb1: \n"<<Twb1<<endl;
-        cout<<"Twb2: \n"<<Twb2<<endl;
-        cout<<"Tb1b2: \n"<<Tb2b1<<endl;
+        LOG(INFO)<<"Twb1: \n"<<Twb1<<endl;
+        LOG(INFO)<<"Twb2: \n"<<Twb2<<endl;
+        LOG(INFO)<<"Tb1b2: \n"<<Tb2b1<<endl;
 
         return Tb2b1;
 
     }
 
+    inline float distanceToTarget()
+    {
+        float delta_x = mCurMavrosPose.pose.position.x - mTargetPose.pose.position.x;
+        float delta_y = mCurMavrosPose.pose.position.y - mTargetPose.pose.position.y;
+        float delta_z = mCurMavrosPose.pose.position.z - mTargetPose.pose.position.z;
+        float delta = sqrt(delta_x*delta_x + delta_y+delta_y + delta_z*delta_z);
+
+        return delta;
+    }
+
+    inline void publishPose(const geometry_msgs::PoseStamped& pose)
+    {
+        visualization_msgs::Marker mark;
+        mark.header.frame_id="/map";
+
+        mark.id = mSceneRetrieveIndex;
+        mark.color.a = 1.0;
+        mark.color.r = 0.0;
+        mark.color.g = 0.0;
+        mark.color.b = 1.0;
+
+        mark.pose.position = pose.pose.position;
+        mark.pose.orientation = pose.pose.orientation;
+
+        mark.scale.x = 1;
+        mark.scale.y = 1;
+        mark.scale.z = 1;
+
+        mark.action = visualization_msgs::Marker::ADD;
+        mark.type = visualization_msgs::Marker::CUBE;
+
+        this->PosePublisher.publish(mark);
+    }
 
     enum mState{
         NO_SCENE_RETRIEVED_BEFORE,
@@ -162,6 +184,8 @@ public:
     };
 
 private:
+    ros::NodeHandle nh;
+    ros::Publisher PosePublisher;
 
     int mLoopIndex = 0;
 
@@ -183,6 +207,11 @@ private:
     cv::Mat mInitialRelativeTransform;
     cv::Mat mCurrentRelativeTransform;
 
+    typedef map<cv::Mat, geometry_msgs::PoseStamped> mMavSceneMap;
+    map<size_t, map<cv::Mat, geometry_msgs::PoseStamped> > mMavSceneMaps;
+
+    deque<tuple<size_t, cv::Mat, geometry_msgs::PoseStamped> > mIdxMavScenes;
+
     // Transformation from drone to scene
     cv::Mat mTscene_drone;
 
@@ -196,7 +225,7 @@ private:
     //    ros::Subscriber mSub;
     //    ros::Subscriber mSubCamera_3;
 
-    queue<cv::Mat> mRetrievedPoseQueue;
+    deque<cv::Mat> mRetrievedPoseQueue;
     vector<cv::Mat> mRetrievedPoseVec;
 
     vector<cv::Mat> mRelativeTransforms;

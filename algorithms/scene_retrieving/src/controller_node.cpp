@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
       LOG(INFO)<<"Usage: demo [scene_file_path] [voc_file_path]"<<endl;
     }
 
-    google::SetLogDestination(google::GLOG_INFO, "./" );
+    google::SetLogDestination(google::GLOG_INFO, "./controller_" );
     FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
 

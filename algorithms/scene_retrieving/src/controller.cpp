@@ -17,6 +17,8 @@ Controller::Controller(ros::NodeHandle& nh)
     mSTATE = mState::NO_SCENE_RETRIEVED_BEFORE;
     mTARGET = mTarget::NO_TARGET;
 
+    this->PosePublisher = this->nh.advertise<visualization_msgs::Marker>("/updated_target",10);
+
     std::thread t(&Controller::Run, this);
     t.detach();
 }
@@ -60,6 +62,7 @@ void Controller::SetTarget(geometry_msgs::PoseStamped& target)
 
 bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame)
 {
+    publishPose(target);
 
     geometry_msgs::PoseStamped pose;
     pose.header.stamp = ros::Time::now();
@@ -78,9 +81,9 @@ bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBo
         pose.pose.position.z = target.pose.position.z;
     }
 
-    cout<<"Going to target: "<<pose.pose.position.x<<", "
-                             <<pose.pose.position.y<<", "
-                             <<pose.pose.position.z<<endl;
+    LOG(INFO)<<"Going to target: "<<pose.pose.position.x<<", "
+                                  <<pose.pose.position.y<<", "
+                                  <<pose.pose.position.z<<endl;
 
     mPositionControlPub.publish(pose);
 }
@@ -111,16 +114,9 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose)
 
         cout<<"AddRetrievedPose: NO_SCENE_RETRIEVED_BEFORE"<<endl;
 
-//        // RelativeTransform: from body to retrieved frame
-//        cv::Mat MavrosPoseMat = PoseStampedToMat(mMavPoseCurRetrieved);
-//        cv::Mat RelativeTransform = findRelativeTransform(MavrosPoseMat, mSceneRetrievedPosition);
-//
-//        if(mSceneRetrieveIndex <= 5)
-//            mRelativeTransforms.emplace_back(RelativeTransform);
+        mRetrievedPoseQueue.push_back(retrieved_pose);
 
-
-
-        mRetrievedPoseVec.emplace_back(retrieved_pose);
+        mIdxMavScenes.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose));
 
         return;
     }
@@ -129,39 +125,42 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose)
     // prev and current mavros pose at the time when scene was retrieved were set
     else if(mSTATE == SCENE_RETRIEVING_WORKING_NORMAL)
     {
+        LOG(INFO)<<"AddRetrievedPose: SCENE_RETRIEVING_WORKING_NORMAL"<<endl;
 
-        cout<<"AddRetrievedPose: SCENE_RETRIEVING_WORKING_NORMAL"<<endl;
+        LOG(INFO)<<"mRetrievedPoseQueue: "<<mRetrievedPoseQueue.size()<<endl;
 
         if(isSceneRecoveredMovementValid())
         {
             std::cout<<"Current retrieved pose is valid!"<<std::endl;
 
-//            // RelativeTransform: from body to retrieved frame
-//            cv::Mat MavrosPoseMat = PoseStampedToMat(mMavPoseCurRetrieved);
-//            cv::Mat RelativeTransform = findRelativeTransform(MavrosPoseMat, mSceneRetrievedPosition);
-//
-//            if(mSceneRetrieveIndex <= 5)
-//                mRelativeTransforms.emplace_back(RelativeTransform);
+            mRetrievedPoseQueue.push_back(retrieved_pose);
 
+            mIdxMavScenes.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose));
 
-            mRetrievedPoseVec.emplace_back(retrieved_pose);
+            if (mRetrievedPoseQueue.size() > 3)
+            {
+                mIdxMavScenes.pop_front();
+            }
 
             // if current retrieved pose from the scene is valid, current pose of the drone (frome SLAM)
             // could be updated, we can find a transform from current drone pose to retrieved scene pose
             // rather than updating current drone pose with this transform, we update the current target of
             // the drone with this transform.
-            UpdateTarget();
+            if(distanceToTarget() < 5)
+            {
+                UpdateTarget();
+            }
+
         }
         else
             std::cout<<"Current retrieved pose is not valid"<<std::endl;
-    } else{
-
+    }
+    else{
         cout<<"Current state: "<<mSTATE<<endl;
     }
 
     mSceneRetrieveIndex ++;
 
-    mRetrievedPoseQueue.push(retrieved_pose);
 }
 
 
@@ -175,13 +174,7 @@ bool Controller::isSceneRecoveredMovementValid()
                          abs(mMavPoseCurRetrieved.pose.position.y - mMavPoseLastRetrieved.pose.position.y) +
                          abs(mMavPoseCurRetrieved.pose.position.z - mMavPoseLastRetrieved.pose.position.z);
 
-//    if (abs(1.0 - delta_retrieved / delta_mavros) < 0.05)
-//        return true;
-//    else
-//        return false;
-
     float factor = abs(delta_mavros / delta_retrieved);
-    cout<<"isSceneRecoveredMovementValid: "<<delta_mavros<<", "<<delta_retrieved<<", "<<factor<<endl;
 
     if (factor < 3.0)
         return true;
@@ -190,43 +183,22 @@ bool Controller::isSceneRecoveredMovementValid()
 
 }
 
-//void Controller::UpdateTarget()
-//{
-//    mSceneRetrievedLastPosition = mSceneRetrievedPosition;
-//    //mSceneRetrievedPosition = retrieved_pose;
-//
-//    mMavPoseLastRetrieved = mMavPoseCurRetrieved;
-//    mMavPoseCurRetrieved = mCurMavrosPose;
-//
-//    // delta x, y and z from retrieved pose to drone pose
-//    float delta_x = mSceneRetrievedPosition.at<double>(0, 3) - mMavPoseCurRetrieved.pose.position.x;
-//    float delta_y = mSceneRetrievedPosition.at<double>(2, 3) - mMavPoseCurRetrieved.pose.position.y;
-//    float delta_z = mSceneRetrievedPosition.at<double>(3, 3) - mMavPoseCurRetrieved.pose.position.z;
-//
-//    mTargetPose.pose.position.x = mTargetPose.pose.position.x - delta_x;
-//    mTargetPose.pose.position.y = mTargetPose.pose.position.y - delta_y;
-//    mTargetPose.pose.position.z = mTargetPose.pose.position.z - delta_z;
-//}
-
 void Controller::UpdateTarget()
 {
-    if(mRelativeTransforms.empty())
+    if (mRetrievedPoseQueue.empty())
         return;
 
-    // step 1, given a series of relative Transforms, find mean relative transform for these two frames
-    float angles;
+    float angles = 0;
     Eigen::Vector3d axises(0, 0,0 );
     Eigen::Vector3d position(0, 0, 0);
-
-    LOG(INFO)<<"UpdateTarget"<<endl;
-    LOG(INFO)<<"mRetrievedPoseVec size: "<<mRetrievedPoseVec.size()<<endl;
-
-    if (mRetrievedPoseVec.empty())
-        return; // This should not happen
-
-    for(auto& T : mRetrievedPoseVec)
+    for(auto& elem : mIdxMavScenes)
     {
-        cv::Mat temp_rotation = T.colRange(0, 3).rowRange(0, 3);
+        cv::Mat scene_pose_mat = std::get<1>(elem);
+        geometry_msgs::PoseStamped mav_pose = std::get<2>(elem);
+        cv::Mat mav_pose_mat = PoseStampedToMat(mav_pose);
+        cv::Mat RelativeTransform = findRelativeTransform(mav_pose_mat, scene_pose_mat);
+
+        cv::Mat temp_rotation = RelativeTransform.colRange(0, 3).rowRange(0, 3);
         Eigen::Matrix3d rotation_eigen;
         cv::cv2eigen(temp_rotation, rotation_eigen);
 
@@ -234,85 +206,164 @@ void Controller::UpdateTarget()
         Eigen::Vector3d axis = angle_axis.axis();
         float angle = angle_axis.angle();
 
-        LOG(INFO)<<"T: "<<T<<endl;
-        LOG(INFO)<<"rotation_eigen: "<<rotation_eigen<<endl;
-        LOG(INFO)<<"angle and axis: "<<angle<<", "<<axis<<endl;
-
         axises[0] += axis[0];
         axises[1] += axis[1];
         axises[2] += axis[2];
 
         angles += angle;
 
-        position[0] += T.at<double>(0, 3);
-        position[1] += T.at<double>(1, 3);
-        position[2] += T.at<double>(2, 3);
+        position[0] += RelativeTransform.at<double>(0, 3);
+        position[1] += RelativeTransform.at<double>(1, 3);
+        position[2] += RelativeTransform.at<double>(2, 3);
     }
 
-    axises[0] = axises[0] / mRetrievedPoseVec.size();
-    axises[1] = axises[1] / mRetrievedPoseVec.size();
-    axises[2] = axises[2] / mRetrievedPoseVec.size();
-    angles = angles / mRetrievedPoseVec.size();
+    axises[0] = axises[0] / mIdxMavScenes.size();
+    axises[1] = axises[1] / mIdxMavScenes.size();
+    axises[2] = axises[2] / mIdxMavScenes.size();
+    angles = angles / mIdxMavScenes.size();
+    position[0] = position[0] / mIdxMavScenes.size();
+    position[1] = position[1] / mIdxMavScenes.size();
+    position[2] = position[2] / mIdxMavScenes.size();
 
-    position[0] = position[0] / mRetrievedPoseVec.size();
-    position[1] = position[1] / mRetrievedPoseVec.size();
-    position[2] = position[2] / mRetrievedPoseVec.size();
-
-    cout<<"Averaged axise value and angle value are: "<<axises<<", "<<angles<<endl;
     Eigen::AngleAxisd averaged_rotation_angleaxis(angles, axises);
     Eigen::Matrix3d averaged_rotation_eigen = averaged_rotation_angleaxis.toRotationMatrix();
     cv::Mat averaged_rotation_mat;
     cv::eigen2cv(averaged_rotation_eigen, averaged_rotation_mat);
 
-    cv::Mat averaged_T = cv::Mat::zeros(4,4, CV_64FC1);
+    cv::Mat relative_transform = cv::Mat::zeros(4,4, CV_64F);
 
-    averaged_T.at<double>(0, 0) = averaged_rotation_mat.at<double>(0, 0);
-    averaged_T.at<double>(0, 1) = averaged_rotation_mat.at<double>(0, 1);
-    averaged_T.at<double>(0, 2) = averaged_rotation_mat.at<double>(0, 2);
-    averaged_T.at<double>(1, 0) = averaged_rotation_mat.at<double>(1, 0);
-    averaged_T.at<double>(1, 1) = averaged_rotation_mat.at<double>(1, 1);
-    averaged_T.at<double>(1, 2) = averaged_rotation_mat.at<double>(1, 2);
-    averaged_T.at<double>(2, 0) = averaged_rotation_mat.at<double>(2, 0);
-    averaged_T.at<double>(2, 1) = averaged_rotation_mat.at<double>(2, 1);
-    averaged_T.at<double>(2, 2) = averaged_rotation_mat.at<double>(2, 2);
-    averaged_T.at<double>(0, 3) = position[0];
-    averaged_T.at<double>(1, 3) = position[1];
-    averaged_T.at<double>(2, 3) = position[2];
-    averaged_T.at<double>(3, 3) = 1.0;
-
-    // step 2, find relative transform between current mavros pose and retrieved pose frame
-    // the result if Transform from mavros pose to scene retrieved pose frame
-    cv::Mat MavrosPoseMat = PoseStampedToMat(mMavPoseCurRetrieved);
-    cv::Mat RelativeTransform = findRelativeTransform(MavrosPoseMat, averaged_T);
+    relative_transform.at<double>(0, 0) = averaged_rotation_mat.at<double>(0, 0);
+    relative_transform.at<double>(0, 1) = averaged_rotation_mat.at<double>(0, 1);
+    relative_transform.at<double>(0, 2) = averaged_rotation_mat.at<double>(0, 2);
+    relative_transform.at<double>(1, 0) = averaged_rotation_mat.at<double>(1, 0);
+    relative_transform.at<double>(1, 1) = averaged_rotation_mat.at<double>(1, 1);
+    relative_transform.at<double>(1, 2) = averaged_rotation_mat.at<double>(1, 2);
+    relative_transform.at<double>(2, 0) = averaged_rotation_mat.at<double>(2, 0);
+    relative_transform.at<double>(2, 1) = averaged_rotation_mat.at<double>(2, 1);
+    relative_transform.at<double>(2, 2) = averaged_rotation_mat.at<double>(2, 2);
+    relative_transform.at<double>(0, 3) = position[0];
+    relative_transform.at<double>(1, 3) = position[1];
+    relative_transform.at<double>(2, 3) = position[2];
+    relative_transform.at<double>(3, 3) = 1.0;
 
     if (mSceneRetrieveIndex <= 3)
-        mInitialRelativeTransform = RelativeTransform;
-    else
-        mCurrentRelativeTransform = RelativeTransform;
+    {
+        //initial transform is mavros to scene
+        mInitialRelativeTransform = relative_transform;
+        LOG(INFO)<<"mInitialRelativeTransform: "<<mInitialRelativeTransform<<endl;
+    }
+    else{
+        mCurrentRelativeTransform = relative_transform;
+        //current transform is from mavros to scene
+        cv::Mat current2initial = findRelativeTransform(mCurrentRelativeTransform, mInitialRelativeTransform);
 
-    // there is an initial relative Transform between mavros frame and scene frame,
-    // and a current relative Transform between these two frames,
-    // we find the transform between current relative transform and initial relative transform
-    // and convert current target to initial frame.
-    cv::Mat initial2current = findRelativeTransform(mInitialRelativeTransform, mCurrentRelativeTransform);
+        cv::Mat targetMat = PoseStampedToMat(mTargetPose);
+        cv::Mat updatedTargetMat = current2initial * targetMat;
 
-    // step 3, convert target from SLAM frame to Scene Retreving frame (the true frame)
-    cv::Mat targetMat = PoseStampedToMat(mTargetPose);
-    cv::Mat updatedTargetMat = initial2current.inv() * targetMat;
+        geometry_msgs::PoseStamped result_target = MatToPoseStamped(updatedTargetMat, mTargetPose.header.frame_id);
+        mTargetPose = result_target;
+    }
 
-    geometry_msgs::PoseStamped result_target = MatToPoseStamped(updatedTargetMat, mTargetPose.header.frame_id);
-    mTargetPose = result_target;
-    
 }
+
+//void Controller::UpdateTarget()
+//{
+//    if(mRetrievedPoseQueue.empty())
+//        return;
+//
+//    // step 1, given a series of relative Transforms, find mean relative transform for these two frames
+//    float angles = 0;
+//    Eigen::Vector3d axises(0, 0,0 );
+//    Eigen::Vector3d position(0, 0, 0);
+//
+//    for(auto& T : mRetrievedPoseQueue)
+//    {
+//        cv::Mat temp_rotation = T.colRange(0, 3).rowRange(0, 3);
+//        Eigen::Matrix3d rotation_eigen;
+//        cv::cv2eigen(temp_rotation, rotation_eigen);
+//
+//        Eigen::AngleAxisd angle_axis(rotation_eigen);
+//        Eigen::Vector3d axis = angle_axis.axis();
+//        float angle = angle_axis.angle();
+//
+//        axises[0] += axis[0];
+//        axises[1] += axis[1];
+//        axises[2] += axis[2];
+//
+//        angles += angle;
+//
+//        position[0] += T.at<double>(0, 3);
+//        position[1] += T.at<double>(1, 3);
+//        position[2] += T.at<double>(2, 3);
+//    }
+//
+//    axises[0] = axises[0] / mRetrievedPoseQueue.size();
+//    axises[1] = axises[1] / mRetrievedPoseQueue.size();
+//    axises[2] = axises[2] / mRetrievedPoseQueue.size();
+//    angles = angles / mRetrievedPoseQueue.size();
+//    position[0] = position[0] / mRetrievedPoseQueue.size();
+//    position[1] = position[1] / mRetrievedPoseQueue.size();
+//    position[2] = position[2] / mRetrievedPoseQueue.size();
+//
+//    Eigen::AngleAxisd averaged_rotation_angleaxis(angles, axises);
+//    Eigen::Matrix3d averaged_rotation_eigen = averaged_rotation_angleaxis.toRotationMatrix();
+//    cv::Mat averaged_rotation_mat;
+//    cv::eigen2cv(averaged_rotation_eigen, averaged_rotation_mat);
+//
+//    cv::Mat averaged_T = cv::Mat::zeros(4,4, CV_64F);
+//
+//    averaged_T.at<double>(0, 0) = averaged_rotation_mat.at<double>(0, 0);
+//    averaged_T.at<double>(0, 1) = averaged_rotation_mat.at<double>(0, 1);
+//    averaged_T.at<double>(0, 2) = averaged_rotation_mat.at<double>(0, 2);
+//    averaged_T.at<double>(1, 0) = averaged_rotation_mat.at<double>(1, 0);
+//    averaged_T.at<double>(1, 1) = averaged_rotation_mat.at<double>(1, 1);
+//    averaged_T.at<double>(1, 2) = averaged_rotation_mat.at<double>(1, 2);
+//    averaged_T.at<double>(2, 0) = averaged_rotation_mat.at<double>(2, 0);
+//    averaged_T.at<double>(2, 1) = averaged_rotation_mat.at<double>(2, 1);
+//    averaged_T.at<double>(2, 2) = averaged_rotation_mat.at<double>(2, 2);
+//    averaged_T.at<double>(0, 3) = position[0];
+//    averaged_T.at<double>(1, 3) = position[1];
+//    averaged_T.at<double>(2, 3) = position[2];
+//    averaged_T.at<double>(3, 3) = 1.0;
+//
+//    // step 2, find relative transform between current mavros pose and retrieved pose frame
+//    // the result if Transform from mavros pose to scene retrieved pose frame
+//    cv::Mat MavrosPoseMat = PoseStampedToMat(mMavPoseCurRetrieved);
+//    cv::Mat RelativeTransform = findRelativeTransform(MavrosPoseMat, averaged_T);
+//
+//    if (mSceneRetrieveIndex <= 3) {
+//        mInitialRelativeTransform = RelativeTransform;
+//        LOG(INFO)<<"mInitialRelativeTransform: "<<mInitialRelativeTransform<<endl;
+//    }
+//    else{
+//        mCurrentRelativeTransform = RelativeTransform;
+//
+//        // there is an initial relative Transform between mavros frame and scene frame,
+//        // and a current relative Transform between these two frames,
+//        // we find the transform between current relative transform and initial relative transform
+//        // and convert current target to initial frame.
+//        LOG(INFO)<<"mInitialRelativeTransform: "<<mInitialRelativeTransform<<", mCurrentRelativeTransform: "<<mCurrentRelativeTransform<<endl;
+//
+//        cv::Mat initial2current = findRelativeTransform(mInitialRelativeTransform, mCurrentRelativeTransform);
+//
+//        // step 3, convert target from SLAM frame to Scene Retreving frame (the true frame)
+//        cv::Mat targetMat = PoseStampedToMat(mTargetPose);
+//        cv::Mat updatedTargetMat = initial2current.inv() * targetMat;
+//
+//        geometry_msgs::PoseStamped result_target = MatToPoseStamped(updatedTargetMat, mTargetPose.header.frame_id);
+//        mTargetPose = result_target;
+//    }
+//
+//}
 
 void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
 {
     mTargetPose = target;
-    cout<<"Received new target: "<<mTargetPose.pose.position.x<<", "<<
+    LOG(INFO)<<"Received new target: "<<mTargetPose.pose.position.x<<", "<<
                                    mTargetPose.pose.position.y<<", "<<
                                    mTargetPose.pose.position.z<<endl;
     //UpdateTarget();
-    GoToTarget(mTargetPose);
+    //GoToTarget(mTargetPose);
     mTARGET = NEW_TARGET;
 }
 
