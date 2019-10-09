@@ -51,7 +51,7 @@ public:
 
     bool GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame=false);
 
-    void AddRetrievedPose(cv::Mat& retrieved_pose);
+    void AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose);
 
     bool isSceneRecoveredMovementValid();
 

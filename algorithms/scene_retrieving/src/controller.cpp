@@ -92,8 +92,11 @@ bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBo
     mPositionControlPub.publish(pose);
 }
 
-void Controller::AddRetrievedPose(cv::Mat& retrieved_pose)
+void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 {
+    string frame = "map";
+    mCurMavrosPose = MatToPoseStamped(mavros_pose, frame);
+
     mSceneRetrievedLastPosition = mSceneRetrievedPosition;
     mSceneRetrievedPosition = retrieved_pose;
 

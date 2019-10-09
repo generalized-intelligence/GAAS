@@ -4,4 +4,4 @@ mkdir loopclosure_result
 rm log_controller_*
 rm all.txt
 
-gdb --args ./bin/controller_node "./image/scene.scn" "./image/small_voc.yml.gz"
+./bin/controller_node "./image/scene.scn" "./image/small_voc.yml.gz"

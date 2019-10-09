@@ -34,10 +34,10 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
           return;
         }
 
-        cv::Mat Q_mat, RT_mat;
+        cv::Mat mavros_pose, RT_mat;
         bool match_success;
         int* loop_index;
-        float fitness_score = pSceneRetrieve->retrieveSceneFromStereoImage(imgL, imgR, Q_mat, RT_mat, match_success, loop_index);
+        float fitness_score = pSceneRetrieve->retrieveSceneFromStereoImage(imgL, imgR, mavros_pose, RT_mat, match_success, loop_index);
 
         LOG(INFO)<<"fitness_score: "<<fitness_score<<endl;
 
@@ -59,7 +59,7 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
           LOG(INFO)<<"rotation mat: "<<rotation_matrix<<endl;
           LOG(INFO)<<"result mat: "<<RT_mat<<endl;
 
-          pController->AddRetrievedPose(RT_mat);
+          pController->AddRetrievedPose(RT_mat, mavros_pose);
         }
         else
         {
