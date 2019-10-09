@@ -34,10 +34,10 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
           return;
         }
 
-        cv::Mat Q_mat, RT_mat;
+        cv::Mat mavros_pose, RT_mat;
         bool match_success;
         int* loop_index;
-        float fitness_score = pSceneRetrieve->retrieveSceneFromStereoImage(imgL, imgR, Q_mat, RT_mat, match_success, loop_index);
+        float fitness_score = pSceneRetrieve->retrieveSceneFromStereoImage(imgL, imgR, mavros_pose, RT_mat, match_success, loop_index);
 
         LOG(INFO)<<"fitness_score: "<<fitness_score<<endl;
 
@@ -59,7 +59,7 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
           LOG(INFO)<<"rotation mat: "<<rotation_matrix<<endl;
           LOG(INFO)<<"result mat: "<<RT_mat<<endl;
 
-          pController->AddRetrievedPose(RT_mat);
+          pController->AddRetrievedPose(RT_mat, mavros_pose);
         }
         else
         {
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
       LOG(INFO)<<"Usage: demo [scene_file_path] [voc_file_path]"<<endl;
     }
 
-    google::SetLogDestination(google::GLOG_INFO, "./controller_" );
+    google::SetLogDestination(google::GLOG_INFO, "./log_controller_" );
     FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
 
@@ -108,14 +108,23 @@ int main(int argc, char **argv) {
     auto* controller = new Controller(nh);
     pController = controller;
 
-//    ros::MultiThreadedSpinner spinner(4);
+////    ros::MultiThreadedSpinner spinner(4);
+//
+//    ros::Rate rate(10);
+//    while (ros::ok())
+//    {
+////        spinner.spin(); // the missing call
+//        ros::spin();
+//        rate.sleep();
+//    }
+//    return 0;
 
-    ros::Rate rate(10);
+
+    ros::MultiThreadedSpinner spinner(4);
+
     while (ros::ok())
     {
-//        spinner.spin(); // the missing call
-        ros::spin();
-        rate.sleep();
+        spinner.spin(); // the missing call
     }
     return 0;
 }

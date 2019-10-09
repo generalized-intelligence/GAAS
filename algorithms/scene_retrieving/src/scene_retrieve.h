@@ -191,7 +191,7 @@ public:
 
 
 
-SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr, const cv::Mat& RotationMat, const cv::Mat& TranslationMat, const cv::Mat& Q_mat,LoopClosingManager& lcm,bool& success)
+SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr, const cv::Mat& RotationMat, const cv::Mat& TranslationMat, const cv::Mat& Q_mat, LoopClosingManager& lcm,bool& success)
 {
     
     std::vector<cv::KeyPoint> key_points2d_candidate;
@@ -370,7 +370,7 @@ public:
     float retrieveSceneWithScaleFromMonoImage(cv::Mat image_in_rect, cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,int* pMatchedIndexID_output = nullptr);
 
     float retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
-            cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success,int* pMatchedIndexID_output = nullptr);
+            cv::Mat& mavros_pose, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success,int* pMatchedIndexID_output = nullptr);
 
     inline int addFrameToScene(const std::vector<cv::KeyPoint>& points2d_in, const std::vector<cv::Point3d>points3d_in,const cv::Mat& point_desp_in, const cv::Mat R, const cv::Mat t)
     {
@@ -448,6 +448,41 @@ public:
         return this->original_scene;
     }
 
+    void MavrosPoseCallback(const geometry_msgs::PoseStamped& pose);
+
+    inline cv::Mat PoseStampedToMat(const geometry_msgs::PoseStamped& pose)
+    {
+        Eigen::Quaterniond pose_q(pose.pose.orientation.w,
+                                  pose.pose.orientation.x,
+                                  pose.pose.orientation.y,
+                                  pose.pose.orientation.z);
+
+        Eigen::Matrix3d pose_R = pose_q.toRotationMatrix();
+
+        cv::Mat mat_R;
+        cv::eigen2cv(pose_R, mat_R);
+
+        cv::Mat T = cv::Mat::zeros(cv::Size(4,4), CV_64FC1);
+
+        T.at<double>(0, 0) = mat_R.at<double>(0, 0);
+        T.at<double>(0, 1) = mat_R.at<double>(0, 1);
+        T.at<double>(0, 2) = mat_R.at<double>(0, 2);
+        T.at<double>(1, 0) = mat_R.at<double>(1, 0);
+        T.at<double>(1, 1) = mat_R.at<double>(1, 1);
+        T.at<double>(1, 2) = mat_R.at<double>(1, 2);
+        T.at<double>(2, 0) = mat_R.at<double>(2, 0);
+        T.at<double>(2, 1) = mat_R.at<double>(2, 1);
+        T.at<double>(2, 2) = mat_R.at<double>(2, 2);
+
+        T.at<double>(0, 3) = pose.pose.position.x;
+        T.at<double>(1, 3) = pose.pose.position.y;
+        T.at<double>(2, 3) = pose.pose.position.z;
+        T.at<double>(3, 3) = 1;
+
+        cout<<"PoseStampedToMat: \n"<<T<<endl;
+
+        return T;
+    }
 private:
 
     void _init_retriever();
@@ -466,5 +501,12 @@ private:
 
     vector<string> mVecLeftImagePath;
     vector<string> mVecRightImagePath;
+
+    //ROS related
+    ros::NodeHandle mNH;
+    ros::Subscriber mMavrosSub;
+
+    cv::Mat mCurMavrosPose;
+
 };
 #endif

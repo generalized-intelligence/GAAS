@@ -6,6 +6,7 @@ Controller::Controller(ros::NodeHandle& nh)
     mNH = nh;
     mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &Controller::MavrosPoseCallback, this);
     mTargetSetSub = mNH.subscribe("/move_base_simple/goal", 100, &Controller::TargetSetSubCallback, this);
+
     mPositionControlPub = mNH.advertise<geometry_msgs::PoseStamped>("gi/set_pose/position", 100);
     mYawControlPub = mNH.advertise<std_msgs::Float32>("gi/set_pose/orientation", 100);
 
@@ -21,6 +22,9 @@ Controller::Controller(ros::NodeHandle& nh)
 
     std::thread t(&Controller::Run, this);
     t.detach();
+
+    myfile.open ("relativetransform.txt", fstream::out | fstream::app);
+    testfile.open("all.txt", fstream::out | fstream::app);
 }
 
 void Controller::Run()
@@ -88,8 +92,11 @@ bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBo
     mPositionControlPub.publish(pose);
 }
 
-void Controller::AddRetrievedPose(cv::Mat& retrieved_pose)
+void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 {
+    string frame = "map";
+    mCurMavrosPose = MatToPoseStamped(mavros_pose, frame);
+
     mSceneRetrievedLastPosition = mSceneRetrievedPosition;
     mSceneRetrievedPosition = retrieved_pose;
 
@@ -118,24 +125,52 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose)
 
         mIdxMavScenes.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose));
 
+        mTest.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose, mTargetPose));
+
+        testfile<<mSceneRetrieveIndex<<","
+                <<retrieved_pose.at<double>(0,3)<<","
+                <<retrieved_pose.at<double>(1,3)<<","
+                <<retrieved_pose.at<double>(2,3)<<","
+                <<mCurMavrosPose.pose.position.x<<","
+                <<mCurMavrosPose.pose.position.y<<","
+                <<mCurMavrosPose.pose.position.z<<","
+                <<mTargetPose.pose.position.x<<","
+                <<mTargetPose.pose.position.y<<","
+                <<mTargetPose.pose.position.z<<endl;
+
         return;
     }
+
     // normal working state
     // prev and current retrieved pose were set
     // prev and current mavros pose at the time when scene was retrieved were set
-    else if(mSTATE == SCENE_RETRIEVING_WORKING_NORMAL)
+    else if(mSTATE == SCENE_RETRIEVING_WORKING_NORMAL || mSTATE == MAVROS_STATE_ERROR)
     {
         LOG(INFO)<<"AddRetrievedPose: SCENE_RETRIEVING_WORKING_NORMAL"<<endl;
 
         LOG(INFO)<<"mRetrievedPoseQueue: "<<mRetrievedPoseQueue.size()<<endl;
 
-        if(isSceneRecoveredMovementValid())
+        if(true)
+        //if(isSceneRecoveredMovementValid())
         {
             std::cout<<"Current retrieved pose is valid!"<<std::endl;
 
             mRetrievedPoseQueue.push_back(retrieved_pose);
 
             mIdxMavScenes.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose));
+
+            mTest.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose, mTargetPose));
+
+            testfile<<mSceneRetrieveIndex<<","
+                    <<retrieved_pose.at<double>(0,3)<<","
+                    <<retrieved_pose.at<double>(1,3)<<","
+                    <<retrieved_pose.at<double>(2,3)<<","
+                    <<mCurMavrosPose.pose.position.x<<","
+                    <<mCurMavrosPose.pose.position.y<<","
+                    <<mCurMavrosPose.pose.position.z<<","
+                    <<mTargetPose.pose.position.x<<","
+                    <<mTargetPose.pose.position.y<<","
+                    <<mTargetPose.pose.position.z<<endl;
 
             if (mRetrievedPoseQueue.size() > 3)
             {
@@ -159,8 +194,8 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose)
         cout<<"Current state: "<<mSTATE<<endl;
     }
 
-    mSceneRetrieveIndex ++;
 
+    mSceneRetrieveIndex ++;
 }
 
 
@@ -196,6 +231,10 @@ void Controller::UpdateTarget()
         cv::Mat scene_pose_mat = std::get<1>(elem);
         geometry_msgs::PoseStamped mav_pose = std::get<2>(elem);
         cv::Mat mav_pose_mat = PoseStampedToMat(mav_pose);
+
+        if(mav_pose_mat.empty() || scene_pose_mat.empty())
+            return;
+
         cv::Mat RelativeTransform = findRelativeTransform(mav_pose_mat, scene_pose_mat);
 
         cv::Mat temp_rotation = RelativeTransform.colRange(0, 3).rowRange(0, 3);
@@ -250,13 +289,31 @@ void Controller::UpdateTarget()
     {
         //initial transform is mavros to scene
         mInitialRelativeTransform = relative_transform;
+
+//        writePoseToFile(myfile, mInitialRelativeTransform);
+        myfile << mInitialRelativeTransform.at<double>(0, 3)<<", "
+             << mInitialRelativeTransform.at<double>(1, 3)<<", "
+             << mInitialRelativeTransform.at<double>(2, 3)<<", "<<endl;
+
         LOG(INFO)<<"mInitialRelativeTransform: "<<mInitialRelativeTransform<<endl;
     }
     else{
         mCurrentRelativeTransform = relative_transform;
+
+        if(mCurrentRelativeTransform.empty() || mInitialRelativeTransform.empty())
+            return;
+
         //current transform is from mavros to scene
         cv::Mat current2initial = findRelativeTransform(mCurrentRelativeTransform, mInitialRelativeTransform);
 
+//        writePoseToFile(myfile, mCurrentRelativeTransform);
+
+        myfile << mCurrentRelativeTransform.at<double>(0, 3)<<", "
+               << mCurrentRelativeTransform.at<double>(1, 3)<<", "
+               << mCurrentRelativeTransform.at<double>(2, 3)<<", "<<endl;
+
+        TransformInverse(mCurrentRelativeTransform);
+        
         cv::Mat targetMat = PoseStampedToMat(mTargetPose);
         cv::Mat updatedTargetMat = current2initial * targetMat;
 

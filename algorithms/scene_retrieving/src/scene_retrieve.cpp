@@ -240,15 +240,18 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
 
     int image_num = 5000;
 
-
-
     for (int i=0; i<image_num; i++)
     {
         string left_path = "./image/left/" + to_string(i) + ".png";
         mVecLeftImagePath.push_back(left_path);
     }
 
+    mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &SceneRetriever::MavrosPoseCallback, this);
+}
 
+void SceneRetriever::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
+{
+    mCurMavrosPose = PoseStampedToMat(pose);
 }
 
 
@@ -325,9 +328,9 @@ void SceneRetriever::displayFeatureMatches(cv::Mat curImage, vector<cv::KeyPoint
                                            std::vector<cv::DMatch> matches, size_t loop_index) {
 
     cv::Mat output_image;
-    cv::drawMatches(curImage, curKps, oldImage, oldKps, matches, output_image);
 
-    if (!output_image.empty()) {
+    if (!output_image.empty() && !curImage.empty() && !oldImage.empty() && !matches.empty() && !curKps.empty() && !oldKps.empty()) {
+        cv::drawMatches(curImage, curKps, oldImage, oldKps, matches, output_image);
         cv::putText(output_image, "matched_kps size: " + to_string(matches.size()), cv::Point(20, 60), 2, 2,
                     cv::Scalar(0, 0, 255));
         cv::imwrite("./loopclosure_result/" + std::to_string(this->LoopClosureDebugIndex) + "_" +
@@ -356,9 +359,11 @@ void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& cur
 
 
 float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
-                                                   cv::Mat& Q_mat, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success, int* pMatchedIndexID_output)
+                                                   cv::Mat& mavros_pose, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success, int* pMatchedIndexID_output)
 {
     this->LoopClosureDebugIndex ++;
+
+    mavros_pose = mCurMavrosPose;
 
     if (image_left_rect.empty() || image_right_rect.empty())
     {
@@ -429,7 +434,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
         match_success = false;
         return -1;
     }
-
 
     //step 5, update matched feature points and camera points
     vector<cv::KeyPoint> matched_current_kps, matched_old_kps;

@@ -51,7 +51,7 @@ public:
 
     bool GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame=false);
 
-    void AddRetrievedPose(cv::Mat& retrieved_pose);
+    void AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose);
 
     bool isSceneRecoveredMovementValid();
 
@@ -125,7 +125,8 @@ public:
     inline cv::Mat findRelativeTransform(cv::Mat& Twb1, cv::Mat& Twb2)
     {
         cv::Mat Tb2b1;
-        cv::Mat Tb2w = Twb2.inv();
+        //cv::Mat Tb2w = Twb2.inv();
+        cv::Mat Tb2w = TransformInverse(Twb2);
         Tb2b1 = Tb2w * Twb1;
 
         LOG(INFO)<<"Twb1: \n"<<Twb1<<endl;
@@ -170,6 +171,46 @@ public:
         this->PosePublisher.publish(mark);
     }
 
+    inline void writePoseToFile(ofstream& file, cv::Mat& pose)
+    {
+        file << pose.at<double>(0, 3)<<", "
+             << pose.at<double>(1, 3)<<", "
+             << pose.at<double>(2, 3)<<", ";
+    }
+
+    inline cv::Mat TransformInverse(cv::Mat& T)
+    {
+        //  T=|R, t|
+        //    |0, 1|
+
+        // T-1 = |Rt, -Rt*t|
+        //       |0,      1|
+
+        cv::Mat Tinv = cv::Mat::zeros(cv::Size(4, 4), CV_64F);
+
+        cv::Mat R = T.colRange(0, 3).rowRange(0, 3);
+        cv::Mat Rt = R.t();
+
+        cv::Mat Tinv_R = Tinv.colRange(0, 3).rowRange(0, 3);
+        Rt.copyTo(Tinv_R);
+
+        cv::Mat t = T.colRange(3, 4).rowRange(0, 3);
+        cv::Mat tinv = -Rt*t;
+
+        cv::Mat Tinv_t = Tinv.colRange(3, 4).rowRange(0, 3);
+        tinv.copyTo(Tinv_t);
+
+        Tinv.at<double>(3, 3) = 1.0;
+
+        LOG(INFO)<<"T: "<<T<<endl;
+        LOG(INFO)<<"R: "<<R<<endl;
+        LOG(INFO)<<"Rt: "<<Rt<<endl;
+        LOG(INFO)<<"tinv: "<<tinv<<endl;
+        LOG(INFO)<<"Tinv: "<<Tinv<<endl;
+
+        return Tinv;
+    }
+
     enum mState{
         NO_SCENE_RETRIEVED_BEFORE,
         SCENE_RETRIEVING_WORKING_NORMAL,
@@ -212,6 +253,8 @@ private:
 
     deque<tuple<size_t, cv::Mat, geometry_msgs::PoseStamped> > mIdxMavScenes;
 
+    deque<tuple<size_t, cv::Mat, geometry_msgs::PoseStamped, geometry_msgs::PoseStamped> > mTest;
+
     // Transformation from drone to scene
     cv::Mat mTscene_drone;
 
@@ -234,6 +277,10 @@ private:
     mTarget mTARGET;
 
     ros::NodeHandle mNH;
+
+    // for testing
+    ofstream myfile;
+    ofstream testfile;
 };
 
 
