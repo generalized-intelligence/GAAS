@@ -61,6 +61,7 @@ void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::
     }
     LOG(INFO)<<"adding frame into scene..."<<endl;
     pSceneRetriever->addFrameToScene(std::get<0>(current_scene_frame),std::get<1>(current_scene_frame),std::get<2>(current_scene_frame),std::get<3>(current_scene_frame),std::get<4>(current_scene_frame));
+    int scene_frame_count = pSceneRetriever->getScene().getImageCount();
     LOG(INFO)<<"In ImageCallback():adding frame to scene by stereo..."<<endl;
     bool match_success;
     cv::Mat RT_mat;
@@ -78,8 +79,9 @@ void ImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::
         std_msgs::String str;
         stringstream ss;
         std::string str_content;
-        ss<<"Frame id:"<<0<<","<<1<<";RT:"<<RT_mat;
-        ss>>str_content;
+        ss<<"Frame id:"<<loop_id<<","<<scene_frame_count<<";RT:"<<RT_mat;
+        //ss>>str_content;
+        str_content = ss.str();
         str.data = str_content.c_str();
         Pub.publish(str);
     }

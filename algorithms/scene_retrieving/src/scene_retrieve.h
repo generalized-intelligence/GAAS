@@ -49,7 +49,8 @@ public:
     
     void setVisiblePointCloud(const std::string &pointcloud_filename);
     
-    inline int getImageCount();
+    //inline 
+    int getImageCount();
     
     inline cv::Mat& getDespByIndex(int i)
     {

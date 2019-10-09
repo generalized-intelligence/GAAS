@@ -9,7 +9,7 @@ set( CMAKE_BUILD_TYPE "Debug" )
 
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(GTSAM REQUIRED)
-find_package(OpenCV 3.3.1 REQUIRED)
+find_package(OpenCV 3.4.5 REQUIRED)
 #set(g2o_PACKAGE_PATH ${PROJECT_SOURCE_DIR}/Thirdparty/g2o)
 
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
@@ -20,7 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
     nav_msgs
     visualization_msgs
     message_filters
-
+    roseus
 )
 
 
@@ -50,7 +50,6 @@ target_link_libraries(GlobalOptimizationGraph
         gtsam;${Boost_PROGRAM_OPTIONS_LIBRARY}
 	G2OTypesLib
 	${THIRD_PARTY_LIBS})
-
 add_executable(GlobalOptimizationGraph_main main.cpp)
 
 target_link_libraries(GlobalOptimizationGraph_main

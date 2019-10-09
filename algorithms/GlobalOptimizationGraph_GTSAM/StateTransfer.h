@@ -204,6 +204,37 @@ public:
     {
         return this->lastGPSSLAMMatchID;
     }
+    inline void set_last_slam_yaw_correction_id(int newest_yaw_correction_slam_frame_id,int newest_match_id)
+    //在Global Optimization Graph中更新成功后,手动更新下这两个东西.
+    {
+        if(this->last_yaw_correction_slam_frame_id>=newest_yaw_correction_slam_frame_id)
+        {
+            LOG(ERROR)<<"ERROR:last_yaw_correction_slam_frame_id>=newest_yaw_correction_slam_frame_id!!! value:"<<last_yaw_correction_slam_frame_id<<","<<newest_yaw_correction_slam_frame_id<<"!!! CHECK YOUR INPUT IN GOG!!!!"<<endl;
+            return;
+        }
+        this->last_yaw_correction_slam_frame_id = newest_yaw_correction_slam_frame_id;
+        this->last_correction_GPS_SLAM_MATCH_ID = newest_match_id;
+    }
+    inline void get_last_yaw_correction_slam_id(int& last_slam_id_out,int& last_match_id_out)
+    {
+        last_slam_id_out = this->last_yaw_correction_slam_frame_id;
+        last_match_id_out = this->last_correction_GPS_SLAM_MATCH_ID;
+    }
+    inline bool get_should_update_yaw_correction(int current_slam_frame_id)
+    {//用一个简单策略:如果隔了100帧没更新过,那就挪到这个里面.
+        if(this->last_yaw_correction_slam_frame_id<=0 || this->last_correction_GPS_SLAM_MATCH_ID<=0)
+        {//尚未初始化.不管.
+            return false;
+        }
+        if(current_slam_frame_id - this->last_yaw_correction_slam_frame_id>100) //TODO:挪到配置文件里面去.
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 private:
     bool everInitWithGPS = false;
     int currentState = STATE_NO_GPS;
@@ -218,6 +249,11 @@ private:
     vector<int> segment_yaw_calib_beginning_id;
     int lastGPSSLAMMatchID = -1;
 
+    int last_yaw_correction_slam_frame_id = -1;//最后一次匹配yaw的slamid.(后面的那个id.)
+    int last_correction_GPS_SLAM_MATCH_ID = -1;//这个用于修正yaw累计误差,而不是初始化.和上面那个没关系.
+
+
+
     GPS_SLAM_MATCHER* pgps_slam_matcher;
     NonlinearFactorGraph* pGraph;
     GPSExpand* pGPS_coord;
@@ -228,9 +264,12 @@ private:
 };
 
 void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success,double& init_yaw,double& init_yaw_variance)
+//用于尝试将State从INIT_GPS转移到WITH_GPS
+
 //init_success:输出参数,这次初始化是否成功.
 //init_yaw:输出参数.
 //init_yaw_variance:输出参数.
+//last_slam_frame_id:输出参数,指明最后一次更新是在哪个slam帧.
 {
 //????这里先在哪里插入gps-slam对应关系??
     init_success = false;
@@ -243,7 +282,8 @@ void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success,double& i
     {
         bool yaw_calc_result_valid;
         double deg,deg_variance;
-        pgps_slam_matcher->check2IndexAndCalcDeltaDeg(0,pgps_slam_matcher->matchLen()-1,//id
+        int match_index = pgps_slam_matcher->matchLen()-1;
+        pgps_slam_matcher->check2IndexAndCalcDeltaDeg(0,match_index,//id
                                                        *pGPS_coord,yaw_calc_result_valid,deg,deg_variance
                                                         );//尝试计算yaw.
         
@@ -257,6 +297,9 @@ void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success,double& i
             init_yaw_variance = deg_variance*3.1415926/180;
             //this->yaw_init_to_gps = fix_angle(_rad);
             this->segment_yaw_slam_to_gps_initial.push_back(_rad);
+
+            this->last_yaw_correction_slam_frame_id = pgps_slam_matcher->queryMatchByIndex(match_index).slam_index;
+            this->last_correction_GPS_SLAM_MATCH_ID = match_index;
         }   
     }   
     else

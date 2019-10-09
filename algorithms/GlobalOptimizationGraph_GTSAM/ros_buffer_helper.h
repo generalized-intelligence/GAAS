@@ -66,14 +66,31 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
 
     Vector3d xyz(xyz_original.x,xyz_original.y,xyz_original.z);
     Matrix3d rotation = rot_origin.toRotationMatrix();
-    rotation = pRIM->SLAM_ROTATION_EIGEN*rotation;
-    xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;
+    // rotation = pRIM->SLAM_ROTATION_EIGEN*rotation;
+    //xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;
+    //Transfromation at right.
+    //step<1> 坐标系轴变动.
+    rotation = rotation*pRIM->SLAM_ROTATION_EIGEN;
+    //xyz不动.
+    //xyz = pRIM->SLAM_ROTATION_EIGEN*xyz;//旋转右乘(坐标系变换),点左乘(世界坐标系下表示)
+    //xyz = (xyz.transpose()*pRIM->SLAM_ROTATION_EIGEN).transpose();
+    //step<2> 坐标系对齐世界坐标系.
+    rotation = pRIM->SLAM_ROT_AND_TRANS_EIGEN*rotation;
+    xyz = pRIM->SLAM_ROT_AND_TRANS_EIGEN*xyz;
 
     geometry_msgs::PoseStamped new_msg;
     new_msg = *slam_msg;
     new_msg.pose.position.x = xyz[0];
     new_msg.pose.position.y = xyz[1];
-    new_msg.pose.position.z = xyz[2];
+    if(pRIM->invert_slam_z)
+    {
+        new_msg.pose.position.z = -1*xyz[2];
+    }
+    else
+    {
+        new_msg.pose.position.z = xyz[2];
+    }
+    LOG(WARNING)<<"z invert only should be used for YGZ."<<endl;
 
     LOG(INFO)<<"Original SLAM xyz:"<<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<endl;
     Quaterniond rot_2(rotation);
@@ -126,6 +143,25 @@ void ahrs_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<nav_msgs::Odom
     ahrs_marker.color.a = 1;
     pRIM->publish_ahrs_marker(ahrs_marker);
 }
+
+void barometer_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<sensor_msgs::FluidPressure>& barometer_buffer,
+                const boost::shared_ptr<sensor_msgs::FluidPressure const>& barometer_msg)
+{
+    //....TODO:fill in this
+    barometer_buffer.onCallbackBlock(*barometer_msg);
+    pRIM->_barometer_msg_update = true;
+    
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
