@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
       LOG(INFO)<<"Usage: demo [scene_file_path] [voc_file_path]"<<endl;
     }
 
-    google::SetLogDestination(google::GLOG_INFO, "./controller_" );
+    google::SetLogDestination(google::GLOG_INFO, "./log_controller_" );
     FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
 
@@ -108,14 +108,23 @@ int main(int argc, char **argv) {
     auto* controller = new Controller(nh);
     pController = controller;
 
-//    ros::MultiThreadedSpinner spinner(4);
+////    ros::MultiThreadedSpinner spinner(4);
+//
+//    ros::Rate rate(10);
+//    while (ros::ok())
+//    {
+////        spinner.spin(); // the missing call
+//        ros::spin();
+//        rate.sleep();
+//    }
+//    return 0;
 
-    ros::Rate rate(10);
+
+    ros::MultiThreadedSpinner spinner(4);
+
     while (ros::ok())
     {
-//        spinner.spin(); // the missing call
-        ros::spin();
-        rate.sleep();
+        spinner.spin(); // the missing call
     }
     return 0;
 }

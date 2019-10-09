@@ -325,9 +325,9 @@ void SceneRetriever::displayFeatureMatches(cv::Mat curImage, vector<cv::KeyPoint
                                            std::vector<cv::DMatch> matches, size_t loop_index) {
 
     cv::Mat output_image;
-    cv::drawMatches(curImage, curKps, oldImage, oldKps, matches, output_image);
 
-    if (!output_image.empty()) {
+    if (!output_image.empty() && !curImage.empty() && !oldImage.empty() && !matches.empty() && !curKps.empty() && !oldKps.empty()) {
+        cv::drawMatches(curImage, curKps, oldImage, oldKps, matches, output_image);
         cv::putText(output_image, "matched_kps size: " + to_string(matches.size()), cv::Point(20, 60), 2, 2,
                     cv::Scalar(0, 0, 255));
         cv::imwrite("./loopclosure_result/" + std::to_string(this->LoopClosureDebugIndex) + "_" +
