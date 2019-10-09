@@ -2,10 +2,12 @@
 
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/MagneticField.h>
+#include <sensor_msgs/FluidPressure.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/QuaternionStamped.h>
 #include <visualization_msgs/Marker.h>
-
+#include <std_msgs/Header.h>
+#include <roseus/StringStamped.h>
 
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
@@ -53,11 +55,12 @@ public:
     inline void setOptimizationGraph(shared_ptr<GlobalOptimizationGraph> pG)
     {
         this->pGraph = pG;
-        this->pGraph->initBuffers(this->SLAM_buffer,this->GPS_buffer,this->AHRS_buffer,this->Velocity_buffer);
+        this->pGraph->initBuffers(this->SLAM_buffer,this->GPS_buffer,this->AHRS_buffer,this->Velocity_buffer,this->Barometer_buffer);
     }
     bool _gps_pos_update = false;
     bool _gps_vel_update = false;
     bool _slam_msg_update = false;
+    bool _barometer_msg_update = false;
 
     bool loopFunc()//return true if updated.
     {
@@ -103,7 +106,10 @@ public:
 
 
     cv::Mat SLAM_ROTATION;//fsSettings["LEFT.R"] >> R_l;
+    cv::Mat SLAM_ROT_AND_TRANS;
     Matrix3d SLAM_ROTATION_EIGEN;
+    Matrix3d SLAM_ROT_AND_TRANS_EIGEN;
+    bool invert_slam_z = false; 
 private:
     time_us_t start_time_us;
     double ros_start_time;
@@ -128,11 +134,15 @@ private:
     CallbackBufferBlock<geometry_msgs::TwistStamped> Velocity_buffer;
     ros::Subscriber Velocity_sub;
 
+    CallbackBufferBlock<sensor_msgs::FluidPressure> Barometer_buffer;
+    ros::Subscriber Barometer_sub;
+
     shared_ptr<GlobalOptimizationGraph> pGraph = nullptr;
     shared_ptr<cv::FileStorage> pSettings;
 
     ros::Publisher attitude_ahrs;
     ros::Publisher attitude_slam;
+    ros::Publisher state_string_publisher;
     int attitude_marker_id = 0;
     //CallbackBufferBlock<xxx_msgs::SceneRetrieveInfo> SceneRetrieve_Buffer;
     //ros::Subscriber SceneRetrieve_sub;
@@ -149,7 +159,11 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     this->pSettings = shared_ptr<cv::FileStorage>(new cv::FileStorage ());
     pSettings->open(string(argv[1]),cv::FileStorage::READ);
     (*pSettings)["SLAM_ROTATION_MAT"] >> this->SLAM_ROTATION;
+    (*pSettings)["SLAM_RT_TRANS_MAT"] >> this->SLAM_ROT_AND_TRANS;
+    int __inv_z = (*pSettings)["INVERT_SLAM_Z"];
+    this->invert_slam_z = (__inv_z>0);
     cv2eigen(this->SLAM_ROTATION,SLAM_ROTATION_EIGEN);
+    cv2eigen(this->SLAM_ROT_AND_TRANS,SLAM_ROT_AND_TRANS_EIGEN);
     //step<2> init ros.
     ros::init(argc,argv,"GlobalOptimizationGraph_ROSNode");
     this->pNH = new ros::NodeHandle();
@@ -163,6 +177,7 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     //auto f2 = 
     attitude_ahrs = this->pNH->advertise<visualization_msgs::Marker>("attitude_ahrs",1);
     attitude_slam = this->pNH->advertise<visualization_msgs::Marker>("attitude_slam",1);
+    state_string_publisher = this->pNH->advertise<roseus::StringStamped>("/gaas/global_optimization_graph/state",1);
 
     boost::function<void(const boost::shared_ptr<nav_msgs::Odometry const>&
 		   )> ahrs_callback(boost::bind(&ahrs_buffer_helper,this,boost::ref(this->AHRS_buffer),_1 ));
@@ -175,12 +190,17 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     boost::function<void(const boost::shared_ptr<geometry_msgs::TwistStamped const>& 
                    )> velocity_callback( boost::bind(&velocity_buffer_helper,this,boost::ref(this->Velocity_buffer),_1) 
                            );
+    boost::function<void(const boost::shared_ptr<sensor_msgs::FluidPressure const>&
+                   )> barometer_callback( boost::bind(&barometer_buffer_helper,this,boost::ref(this->Barometer_buffer),_1)
+                           );
+
+
     AHRS_sub = pNH->subscribe("/mavros/local_position/odom",10,ahrs_callback);
     GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix",10,gps_callback);
     //SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);
     SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid",10,slam_callback);//("/SLAM/pose_for_obs_avoid",10,slam_callback);//("/gaas/slam/pose",10,slam_callback);
     Velocity_sub = pNH->subscribe("/mavros/global_position/raw/gps_vel",10,velocity_callback);
-    
+    Barometer_sub = pNH->subscribe("/mavros/imu/static_pressure",10,barometer_callback);
 
     cout <<"callback function binding finished!"<<endl;
     //SceneRetrieve_sub = pNH->subscribe("/..../,10,....")
@@ -217,8 +237,13 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
             this->pGraph->addBlockVelocity(this->Velocity_buffer.size()-1);
             this->_gps_vel_update = false;
         }
+        if(this->_barometer_msg_update)
+        {
+            this->pGraph->addBlockBarometer(this->Barometer_buffer.size()-1);
+            this->_barometer_msg_update = false;
+        }
         //do optimization.
-        retval = this->pGraph->doOptimization();
+        retval = true;//retval = this->pGraph->doOptimization();//TODO:fix this.
         this->slam_buf_mutex.unlock();
         this->gps_vel_mutex.unlock();
         this->gps_pos_mutex.unlock();
@@ -230,7 +255,12 @@ bool ROS_IO_Manager::doUpdateOptimizationGraph()
 
 void ROS_IO_Manager::GPS_callback(const sensor_msgs::NavSatFix& GPS_msg)
 {
+    //什么也不做.
+    //LOG(WARNING)<<"GPS DISABLED!"<<endl;
+
+    //正常操作
     this->GPS_buffer.onCallbackBlock(GPS_msg);
+
     //Do other callback procedure.
 }
 void ROS_IO_Manager::SLAM_callback(const geometry_msgs::PoseStamped& SLAM_msg)
@@ -240,7 +270,32 @@ void ROS_IO_Manager::SLAM_callback(const geometry_msgs::PoseStamped& SLAM_msg)
 }
 bool ROS_IO_Manager::publishAll()
 {
-    cout<<"WARNING: RIM::publishAll not implemented!"<<endl;//TODO:fill this.
+    LOG(INFO)<<"In ROS_IO_Manager::publishAll():"<<endl;
+    auto info = this->pGraph->queryCurrentFullStatus(); // TODO:查询优化器最新的状态.
+    //这里需要规定API返回什么.
+    //1.bool status_ok.
+    //2.current R quaternion
+    //3.current translation vector
+    //4.std_msgs::Header( especially timestamp) of this pose.
+    //5.inner id inside GlobalOptimizationGraph.
+    //
+    if (info.state_correct)//check status;
+    {
+        roseus::StringStamped pub_msg;//TODO:publish relative topics.
+        pub_msg.header = info.header_;
+        stringstream ss;
+        ss<<info.innerID_of_GOG<<"|"<<info.ret_val_R.x()<<","<<info.ret_val_R.y()<<","<<info.ret_val_R.z()<<","<<info.ret_val_R.w()<<"|"<<info.ret_val_t[0]<<","<<info.ret_val_t[1]<<","<<info.ret_val_t[2];
+        //std::string pub_string = string(info.innerID_of_GOG)+ string("|")+string(info.ret_val_R.w())+","+string(info.ret_val_R.x())+","+string(info.ret_val_R.y())+","+string(ret_val_R.z())+"|"+string(info.ret_val_t[0])+","+string(info.ret_val_t[1])+","+string(info.ret_val_t[2]);
+        std::string pub_string;
+        ss>>pub_string;
+        LOG(INFO)<<"Current full status:"<<pub_string<<endl;
+        pub_msg.data = pub_string;
+        this->state_string_publisher.publish(pub_msg);
+    }
+    else
+    {
+        LOG(WARNING)<<"Global Optimization Graph estimation state incorrect.In ROS_IO_Manager::publishAll()."<<endl;
+    }
     //auto pose = this->pGraph->getpCurrentPR()->estimate();
     //make a ros msg.
 }

@@ -127,7 +127,8 @@ public:
         double len_gps = euc_dist(gps_dx,gps_dy);
         double len_slam = euc_dist(slam_dx,slam_dy);
         double yaw_deg = 180*(theta_slam-theta_gps)/3.1415926535;
-        if(len_gps<1.2*len_slam&&len_slam>0.8*len_slam&&len_gps> 1.5//(p1_variance+p2_variance)
+        if(len_gps<1.2*len_slam&&len_slam>0.8*len_slam&&len_gps> 10//1.5
+                             //(p1_variance+p2_variance)
         )
         {
             LOG(INFO)<<"GPS_SLAM_YAW_CALCED:"<<yaw_deg<<endl;

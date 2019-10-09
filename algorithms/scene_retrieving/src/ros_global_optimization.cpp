@@ -91,13 +91,16 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_
     cv::Mat curLeftImage, curRightImage;
     try
     {
-        curLeftImage = cv_bridge::toCvShare(msgLeft)->image;
-        curRightImage = cv_bridge::toCvShare(msgRight)->image;
+        //curLeftImage = cv_bridge::toCvShare(msgLeft)->image;
+        //curRightImage = cv_bridge::toCvShare(msgRight)->image;
+        //auto l_im& = cv_bridge::toCvShare(msgLeft)->image;
+        
+        cv::cvtColor(cv_bridge::toCvShare(msgLeft)->image, curLeftImage, CV_BGR2GRAY);
+        cv::cvtColor(cv_bridge::toCvShare(msgRight)->image, curRightImage, CV_BGR2GRAY);
     }
     catch(cv_bridge::Exception &e)
     {
         ROS_ERROR("cv_bridge exception: %s", e.what());
-        LOG(ERROR)<<"Exception in ros_global_optimization StereoImageCallback()!"<<endl;
         return;
     }
 
@@ -107,12 +110,59 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_
         return;
     }
     pGlobalFrameSync->Image_msg_callback(msgLeft,msgRight);
-    
+    //step<2> do loop closing check
+
+    LOG(INFO)<<"Forming empty rt mat."<<endl;
+    cv::Mat r_mat = cv::Mat::eye(3,3,CV_32F);
+    cv::Mat t_mat = cv::Mat::zeros(3,1,CV_32F);
+    LOG(INFO)<<"Generating frame..."<<endl;
+    bool success_gen = false;
+    auto current_scene_frame = generateSceneFrameFromStereoImage(curLeftImage,curRightImage,r_mat,t_mat,*pQ_mat,*plcm,success_gen);
+    if(!success_gen)
+    {
+        LOG(INFO)<<"    after generateSceneFrameFromStereoImage():generate failed!"<<endl;
+        return;
+    }
+    LOG(INFO)<<"adding frame into scene..."<<endl;
+    pSceneRetriever->addFrameToScene(std::get<0>(current_scene_frame),std::get<1>(current_scene_frame),std::get<2>(current_scene_frame),std::get<3>(current_scene_frame),std::get<4>(current_scene_frame));
+    int scene_frame_count = pSceneRetriever->getScene().getImageCount();
+    LOG(INFO)<<"In ImageCallback():adding frame to scene by stereo..."<<endl;
+    bool match_success;
+    cv::Mat RT_mat;
+    //int inliers = pSceneRetriever->retrieveSceneFromStereoImage(curLeftImage, curRightImage, *pQ_mat, RT_mat, match_success);
+    cv::Mat cam_matrix = (cv::Mat_<float >(3,3) << 376, 0, 376, 
+            0, 376, 240, 
+            0, 0, 1);
+    int loop_id;
+    int inliers = pSceneRetriever->retrieveSceneWithScaleFromMonoImage(curLeftImage,cam_matrix,RT_mat,match_success,&loop_id);
+
+    if(match_success)
+    {
+        LOG(INFO)<<"In scene_retrieving_ros ImageCallback():Match success! RT mat is: \n"<<RT_mat<<endl;
+        //TODO:publish RT mat!
+        std_msgs::String str;
+        stringstream ss;
+        std::string str_content;
+        ss<<"Frame id:"<<loop_id<<","<<scene_frame_count<<";RT:"<<RT_mat;
+        //ss>>str_content;
+        str_content = ss.str();
+        str.data = str_content.c_str();
+        Pub.publish(str);
+    }
+    else
+    {
+        LOG(INFO)<<"Match failed."<<endl;
+        return;
+    }
+
+
+
+
 /*
     cv::Mat RT_mat, Q_mat;
     bool match_success;
     int inliers = pSceneRetriever->retrieveSceneFromStereoImage(curLeftImage, curRightImage, Q_mat, RT_mat, match_success);
-
+    //step<3> form loop msg and publish to GOG.
     if(match_success)
     {
         cout<<" Match success! RT mat is: \n"<<RT_mat<<endl;
