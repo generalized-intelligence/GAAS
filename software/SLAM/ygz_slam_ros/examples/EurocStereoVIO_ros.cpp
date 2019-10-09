@@ -443,11 +443,18 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     }
 
     cv::Mat imLeftRect, imRightRect;
+
+
     //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
     //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
 
-    imLeftRect = cv_ptrLeft->image;
-    imRightRect = cv_ptrRight->image;
+
+
+    cv::cvtColor(cv_ptrLeft->image, imLeftRect, CV_BGR2GRAY);
+    cv::cvtColor(cv_ptrRight->image,imRightRect , CV_BGR2GRAY);
+
+    //imLeftRect = cv_ptrLeft->image;
+    //imRightRect = cv_ptrRight->image;
 
     bool use_height = false;
     double height_in = 0;
