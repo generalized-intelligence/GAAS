@@ -28,7 +28,8 @@
 using namespace std;
 
 ros::Publisher Pub;
-
+cv::Mat* pQ_mat;
+LoopClosingManager* plcm;
 
 template<typename Out>
 void split(const std::string &s, char delim, Out result) {
@@ -109,9 +110,8 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_
         LOG(WARNING)<<"Empty image got in ros_global_optimization StereoImageCallback()."<<endl;
         return;
     }
-    pGlobalFrameSync->Image_msg_callback(msgLeft,msgRight);
-    //step<2> do loop closing check
-
+    pGlobalFrameSync->Image_msg_callback(msgLeft,msgRight);//do loop closing check inside this callback;
+    /*
     LOG(INFO)<<"Forming empty rt mat."<<endl;
     cv::Mat r_mat = cv::Mat::eye(3,3,CV_32F);
     cv::Mat t_mat = cv::Mat::zeros(3,1,CV_32F);
@@ -155,7 +155,7 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_
         return;
     }
 
-
+*/
 
 
 /*
@@ -214,7 +214,39 @@ int main_of_backend_thread()
 int main(int argc,char** argv)
 {
 
-    cout<<"Usage: ros_global_optimization [CONFIG_FILE_PATH]"<<endl;
+    google::InitGoogleLogging(argv[0]);
+    if (argc!=3)
+    {
+        //cout<<"Usage: demo [scene_file_path] [voc_file_path] [l_image_path] [r_image_path] [Q_mat_file_path]"<<endl;
+        cout<<"Usage: demo [voc_file_path] [Q_mat_file_path]"<<endl;
+    }
+    std::string voc_file_path(argv[1]) ,Q_mat_path(argv[2]);
+    LoopClosingManager lcm(voc_file_path);
+    plcm = &lcm;
+    cout<<"voc_file_path: "<<voc_file_path<<endl;
+    cout<<"Q_mat_path: "<<Q_mat_path<<endl;
+
+    cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
+    cv::Mat Q_mat;
+    fsSettings["Q_mat"] >> Q_mat;
+
+    if (Q_mat.empty())
+    {
+        cout<<"Q mat empty, exit."<<endl;
+        return -1;
+    }
+
+
+    cout<<"Q_mat: "<<endl<<Q_mat<<endl;
+    pQ_mat = &Q_mat;
+
+    cv::Mat RT_mat = (cv::Mat_<float >(4,4) << 1, 0, 0, 0,
+            0, 1, 0, 1,
+            0, 0, 1, 0,
+            0, 0, 0, 1);
+
+
+    /*cout<<"Usage: ros_global_optimization [CONFIG_FILE_PATH]"<<endl;
     if (argc!=2)
     {
         cout <<"Please check input format."<<endl;
@@ -236,7 +268,7 @@ int main(int argc,char** argv)
     cv::Mat RT_mat = (cv::Mat_<float >(4,4) << 1, 0, 0, 0,
             0, 1, 0, 1,
             0, 0, 1, 0,
-            0, 0, 0, 1);
+            0, 0, 0, 1);*/
 
     //ros init
     ros::init(argc, argv, "scene_retrieve");
