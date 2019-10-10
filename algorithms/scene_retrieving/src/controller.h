@@ -131,10 +131,10 @@ public:
 
         LOG(INFO)<<"Twb1: \n"<<Twb1<<endl;
         LOG(INFO)<<"Twb2: \n"<<Twb2<<endl;
+        LOG(INFO)<<"Tb2w inv: \n"<<Tb2w<<endl;
         LOG(INFO)<<"Tb1b2: \n"<<Tb2b1<<endl;
 
         return Tb2b1;
-
     }
 
     inline float distanceToTarget()
@@ -211,6 +211,34 @@ public:
         return Tinv;
     }
 
+    inline float PoseDistance(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose)
+    {
+        float distance_x = pow(mavros_pose.at<double>(0, 3) - scene_retrieved_pose.at<double>(0, 3), 2);
+        float distance_y = pow(mavros_pose.at<double>(1, 3) - scene_retrieved_pose.at<double>(1, 3), 2);
+        float distance_z = pow(mavros_pose.at<double>(2, 3) - scene_retrieved_pose.at<double>(2, 3), 2);
+        float distance = sqrt(distance_x + distance_y + distance_z);
+
+        return distance;
+    }
+
+    inline bool isOutlier(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose)
+    {
+        float distance = PoseDistance(mavros_pose, scene_retrieved_pose);
+
+        float sum = 0;
+        for(auto& elem : mSceneMavrosDistances)
+        {
+            sum += elem;
+        }
+        float mean = sum / mSceneMavrosDistances.size();
+
+        if ((distance/mean) > 3.0 || (distance/mean) < 0.3)
+            return true;
+
+        return false;
+    }
+
+
     enum mState{
         NO_SCENE_RETRIEVED_BEFORE,
         SCENE_RETRIEVING_WORKING_NORMAL,
@@ -272,6 +300,7 @@ private:
     vector<cv::Mat> mRetrievedPoseVec;
 
     vector<cv::Mat> mRelativeTransforms;
+    vector<float> mSceneMavrosDistances;
 
     mState mSTATE;
     mTarget mTARGET;
@@ -281,6 +310,8 @@ private:
     // for testing
     ofstream myfile;
     ofstream testfile;
+    ofstream relative_and_average_file;
+    ofstream relative_distance_file;
 };
 
 

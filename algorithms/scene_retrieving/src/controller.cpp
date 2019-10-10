@@ -25,6 +25,8 @@ Controller::Controller(ros::NodeHandle& nh)
 
     myfile.open ("relativetransform.txt", fstream::out | fstream::app);
     testfile.open("all.txt", fstream::out | fstream::app);
+    relative_and_average_file.open("relative_and_average_file.txt", fstream::out | fstream::app);
+    relative_distance_file.open("relative_distance_file.txt", fstream::out | fstream::app);
 }
 
 void Controller::Run()
@@ -32,12 +34,11 @@ void Controller::Run()
     ros::Rate rate(10.);
     while (!ros::isShuttingDown())
     {
-
         //constantly fetching information from MAVROS
-        if(mSTATE == MAVROS_STATE_ERROR)
-        {
-            Hover();
-        }
+//        if(mSTATE == MAVROS_STATE_ERROR)
+//        {
+//            Hover();
+//        }
 
         if(mTARGET == NO_TARGET)
         {
@@ -45,10 +46,6 @@ void Controller::Run()
         }
         else if (mTARGET == NEW_TARGET)
         {
-            if(!mRetrievedPoseQueue.empty())
-            {
-                UpdateTarget();
-            }
             GoToTarget(mTargetPose);
         }
 
@@ -94,6 +91,22 @@ bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBo
 
 void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 {
+
+    if (retrieved_pose.empty() || mavros_pose.empty())
+        return;
+    
+    // outlier determination
+    float relative_distance = PoseDistance(retrieved_pose, mavros_pose);
+    mSceneMavrosDistances.push_back(relative_distance);
+
+    if(isOutlier(retrieved_pose, mavros_pose))
+        return;
+
+    relative_distance_file << relative_distance <<endl;
+
+    // use mavros pose when starting to retrieve pose
+    // you can use debug_scripts/debug.py to visualize mavros pose and retrieved
+    // pose.
     string frame = "map";
     mCurMavrosPose = MatToPoseStamped(mavros_pose, frame);
 
@@ -112,7 +125,6 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
     // the first retrieved pose
     // NOTE assuming the first retrieved pose is "right" TODO, find a way to test whether the retrieved pose is right
     // set retrieved last position and retrieved current position
-    // set drone position at present
     // using retrieved drone position and current drone position to find a transform between
     // current drone frame and scene frame
     if(mSTATE == NO_SCENE_RETRIEVED_BEFORE)
@@ -181,11 +193,12 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
             // could be updated, we can find a transform from current drone pose to retrieved scene pose
             // rather than updating current drone pose with this transform, we update the current target of
             // the drone with this transform.
-            if(distanceToTarget() < 5)
-            {
-                UpdateTarget();
-            }
 
+            // No target received yet
+            if(mTARGET == NO_TARGET)
+                return;
+            else
+                UpdateTarget();
         }
         else
             std::cout<<"Current retrieved pose is not valid"<<std::endl;
@@ -215,7 +228,6 @@ bool Controller::isSceneRecoveredMovementValid()
         return true;
     else
         return false;
-
 }
 
 void Controller::UpdateTarget()
@@ -254,6 +266,11 @@ void Controller::UpdateTarget()
         position[0] += RelativeTransform.at<double>(0, 3);
         position[1] += RelativeTransform.at<double>(1, 3);
         position[2] += RelativeTransform.at<double>(2, 3);
+
+        relative_and_average_file << "0" << ","
+                                  << RelativeTransform.at<double>(0, 3) <<","
+                                  << RelativeTransform.at<double>(1, 3) <<","
+                                  << RelativeTransform.at<double>(2, 3)<<endl;
     }
 
     axises[0] = axises[0] / mIdxMavScenes.size();
@@ -285,15 +302,20 @@ void Controller::UpdateTarget()
     relative_transform.at<double>(2, 3) = position[2];
     relative_transform.at<double>(3, 3) = 1.0;
 
+    // save individual transform as well as averaged transform to a file
+    relative_and_average_file << "1" <<","
+                              << position[0] <<","
+                              << position[1] <<","
+                              << position[2] <<endl;
+
     if (mSceneRetrieveIndex <= 3)
     {
         //initial transform is mavros to scene
         mInitialRelativeTransform = relative_transform;
 
-//        writePoseToFile(myfile, mInitialRelativeTransform);
         myfile << mInitialRelativeTransform.at<double>(0, 3)<<", "
-             << mInitialRelativeTransform.at<double>(1, 3)<<", "
-             << mInitialRelativeTransform.at<double>(2, 3)<<", "<<endl;
+               << mInitialRelativeTransform.at<double>(1, 3)<<", "
+               << mInitialRelativeTransform.at<double>(2, 3)<<", "<<endl;
 
         LOG(INFO)<<"mInitialRelativeTransform: "<<mInitialRelativeTransform<<endl;
     }
@@ -306,15 +328,12 @@ void Controller::UpdateTarget()
         //current transform is from mavros to scene
         cv::Mat current2initial = findRelativeTransform(mCurrentRelativeTransform, mInitialRelativeTransform);
 
-//        writePoseToFile(myfile, mCurrentRelativeTransform);
-
         myfile << mCurrentRelativeTransform.at<double>(0, 3)<<", "
                << mCurrentRelativeTransform.at<double>(1, 3)<<", "
                << mCurrentRelativeTransform.at<double>(2, 3)<<", "<<endl;
 
-        TransformInverse(mCurrentRelativeTransform);
-        
         cv::Mat targetMat = PoseStampedToMat(mTargetPose);
+        cv::Mat initial2current = current2initial.inv();
         cv::Mat updatedTargetMat = current2initial * targetMat;
 
         geometry_msgs::PoseStamped result_target = MatToPoseStamped(updatedTargetMat, mTargetPose.header.frame_id);
@@ -415,10 +434,17 @@ void Controller::UpdateTarget()
 
 void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
 {
-    mTargetPose = target;
+    geometry_msgs::PoseStamped test;
+    test.pose.position.x = 0;
+    test.pose.position.y = -10;
+    test.pose.position.z = 3;
+
+    mTargetPose = test;
+    //mTargetPose = target;
+
     LOG(INFO)<<"Received new target: "<<mTargetPose.pose.position.x<<", "<<
-                                   mTargetPose.pose.position.y<<", "<<
-                                   mTargetPose.pose.position.z<<endl;
+                                        mTargetPose.pose.position.y<<", "<<
+                                        mTargetPose.pose.position.z<<endl;
     //UpdateTarget();
     //GoToTarget(mTargetPose);
     mTARGET = NEW_TARGET;
