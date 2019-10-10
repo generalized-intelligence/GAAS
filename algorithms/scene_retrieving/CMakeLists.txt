@@ -68,7 +68,7 @@ include_directories(${OpenCV_INCLUDE_DIRS}
                         )
 
 MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES})
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES} -lpthread)
 
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION

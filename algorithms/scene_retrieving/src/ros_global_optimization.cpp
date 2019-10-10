@@ -1,7 +1,7 @@
 //receive ros msg:1.image_l,image_r   2.position.
 //output:scene struct.
 #include <memory>
-
+#include <glog/logging.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
@@ -61,10 +61,16 @@ GlobalFrameSyncManager* pGlobalFrameSync;
 SceneRetriever* pSceneRetriever;
 
 
-void GOG_INFO_CALLBACK(const roseus::StringStamped & msg_gog) // here we use roseus::StringStamped.
+void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight);
+
+void GOG_INFO_CALLBACK(const roseus::StringStamped msg_gog) // here we use roseus::StringStamped.
 {
+    //auto msg_gog = *pmsg_gog;
+    cout<<"in GOG_INFO_CALLBACK():"<<endl;
+    LOG(INFO)<<"in GOG_INFO_CALLBACK():"<<endl;
     auto timestamp = msg_gog.header.stamp;
     string content(msg_gog.data);
+    LOG(INFO)<<"in GOG_INFO_CALLBACK():original content:"<<content<<endl;
     // content contains:
     // 1.对应stamp的图像在gog_frame中的id.
     
@@ -74,21 +80,31 @@ void GOG_INFO_CALLBACK(const roseus::StringStamped & msg_gog) // here we use ros
     //step<1> split content and do syntax analysis.
     std::vector<std::string> parts = __split(content,'|');
     std::string id_ = parts[0];
+    LOG(INFO)<<"    id:"<<id_<<endl;
     std::string quat_ = parts[1];
+    LOG(INFO)<<"    quat:"<<quat_<<endl;
     std::string translation_ = parts[2];
+    LOG(INFO)<<"    translation:"<<translation_<<endl;
     LOG(INFO)<<"Received GOG msg,id:"<<id_<<",quat:"<<quat_<<",translation:"<<translation_<<endl;
     int id = stoi(id_);
     auto q_temp = __split_comma_(quat_);
     Quaterniond quat(q_temp[0],q_temp[1],q_temp[2],q_temp[3]);
     auto t_temp = __split_comma_(translation_);
     Vector3d translation(t_temp[0],t_temp[1],t_temp[2]);
-
+    LOG(INFO)<<"in GOG_INFO_CALLBACK():Calling GOG_msg_callback():"<<endl;
     pGlobalFrameSync->GOG_msg_callback(msg_gog,id,pSceneRetriever->getScene().getCurrentIndex());
 }
 
+/*void whole_callback(const sensor_msgs::ImageConstPtr& l, const sensor_msgs::ImageConstPtr& r, const roseus::StringStampedPtr& m)
+{
+    StereoImageCallback(l,r);
+    GOG_INFO_CALLBACK(m);
+}*/
 
 void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_msgs::ImageConstPtr& msgRight)
 {
+    LOG(INFO)<<"in StereoImageCallback()"<<endl;
+    cout<<"in StereoImageCallback():"<<endl;
     cv::Mat curLeftImage, curRightImage;
     try
     {
@@ -184,10 +200,10 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_
 
 int main_of_backend_thread()
 {
-    std::cout << "Starting backend thread."<<endl;
+    LOG(INFO) << "Starting backend thread."<<endl;
     while(true)
     {
-        std::cout << "In backend thread:"<<endl;
+        LOG(INFO) << "In backend thread:"<<endl;
         bool match_success_out = false;
         cv::Mat camera_Q_mat;
         cv::Mat RT_mat_out;
@@ -204,9 +220,13 @@ int main_of_backend_thread()
             str.data = str_content.c_str();
             Pub.publish(str);
         }
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        {
+            LOG(INFO)<<"sleep 0.1s."<<endl;
+            cout<<"sleep 0.1s."<<endl;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
-    std::cout << "Exiting concurrent thread."<<endl;
+    LOG(INFO) << "Exiting concurrent thread."<<endl;
 }
 
 
@@ -218,13 +238,13 @@ int main(int argc,char** argv)
     if (argc!=3)
     {
         //cout<<"Usage: demo [scene_file_path] [voc_file_path] [l_image_path] [r_image_path] [Q_mat_file_path]"<<endl;
-        cout<<"Usage: demo [voc_file_path] [Q_mat_file_path]"<<endl;
+        LOG(INFO)<<"Usage: demo [voc_file_path] [Q_mat_file_path]"<<endl;
     }
     std::string voc_file_path(argv[1]) ,Q_mat_path(argv[2]);
     LoopClosingManager lcm(voc_file_path);
     plcm = &lcm;
-    cout<<"voc_file_path: "<<voc_file_path<<endl;
-    cout<<"Q_mat_path: "<<Q_mat_path<<endl;
+    LOG(INFO)<<"voc_file_path: "<<voc_file_path<<endl;
+    LOG(INFO)<<"Q_mat_path: "<<Q_mat_path<<endl;
 
     cv::FileStorage fsSettings(Q_mat_path, cv::FileStorage::READ);
     cv::Mat Q_mat;
@@ -232,12 +252,12 @@ int main(int argc,char** argv)
 
     if (Q_mat.empty())
     {
-        cout<<"Q mat empty, exit."<<endl;
+        LOG(INFO)<<"Q mat empty, exit."<<endl;
         return -1;
     }
 
 
-    cout<<"Q_mat: "<<endl<<Q_mat<<endl;
+    LOG(INFO)<<"Q_mat: "<<endl<<Q_mat<<endl;
     pQ_mat = &Q_mat;
 
     cv::Mat RT_mat = (cv::Mat_<float >(4,4) << 1, 0, 0, 0,
@@ -274,24 +294,24 @@ int main(int argc,char** argv)
     ros::init(argc, argv, "scene_retrieve");
     ros::NodeHandle nh;
 
-    pGlobalFrameSync = new GlobalFrameSyncManager(pSceneRetriever);
-
-
     Pub = nh.advertise<std_msgs::String>("/gaas/ros_gog_scene_retrieving",10);
     //std::shared_ptr<SceneRetriever> pSceneRetrieve(new SceneRetriever(voc_file_path));//, scene_path));
     //std::shared_ptr<SceneRetriever> pSceneRetrieve(new DynamicalSceneRetriever(voc_file_path));//先试试修改原来的类,不加入新的.
     //pSceneRetriever = pSceneRetrieve;
     pSceneRetriever = new SceneRetriever(voc_file_path);
+    pGlobalFrameSync = new GlobalFrameSyncManager(pSceneRetriever,pQ_mat,plcm);
 
-
+    ros::Subscriber gog_subscriber = nh.subscribe("/gaas/global_optimization_graph/state", 30,GOG_INFO_CALLBACK);
     message_filters::Subscriber<sensor_msgs::Image> left_sub(nh, "/gi/simulation/left/image_raw", 10);
     message_filters::Subscriber<sensor_msgs::Image> right_sub(nh, "/gi/simulation/right/image_raw", 10);
-    message_filters::Subscriber<std_msgs::String> global_optimization_graph_sub(nh,"/gi/global_optimization/optimization_result",10);
+    //message_filters::Subscriber<roseus::StringStamped> global_optimization_graph_sub(nh,"/gi/global_optimization/optimization_result",30);
 
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_pol;
-    message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub);
+    message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub);//,global_optimization_graph_sub);
     sync.setMaxIntervalDuration(ros::Duration(0.01));
     sync.registerCallback(boost::bind(StereoImageCallback, _1, _2));
+    //sync.registerCallback(boost::bind(whole_callback,_1,_2,_3));
+    //sync.registerCallback(whole_callback);
     std::thread backend_thread(main_of_backend_thread);
     ros::spin();
     return 0;
