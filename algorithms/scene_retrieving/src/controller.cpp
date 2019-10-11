@@ -94,13 +94,14 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 
     if (retrieved_pose.empty() || mavros_pose.empty())
         return;
-    
+
     // outlier determination
     float relative_distance = PoseDistance(retrieved_pose, mavros_pose);
-    mSceneMavrosDistances.push_back(relative_distance);
 
     if(isOutlier(retrieved_pose, mavros_pose))
         return;
+
+    mSceneMavrosDistances.push_back(relative_distance);
 
     relative_distance_file << relative_distance <<endl;
 

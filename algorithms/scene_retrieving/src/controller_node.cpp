@@ -1,5 +1,7 @@
 #include "scene_retrieve.h"
 #include "controller.h"
+#include "building.h"
+#include "world.h"
 
 #include <cv_bridge/cv_bridge.h>
 #include <message_filters/subscriber.h>
@@ -93,6 +95,8 @@ int main(int argc, char **argv) {
 
     string scene_path = argv[1];
     string voc_path = argv[2];
+
+    World test_world();
 
     auto* pSceneRetriever = new SceneRetriever(voc_path, scene_path);
     pSceneRetrieve = pSceneRetriever;

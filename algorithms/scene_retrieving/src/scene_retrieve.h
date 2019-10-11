@@ -4,10 +4,7 @@
 #include <iostream>
 #include <vector>
 
-// DBoW2/3
 #include <glog/logging.h>
-// DBoW2/3
-
 #include "DBoW3.h" // defines OrbVocabulary and OrbDatabase
 
 #include <Eigen/Core>
