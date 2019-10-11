@@ -476,8 +476,6 @@ public:
         T.at<double>(2, 3) = pose.pose.position.z;
         T.at<double>(3, 3) = 1;
 
-        cout<<"PoseStampedToMat: \n"<<T<<endl;
-
         return T;
     }
 private:

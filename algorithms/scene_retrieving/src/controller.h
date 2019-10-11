@@ -37,6 +37,8 @@
 #include <opencv2/core/eigen.hpp>
 #include <visualization_msgs/Marker.h>
 
+#include "world.h"
+
 using namespace std;
 
 class Controller{
@@ -48,6 +50,8 @@ public:
     void Run();
 
     void SetTarget(geometry_msgs::PoseStamped& target);
+
+    void GoByWayPoints(vector<geometry_msgs::PoseStamped>& way_points);
 
     bool GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame=false);
 
@@ -95,8 +99,6 @@ public:
         T.at<double>(1, 3) = pose.pose.position.y;
         T.at<double>(2, 3) = pose.pose.position.z;
         T.at<double>(3, 3) = 1;
-
-        cout<<"PoseStampedToMat: \n"<<T<<endl;
 
         return T;
     }
@@ -251,6 +253,10 @@ public:
         NEW_TARGET,
         TARGET_REACHED,
     };
+
+private:
+
+    shared_ptr<World> mpWorld = nullptr;
 
 private:
     ros::NodeHandle nh;

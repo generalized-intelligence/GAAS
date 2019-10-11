@@ -16,20 +16,16 @@ public:
 
     World();
 
-private:
-
-    vector<Building> mBuildings;
-
     // NOTE it is different from "Path Finding"
-    vector<geometry_msgs::PoseStamped> FindPath(geometry_msgs::PoseStamped& mavros_pose,
-                                                geometry_msgs::PoseStamped& target_pose);
+    vector<geometry_msgs::PoseStamped> FindWayPoints(geometry_msgs::PoseStamped& mavros_pose,
+                                                     geometry_msgs::PoseStamped& target_pose);
 
     template<class T>
-    inline bool isInBuilding(T& point, int& building_idx)
+    inline bool isInBuilding(T& point, int& building_idx, bool use_log = false)
     {
         for(int i=0; i<=mBuildings.size(); i++)
         {
-            if(mBuildings[i].isInBuilding(point))
+            if(mBuildings[i].isInBuilding(point, use_log))
             {
                 building_idx = i;
                 return true;
@@ -55,6 +51,10 @@ private:
         return pose;
     }
 
+
+public:
+
+    vector<Building> mBuildings;
 
 };
 

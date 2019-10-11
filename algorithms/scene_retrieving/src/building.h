@@ -25,17 +25,36 @@ public:
     Building(Eigen::Vector3f& point, int starting_id, Eigen::Vector3f& door_position, int door_starting_id,
              float door_w = 2, float door_h=3, float length=10, float width=5, float height=8);
 
-    template<class T>
-    inline bool isInBuilding(T& point)
+
+    inline bool isInBuilding(geometry_msgs::PoseStamped& point, bool use_log=false)
     {
-        if( point[0] > (mStartingPoint[0] + mWidth) || point[0] < mStartingPoint[0])
+
+        if(use_log)
+        {
+            cout << "point.pose.position: " << point.pose.position << endl;
+            cout << "(mStartingPoint[0]: " << mStartingPoint[0] << endl;
+            cout << "point.pose.position.x > (mStartingPoint[0] + mWidth): "
+                 << (point.pose.position.x > (mStartingPoint[0] + mWidth)) << endl;
+            cout << "point.pose.position.x < mStartingPoint[0]: " << (point.pose.position.x < mStartingPoint[0])
+                 << endl;
+            cout << "point.pose.position.y > (mStartingPoint[1] + mLength: "
+                 << (point.pose.position.y > (mStartingPoint[1] + mLength)) << endl;
+            cout << "point.pose.position.y < mStartingPoint[1]: " << (point.pose.position.y < mStartingPoint[1])
+                 << endl;
+            cout << "point.pose.position.z > (mStartingPoint[2] + mHeight: "
+                 << (point.pose.position.z > (mStartingPoint[2] + mHeight)) << endl;
+            cout << "point.pose.position.z < mStartingPoint[2]: " << (point.pose.position.z < mStartingPoint[2])
+                 << endl;
+        }
+
+        if( point.pose.position.x > (mStartingPoint[0] + mWidth) || point.pose.position.x < mStartingPoint[0])
             return false;
-        else if(point[1] > (mStartingPoint[1] + mLength) || point[1] < mStartingPoint[1])
+        else if(point.pose.position.y > (mStartingPoint[1] + mLength) || point.pose.position.y < mStartingPoint[1])
             return false;
-        else if(point[2] > (mStartingPoint[2] + mHeight) || point[2] < mStartingPoint[2])
+        else if(point.pose.position.z > (mStartingPoint[2] + mHeight) || point.pose.position.z < mStartingPoint[2])
             return false;
-        else
-            return true;
+
+        return true;
     }
 
     void CreatePerimPoints();

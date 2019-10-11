@@ -61,7 +61,7 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
           LOG(INFO)<<"rotation mat: "<<rotation_matrix<<endl;
           LOG(INFO)<<"result mat: "<<RT_mat<<endl;
 
-          pController->AddRetrievedPose(RT_mat, mavros_pose);
+          //pController->AddRetrievedPose(RT_mat, mavros_pose);
         }
         else
         {
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
     }
 
     google::SetLogDestination(google::GLOG_INFO, "./log_controller_" );
-    FLAGS_alsologtostderr = 1;
+    //FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
 
     ros::init(argc, argv, "controller_node");
