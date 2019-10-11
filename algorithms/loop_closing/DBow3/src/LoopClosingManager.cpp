@@ -54,10 +54,10 @@ QueryResults LoopClosingManager::queryKeyFrames(ptr_frameinfo info)
     QueryResults results;
     //this->frame_db.query(info->descriptors, results, RET_QUERY_LEN, this->frame_index - TOO_CLOSE_THRES);
 
-    this->frame_db.query(info->descriptors, results, 4, this->curFrameIndex - TOO_CLOSE_THRES);
+    //this->frame_db.query(info->descriptors, results, 4, this->curFrameIndex - TOO_CLOSE_THRES);
     //this->frame_db.query(info->descriptors, results, 4, -1);
 
-    //this->frame_db.query(info->descriptors, results, 4);
+    this->frame_db.query(info->descriptors, results, 4);
     //LOG(WARNING)<<"removed too close detection!!"<<endl;
 
     return results;

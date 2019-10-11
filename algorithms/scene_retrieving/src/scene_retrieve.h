@@ -4,10 +4,7 @@
 #include <iostream>
 #include <vector>
 
-// DBoW2/3
 #include <glog/logging.h>
-// DBoW2/3
-
 #include "DBoW3.h" // defines OrbVocabulary and OrbDatabase
 
 #include <Eigen/Core>
@@ -481,8 +478,6 @@ public:
         T.at<double>(1, 3) = pose.pose.position.y;
         T.at<double>(2, 3) = pose.pose.position.z;
         T.at<double>(3, 3) = 1;
-
-        cout<<"PoseStampedToMat: \n"<<T<<endl;
 
         return T;
     }

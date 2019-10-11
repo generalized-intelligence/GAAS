@@ -55,8 +55,8 @@ const int RET_QUERY_LEN = 4;
 //const int TOO_CLOSE_THRES = 15;
 //const int TOO_CLOSE_THRES = 50;
 //const int TOO_CLOSE_THRES = 1;
-//const int TOO_CLOSE_THRES = 1;
-const int TOO_CLOSE_THRES = 50;
+const int TOO_CLOSE_THRES = 1;
+//const int TOO_CLOSE_THRES = 50;
 
 //const float DB_QUERY_SCORE_THRES = 0.4;//0.5;//0.65;
 const float DB_QUERY_SCORE_THRES = 0.0075;//0.015;//0.5;//0.65;

@@ -23,6 +23,8 @@ Controller::Controller(ros::NodeHandle& nh)
     std::thread t(&Controller::Run, this);
     t.detach();
 
+    mpWorld = make_shared<World>();
+
     myfile.open ("relativetransform.txt", fstream::out | fstream::app);
     testfile.open("all.txt", fstream::out | fstream::app);
     relative_and_average_file.open("relative_and_average_file.txt", fstream::out | fstream::app);
@@ -46,7 +48,16 @@ void Controller::Run()
         }
         else if (mTARGET == NEW_TARGET)
         {
-            GoToTarget(mTargetPose);
+            int building_idx = -1;
+            bool result = mpWorld->isInBuilding(mTargetPose, building_idx, true);
+            cout<<"Is mTargetPose in building?: "<<result<<endl;
+
+            auto wps = mpWorld->FindWayPoints(mCurMavrosPose, mTargetPose);
+
+            GoByWayPoints(wps);
+            //GoToTarget(mTargetPose);
+
+            mTARGET == NO_TARGET;
         }
 
         rate.sleep();
@@ -59,6 +70,20 @@ void Controller::SetTarget(geometry_msgs::PoseStamped& target)
 {
     mTargetPose = target;
     mTARGET = NEW_TARGET;
+}
+
+
+void Controller::GoByWayPoints(vector<geometry_msgs::PoseStamped>& way_points)
+{
+    if(way_points.empty())
+        LOG(INFO)<<"Way points empty!"<<endl;
+
+    for(auto& wp : way_points)
+    {
+        LOG(INFO)<<"Current waypoint: "<<wp<<endl;
+        GoToTarget(wp);
+        ros::Duration(5).sleep();
+    }
 }
 
 bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame)
@@ -94,13 +119,14 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 
     if (retrieved_pose.empty() || mavros_pose.empty())
         return;
-    
+
     // outlier determination
     float relative_distance = PoseDistance(retrieved_pose, mavros_pose);
-    mSceneMavrosDistances.push_back(relative_distance);
 
     if(isOutlier(retrieved_pose, mavros_pose))
         return;
+
+    mSceneMavrosDistances.push_back(relative_distance);
 
     relative_distance_file << relative_distance <<endl;
 
@@ -232,6 +258,8 @@ bool Controller::isSceneRecoveredMovementValid()
 
 void Controller::UpdateTarget()
 {
+    mTARGET == NEW_TARGET;
+
     if (mRetrievedPoseQueue.empty())
         return;
 
@@ -434,13 +462,14 @@ void Controller::UpdateTarget()
 
 void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
 {
-    geometry_msgs::PoseStamped test;
-    test.pose.position.x = 0;
-    test.pose.position.y = -10;
-    test.pose.position.z = 3;
+//    geometry_msgs::PoseStamped test;
+//    test.pose.position.x = 0;
+//    test.pose.position.y = -10;
+//    test.pose.position.z = 3;
+//    mTargetPose = test;
 
-    mTargetPose = test;
-    //mTargetPose = target;
+    mTargetPose = target;
+    mTargetPose.pose.position.z = 3;
 
     LOG(INFO)<<"Received new target: "<<mTargetPose.pose.position.x<<", "<<
                                         mTargetPose.pose.position.y<<", "<<

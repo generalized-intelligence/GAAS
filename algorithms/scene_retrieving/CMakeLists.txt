@@ -44,7 +44,7 @@ find_package(catkin REQUIRED COMPONENTS
                                 image_transport
                                 roscpp
                                 sensor_msgs
-				geometry_msgs
+				                geometry_msgs
                                 roseus
                                 visualization_msgs
 				)
@@ -63,8 +63,8 @@ include_directories(${OpenCV_INCLUDE_DIRS}
 			${PCL_INCLUDE_DIRS}
 			../loop_closing/DBow3/src
 			./include/
-                        ${catkin_INCLUDE_DIRS}
-                        ${EIGEN3_INCLUDE_DIR}
+            ${catkin_INCLUDE_DIRS}
+            ${EIGEN3_INCLUDE_DIR}
 			${catkin_INCLUDE_DIRS}
                         )
 
@@ -87,9 +87,6 @@ ADD_CUSTOM_TARGET(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/c
 
 INSTALL(FILES "${PROJECT_BINARY_DIR}/Find${PROJECT_NAME}.cmake" DESTINATION ${LIB_INSTALL_DIR}/cmake/ )
 INSTALL(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" DESTINATION ${LIB_INSTALL_DIR}/cmake/${PROJECT_NAME} )
-
-
-
 
 # ----------------------------------------------------------------------------
 #   Program Optimization and debug (Extracted from OpenCV)
