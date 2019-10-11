@@ -37,7 +37,7 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     cout<<"Is running with gps:"<<state<<endl;
     visualization_msgs::Marker slam_marker;
     slam_marker.header.frame_id = "world";
-    slam_marker.header.stamp = ros::Time::now();
+    //slam_marker.header.stamp = ros::Time::now();//Try to trust the image header.
     slam_marker.type = visualization_msgs::Marker::ARROW;
     slam_marker.action = visualization_msgs::Marker::ADD;
     auto q_ = slam_msg->pose.orientation;

@@ -105,28 +105,29 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_
 {
     LOG(INFO)<<"in StereoImageCallback()"<<endl;
     cout<<"in StereoImageCallback():"<<endl;
-    cv::Mat curLeftImage, curRightImage;
+    std::shared_ptr<cv::Mat> pCurLeftImage(new cv::Mat), pCurRightImage(new cv::Mat);
     try
     {
         //curLeftImage = cv_bridge::toCvShare(msgLeft)->image;
         //curRightImage = cv_bridge::toCvShare(msgRight)->image;
         //auto l_im& = cv_bridge::toCvShare(msgLeft)->image;
         
-        cv::cvtColor(cv_bridge::toCvShare(msgLeft)->image, curLeftImage, CV_BGR2GRAY);
-        cv::cvtColor(cv_bridge::toCvShare(msgRight)->image, curRightImage, CV_BGR2GRAY);
+        cv::cvtColor(cv_bridge::toCvShare(msgLeft)->image, *pCurLeftImage, CV_BGR2GRAY);
+        cv::cvtColor(cv_bridge::toCvShare(msgRight)->image, *pCurRightImage, CV_BGR2GRAY);
     }
     catch(cv_bridge::Exception &e)
     {
-        ROS_ERROR("cv_bridge exception: %s", e.what());
+        LOG(ERROR)<<"in StereoImageCallback:cv_bridge exception caught!"<<endl;
+        ROS_ERROR("in StereoImageCallback():cv_bridge exception: %s", e.what());
         return;
     }
 
-    if (curLeftImage.empty() && curRightImage.empty())
+    if (pCurLeftImage->empty() && pCurRightImage->empty())
     {
         LOG(WARNING)<<"Empty image got in ros_global_optimization StereoImageCallback()."<<endl;
         return;
     }
-    pGlobalFrameSync->Image_msg_callback(msgLeft,msgRight);//do loop closing check inside this callback;
+    pGlobalFrameSync->Image_msg_callback(msgLeft->header.stamp,pCurLeftImage,pCurRightImage);//do loop closing check inside this callback;
     /*
     LOG(INFO)<<"Forming empty rt mat."<<endl;
     cv::Mat r_mat = cv::Mat::eye(3,3,CV_32F);
@@ -201,32 +202,51 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_
 int main_of_backend_thread()
 {
     LOG(INFO) << "Starting backend thread."<<endl;
-    while(true)
+    /*try
     {
-        LOG(INFO) << "In backend thread:"<<endl;
-        bool match_success_out = false;
-        cv::Mat camera_Q_mat;
-        cv::Mat RT_mat_out;
-        auto ret_val = pGlobalFrameSync->checkLoopTaskQueue(match_success_out,camera_Q_mat,RT_mat_out);
-        if(match_success_out)
-        {
-            LOG(INFO)<<"Match success in backend thread,id:"<<std::get<0>(ret_val)<<","<<std::get<1>(ret_val)<<".RT_mat:"<<RT_mat_out<<endl;
-            //cout<<" Match success! RT mat is: \n"<<RT_mat<<endl;
-            std_msgs::String str;
-            stringstream ss;
-            std::string str_content;
-            ss<<"Frame id:"<<0<<","<<1<<";RT:"<<RT_mat_out;
-            ss>>str_content;
-            str.data = str_content.c_str();
-            Pub.publish(str);
-        }
-        {
-            LOG(INFO)<<"sleep 0.1s."<<endl;
-            cout<<"sleep 0.1s."<<endl;
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        int *p = (int*)0;
+        cout<<"create nullpoint deref error."<<endl;
+        cout<<"*p = "<<*p<<endl;
     }
-    LOG(INFO) << "Exiting concurrent thread."<<endl;
+    catch(...)
+    {
+        cout<<"error caught!"<<endl;
+        return -1;
+    }*/
+
+    //try
+    {
+        while(true)
+        {
+            LOG(INFO) << "In backend thread:loop running."<<endl;
+            bool match_success_out = false;
+            cv::Mat camera_Q_mat;
+            cv::Mat RT_mat_out;
+            auto ret_val = pGlobalFrameSync->checkLoopTaskQueue(match_success_out,camera_Q_mat,RT_mat_out);
+            if(match_success_out)
+            {
+                LOG(INFO)<<"in main_of_backend_thread():match success!"<<endl;
+                LOG(INFO)<<"Match success in backend thread,id:"<<std::get<0>(ret_val)<<","<<std::get<1>(ret_val)<<".RT_mat:"<<RT_mat_out<<endl;
+                //cout<<" Match success! RT mat is: \n"<<RT_mat<<endl;
+                std_msgs::String str;
+                stringstream ss;
+                std::string str_content;
+                ss<<"Frame id:"<<0<<","<<1<<";RT:"<<RT_mat_out;
+                ss>>str_content;
+                str.data = str_content.c_str();
+                Pub.publish(str);
+            }
+            {
+                LOG(INFO)<<"Match failed sleep 0.1s."<<endl;
+                cout<<"sleep 0.1s."<<endl;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+    }
+    //catch(...)
+    //{
+    //    LOG(ERROR) << "Exiting concurrent thread."<<endl;
+    //}
 }
 
 

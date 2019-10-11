@@ -783,6 +783,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
                 Point2 current_height = currentEstimate.at(Symbol('h',slam_vertex_index-1)).cast<Point2>();
                 current_status.ret_val_t[2] = current_height.x();//y没用.
                 current_status.header_ = SLAM_msg.header;
+                LOG(INFO)<<"current_status.header timestamp:"<<current_status.header_.stamp.toNSec()<<"slam_msg header timestamp:"<<SLAM_msg.header.stamp.toNSec();
                 current_status.innerID_of_GOG = this->slam_vertex_index-1;
                 //TODO:dump current_status to a log file.
                 LOG(INFO)<<"Current_status output changed!"<<endl;

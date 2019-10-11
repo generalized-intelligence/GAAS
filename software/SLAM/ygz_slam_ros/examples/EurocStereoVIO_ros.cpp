@@ -533,7 +533,8 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
       VisualOdomMSGindex+=1;
 
       geometry_msgs::PoseStamped EstimatedPose_for_obs_avoid;
-      EstimatedPose_for_obs_avoid.header.stamp = ros::Time::now();
+      //EstimatedPose_for_obs_avoid.header.stamp = ros::Time::now(); //WARNING:changed timestamp sync with l image.
+      EstimatedPose_for_obs_avoid.header.stamp = msgLeft->header.stamp;
       auto &pose_obs = EstimatedPose_for_obs_avoid.pose.position;
       pose_obs.x = pos(0,0);
       pose_obs.y = pos(1,0);
