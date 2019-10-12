@@ -15,10 +15,11 @@ add_definitions(-std=c++14)
 #------------------------------------------------------
 # Build type
 #------------------------------------------------------
-IF(NOT CMAKE_BUILD_TYPE )
-   SET( CMAKE_BUILD_TYPE "Release" )
-ENDIF()
-#SET( CMAKE_BUILD_TYPE "Debug" )
+#IF(NOT CMAKE_BUILD_TYPE )
+#   #SET( CMAKE_BUILD_TYPE "Release" )
+#   SET( CMAKE_BUILD_TYPE "Debug" )
+#ENDIF()
+SET( CMAKE_BUILD_TYPE "Debug" )
 
 #------------------------------------------------------
 # Lib Names and Dirs

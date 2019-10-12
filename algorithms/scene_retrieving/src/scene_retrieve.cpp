@@ -297,7 +297,7 @@ void SceneRetriever::setImageVecPath(vector<string>& imageVec, int left)
 }
 
 
-cv::Mat SceneRetriever::fetchImage(size_t index, int left)
+cv::Mat SceneRetriever::fetchImage(int index, int left)
 {
     LOG(INFO)<<"fetchImage: "<<index<<", "<<left<<endl;
     LOG(INFO)<<"this->mVecLeftImagePath.size(): "<<this->mVecLeftImagePath.size()<<endl;

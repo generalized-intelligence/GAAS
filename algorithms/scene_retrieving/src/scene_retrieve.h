@@ -190,7 +190,7 @@ public:
 
 SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr, const cv::Mat& RotationMat, const cv::Mat& TranslationMat, const cv::Mat& Q_mat, LoopClosingManager& lcm,bool& success)
 {
-    
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<1>"<<endl;
     std::vector<cv::KeyPoint> key_points2d_candidate;
     std::vector<cv::KeyPoint> key_points2d_final;
     std::vector<cv::Point3d> points3d;
@@ -198,6 +198,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     //LOG(INFO)<<"generating temp LoopClosingManager in generateSceneFrameFromStereoImage()"<<endl;
     //LoopClosingManager lcm("./config/orbvoc.dbow3");
 
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<2>"<<endl;
     //LOG(INFO)<<"temp LoopClosingManager extracting feature."<<endl;
     ptr_frameinfo pleft_image_info = lcm.extractFeature(imgl);
     ptr_frameinfo pright_image_info = lcm.extractFeature(imgr);
@@ -205,7 +206,8 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
     cv::Mat feature_l,feature_r;
     feature_l = pleft_image_info->descriptors;
     feature_r = pright_image_info->descriptors;
-    
+
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<3>"<<endl;
     std::vector<int> good_2dmatches_index;
 
     LOG(INFO)<<"FlannBasedMatcher matching."<<endl;
@@ -225,6 +227,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
         if( dist > max_dist ) max_dist = dist;
     }
 
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<4>"<<endl;
     std::vector< cv::DMatch > good_matches;
     for( int i = 0; i < matches.size(); i++ )
     {
@@ -233,7 +236,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
             good_matches.push_back( matches[i]); 
         }
     }
-    
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<5>"<<endl;
     
     std::vector<cv::Point2f> lk_input_keypoints, lk_output_keypoints;
     for(size_t i = 0; i < good_matches.size(); i++)
@@ -241,7 +244,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
         lk_input_keypoints.push_back(pleft_image_info->keypoints[good_matches[i].queryIdx].pt);//will check if LKFlow exist.
         good_2dmatches_index.push_back(good_matches[i].queryIdx);
     }
-
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<6>"<<endl;
 
     if (lk_input_keypoints.size()<=5)
     {
@@ -276,7 +279,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
          SceneFrame temp;
          return temp;
     }
-        
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<7>"<<endl;
     
     std::vector<cv::Point2f> matched_points;
     std::vector<float> disparity_of_points;
@@ -308,13 +311,13 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
             //push_back(pleft_image_info->descriptors[good_2dmatches_index[index]]);
         }
     }
-
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<8>"<<endl;
 
     std::vector<cv::Point3f> points3f;
 
     cv::reprojectImageTo3D(disparity_of_points, points3f, Q_mat);
     points3d.resize(points3f.size());
-    
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<9>"<<endl;
     
     //do rotation and translation to points3d.
     for(int i = 0;i<points3f.size();i++)
@@ -342,7 +345,7 @@ SceneFrame generateSceneFrameFromStereoImage(const cv::Mat &imgl, cv::Mat &imgr,
         output.z = transformed.at<float>(2);
         points3d[i] = output;//do transform in mat form.
     }
-    
+    LOG(INFO)<<"in generateSceneFrameFromStereoImage():step<10>"<<endl;
     cv::KeyPoint::convert(matched_points,key_points2d_final);
     
     LOG(INFO)<<"key_points2d_final size: "<<key_points2d_final.size()<<endl;
@@ -413,7 +416,7 @@ public:
 
     void setImageVecPath(vector<string>& imageVec, int left);
 
-    cv::Mat fetchImage(size_t index, int left);
+    cv::Mat fetchImage(int index, int left);
 
     void displayFeatureMatches(cv::Mat curImage, vector<cv::KeyPoint> curKps,
                                cv::Mat oldImage, vector<cv::KeyPoint> oldKps,

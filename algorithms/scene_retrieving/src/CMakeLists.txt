@@ -51,6 +51,11 @@ target_link_libraries(ros_global_optimization PRIVATE nlohmann_json::nlohmann_js
                         scene_retrieve
 )
 
+#add_executable(controller_node controller_node.cpp controller.cpp )
+#target_link_libraries(controller_node
+#		scene_retrieve
+#		${REQUIRED_LIBRARIES}
+#		)
 add_executable(controller_node controller_node.cpp controller.cpp building.cpp building.h world.cpp world.h)
 target_link_libraries(controller_node
 		scene_retrieve
