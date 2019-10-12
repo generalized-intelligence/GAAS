@@ -39,33 +39,33 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
         cv::Mat mavros_pose, RT_mat;
         bool match_success;
         int* loop_index;
+
+        // mavros pose: return value, FCU returned pose, could be either from GPS or SLAM
+        // RT_mat: return value, recovered pose from loaded scene
         float fitness_score = pSceneRetrieve->retrieveSceneFromStereoImage(imgL, imgR, mavros_pose, RT_mat, match_success, loop_index);
 
         LOG(INFO)<<"fitness_score: "<<fitness_score<<endl;
+        LOG(INFO)<<"RT_mat: "<<RT_mat<<endl;
+        LOG(INFO)<<"RT_mat type: "<<RT_mat.type()<<endl;
 
-        if(fitness_score >= 0 && fitness_score <= 1.0 && !RT_mat.empty())
+        if(fitness_score >= 0 && fitness_score <= 5.0 && !RT_mat.empty() && !mavros_pose.empty())
         {
 
-          LOG(INFO)<<"RT_mat type: "<<RT_mat.type()<<endl;
-          LOG(INFO)<<"RT_mat: "<<RT_mat<<endl;
+            LOG(INFO)<<"fitness_score >= 0 && fitness_score <= 5.0 && !RT_mat.empty() && !mavros_pose.empty()"<<endl;
+            Eigen::Matrix3f rotation_matrix;
+            RT_mat.convertTo(RT_mat, CV_32F);
+            cv::cv2eigen(RT_mat, rotation_matrix);
+            Vector3f EulerAngle = rotation_matrix.eulerAngles(0, 1, 2);
 
-          Eigen::Matrix3f rotation_matrix;
-          cv::cv2eigen(RT_mat, rotation_matrix);
-          Vector3f EulerAngle = rotation_matrix.eulerAngles(0, 1, 2);
-
-          Eigen::Vector4f position_and_yaw(RT_mat.at<double>(0, 3),
+            Eigen::Vector4f position_and_yaw(RT_mat.at<double>(0, 3),
                                            RT_mat.at<double>(1, 3),
                                            RT_mat.at<double>(2, 3),
                                            EulerAngle[2]);
 
-          LOG(INFO)<<"rotation mat: "<<rotation_matrix<<endl;
-          LOG(INFO)<<"result mat: "<<RT_mat<<endl;
+            LOG(INFO)<<"rotation mat: "<<rotation_matrix<<endl;
+            LOG(INFO)<<"result mat: "<<RT_mat<<endl;
 
-          //pController->AddRetrievedPose(RT_mat, mavros_pose);
-        }
-        else
-        {
-          return;
+            //pController->AddRetrievedPose(RT_mat, mavros_pose);
         }
 
 }
@@ -109,8 +109,8 @@ int main(int argc, char **argv) {
     sync.registerCallback(boost::bind(StereoImageCallback, _1, _2));
 
 
-    auto* controller = new Controller(nh);
-    pController = controller;
+//    auto* controller = new Controller(nh);
+//    pController = controller;
 
 ////    ros::MultiThreadedSpinner spinner(4);
 //

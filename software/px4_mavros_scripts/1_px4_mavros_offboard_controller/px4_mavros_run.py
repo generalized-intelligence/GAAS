@@ -199,7 +199,9 @@ class Px4Controller:
             body_x = FLU_x + self.local_pose.pose.position.x
             body_y = FLU_y + self.local_pose.pose.position.y
             body_z = FLU_z + self.local_pose.pose.position.z
-
+            print(self.current_heading)
+            print(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
+	    print(body_x, body_y, body_z)
             self.cur_target_pose = self.construct_target(body_x,
                                                          body_y,
                                                          body_z,

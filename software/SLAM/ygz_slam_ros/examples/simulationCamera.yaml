@@ -19,7 +19,7 @@ Right: /gi/simulation/right/image_raw
 PureVisionMode: true
 
 # do we need visualization?
-UseViewer: false#true
+UseViewer: false
 
 # display mappoints?
 displayMapPoints: false

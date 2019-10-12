@@ -442,8 +442,16 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
     //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
 
-    CurrentLeftImage = cv_ptrLeft->image;
-    CurrentRightImage = cv_ptrRight->image;
+    if(cv_ptrLeft->image.channels() == 3)
+    {
+        cv::cvtColor(cv_ptrLeft->image, CurrentLeftImage, CV_BGR2GRAY);
+        cv::cvtColor(cv_ptrRight->image, CurrentRightImage, CV_BGR2GRAY);
+    }
+    else
+    {
+        CurrentLeftImage = cv_ptrLeft->image;
+        CurrentRightImage = cv_ptrRight->image;
+    }
 
     VehicleAttitude atti;
     atti.q.x() = posemsg.pose.orientation.x;
@@ -459,9 +467,6 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     Matrix3d mat = pos_and_atti.rotationMatrix();
     Quaterniond quat(mat);
     
-    SlamPoseHistory << to_string(pos[0]) + "," + to_string(pos[1]) + "," + to_string(pos[2]) + "\n";
-    //px4PoseHistory << to_string(posemsg.pose.position.x) + "," + to_string(posemsg.pose.position.y) + "," + to_string(posemsg.pose.position.z) + "\n";
-    
     geometry_msgs::PoseStamped SlamPose;
     SlamPose.header.stamp = ros::Time::now();
     auto &pose_obs = SlamPose.pose.position;
@@ -475,7 +480,7 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
     pose_atti.z = quat.z();
     SLAMpose->publish(SlamPose);
 
-    tss->publish(SlamPose);
+    pExternalEstimate->publish(SlamPose);
 
     Eigen::Quaterniond mavros_quaterion(posemsg.pose.orientation.w,
                                         posemsg.pose.orientation.x,
@@ -497,8 +502,6 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
                                          0, 1, 0, 0,
                                          0, 0, 1, 0,
                                          0, 0, 0, 1);
-    
-    
 
     if(!rotationmat.empty() && !translationmat.empty())
     {

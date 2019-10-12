@@ -399,8 +399,7 @@ public:
         return 0;
     }
 
-    
-    
+
     float retrieveSceneWithMultiStereoCam(const std::vector<cv::Mat> leftCams,const std::vector<cv::Mat> rightCams,
                                         std::vector<cv::Mat> RT_pose_of_stereo_cams,
                                         cv::Mat &RT_mat_of_multi_stereo_cam_output,

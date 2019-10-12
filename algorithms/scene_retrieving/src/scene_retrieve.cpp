@@ -246,7 +246,8 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
         mVecLeftImagePath.push_back(left_path);
     }
 
-    mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &SceneRetriever::MavrosPoseCallback, this);
+    mMavrosSub = mNH.subscribe("/mavros/vision_pose/pose", 100, &SceneRetriever::MavrosPoseCallback, this);
+    //mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &SceneRetriever::MavrosPoseCallback, this);
 }
 
 void SceneRetriever::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
@@ -544,7 +545,7 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     LOG(INFO)<<"result_t: "<<result_t<<endl;
     LOG(INFO)<<"new_t: "<<new_t<<endl;
 
-    if (fitnesscore < 1.0) //TODO:move this into a config.
+    if (fitnesscore < 3.0) //TODO:move this into a config.
     {
         this->mpCv_helper->publishPose(new_R, new_t, 0);
         RT_mat_of_stereo_cam_output = new_T;

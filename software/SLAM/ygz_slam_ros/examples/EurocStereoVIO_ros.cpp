@@ -448,13 +448,17 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     //cv::remap(cv_ptrLeft->image, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
     //cv::remap(cv_ptrRight->image, imRightRect, M1r, M2r, cv::INTER_LINEAR);
 
+    if(cv_ptrLeft->image.channels() == 3)
+    {
+        cv::cvtColor(cv_ptrLeft->image, imLeftRect, CV_BGR2GRAY);
+        cv::cvtColor(cv_ptrRight->image, imRightRect, CV_BGR2GRAY);
+    }
+    else
+    {
+        imLeftRect = cv_ptrLeft->image;
+        imRightRect = cv_ptrRight->image;
+    }
 
-
-    cv::cvtColor(cv_ptrLeft->image, imLeftRect, CV_BGR2GRAY);
-    cv::cvtColor(cv_ptrRight->image,imRightRect , CV_BGR2GRAY);
-
-    //imLeftRect = cv_ptrLeft->image;
-    //imRightRect = cv_ptrRight->image;
 
     bool use_height = false;
     double height_in = 0;
@@ -551,8 +555,10 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
 
     //Convert from original SE3 to px4 drone body frame
     Matrix3d CustomRotation;
-    CustomRotation << 0, 1, 0, 0, 0, 1, 1, 0, 0;
     Vector3d CustomTranslation;
+    CustomRotation << 0, 1, 0,
+                      0, 0, 1,
+                      1, 0, 0;
     CustomTranslation << 0, 0, 0;
     SE3d CustomTransform(CustomRotation, CustomTranslation);
     
@@ -582,7 +588,10 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     EstimatedPose.pose.position.x = DroneFrameSE3_t[0] * cos(pixhawk_heading_rad) + DroneFrameSE3_t[1] * sin(pixhawk_heading_rad);
     EstimatedPose.pose.position.y = DroneFrameSE3_t[1] * cos(pixhawk_heading_rad) - DroneFrameSE3_t[0] * sin(pixhawk_heading_rad);
     EstimatedPose.pose.position.z = DroneFrameSE3_t[2];
-   
+    EstimatedPose.pose.orientation.w = DroneFrameSE3_Q.w();
+    EstimatedPose.pose.orientation.x = DroneFrameSE3_Q.x();
+    EstimatedPose.pose.orientation.y = DroneFrameSE3_Q.y();
+    EstimatedPose.pose.orientation.z = DroneFrameSE3_Q.z();
     pExternalEstimate->publish(EstimatedPose);
 
 
