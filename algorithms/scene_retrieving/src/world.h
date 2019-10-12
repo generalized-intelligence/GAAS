@@ -48,6 +48,10 @@ public:
         pose.pose.position.x = position[0];
         pose.pose.position.y = position[1];
         pose.pose.position.z = position[2];
+
+        LOG(INFO)<<"Eigen: "<<position<<endl;
+        LOG(INFO)<<"position: "<<pose.pose.position<<endl;
+
         return pose;
     }
 

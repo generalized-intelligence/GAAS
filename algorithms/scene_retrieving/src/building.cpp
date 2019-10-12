@@ -116,9 +116,13 @@ void Building::CreateDoorPoints()
 //    mDoorHeight = door_h;
 //    mDoorWidth = door_w;
 
-    Eigen::Vector3f mDoorGlobalPosition(mC0[0]+mDoorPosition[0],
-                                        mC0[1]+mDoorPosition[1],
-                                        mC0[2]+mDoorPosition[2]);
+    // TODO: assuming that door is only located at above mentioned postion, make it general!
+
+    Eigen::Vector3f door_global_position(mC0[0]+mDoorPosition[0],
+                                         mC0[1]+mDoorPosition[1] + mDoorWidth/2.0,
+                                         mC0[2]+mDoorPosition[2]);
+
+    mDoorGlobalPosition = door_global_position;
 
     float grid_size = 0.2;
     for(float w=0; w<=mDoorWidth; )

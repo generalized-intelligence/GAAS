@@ -54,10 +54,16 @@ void Controller::Run()
 
             auto wps = mpWorld->FindWayPoints(mCurMavrosPose, mTargetPose);
 
+            for(auto& wp : wps)
+            {
+                LOG(INFO)<<"Current waypoints: "<<wp<<endl;
+            }
+
             GoByWayPoints(wps);
             //GoToTarget(mTargetPose);
 
-            mTARGET == NO_TARGET;
+            // disable movement after finishing current task mission.
+            mTARGET = NO_TARGET;
         }
 
         rate.sleep();
@@ -476,6 +482,8 @@ void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
                                         mTargetPose.pose.position.z<<endl;
     //UpdateTarget();
     //GoToTarget(mTargetPose);
+
+    // enable new task after each targetset callback
     mTARGET = NEW_TARGET;
 }
 

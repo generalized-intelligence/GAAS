@@ -40,7 +40,14 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
     LOG(INFO)<<"target pose: "<<target_pose<<endl;
 
     vector<geometry_msgs::PoseStamped> path;
+    Eigen::Vector3f safe_point(0, 0, 3);
+    geometry_msgs::PoseStamped safe_point_pose = Eigen2Pose(safe_point);
+
+    // TODO: There is no obstacle avoidance at the moment, and I am using a very simple logic to control the drone
+    // we can introduce obstacle avoidance to it.
+
     // case 1, drone not in any building, target in building
+    // wps: safe_point -> building door -> building point
     int building_index = -1;
     if(!isInBuilding(mavros_pose, building_index))
     {
@@ -48,14 +55,18 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
         {
             Eigen::Vector3f door_position = mBuildings[building_index].DoorGlobalPosition();
             geometry_msgs::PoseStamped door = Eigen2Pose(door_position);
+            path.push_back(safe_point_pose);
             path.push_back(door);
             path.push_back(target_pose);
+            LOG(INFO)<<"door: "<<door<<endl;
+            LOG(INFO)<<"target: "<<target_pose<<endl;
             LOG(INFO)<<"Drone not in any building, target in building!"<<endl;
             return path;
         }
     }
 
     // case 2, drone in buiding, target not in building
+    // wps: current building door -> safe point -> target pose
     int building_index_2 = -1;
     if(!isInBuilding(target_pose, building_index_2))
     {
@@ -64,13 +75,17 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
             Eigen::Vector3f door_position = mBuildings[building_index_2].DoorGlobalPosition();
             geometry_msgs::PoseStamped door = Eigen2Pose(door_position);
             path.push_back(door);
+            path.push_back(safe_point_pose);
             path.push_back(target_pose);
+            LOG(INFO)<<"door: "<<door<<endl;
+            LOG(INFO)<<"target: "<<target_pose<<endl;
             LOG(INFO)<<"Drone in building, target not in building!"<<endl;
             return path;
         }
     }
 
     // case 3, drone in building, target in another building
+    // wps: current building door -> safe_point -> target building door -> target building position
     int building_index_3 = -1;
     int building_index_4 = -1;
     if(isInBuilding(mavros_pose, building_index_3))
@@ -83,8 +98,6 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
             path.push_back(door);
 
             // go to a safe point before going to the next door
-            Eigen::Vector3f safe_point(0, 0, 3);
-            geometry_msgs::PoseStamped safe_point_pose = Eigen2Pose(safe_point);
             path.push_back(safe_point_pose);
 
             // go to the target building door
@@ -94,18 +107,22 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
 
             // go to the target from the target building door
             path.push_back(target_pose);
+
+            LOG(INFO)<<"door: "<<door<<endl;
+            LOG(INFO)<<"target: "<<target_pose<<endl;
             LOG(INFO)<<"Drone in building, target in building!"<<endl;
             return path;
         }
     }
 
     // case 4, drone not in any building, target not in any building
-    // case 1, drone not in any building, target in building
+    // wps : safe point -> target
     int building_index_5 = -1;
     if(!isInBuilding(mavros_pose, building_index))
     {
         if(!isInBuilding(target_pose, building_index))
         {
+            path.push_back(safe_point_pose);
             path.push_back(target_pose);
             LOG(INFO)<<"Drone not in building, target not in building!"<<endl;
             return path;
