@@ -1,6 +1,7 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include <mutex>
 
 #include <ros/ros.h>
 #include <ros/subscribe_options.h>
@@ -37,7 +38,7 @@
 #include <opencv2/core/eigen.hpp>
 #include <visualization_msgs/Marker.h>
 
-#include "world.h"
+//#include "world.h"
 
 using namespace std;
 
@@ -55,7 +56,7 @@ public:
 
     bool GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame=false);
 
-    void AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose);
+    void AddRetrievedPose(cv::Mat retrieved_pose, cv::Mat mavros_pose);
 
     bool isSceneRecoveredMovementValid();
 
@@ -71,8 +72,10 @@ public:
 
     void Hover();
 
-    inline cv::Mat PoseStampedToMat(const geometry_msgs::PoseStamped& pose)
+    cv::Mat PoseStampedToMat(const geometry_msgs::PoseStamped& pose)
     {
+        LOG(INFO)<<"mMavrosPose pose: "<<mMavrosPose<<endl;
+
         Eigen::Quaterniond pose_q(pose.pose.orientation.w,
                                   pose.pose.orientation.x,
                                   pose.pose.orientation.y,
@@ -103,13 +106,15 @@ public:
         return T;
     }
 
-    inline geometry_msgs::PoseStamped MatToPoseStamped(cv::Mat& pose_mat, string& frame_id)
+    geometry_msgs::PoseStamped MatToPoseStamped(cv::Mat& pose_mat, string frame_id)
     {
+        LOG(INFO)<<"MatToPoseStamped 1: "<<pose_mat<<endl;
+
         cv::Mat rotation_mat = pose_mat.colRange(0, 3).rowRange(0, 3);
         Eigen::Matrix3d rotation_eigen;
         cv::cv2eigen(rotation_mat, rotation_eigen);
         Eigen::Quaterniond quat(rotation_eigen);
-
+        LOG(INFO)<<"MatToPoseStamped 2"<<endl;
         geometry_msgs::PoseStamped result_pose;
         result_pose.header.stamp = ros::Time::now();
         result_pose.header.frame_id = frame_id;
@@ -120,7 +125,7 @@ public:
         result_pose.pose.position.x = pose_mat.at<double>(0, 3);
         result_pose.pose.position.y = pose_mat.at<double>(1, 3);
         result_pose.pose.position.z = pose_mat.at<double>(2, 3);
-
+        LOG(INFO)<<"MatToPoseStamped result_pose: "<<result_pose<<endl;
         return result_pose;
     }
 
@@ -141,9 +146,9 @@ public:
 
     inline float distanceToTarget()
     {
-        float delta_x = mCurMavrosPose.pose.position.x - mTargetPose.pose.position.x;
-        float delta_y = mCurMavrosPose.pose.position.y - mTargetPose.pose.position.y;
-        float delta_z = mCurMavrosPose.pose.position.z - mTargetPose.pose.position.z;
+        float delta_x = mMavrosPose.pose.position.x - mTargetPose.pose.position.x;
+        float delta_y = mMavrosPose.pose.position.y - mTargetPose.pose.position.y;
+        float delta_z = mMavrosPose.pose.position.z - mTargetPose.pose.position.z;
         float delta = sqrt(delta_x*delta_x + delta_y+delta_y + delta_z*delta_z);
 
         return delta;
@@ -225,13 +230,18 @@ public:
 
     inline bool isOutlier(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose)
     {
-        float distance = PoseDistance(mavros_pose, scene_retrieved_pose);
 
+        LOG(INFO)<<"isOutlier"<<endl;
+        float distance = PoseDistance(mavros_pose, scene_retrieved_pose);
+        LOG(INFO)<<"isOutlier: "<<distance<<endl;
         float sum = 0;
+        LOG(INFO)<<"mSceneMavrosDistances.size(): "<<mSceneMavrosDistances.size()<<endl;
         for(auto& elem : mSceneMavrosDistances)
         {
             sum += elem;
         }
+        LOG(INFO)<<"isOutlier: "<<sum<<endl;
+
         float mean = sum / mSceneMavrosDistances.size();
 
         if ((distance/mean) > 3.0 || (distance/mean) < 0.3)
@@ -241,7 +251,7 @@ public:
     }
 
 
-    enum mState{
+    enum mControllerState{
         NO_SCENE_RETRIEVED_BEFORE,
         SCENE_RETRIEVING_WORKING_NORMAL,
         SCENE_RETRIEVING_INTERMITTENT,
@@ -254,17 +264,16 @@ public:
         TARGET_REACHED,
     };
 
-private:
 
-    shared_ptr<World> mpWorld = nullptr;
+//    shared_ptr<World> mpWorld = nullptr;
 
-private:
+public:
     ros::NodeHandle nh;
     ros::Publisher PosePublisher;
 
     int mLoopIndex = 0;
 
-    geometry_msgs::PoseStamped mCurMavrosPose;
+    geometry_msgs::PoseStamped mMavrosPose;
     geometry_msgs::PoseStamped mLastMavrosPose;
 
     cv::Mat mSceneRetrievedPosition;
@@ -273,7 +282,6 @@ private:
     geometry_msgs::PoseStamped mMavPoseLastRetrieved;
     geometry_msgs::PoseStamped mMavPoseCurRetrieved;
 
-    geometry_msgs::PoseStamped mMavrosPose;
     geometry_msgs::PoseStamped mTargetPose;
 
     cv::Mat mUpdatedCurrentPose;
@@ -308,16 +316,20 @@ private:
     vector<cv::Mat> mRelativeTransforms;
     vector<float> mSceneMavrosDistances;
 
-    mState mSTATE;
+    mControllerState mCONTROLLERSTATE;
     mTarget mTARGET;
 
     ros::NodeHandle mNH;
 
     // for testing
-    ofstream myfile;
     ofstream testfile;
-    ofstream relative_and_average_file;
-    ofstream relative_distance_file;
+
+    // mutex
+    std::mutex mMavrosMutex;
+    std::mutex mControllerStateMutex;
+
+    // flag
+    bool mMavrosInitialized = false;
 };
 
 

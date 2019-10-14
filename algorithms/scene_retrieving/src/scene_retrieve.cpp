@@ -246,6 +246,7 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
         mVecLeftImagePath.push_back(left_path);
     }
 
+    // if mavros's pose information is provided by vision input, modify the following line.
     mMavrosSub = mNH.subscribe("/mavros/vision_pose/pose", 100, &SceneRetriever::MavrosPoseCallback, this);
     //mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &SceneRetriever::MavrosPoseCallback, this);
 }

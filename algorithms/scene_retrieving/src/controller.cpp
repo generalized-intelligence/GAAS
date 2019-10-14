@@ -4,7 +4,8 @@
 Controller::Controller(ros::NodeHandle& nh)
 {
     mNH = nh;
-    mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &Controller::MavrosPoseCallback, this);
+    //mMavrosSub = mNH.subscribe("/mavros/vision_pose/pose", 100, &Controller::MavrosPoseCallback, this);
+    //mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &Controller::MavrosPoseCallback, this);
     mTargetSetSub = mNH.subscribe("/move_base_simple/goal", 100, &Controller::TargetSetSubCallback, this);
 
     mPositionControlPub = mNH.advertise<geometry_msgs::PoseStamped>("gi/set_pose/position", 100);
@@ -15,7 +16,8 @@ Controller::Controller(ros::NodeHandle& nh)
     mTargetPose.pose.position.y = 0;
     mTargetPose.pose.position.z = 0;
 
-    mSTATE = mState::NO_SCENE_RETRIEVED_BEFORE;
+
+    mCONTROLLERSTATE = mControllerState ::NO_SCENE_RETRIEVED_BEFORE;
     mTARGET = mTarget::NO_TARGET;
 
     this->PosePublisher = this->nh.advertise<visualization_msgs::Marker>("/updated_target",10);
@@ -23,21 +25,18 @@ Controller::Controller(ros::NodeHandle& nh)
     std::thread t(&Controller::Run, this);
     t.detach();
 
-    mpWorld = make_shared<World>();
+//    mpWorld = make_shared<World>();
 
-    myfile.open ("relativetransform.txt", fstream::out | fstream::app);
     testfile.open("all.txt", fstream::out | fstream::app);
-    relative_and_average_file.open("relative_and_average_file.txt", fstream::out | fstream::app);
-    relative_distance_file.open("relative_distance_file.txt", fstream::out | fstream::app);
 }
 
 void Controller::Run()
 {
-    ros::Rate rate(10.);
+    ros::Rate rate(10.0);
     while (!ros::isShuttingDown())
     {
         //constantly fetching information from MAVROS
-//        if(mSTATE == MAVROS_STATE_ERROR)
+//        if(mCONTROLLERSTATE == MAVROS_STATE_ERROR)
 //        {
 //            Hover();
 //        }
@@ -48,22 +47,21 @@ void Controller::Run()
         }
         else if (mTARGET == NEW_TARGET)
         {
-            int building_idx = -1;
-            bool result = mpWorld->isInBuilding(mTargetPose, building_idx, true);
-            cout<<"Is mTargetPose in building?: "<<result<<endl;
-
-            auto wps = mpWorld->FindWayPoints(mCurMavrosPose, mTargetPose);
-
-            for(auto& wp : wps)
-            {
-                LOG(INFO)<<"Current waypoints: "<<wp<<endl;
-            }
-
-            GoByWayPoints(wps);
-            //GoToTarget(mTargetPose);
-
-            // disable movement after finishing current task mission.
-            mTARGET = NO_TARGET;
+//            int building_idx = -1;
+//            bool result = mpWorld->isInBuilding(mTargetPose, building_idx, true);
+//            cout<<"Is mTargetPose in building?: "<<result<<endl;
+//
+//            auto wps = mpWorld->FindWayPoints(mMavrosPose11, mTargetPose);
+//            for(auto& wp : wps)
+//            {
+//                LOG(INFO)<<"Current waypoints: "<<wp<<endl;
+//            }
+//
+//            GoByWayPoints(wps);
+//            //GoToTarget(mTargetPose);
+//
+//            // disable movement after finishing current task mission.
+//            mTARGET = NO_TARGET;
         }
 
         rate.sleep();
@@ -120,64 +118,105 @@ bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBo
     mPositionControlPub.publish(pose);
 }
 
-void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
+void Controller::AddRetrievedPose(cv::Mat retrieved_pose, cv::Mat mavros_pose)
 {
+
+//    if (!mMavrosInitialized)
+//        return;
+
+//    std::lock_guard<std::mutex> lock(mMavrosMutex);
+
+    deque<cv::Mat> mRetrievedPoseQueue11;
+
+    if(mavros_pose.empty() || retrieved_pose.empty())
+        return;
+
+//    LOG(INFO)<<"AddRetrievedPose start. 1"<<endl;
+//
+//    MatToPoseStamped(mavros_pose, "map");
+//
+//    LOG(INFO)<<"AddRetrievedPose start. 0.5"<<endl;
+//
+//    mMavrosPose11 = MatToPoseStamped(mavros_pose, "map");
+
+    geometry_msgs::PoseStamped mMavrosPose11;
+    mMavrosPose11.pose.position.x = 0;
+    mMavrosPose11.pose.position.y = 0;
+    mMavrosPose11.pose.position.z = 0;
+
+//    LOG(INFO)<<"AddRetrievedPose start. 1"<<endl;
+//
+//    cv::Mat current_drone_pose_mat = PoseStampedToMat(mMavrosPose11);
+//
+//    LOG(INFO)<<"AddRetrievedPose start."<<endl;
 
     if (retrieved_pose.empty() || mavros_pose.empty())
         return;
 
+    LOG(INFO)<<"AddRetrievedPose, pose not empty."<<endl;
+
     // outlier determination
+    LOG(INFO)<<"AddRetrievedPose, pose distance."<<endl;
     float relative_distance = PoseDistance(retrieved_pose, mavros_pose);
+    LOG(INFO)<<"AddRetrievedPose, pose distance.: "<<relative_distance<<endl;
 
-    if(isOutlier(retrieved_pose, mavros_pose))
-        return;
+//    if(mSceneMavrosDistances.empty())
+//        mSceneMavrosDistances.push_back(relative_distance);
 
-    mSceneMavrosDistances.push_back(relative_distance);
+    LOG(INFO)<<"AddRetrievedPose, before outlier determintation"<<endl;
+//    if(isOutlier(retrieved_pose, mavros_pose))
+//        return;
+    LOG(INFO)<<"AddRetrievedPose, current retrieved pose not outlier"<<endl;
 
-    relative_distance_file << relative_distance <<endl;
-
+//    mSceneMavrosDistances.push_back(relative_distance);
+    LOG(INFO)<<"AddRetrievedPose 2"<<endl;
     // use mavros pose when starting to retrieve pose
     // you can use debug_scripts/debug.py to visualize mavros pose and retrieved
     // pose.
-    string frame = "map";
-    mCurMavrosPose = MatToPoseStamped(mavros_pose, frame);
+//    string frame = "map";
+//    mMavrosPose11 = MatToPoseStamped(mavros_pose, frame);
+    LOG(INFO)<<"AddRetrievedPose 3"<<endl;
+//    mSceneRetrievedLastPosition = mSceneRetrievedPosition;
+//    mSceneRetrievedPosition = retrieved_pose;
+//
+//    mMavPoseLastRetrieved = mMavPoseCurRetrieved;
+//    mMavPoseCurRetrieved = mMavrosPose11;
+   LOG(INFO)<<"AddRetrievedPose 4"<<endl;
+//    if (abs(mMavrosPose11.pose.position.x)+abs(mMavrosPose11.pose.position.y)+abs(mMavrosPose11.pose.position.z)==0)
+//    {
+//        LOG(WARNING)<<"Current Mavros Pose not valid, adding retrieved pose failed!"<<endl;
+//        return;
+//    }
 
-    mSceneRetrievedLastPosition = mSceneRetrievedPosition;
-    mSceneRetrievedPosition = retrieved_pose;
-
-    mMavPoseLastRetrieved = mMavPoseCurRetrieved;
-    mMavPoseCurRetrieved = mCurMavrosPose;
-
-    if (abs(mCurMavrosPose.pose.position.x)+abs(mCurMavrosPose.pose.position.y)+abs(mCurMavrosPose.pose.position.z)==0)
-    {
-        LOG(WARNING)<<"Current Mavros Pose not valid, adding retrieved pose failed!"<<endl;
-        return;
-    }
+  mControllerState mCONTROLLERSTATE11 = NO_SCENE_RETRIEVED_BEFORE;
 
     // the first retrieved pose
     // NOTE assuming the first retrieved pose is "right" TODO, find a way to test whether the retrieved pose is right
     // set retrieved last position and retrieved current position
     // using retrieved drone position and current drone position to find a transform between
     // current drone frame and scene frame
-    if(mSTATE == NO_SCENE_RETRIEVED_BEFORE)
+    LOG(INFO)<<"AddRetrievedPose: mCONTROLLERSTATE: "<<mCONTROLLERSTATE11<<endl;
+    if(mCONTROLLERSTATE11 == NO_SCENE_RETRIEVED_BEFORE)
     {
-        mSTATE = SCENE_RETRIEVING_WORKING_NORMAL;
+      LOG(INFO)<<"AddRetrievedPose: NO_SCENE_RETRIEVED_BEFORE 1"<<endl;
+        mCONTROLLERSTATE11 = SCENE_RETRIEVING_WORKING_NORMAL;
 
-        cout<<"AddRetrievedPose: NO_SCENE_RETRIEVED_BEFORE"<<endl;
+        LOG(INFO)<<"AddRetrievedPose: NO_SCENE_RETRIEVED_BEFORE11"<<endl;
 
-        mRetrievedPoseQueue.push_back(retrieved_pose);
+        mRetrievedPoseQueue11.push_back(retrieved_pose);
 
-        mIdxMavScenes.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose));
-
-        mTest.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose, mTargetPose));
-
+      LOG(INFO)<<"AddRetrievedPose: NO_SCENE_RETRIEVED_BEFORE2"<<endl;
+        mIdxMavScenes.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mMavrosPose11));
+      LOG(INFO)<<"AddRetrievedPose: NO_SCENE_RETRIEVED_BEFORE23"<<endl;
+        mTest.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mMavrosPose11, mTargetPose));
+      LOG(INFO)<<"AddRetrievedPose: NO_SCENE_RETRIEVED_BEFORE24"<<endl;
         testfile<<mSceneRetrieveIndex<<","
                 <<retrieved_pose.at<double>(0,3)<<","
                 <<retrieved_pose.at<double>(1,3)<<","
                 <<retrieved_pose.at<double>(2,3)<<","
-                <<mCurMavrosPose.pose.position.x<<","
-                <<mCurMavrosPose.pose.position.y<<","
-                <<mCurMavrosPose.pose.position.z<<","
+                <<mMavrosPose11.pose.position.x<<","
+                <<mMavrosPose11.pose.position.y<<","
+                <<mMavrosPose11.pose.position.z<<","
                 <<mTargetPose.pose.position.x<<","
                 <<mTargetPose.pose.position.y<<","
                 <<mTargetPose.pose.position.z<<endl;
@@ -188,35 +227,37 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
     // normal working state
     // prev and current retrieved pose were set
     // prev and current mavros pose at the time when scene was retrieved were set
-    else if(mSTATE == SCENE_RETRIEVING_WORKING_NORMAL || mSTATE == MAVROS_STATE_ERROR)
+    else if(mCONTROLLERSTATE11 == SCENE_RETRIEVING_WORKING_NORMAL || mCONTROLLERSTATE11 == MAVROS_STATE_ERROR)
     {
         LOG(INFO)<<"AddRetrievedPose: SCENE_RETRIEVING_WORKING_NORMAL"<<endl;
 
-        LOG(INFO)<<"mRetrievedPoseQueue: "<<mRetrievedPoseQueue.size()<<endl;
+        LOG(INFO)<<"mRetrievedPoseQueue: "<<mRetrievedPoseQueue11.size()<<endl;
+
+        cout<<"Controller::AddRetrievedPose, SCENE_RETRIEVING_WORKING_NORMAL"<<endl;
 
         if(true)
         //if(isSceneRecoveredMovementValid())
         {
             std::cout<<"Current retrieved pose is valid!"<<std::endl;
 
-            mRetrievedPoseQueue.push_back(retrieved_pose);
+            mRetrievedPoseQueue11.push_back(retrieved_pose);
 
-            mIdxMavScenes.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose));
+            mIdxMavScenes.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mMavrosPose11));
 
-            mTest.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mCurMavrosPose, mTargetPose));
+            mTest.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mMavrosPose11, mTargetPose));
 
             testfile<<mSceneRetrieveIndex<<","
                     <<retrieved_pose.at<double>(0,3)<<","
                     <<retrieved_pose.at<double>(1,3)<<","
                     <<retrieved_pose.at<double>(2,3)<<","
-                    <<mCurMavrosPose.pose.position.x<<","
-                    <<mCurMavrosPose.pose.position.y<<","
-                    <<mCurMavrosPose.pose.position.z<<","
+                    <<mMavrosPose11.pose.position.x<<","
+                    <<mMavrosPose11.pose.position.y<<","
+                    <<mMavrosPose11.pose.position.z<<","
                     <<mTargetPose.pose.position.x<<","
                     <<mTargetPose.pose.position.y<<","
                     <<mTargetPose.pose.position.z<<endl;
 
-            if (mRetrievedPoseQueue.size() > 3)
+            if (mRetrievedPoseQueue11.size() > 3)
             {
                 mIdxMavScenes.pop_front();
             }
@@ -236,8 +277,9 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
             std::cout<<"Current retrieved pose is not valid"<<std::endl;
     }
     else{
-        cout<<"Current state: "<<mSTATE<<endl;
+        cout<<"Current state: "<<mCONTROLLERSTATE11<<endl;
     }
+
 
 
     mSceneRetrieveIndex ++;
@@ -300,11 +342,6 @@ void Controller::UpdateTarget()
         position[0] += RelativeTransform.at<double>(0, 3);
         position[1] += RelativeTransform.at<double>(1, 3);
         position[2] += RelativeTransform.at<double>(2, 3);
-
-        relative_and_average_file << "0" << ","
-                                  << RelativeTransform.at<double>(0, 3) <<","
-                                  << RelativeTransform.at<double>(1, 3) <<","
-                                  << RelativeTransform.at<double>(2, 3)<<endl;
     }
 
     axises[0] = axises[0] / mIdxMavScenes.size();
@@ -336,20 +373,10 @@ void Controller::UpdateTarget()
     relative_transform.at<double>(2, 3) = position[2];
     relative_transform.at<double>(3, 3) = 1.0;
 
-    // save individual transform as well as averaged transform to a file
-    relative_and_average_file << "1" <<","
-                              << position[0] <<","
-                              << position[1] <<","
-                              << position[2] <<endl;
-
     if (mSceneRetrieveIndex <= 3)
     {
         //initial transform is mavros to scene
         mInitialRelativeTransform = relative_transform;
-
-        myfile << mInitialRelativeTransform.at<double>(0, 3)<<", "
-               << mInitialRelativeTransform.at<double>(1, 3)<<", "
-               << mInitialRelativeTransform.at<double>(2, 3)<<", "<<endl;
 
         LOG(INFO)<<"mInitialRelativeTransform: "<<mInitialRelativeTransform<<endl;
     }
@@ -361,10 +388,6 @@ void Controller::UpdateTarget()
 
         //current transform is from mavros to scene
         cv::Mat current2initial = findRelativeTransform(mCurrentRelativeTransform, mInitialRelativeTransform);
-
-        myfile << mCurrentRelativeTransform.at<double>(0, 3)<<", "
-               << mCurrentRelativeTransform.at<double>(1, 3)<<", "
-               << mCurrentRelativeTransform.at<double>(2, 3)<<", "<<endl;
 
         cv::Mat targetMat = PoseStampedToMat(mTargetPose);
         cv::Mat initial2current = current2initial.inv();
@@ -489,17 +512,20 @@ void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
 
 void Controller::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
 {
-    mLastMavrosPose = mCurMavrosPose;
-    mCurMavrosPose = pose;
+    LOG(INFO)<<"mavros pose callback!"<<endl;
+    mMavrosInitialized = true;
 
-    if (!isMavrosPoseValid())
-        mSTATE = MAVROS_STATE_ERROR;
+    mLastMavrosPose = mMavrosPose;
+    mMavrosPose = pose;
+
+//    if (!isMavrosPoseValid())
+//        mCONTROLLERSTATE = MAVROS_STATE_ERROR;
 }
 
 bool Controller::isMavrosPoseValid()
 {
 
-    float delta_t = (mCurMavrosPose.header.stamp - mLastMavrosPose.header.stamp).toSec();
+    float delta_t = (mMavrosPose.header.stamp - mLastMavrosPose.header.stamp).toSec();
 
     if(delta_t == 0)
     {
@@ -507,25 +533,25 @@ bool Controller::isMavrosPoseValid()
     }
 
     float distance_squared =
-            pow(abs(mCurMavrosPose.pose.position.x - mLastMavrosPose.pose.position.x), 2) +
-            pow(abs(mCurMavrosPose.pose.position.y - mLastMavrosPose.pose.position.y), 2) +
-            pow(abs(mCurMavrosPose.pose.position.z - mLastMavrosPose.pose.position.z), 2);
+            pow(abs(mMavrosPose.pose.position.x - mLastMavrosPose.pose.position.x), 2) +
+            pow(abs(mMavrosPose.pose.position.y - mLastMavrosPose.pose.position.y), 2) +
+            pow(abs(mMavrosPose.pose.position.z - mLastMavrosPose.pose.position.z), 2);
 
     float speed = sqrt(distance_squared) / delta_t;
     
     // the horizontal flight speed of drone is less than 12 by default
     if (speed > 10)
     {
-        mSTATE = MAVROS_STATE_ERROR;
+        mCONTROLLERSTATE = MAVROS_STATE_ERROR;
         return false;
     }
 
     float cur_yaw, prev_yaw;
 
-    Eigen::Quaternionf cur_rotation_matrix(mCurMavrosPose.pose.orientation.w,
-                                           mCurMavrosPose.pose.orientation.x,
-                                           mCurMavrosPose.pose.orientation.y,
-                                           mCurMavrosPose.pose.orientation.z);
+    Eigen::Quaternionf cur_rotation_matrix(mMavrosPose.pose.orientation.w,
+                                           mMavrosPose.pose.orientation.x,
+                                           mMavrosPose.pose.orientation.y,
+                                           mMavrosPose.pose.orientation.z);
     Eigen::Vector3f euler_cur = cur_rotation_matrix.toRotationMatrix().eulerAngles(0, 1, 2);
     cur_yaw = euler_cur[2];
 
@@ -541,7 +567,7 @@ bool Controller::isMavrosPoseValid()
     // the yaw change rate is less than pi by default
     if (yaw_rate > 2*3.1415926)
     {
-        mSTATE = MAVROS_STATE_ERROR;
+        mCONTROLLERSTATE = MAVROS_STATE_ERROR;
         return false;
     }
 

@@ -15,11 +15,8 @@ add_definitions(-std=c++14)
 #------------------------------------------------------
 # Build type
 #------------------------------------------------------
-#IF(NOT CMAKE_BUILD_TYPE )
-#   #SET( CMAKE_BUILD_TYPE "Release" )
-#   SET( CMAKE_BUILD_TYPE "Debug" )
-#ENDIF()
-SET( CMAKE_BUILD_TYPE "Release" )
+SET( CMAKE_BUILD_TYPE "Debug" )
+#SET( CMAKE_BUILD_TYPE "Release" )
 
 #------------------------------------------------------
 # Lib Names and Dirs
@@ -37,14 +34,15 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 #   Find Dependencies
 # ----------------------------------------------------------------------------
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
-find_package(OpenCV 3.4.5 REQUIRED) # same with ros.
-find_package(Eigen3 3.1.0 REQUIRED)
+#find_package(OpenCV 3.3.1 REQUIRED)
+find_package(OpenCV 3.4.5 REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
                                 cv_bridge
                                 image_transport
                                 roscpp
                                 sensor_msgs
-				                geometry_msgs
+				geometry_msgs
                                 roseus
                                 visualization_msgs
 				)
@@ -63,8 +61,8 @@ include_directories(${OpenCV_INCLUDE_DIRS}
 			${PCL_INCLUDE_DIRS}
 			../loop_closing/DBow3/src
 			./include/
-            ${catkin_INCLUDE_DIRS}
-            ${EIGEN3_INCLUDE_DIR}
+                        ${catkin_INCLUDE_DIRS}
+                        ${EIGEN3_INCLUDE_DIR}
 			${catkin_INCLUDE_DIRS}
                         )
 
@@ -190,10 +188,8 @@ IF(CMAKE_COMPILER_IS_GNUCXX OR MINGW)
     message( STATUS "GNU COMPILER")
     MESSAGE( STATUS "-------------------------------------------------------------------------------" )
 
-
-
-
 ELSE()  # MSVC
+
 
 
 ENDIF()#END OF COMPILER SPECIFIC OPTIONS
@@ -212,11 +208,7 @@ SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${EXTRA_EXE_LI
 #------------------------------------------------
 # DIRS
 #------------------------------------------------
-
 ADD_SUBDIRECTORY(src)
-
-#target_link_libraries(demo ${PROJECT_NAME} ${OpenCV_LIBS})
-#  file(COPY demo/images DESTINATION ${CMAKE_BINARY_DIR}/)
 
 
 
