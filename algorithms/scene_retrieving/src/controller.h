@@ -103,7 +103,7 @@ public:
         return T;
     }
 
-    inline geometry_msgs::PoseStamped MatToPoseStamped(cv::Mat& pose_mat, string& frame_id)
+    inline geometry_msgs::PoseStamped MatToPoseStamped(cv::Mat& pose_mat, string frame_id)
     {
         cv::Mat rotation_mat = pose_mat.colRange(0, 3).rowRange(0, 3);
         Eigen::Matrix3d rotation_eigen;
@@ -264,6 +264,7 @@ private:
 
     int mLoopIndex = 0;
 
+    geometry_msgs::PoseStamped mRetrievedMavrosPose;
     geometry_msgs::PoseStamped mCurMavrosPose;
     geometry_msgs::PoseStamped mLastMavrosPose;
 

@@ -7,8 +7,11 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
-SceneRetriever* pSceneRetrieve;
-Controller* pController;
+
+#define EIGEN_RUNTIME_NO_MALLOC
+
+shared_ptr<SceneRetriever> pSceneRetrieve;
+shared_ptr<Controller> pController;
 
 void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor_msgs::ImageConstPtr &msgRight)
 {
@@ -48,24 +51,12 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
         LOG(INFO)<<"RT_mat: "<<RT_mat<<endl;
         LOG(INFO)<<"RT_mat type: "<<RT_mat.type()<<endl;
 
-        if(fitness_score >= 0 && fitness_score <= 5.0 && !RT_mat.empty() && !mavros_pose.empty())
+        if(fitness_score >= 0 && fitness_score <= 3.0)
         {
 
-            LOG(INFO)<<"fitness_score >= 0 && fitness_score <= 5.0 && !RT_mat.empty() && !mavros_pose.empty()"<<endl;
-            Eigen::Matrix3f rotation_matrix;
-            RT_mat.convertTo(RT_mat, CV_32F);
-            cv::cv2eigen(RT_mat, rotation_matrix);
-            Vector3f EulerAngle = rotation_matrix.eulerAngles(0, 1, 2);
+            LOG(INFO)<<"fitness_score >= 0 && fitness_score <= 3.0"<<endl;
 
-            Eigen::Vector4f position_and_yaw(RT_mat.at<double>(0, 3),
-                                           RT_mat.at<double>(1, 3),
-                                           RT_mat.at<double>(2, 3),
-                                           EulerAngle[2]);
-
-            LOG(INFO)<<"rotation mat: "<<rotation_matrix<<endl;
-            LOG(INFO)<<"result mat: "<<RT_mat<<endl;
-
-            //pController->AddRetrievedPose(RT_mat, mavros_pose);
+            pController->AddRetrievedPose(RT_mat, mavros_pose);
         }
 
 }
@@ -79,7 +70,7 @@ int main(int argc, char **argv) {
     }
 
     google::SetLogDestination(google::GLOG_INFO, "./log_controller_" );
-    //FLAGS_alsologtostderr = 1;
+    FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
 
     ros::init(argc, argv, "controller_node");
@@ -98,8 +89,9 @@ int main(int argc, char **argv) {
 
     World test_world();
 
-    auto* pSceneRetriever = new SceneRetriever(voc_path, scene_path);
-    pSceneRetrieve = pSceneRetriever;
+
+    pSceneRetrieve = make_shared<SceneRetriever>(voc_path, scene_path);
+    pController = make_shared<Controller>(nh);
 
     message_filters::Subscriber<sensor_msgs::Image> left_sub(nh, "/gi/simulation/left/image_raw", 10);
     message_filters::Subscriber<sensor_msgs::Image> right_sub(nh, "/gi/simulation/right/image_raw", 10);
@@ -109,19 +101,17 @@ int main(int argc, char **argv) {
     sync.registerCallback(boost::bind(StereoImageCallback, _1, _2));
 
 
-//    auto* controller = new Controller(nh);
-//    pController = controller;
+
 
 ////    ros::MultiThreadedSpinner spinner(4);
 //
-//    ros::Rate rate(10);
-//    while (ros::ok())
-//    {
-////        spinner.spin(); // the missing call
-//        ros::spin();
-//        rate.sleep();
-//    }
-//    return 0;
+    ros::Rate rate(10);
+    while (ros::ok())
+    {
+        ros::spin();
+        rate.sleep();
+    }
+    return 0;
 
 
     ros::MultiThreadedSpinner spinner(4);
