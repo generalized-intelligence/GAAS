@@ -11,13 +11,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4dcb950e-8026-46a0-854e-9fd2e7f1bc02" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/UNKNOWN.INFO" beforeDir="false" afterPath="$PROJECT_DIR$/UNKNOWN.INFO" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/all.txt" beforeDir="false" afterPath="$PROJECT_DIR$/all.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/debug_scripts/debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/debug_scripts/debug.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/cv_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/cv_helper.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controller.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controller.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controller_node.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller_node.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/scene_retrieve.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/examples/MakeSceneEurocStereoVIO_ros.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../../software/SLAM/ygz_slam_ros/examples/MakeSceneEurocStereoVIO_ros.cpp" afterDir="false" />
@@ -165,7 +158,7 @@
       <workItem from="1571136112416" duration="5798000" />
       <workItem from="1571192345158" duration="196000" />
       <workItem from="1571192664171" duration="2641000" />
-      <workItem from="1571281867354" duration="568000" />
+      <workItem from="1571281867354" duration="849000" />
     </task>
     <servers />
   </component>

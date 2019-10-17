@@ -569,7 +569,7 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
 float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
                                                    cv::Mat& mavros_pose, cv::Mat& RT_mat_of_stereo_cam_output, cv::Mat& Q_mat,
-                                                   bool& match_success,int* pMatchedIndexID_output = nullptr)
+                                                   bool& match_success,int* pMatchedIndexID_output)
 {
     this->LoopClosureDebugIndex ++;
 

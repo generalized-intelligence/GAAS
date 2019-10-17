@@ -374,6 +374,8 @@ public:
 
     // for SHAKESHAKE
     // Q is not used to recover 3D points now, but you can use this function now, and if you need my to use Q to recover 3D points I will modify related function.
+    // input: image_left_rect, image_right_rect, Q_mat
+    // output: outpuit: mavros_pose at the time of retrieving pose, recovered mat, bool and int.
     float retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
                                        cv::Mat& mavros_pose, cv::Mat& RT_mat_of_stereo_cam_output, cv::Mat& Q_mat, bool& match_success,int* pMatchedIndexID_output = nullptr);
 
