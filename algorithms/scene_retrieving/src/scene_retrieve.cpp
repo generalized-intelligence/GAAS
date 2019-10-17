@@ -246,8 +246,8 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
         mVecLeftImagePath.push_back(left_path);
     }
 
-    mMavrosSub = mNH.subscribe("/mavros/vision_pose/pose", 100, &SceneRetriever::MavrosPoseCallback, this);
-    //mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &SceneRetriever::MavrosPoseCallback, this);
+    mMavrosSub = mNH.subscribe("/mavros/vision_pose/pose", 1, &SceneRetriever::MavrosPoseCallback, this);
+    //mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 1, &SceneRetriever::MavrosPoseCallback, this);
 }
 
 void SceneRetriever::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
@@ -360,10 +360,12 @@ void SceneRetriever::displayFeatureMatches(size_t loop_index, ptr_frameinfo& cur
 
 
 float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
-                                                   cv::Mat& mavros_pose, cv::Mat& RT_mat_of_stereo_cam_output, bool& match_success, int* pMatchedIndexID_output)
+                                                   cv::Mat& mavros_pose, cv::Mat& RT_mat_of_stereo_cam_output,
+                                                   bool& match_success, int* pMatchedIndexID_output)
 {
     this->LoopClosureDebugIndex ++;
 
+    // mCurMavrosPose could either be from SLAM or GPS
     mavros_pose = mCurMavrosPose;
 
     if (image_left_rect.empty() || image_right_rect.empty())
@@ -464,7 +466,8 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
     //step 6, now that we have matched camera points we can conduct ICP, we can use either PCL method or opencv method
     Eigen::Matrix4f result;
-    float fitnesscore = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
+    //float fitnesscore = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
+    float fitnesscore = mpCv_helper->ICP(matched_current_cam_pts, matched_old_cam_pts, result);
 
     if(fitnesscore == -1)
     {
@@ -528,9 +531,9 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     //computed relative ICP is in opencv image frame, x points to right, y points to down and z points up.
     //we need to convert relative ICP results to the old_T frame, which is FLU
     cv::Mat image_to_flu = (cv::Mat_<double>(4,4) << 0, 0, 1, 0,
-                                                                -1, 0, 0, 0,
-                                                                0, -1, 0, 0,
-                                                                0, 0, 0, 1);
+                                                    -1, 0, 0, 0,
+                                                    0, -1, 0, 0,
+                                                    0, 0, 0, 1);
 
     //NOTE, result relative_T is relative from current to old camera frame, old_T is in global frame.
     //we need to update computed current pose.
@@ -545,7 +548,193 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     LOG(INFO)<<"result_t: "<<result_t<<endl;
     LOG(INFO)<<"new_t: "<<new_t<<endl;
 
-    if (fitnesscore < 3.0) //TODO:move this into a config.
+    if (fitnesscore < 1.5) //TODO:move this into a config.
+    {
+        this->mpCv_helper->publishPose(new_R, new_t, 0);
+        RT_mat_of_stereo_cam_output = new_T;
+        match_success = true;
+
+        if(pMatchedIndexID_output != nullptr)
+        {
+            *pMatchedIndexID_output = loop_index;
+        }
+    }
+    else
+    {
+        match_success = false;
+    }
+
+    return fitnesscore;
+}
+
+float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
+                                                   cv::Mat& mavros_pose, cv::Mat& RT_mat_of_stereo_cam_output, cv::Mat& Q_mat,
+                                                   bool& match_success,int* pMatchedIndexID_output = nullptr)
+{
+    this->LoopClosureDebugIndex ++;
+
+    // mCurMavrosPose could either be from SLAM or GPS
+    mavros_pose = mCurMavrosPose;
+
+    if (image_left_rect.empty() || image_right_rect.empty())
+    {
+        LOG(INFO)<<"Left or Right image are empty, return."<<endl;
+        match_success = false;
+        return -1;
+    }
+
+    this->mCurrentImage = image_left_rect;
+
+    //match left image with scene.
+    std::vector<cv::DMatch> good_matches_output;
+    ptr_frameinfo frameinfo_left = this->ploop_closing_manager_of_scene->extractFeature(image_left_rect);
+
+    int loop_index= this->ploop_closing_manager_of_scene->detectLoopByKeyFrame(frameinfo_left, good_matches_output, true);
+
+    LOG(INFO)<<"Loop Index: "<<loop_index<<endl;
+    if(loop_index<0)
+    {
+        //frame match failed.
+        match_success = false;
+        return -1;
+    }
+
+    LOG(INFO) << "good_matches_output: " << good_matches_output.size() << endl;
+
+    //step 1, fetch current frame camera points and desps
+    vector<cv::KeyPoint> current_kps_left;
+    vector<cv::Point3f> current_camera_pts;
+    cv::Mat current_frame_desps;
+    if(!mpCv_helper->StereoImage2CamPoints(image_left_rect, image_right_rect, current_kps_left, current_camera_pts, current_frame_desps))
+    {
+        match_success = false;
+        return -1;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------------------------------
+    // NOTE real time computed elements
+//    vector<cv::KeyPoint> old_kps_left;
+//    vector<cv::Point3f> old_camera_pts;
+//    cv::Mat old_frame_desps;
+//    LOG(INFO)<<"old_image_left size: "<<old_image_left.size()<<endl;
+//    if(!mpCv_helper->StereoImage2CamPoints(old_image_left, old_image_right, old_kps_left, old_camera_pts, old_frame_desps))
+//    {
+//        match_success = false;
+//        return -1;
+//    }
+
+    // NOTE, previously computed elements
+    auto old_kps_left = original_scene.vec_p2d[loop_index];
+    auto old_camera_pts_3d = original_scene.vec_p3d[loop_index];
+    auto old_camera_pts = pts3dto3f(old_camera_pts_3d);
+    auto old_frame_desps = original_scene.point_desps[loop_index];
+    LOG(INFO)<<"old_kps_left size: "<<old_kps_left.size()<<endl;
+    LOG(INFO)<<"old_camera_pts_3d size: "<<old_camera_pts_3d.size()<<endl;
+    LOG(INFO)<<"old_frame_desps size: "<<old_frame_desps.size()<<endl;
+
+    //step 3, match current and old features
+    vector<cv::DMatch> result_matches;
+    mpCv_helper->match2Images(current_kps_left, current_frame_desps,
+                              old_kps_left, old_frame_desps,
+                              result_matches);
+
+
+    //step 4, if few matches, return false
+    if(result_matches.size() < 20)
+    {
+        match_success = false;
+        return -1;
+    }
+
+    //step 5, update matched feature points and camera points
+    vector<cv::KeyPoint> matched_current_kps, matched_old_kps;
+    vector<cv::Point3f> matched_current_cam_pts, matched_old_cam_pts;
+
+    for(int i=0; i<result_matches.size(); i++)
+    {
+        matched_current_kps.push_back(current_kps_left[result_matches[i].queryIdx]);
+        matched_current_cam_pts.push_back(current_camera_pts[result_matches[i].queryIdx]);
+
+        matched_old_kps.push_back(old_kps_left[result_matches[i].trainIdx]);
+        matched_old_cam_pts.emplace_back(float(old_camera_pts[result_matches[i].trainIdx].x),
+                                         float(old_camera_pts[result_matches[i].trainIdx].y),
+                                         float(old_camera_pts[result_matches[i].trainIdx].z));
+    }
+
+
+    //step 6, now that we have matched camera points we can conduct ICP, we can use either PCL method or opencv method
+    Eigen::Matrix4f result;
+    float fitnesscore = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
+    //float fitnesscore = mpCv_helper->ICP(matched_current_cam_pts, matched_old_cam_pts, result);
+
+    if(fitnesscore == -1)
+    {
+        match_success = false;
+        return fitnesscore;
+    }
+
+    LOG(INFO)<<"get fitness score: "<<fitnesscore<<endl;
+    LOG(INFO)<<"icp given old T and relative loop closure T, get new T"<<endl;
+    LOG(INFO)<<"Calculated transform matrix is: \n"<<result<<endl;
+
+    //step 7, given old T and relative loop closure T, get new T
+    cv::Mat result_relative_T;
+    cv::eigen2cv(result, result_relative_T);
+    cv::Mat result_R = result_relative_T.colRange(0,3).rowRange(0,3);
+    cv::Mat result_t = result_relative_T.rowRange(0,3).col(3);
+
+    //step 10, if R vector distance is small enough , consider as inlier and continue to the next step
+
+    //fetch old frame R and t
+    cv::Mat R = this->original_scene.getR(loop_index);
+    cv::Mat t = this->original_scene.getT(loop_index);
+
+    LOG(INFO)<<"R and t old are: "<<R<<", "<<t<<endl;
+
+    cv::Mat old_T = cv::Mat::zeros(4,4, CV_64FC1);
+
+    old_T.at<double>(0, 0) = R.at<double>(0, 0);
+    old_T.at<double>(0, 1) = R.at<double>(0, 1);
+    old_T.at<double>(0, 2) = R.at<double>(0, 2);
+    old_T.at<double>(1, 0) = R.at<double>(1, 0);
+    old_T.at<double>(1, 1) = R.at<double>(1, 1);
+    old_T.at<double>(1, 2) = R.at<double>(1, 2);
+    old_T.at<double>(2, 0) = R.at<double>(2, 0);
+    old_T.at<double>(2, 1) = R.at<double>(2, 1);
+    old_T.at<double>(2, 2) = R.at<double>(2, 2);
+
+    old_T.at<double>(0, 3) = t.at<double>(0, 0);
+    old_T.at<double>(1, 3) = t.at<double>(1, 0);
+    old_T.at<double>(2, 3) = t.at<double>(2, 0);
+
+    old_T.at<double>(3, 3) = 1.0;
+
+    cv::Mat new_T;
+
+    result_relative_T.convertTo(result_relative_T, CV_64F);
+
+    //NOTE previously computed ICP result is relative from current camera pose to fetched camera pose,
+    //computed relative ICP is in opencv image frame, x points to right, y points to down and z points up.
+    //we need to convert relative ICP results to the old_T frame, which is FLU
+    cv::Mat image_to_flu = (cv::Mat_<double>(4,4) << 0, 0, 1, 0,
+                                                    -1, 0, 0, 0,
+                                                    0, -1, 0, 0,
+                                                    0, 0, 0, 1);
+
+    //NOTE, result relative_T is relative from current to old camera frame, old_T is in global frame.
+    //we need to update computed current pose.
+
+    new_T = old_T * (image_to_flu * result_relative_T);
+    //new_T = old_T * result_relative_T;
+
+    cv::Mat new_R = new_T.colRange(0,3).rowRange(0,3);
+    cv::Mat new_t = new_T.rowRange(0,3).col(3);
+
+    LOG(INFO)<<"old t: "<<t<<endl;
+    LOG(INFO)<<"result_t: "<<result_t<<endl;
+    LOG(INFO)<<"new_t: "<<new_t<<endl;
+
+    if (fitnesscore < 1.5) //TODO:move this into a config.
     {
         this->mpCv_helper->publishPose(new_R, new_t, 0);
         RT_mat_of_stereo_cam_output = new_T;

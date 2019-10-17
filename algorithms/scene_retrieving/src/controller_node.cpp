@@ -51,7 +51,7 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
         LOG(INFO)<<"RT_mat: "<<RT_mat<<endl;
         LOG(INFO)<<"RT_mat type: "<<RT_mat.type()<<endl;
 
-        if(fitness_score >= 0 && fitness_score <= 3.0)
+        if(fitness_score >= 0 && fitness_score <= 1.5)
         {
 
             LOG(INFO)<<"fitness_score >= 0 && fitness_score <= 3.0"<<endl;
@@ -103,15 +103,13 @@ int main(int argc, char **argv) {
 
 
 
-////    ros::MultiThreadedSpinner spinner(4);
-//
-    ros::Rate rate(10);
-    while (ros::ok())
-    {
-        ros::spin();
-        rate.sleep();
-    }
-    return 0;
+//    ros::Rate rate(10);
+//    while (ros::ok())
+//    {
+//        ros::spin();
+//        rate.sleep();
+//    }
+//    return 0;
 
 
     ros::MultiThreadedSpinner spinner(4);

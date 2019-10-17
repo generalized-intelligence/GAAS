@@ -639,7 +639,71 @@ public:
 
     }
 
+    // a wrapper for pcl::IterativeClosestPoint to return the transformation matrix between a input point cloud and a
+    // target point cloud
+    float ICP(vector<cv::Point3f>& input_cloud, vector<cv::Point3f>& target_cloud, Eigen::Matrix4f& result, int num_iter = 50, double transformationEpsilon = 1e-6)
+    {
 
+        LOG(INFO)<<"cv helper::GeneralICP points size: "<<input_cloud.size()<<", "<<target_cloud.size()<<endl;
+
+        typedef pcl::PointXYZ PointT;
+
+        // define input point cloud
+        pcl::PointCloud<PointT>::Ptr src (new pcl::PointCloud<PointT>);
+        pcl::PointCloud<PointT> src_cloud = this->PtsVec2PointCloud(input_cloud);
+        *src  = src_cloud;
+
+        // define target point cloud
+        pcl::PointCloud<PointT>::Ptr tgt (new pcl::PointCloud<PointT>);
+        pcl::PointCloud<PointT> tgt_cloud = this->PtsVec2PointCloud(target_cloud);
+        *tgt = tgt_cloud;
+
+        std::vector<int> indices_1, indices_2;
+        pcl::removeNaNFromPointCloud(*src, *src, indices_1);
+        pcl::removeNaNFromPointCloud(*tgt, *tgt, indices_2);
+
+        for(auto& pt : src->points)
+        {
+            if (!pcl::isFinite(pt) || abs(pt.x) > 1e3 || abs(pt.y) > 1e3 || abs(pt.z) > 1e3 || pt.z < 0)
+            {
+                return -1.0;
+            }
+        }
+
+        for(auto& pt : tgt->points)
+        {
+            if (!pcl::isFinite(pt) || abs(pt.x) > 1e3 || abs(pt.y) > 1e3 || abs(pt.z) > 1e3 || pt.z < 0)
+            {
+                return -1.0;
+            }
+        }
+
+        if(src->points.size() < 20 || tgt->points.size() < 20)
+            return -1.0;
+
+        // define output point cloud
+        pcl::PointCloud<PointT> output;
+
+        // parameter setter
+        pcl::IterativeClosestPoint<PointT, PointT> reg;
+
+        reg.setInputSource(src);
+        reg.setInputTarget(tgt);
+        reg.setMaximumIterations(num_iter);
+        reg.setTransformationEpsilon(transformationEpsilon);
+
+        reg.align (output);
+
+        // expect fitness score is less than a certain value
+        LOG(INFO)<<"GeneralICP::General ICP fitness score: "<<reg.getFitnessScore()<<endl;
+
+        Eigen::Matrix4f transformation = reg.getFinalTransformation();
+
+        LOG(INFO)<<"GeneralICP::transformation matrix: \n"<<transformation<<endl;
+
+        result = transformation;
+        return reg.getFitnessScore();
+    }
 
     // a wrapper for pcl::GeneralizedIterativeClosestPoint to return the transformation matrix between a input point cloud and a
     // target point cloud

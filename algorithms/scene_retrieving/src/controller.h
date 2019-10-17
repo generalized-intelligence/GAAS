@@ -139,6 +139,24 @@ public:
         return Tb2b1;
     }
 
+    // since they are not in the same frame, yaw in ROS and QGroundControl is 0, while in mavros it is 90;
+    // we neglect their rotation, but use position instead;
+    inline cv::Mat findRelativeTransformTest(cv::Mat& Twb1, cv::Mat& Twb2)
+    {
+
+        LOG(WARNING)<<"Twb1: "<<Twb1<<endl;
+
+        Twb1.at<double>(0, 3) = Twb1.at<double>(0, 3) - Twb2.at<double>(0, 3);
+        Twb1.at<double>(1, 3) = Twb1.at<double>(1, 3) - Twb2.at<double>(1, 3);
+        Twb1.at<double>(2, 3) = Twb1.at<double>(2, 3) - Twb2.at<double>(2, 3);
+
+        LOG(WARNING)<<"Twb2: \n"<<Twb2<<endl;
+        LOG(WARNING)<<"Twb1: \n"<<Twb1<<endl;
+        LOG(WARNING)<<"Twb2: \n"<<Twb2<<endl;
+
+        return Twb1;
+    }
+
     inline float distanceToTarget()
     {
         float delta_x = mCurMavrosPose.pose.position.x - mTargetPose.pose.position.x;
@@ -234,7 +252,9 @@ public:
         }
         float mean = sum / mSceneMavrosDistances.size();
 
-        if ((distance/mean) > 3.0 || (distance/mean) < 0.3)
+        float factor = (distance/mean);
+        LOG(INFO)<<"factor: "<<factor<<endl;
+        if (factor > 3.0 || factor < 0.3)
             return true;
 
         return false;
@@ -249,8 +269,8 @@ public:
     };
 
     enum mTarget{
-        NO_TARGET,
         NEW_TARGET,
+        NO_TARGET,
         TARGET_REACHED,
     };
 
@@ -276,6 +296,7 @@ private:
 
     geometry_msgs::PoseStamped mMavrosPose;
     geometry_msgs::PoseStamped mTargetPose;
+    geometry_msgs::PoseStamped mInitialTarget;
 
     cv::Mat mUpdatedCurrentPose;
     cv::Mat mCurrentDistanceToTarget;

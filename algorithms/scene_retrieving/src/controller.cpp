@@ -15,8 +15,8 @@ Controller::Controller(ros::NodeHandle& nh)
 	mTargetPose.pose.position.y = 0;
 	mTargetPose.pose.position.z = 0;
 
-	mSTATE = mState::NO_SCENE_RETRIEVED_BEFORE;
-	mTARGET = mTarget::NO_TARGET;
+	mSTATE = NO_SCENE_RETRIEVED_BEFORE;
+	mTARGET = NEW_TARGET;
 
 	this->PosePublisher = this->nh.advertise<visualization_msgs::Marker>("/updated_target",10);
 
@@ -26,63 +26,19 @@ Controller::Controller(ros::NodeHandle& nh)
 	mpWorld = make_shared<World>();
 
 	testfile.open("all.txt", fstream::out | fstream::app);
-
-
-    cv::Mat t1 = cv::Mat::zeros(4,4, CV_64F);
-
-    t1.at<double>(0, 0) = 1;
-    t1.at<double>(0, 1) = 0;
-    t1.at<double>(0, 2) = 0;
-    t1.at<double>(1, 0) = 0;
-    t1.at<double>(1, 1) = 1;
-    t1.at<double>(1, 2) = 0;
-    t1.at<double>(2, 0) = 0;
-    t1.at<double>(2, 1) = 0;
-    t1.at<double>(2, 2) = 1;
-    t1.at<double>(0, 3) = 1.2;
-    t1.at<double>(1, 3) = 5.9;
-    t1.at<double>(2, 3) = 3.5;
-    t1.at<double>(3, 3) = 1.0;
-
-    cv::Mat t2 = cv::Mat::zeros(4,4, CV_64F);
-    t2.at<double>(0, 0) = 1;
-    t2.at<double>(0, 1) = 0;
-    t2.at<double>(0, 2) = 0;
-    t2.at<double>(1, 0) = 0;
-    t2.at<double>(1, 1) = 1;
-    t2.at<double>(1, 2) = 0;
-    t2.at<double>(2, 0) = 0;
-    t2.at<double>(2, 1) = 0;
-    t2.at<double>(2, 2) = 1;
-    t2.at<double>(0, 3) = 0.0;
-    t2.at<double>(1, 3) = 9.3;
-    t2.at<double>(2, 3) = 2.6;
-    t2.at<double>(3, 3) = 1.0;
-
-    cv::Mat t3 = cv::Mat::zeros(4,4, CV_64F);
-    t2.at<double>(0, 0) = 0;
-    t2.at<double>(0, 1) = 1;
-    t2.at<double>(0, 2) = 0;
-    t2.at<double>(1, 0) = 1;
-    t2.at<double>(1, 1) = 0;
-    t2.at<double>(1, 2) = 0;
-    t2.at<double>(2, 0) = 0;
-    t2.at<double>(2, 1) = 0;
-    t2.at<double>(2, 2) = 1;
-    t2.at<double>(0, 3) = 0.0;
-    t2.at<double>(1, 3) = 9.3;
-    t2.at<double>(2, 3) = 2.6;
-    t2.at<double>(3, 3) = 1.0;
-
-    auto relative_test_1 = findRelativeTransform(t1, t2);
-    auto relative_test_2 = findRelativeTransform(t1, t3);
-
-    LOG(INFO)<<"relative_test_1: "<<relative_test_1<<endl;
-    LOG(INFO)<<"relative_test_2: "<<relative_test_2<<endl;
 }
 
 void Controller::Run()
 {
+
+    // test
+    geometry_msgs::PoseStamped target;
+    target.pose.position.x = 0;
+    target.pose.position.y = -20;
+    target.pose.position.z = 3;
+    SetTarget(target);
+
+
 	ros::Rate rate(10.);
 	while (!ros::isShuttingDown())
 	{
@@ -98,22 +54,23 @@ void Controller::Run()
 		}
 		else if (mTARGET == NEW_TARGET)
 		{
-			int building_idx = -1;
-			bool result = mpWorld->isInBuilding(mTargetPose, building_idx, true);
-			cout<<"Is mTargetPose in building?: "<<result<<endl;
+//			int building_idx = -1;
+//			bool result = mpWorld->isInBuilding(mTargetPose, building_idx, true);
+//			cout<<"Is mTargetPose in building?: "<<result<<endl;
+//
+//			auto wps = mpWorld->FindWayPoints(mCurMavrosPose, mTargetPose);
+//
+//			for(auto& wp : wps)
+//			{
+//				LOG(INFO)<<"Current waypoints: "<<wp<<endl;
+//			}
+//
+//			GoByWayPoints(wps);
 
-			auto wps = mpWorld->FindWayPoints(mCurMavrosPose, mTargetPose);
-
-			for(auto& wp : wps)
-			{
-				LOG(INFO)<<"Current waypoints: "<<wp<<endl;
-			}
-
-			GoByWayPoints(wps);
-			//GoToTarget(mTargetPose);
+            GoToTarget(mTargetPose);
 
 			// disable movement after finishing current task mission.
-			mTARGET = NO_TARGET;
+			//mTARGET = NO_TARGET;
 		}
 
 		rate.sleep();
@@ -124,7 +81,10 @@ void Controller::Run()
 
 void Controller::SetTarget(geometry_msgs::PoseStamped& target)
 {
+    LOG(WARNING)<<"SetTarget: "<<target<<endl;
 	mTargetPose = target;
+    mInitialTarget = target;
+
 	mTARGET = NEW_TARGET;
 }
 
@@ -253,16 +213,16 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 
 //			mTest.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mMavPoseCurRetrieved, mTargetPose));
 
-			testfile<<mSceneRetrieveIndex<<","
-					<<retrieved_pose.at<double>(0,3)<<","
-					<<retrieved_pose.at<double>(1,3)<<","
-					<<retrieved_pose.at<double>(2,3)<<","
-					<<mMavPoseCurRetrieved.pose.position.x<<","
-					<<mMavPoseCurRetrieved.pose.position.y<<","
-					<<mMavPoseCurRetrieved.pose.position.z<<","
-					<<mTargetPose.pose.position.x<<","
-					<<mTargetPose.pose.position.y<<","
-					<<mTargetPose.pose.position.z<<endl;
+            testfile<<mSceneRetrieveIndex<<","
+                    <<retrieved_pose.at<double>(0,3)<<","
+                    <<retrieved_pose.at<double>(1,3)<<","
+                    <<retrieved_pose.at<double>(2,3)<<","
+                    <<mMavPoseCurRetrieved.pose.position.x<<","
+                    <<mMavPoseCurRetrieved.pose.position.y<<","
+                    <<mMavPoseCurRetrieved.pose.position.z<<","
+                    <<mTargetPose.pose.position.x<<","
+                    <<mTargetPose.pose.position.y<<","
+                    <<mTargetPose.pose.position.z<<endl;
 
 			if (mRetrievedPoseQueue.size() > 3)
 			{
@@ -274,11 +234,16 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 			// rather than updating current drone pose with this transform, we update the current target of
 			// the drone with this transform.
 
-			// No target received yet
-			if(mTARGET == NO_TARGET)
-				return;
-			else
-				UpdateTarget();
+			LOG(INFO)<<"mTARGET: "<<mTARGET<<endl;
+
+			if(mTARGET == NO_TARGET) {
+                LOG(INFO)<<"mTARGET 1: "<<mTARGET<<endl;
+                return;
+            }
+			else{
+                LOG(INFO)<<"mTARGET 2: "<<mTARGET<<endl;
+                UpdateTarget();
+            }
 		}
 		else
 			std::cout<<"Current retrieved pose is not valid"<<std::endl;
@@ -312,7 +277,10 @@ bool Controller::isSceneRecoveredMovementValid()
 
 void Controller::UpdateTarget()
 {
-	mTARGET == NEW_TARGET;
+
+    LOG(INFO)<<"UpdateTarget 1"<<endl;
+
+	mTARGET = NEW_TARGET;
 
 	if (mRetrievedPoseQueue.empty())
 		return;
@@ -329,7 +297,7 @@ void Controller::UpdateTarget()
 		if(mav_pose_mat.empty() || scene_pose_mat.empty())
 			return;
 
-		cv::Mat RelativeTransform = findRelativeTransform(mav_pose_mat, scene_pose_mat);
+		cv::Mat RelativeTransform = findRelativeTransformTest(mav_pose_mat, scene_pose_mat);
 
 		cv::Mat temp_rotation = RelativeTransform.colRange(0, 3).rowRange(0, 3);
 		Eigen::Matrix3d rotation_eigen;
@@ -384,23 +352,56 @@ void Controller::UpdateTarget()
 		//initial transform is mavros to scene
 		mInitialRelativeTransform = relative_transform;
 
-		LOG(INFO)<<"mInitialRelativeTransform: "<<mInitialRelativeTransform<<endl;
+		LOG(INFO)<<"mInitialRelativeTransform: \n"<<mInitialRelativeTransform<<endl;
 	}
 	else{
-		mCurrentRelativeTransform = relative_transform;
 
-		if(mCurrentRelativeTransform.empty() || mInitialRelativeTransform.empty())
-			return;
+        LOG(INFO)<<"UpdateTarget 2"<<endl;
 
-		//current transform is from mavros to scene
-		cv::Mat current2initial = findRelativeTransform(mCurrentRelativeTransform, mInitialRelativeTransform);
+        mCurrentRelativeTransform = relative_transform;
 
-		cv::Mat targetMat = PoseStampedToMat(mTargetPose);
-		cv::Mat initial2current = current2initial.inv();
-		cv::Mat updatedTargetMat = current2initial * targetMat;
+        if(mCurrentRelativeTransform.empty() || mInitialRelativeTransform.empty())
+            return;
 
-		geometry_msgs::PoseStamped result_target = MatToPoseStamped(updatedTargetMat, mTargetPose.header.frame_id);
-		mTargetPose = result_target;
+        //current transform is from mavros to scene
+        cv::Mat current2initial = findRelativeTransformTest(mCurrentRelativeTransform, mInitialRelativeTransform);
+
+        cv::Mat initialMat = PoseStampedToMat(mInitialTarget);
+
+        cv::Mat updatedInitialTarget = cv::Mat::eye(4,4, CV_64F);
+        updatedInitialTarget.at<double>(0, 3) = initialMat.at<double>(0, 3) - current2initial.at<double>(0, 3);
+        updatedInitialTarget.at<double>(1, 3) = initialMat.at<double>(1, 3) - current2initial.at<double>(1, 3);
+        updatedInitialTarget.at<double>(2, 3) = initialMat.at<double>(2, 3) - current2initial.at<double>(2, 3);
+
+        geometry_msgs::PoseStamped result_target = MatToPoseStamped(updatedInitialTarget, mInitialTarget.header.frame_id);
+
+        mTargetPose = result_target;
+
+        LOG(INFO)<<"current2initial, current pose diff to original pose diff: \n"<<current2initial<<endl;
+        LOG(INFO)<<"current2initial, mInitialTarget: \n"<<initialMat<<endl;
+        LOG(INFO)<<"current2initial, updatedInitialTarget: \n"<<updatedInitialTarget<<endl;
+        LOG(INFO)<<"current2initial, mTargetPose: \n"<<mTargetPose<<endl;
+
+
+//		mCurrentRelativeTransform = relative_transform;
+//
+//		if(mCurrentRelativeTransform.empty() || mInitialRelativeTransform.empty())
+//			return;
+//
+//		//current transform is from mavros to scene
+//		cv::Mat current2initial = findRelativeTransformTest(mCurrentRelativeTransform, mInitialRelativeTransform);
+//
+//		cv::Mat targetMat = PoseStampedToMat(mTargetPose);
+//		//cv::Mat initial2current = current2initial.inv();
+//		cv::Mat updatedTargetMat = current2initial * targetMat;
+//
+//        LOG(INFO)<<"current2initial, current pose diff to original pose diff: "<<current2initial<<endl;
+//        LOG(INFO)<<"current2initial, targetMat: "<<targetMat<<endl;
+//        LOG(INFO)<<"current2initial, updatedTargetMat: "<<updatedTargetMat<<endl;
+//
+//		geometry_msgs::PoseStamped result_target = MatToPoseStamped(updatedTargetMat, mTargetPose.header.frame_id);
+//
+//		mTargetPose = result_target;
 	}
 
 }
