@@ -28,10 +28,17 @@
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/PoseStamped.h>
 
-
+#include <thread>
+#include <glog/logging.h>
 
 using namespace std;
 using namespace Eigen;
+
+void image2KpAndDespTest(cv::Mat image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
+{
+  cv::Ptr<cv::ORB> orb = cv::ORB::create(3000);
+  orb->detectAndCompute(image, cv::Mat(), keypoints, descriptors);
+}
 
 class cv_helper{
 
@@ -57,14 +64,14 @@ public:
 
         cv::eigen2cv(K, Kmat);
 
-        cout<<"cv_helper K: \n"<<K<<endl;
-        cout<<"cv_helper Kmat: \n"<<Kmat<<endl;
-        cout<<"cv_helper fx: "<<fx<<endl;
-        cout<<"cv_helper fy: "<<fy<<endl;
-        cout<<"cv_helper cx: "<<cx<<endl;
-        cout<<"cv_helper cy: "<<cy<<endl;
-        cout<<"cv_helper f: "<<f<<endl;
-        cout<<"cv_helper b: "<<b<<endl;
+        LOG(INFO)<<"cv_helper K: \n"<<K<<endl;
+        LOG(INFO)<<"cv_helper Kmat: \n"<<Kmat<<endl;
+        LOG(INFO)<<"cv_helper fx: "<<fx<<endl;
+        LOG(INFO)<<"cv_helper fy: "<<fy<<endl;
+        LOG(INFO)<<"cv_helper cx: "<<cx<<endl;
+        LOG(INFO)<<"cv_helper cy: "<<cy<<endl;
+        LOG(INFO)<<"cv_helper f: "<<f<<endl;
+        LOG(INFO)<<"cv_helper b: "<<b<<endl;
     }
 
 
@@ -139,15 +146,19 @@ public:
 
             cv::Point2f pt = image_points[i];
 
+
             float depth = (this->bf) / ( points_disparity[i] );
 
             camera_point.x = (pt.x - cx) * fxinv * depth;
             camera_point.y = (pt.y - cy) * fyinv * depth;
             camera_point.z = depth;
 
+            LOG(INFO)<<"points_disparity[i]: "<<points_disparity[i]<<endl;
+            LOG(INFO)<<"cx cy fxinv fyinv: "<<cx<<", "<<cy<<", "<<fxinv<<", "<<fyinv<<endl;
+            LOG(INFO)<<"pt.x , pt.y , depth: "<<pt.x<<", "<<pt.y<<", "<<depth<<endl;
+
             cam_points.push_back(camera_point);
         }
-
 
         return cam_points;
     }
@@ -221,14 +232,14 @@ public:
     void image2KpAndDesp(cv::Mat& image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
     {
 
-        cout<<"image2KpAndDesp 1"<<endl;
+        LOG(INFO)<<"image2KpAndDesp 1"<<endl;
         cv::Ptr<cv::ORB> orb = cv::ORB::create(1000);
-        cout<<"image2KpAndDesp 2"<<endl;
+        LOG(INFO)<<"image2KpAndDesp 2"<<endl;
 
-        cout<<"image size: "<<image.size()<<endl;
+        LOG(INFO)<<"image size: "<<image.size()<<endl;
 
         orb->detectAndCompute(image, cv::Mat(), keypoints, descriptors);
-        cout<<"image2KpAndDesp size: "<<keypoints.size()<<", "<<descriptors.size()<<endl;
+        LOG(INFO)<<"image2KpAndDesp size: "<<keypoints.size()<<", "<<descriptors.size()<<endl;
     }
 
 
@@ -281,6 +292,137 @@ public:
         mps = this->image2world(matched_points, disparity_of_points, R, t);
     }
 
+    bool StereoImage2CamPointsORB(cv::Mat& image_left_rect,
+                                  cv::Mat& image_right_rect,
+                                  vector<cv::KeyPoint>& Keypoints_left,
+                                  vector<cv::Point3f>& Camera_pts_left,
+                                  cv::Mat& descriptors_left)
+    {
+
+      LOG(INFO)<<"StereoImage2CamPointsORB 1"<<endl;
+
+      //void image2KpAndDesp(cv::Mat& image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
+      vector<cv::KeyPoint> kps_left, kps_right;
+      cv::Mat desps_left, desps_right;
+
+      std::thread t1(image2KpAndDespTest, image_left_rect, std::ref(kps_left), std::ref(desps_left));
+      std::thread t2(image2KpAndDespTest, image_right_rect, std::ref(kps_right), std::ref(desps_right));
+
+      t1.join();
+      t2.join();
+
+      LOG(INFO)<<"left kps and desp size are: "<<kps_left.size()<<", "<<desps_left.size()<<endl;
+      LOG(INFO)<<"right kps and desp size are: "<<kps_right.size()<<", "<<desps_right.size()<<endl;
+
+      if(kps_left.size() < 50 || kps_right.size() < 50)
+      {
+        LOG(INFO)<<"kps_left.size() < 50 || kps_right.size() < 50"<<endl;
+        return false;
+      }
+
+      cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12,20,2));
+      std::vector< cv::DMatch > matches_1;
+
+      matcher.match(desps_left, desps_right, matches_1);
+
+      double max_dist = 0; double min_dist = 1000;
+      for( int i = 0; i < matches_1.size(); i++ )
+      {
+        double dist = matches_1[i].distance;
+        if( dist < min_dist ) min_dist = dist;
+        if( dist > max_dist ) max_dist = dist;
+      }
+
+      //GMS
+//        cv::xfeatures2d::matchGMS(cv::Size(752, 480), cv::Size(752, 480),
+//                                  kps_left, kps_right,
+//                                  matches_1, matches_1,
+//                                  true, true);
+
+      std::vector< cv::DMatch > good_matches;
+      for( int i = 0; i < matches_1.size(); i++ )
+      {
+        if( matches_1[i].distance <= 2*min_dist || matches_1[i].distance< 10)
+        {
+          good_matches.push_back( matches_1[i]);
+        }
+      }
+
+      LOG(INFO)<<"good_matches size: "<<good_matches.size()<<endl;
+
+      if(good_matches.size()<30)
+      {
+        LOG(INFO)<<"good_matches.size()<30: "<<good_matches.size()<<endl;
+        return false;
+      }
+
+      std::vector<cv::KeyPoint> good_kps_left, good_kps_right;
+      for( size_t i = 0; i < good_matches.size(); i++ )
+      {
+        good_kps_left.push_back(kps_left[good_matches[i].queryIdx]);
+        good_kps_right.push_back(kps_right[good_matches[i].trainIdx]);
+      }
+
+      cv::Mat isOutlierMask;
+      vector<cv::Point2f> good_kps_left_f, good_kps_right_f;
+      cv::KeyPoint::convert(good_kps_left, good_kps_left_f);
+      cv::KeyPoint::convert(good_kps_right, good_kps_right_f);
+      cv::Mat fundamental_matrix = cv::findFundamentalMat(good_kps_left_f, good_kps_right_f,
+                                                          cv::FM_RANSAC, 3, 0.99, isOutlierMask);
+
+      int final_good_matches_count = 0;
+      std::vector<cv::DMatch> final_good_matches;
+      for(int i = 0; i<good_matches.size(); i++)
+      {
+        if (isOutlierMask.at<int>(i)!=0)
+        {
+          final_good_matches.push_back(good_matches[i]);
+          final_good_matches_count++;
+        }
+      }
+
+      if(final_good_matches_count < 20)
+        return false;
+
+      cv::Mat final_good_desps_left = cv::Mat::zeros(cv::Size(32, final_good_matches.size()), desps_left.type());
+      cv::Mat final_good_desps_right = cv::Mat::zeros(cv::Size(32, final_good_matches.size()), desps_left.type());
+
+      //update final good descriptor mat
+      std::vector<cv::KeyPoint> final_good_kps_left, final_good_kps_right;
+      for(size_t i = 0; i < final_good_matches.size(); i++ )
+      {
+
+          if((kps_left[final_good_matches[i].queryIdx].pt.x - kps_right[final_good_matches[i].trainIdx].pt.x)<=0)
+              continue;
+
+        final_good_kps_left.push_back(kps_left[final_good_matches[i].queryIdx]);
+        final_good_kps_right.push_back(kps_right[final_good_matches[i].trainIdx]);
+
+        desps_left.row(final_good_matches[i].queryIdx).copyTo(final_good_desps_left.row(i));
+        desps_right.row(final_good_matches[i].trainIdx).copyTo(final_good_desps_right.row(i));
+      }
+
+
+      Keypoints_left = final_good_kps_left;
+      descriptors_left = final_good_desps_left;
+
+      std::vector<cv::Point2f> matched_points;
+      cv::KeyPoint::convert(final_good_kps_left, matched_points);
+
+      std::vector<float> disparity_of_points;
+      for(int index = 0; index < final_good_kps_left.size(); index++)
+      {
+        disparity_of_points.push_back(final_good_kps_left[index].pt.x - final_good_kps_right[index].pt.x);
+      }
+
+      //step 5, given pts2f, disps, R and t, compute mps
+      Camera_pts_left = this->image2cam(matched_points, disparity_of_points);
+
+      LOG(INFO)<<"final_good_kps_left size: "<<final_good_kps_left.size()<<endl;
+
+      return true;
+    }
+
 
     bool StereoImage2CamPoints(cv::Mat& image_left_rect,
                                cv::Mat& image_right_rect,
@@ -290,7 +432,7 @@ public:
     {
 
         //step 1, detect and compute kps and desp
-        cout<<"image_left_rect size: "<<image_left_rect.size()<<endl;
+        LOG(INFO)<<"image_left_rect size: "<<image_left_rect.size()<<endl;
         this->image2KpAndDesp(image_left_rect, Keypoints_left, descriptors_left);
         if(Keypoints_left.size()< 20)
             return false;
@@ -327,6 +469,18 @@ public:
         //step 5, given pts2f, disps, R and t, compute mps
         Camera_pts_left = this->image2cam(matched_points, disparity_of_points);
 
+        for(auto& kp : Keypoints_left)
+        {
+            LOG(INFO)<<"normal Keypoints_left: "<<kp.pt.x<<", "<<kp.pt.y<<endl;
+        }
+
+        LOG(INFO)<<"normal descriptors_left size , type: "<<descriptors_left.size()<<", "<<descriptors_left.type()<<endl;
+
+        for(auto& kp : Camera_pts_left)
+        {
+            LOG(INFO)<<"normal Camera_pts_left: "<<kp<<endl;
+        }
+
         return true;
     }
 
@@ -344,7 +498,7 @@ public:
 
         matcher.match(desps1, desps2, matches);
 
-        cout<<"match2Images: matches.size() "<<matches.size()<<endl;
+        LOG(INFO)<<"match2Images: matches.size() "<<matches.size()<<endl;
 
         //step 2, find first bunch of good matches using desp distance
         double max_dist = 0;
@@ -368,7 +522,7 @@ public:
             }
         }
 
-        cout<<"match2Images: good_matches.size() "<<good_matches.size()<<endl;
+        LOG(INFO)<<"match2Images: good_matches.size() "<<good_matches.size()<<endl;
 
         if (good_matches.size()<8)
             return false;
@@ -385,15 +539,15 @@ public:
             good_kps_cur.push_back( kps2[good_matches[i].trainIdx].pt );
         }
 
-        cout<<"good_kps_old size: "<<good_kps_old.size()<<endl;
-        cout<<"good_kps_cur size: "<<good_kps_cur.size()<<endl;
+        LOG(INFO)<<"good_kps_old size: "<<good_kps_old.size()<<endl;
+        LOG(INFO)<<"good_kps_cur size: "<<good_kps_cur.size()<<endl;
 
         //step 3, use H to find second bunch of good matches
         cv::Mat isOutlierMask;
         cv::Mat fundamental_matrix = cv::findFundamentalMat(good_kps_old, good_kps_cur, cv::FM_RANSAC, 2, 0.995, isOutlierMask);
 
-        cout<<"isOutlierMask shape: "<<isOutlierMask.size()<<endl;
-        cout<<"isOutlierMask depth: "<<isOutlierMask.depth()<<endl;
+        LOG(INFO)<<"isOutlierMask shape: "<<isOutlierMask.size()<<endl;
+        LOG(INFO)<<"isOutlierMask depth: "<<isOutlierMask.depth()<<endl;
 
         std::vector<cv::DMatch> final_good_matches;
         for(int i = 0; i<good_matches.size(); i++)
@@ -406,7 +560,7 @@ public:
         }
 
 
-        cout<<"final_good_matches size: "<<final_good_matches.size()<<endl;
+        LOG(INFO)<<"final_good_matches size: "<<final_good_matches.size()<<endl;
 
         // for findEssentialMat requirement
         if(final_good_matches.size()<8)
@@ -441,7 +595,7 @@ public:
         cv::Mat descriptors_old_left;
         vector<cv::Point3f> MapPoints_old;
 
-        cout<<"solve pnp 1: R and t: \n"<<R<<"\n"<<t<<endl;
+        LOG(INFO)<<"solve pnp 1: R and t: \n"<<R<<"\n"<<t<<endl;
 
         this->StereoImage2MapPoints(old_image_left,      //input
                                     old_image_right,     //input
@@ -464,7 +618,7 @@ public:
 //
 //        cv::Mat fundamental_matrix;
 //        fundamental_matrix = cv::findFundamentalMat (kps1, kps2);
-//        cout<<"fundamental_matrix is "<<endl<< fundamental_matrix<<endl;
+//        LOG(INFO)<<"fundamental_matrix is "<<endl<< fundamental_matrix<<endl;
         //-------------------------------------------------------------------
 
 
@@ -498,8 +652,8 @@ public:
         // --------------------------------------------------------------------------------------------------------------------------
 
 
-        cout<<"Fetched kps_cur_left size: "<<kps_cur_left.size()<<endl;
-        cout<<"Fetched mps_old size: "<<mps_old.size()<<endl;
+        LOG(INFO)<<"Fetched kps_cur_left size: "<<kps_cur_left.size()<<endl;
+        LOG(INFO)<<"Fetched mps_old size: "<<mps_old.size()<<endl;
 
         assert(mps_old.size() == kps_cur_left.size());
 
@@ -508,7 +662,7 @@ public:
         vector<cv::Point2f> image_pts_cur;
         cv::KeyPoint::convert(kps_cur_left, image_pts_cur);
 
-        cout<<"converted image_pts_cur size: "<<image_pts_cur.size()<<endl;
+        LOG(INFO)<<"converted image_pts_cur size: "<<image_pts_cur.size()<<endl;
 
         cv::Mat rvec, tvec;
         cv::Mat intrinstic;
@@ -518,8 +672,8 @@ public:
         cv::Mat D = cv::Mat::zeros(4, 1, cv::DataType<double>::type);
 
 
-        cout<<"mps_old size(): "<<mps_old.size()<<endl;
-        cout<<"image_pts_cur size(): "<<image_pts_cur.size()<<endl;
+        LOG(INFO)<<"mps_old size(): "<<mps_old.size()<<endl;
+        LOG(INFO)<<"image_pts_cur size(): "<<image_pts_cur.size()<<endl;
 
         //SOLVEPNP_P3P
         //SOLVEPNP_UPNP
@@ -547,7 +701,7 @@ public:
 
         float distanceR = this->Vec3Distance(homographyRvec, rvec);
 
-        cout<<"distanceR is: "<<distanceR<<endl;
+        LOG(INFO)<<"distanceR is: "<<distanceR<<endl;
 
         float distanceT = this->Vec3Distance(t, tvec);
 
@@ -567,8 +721,8 @@ public:
         //if (distanceR < 10) // too many outliers, good recall.
         //if (distanceR < 4) // fewer outliers than before, good recall
         //if (distanceR < 1.0) // too strict
-        cout<<"(inliers.size()): "<<inliers<<endl;
-        cout<<"(inliers.size()).width and height are: "<<(inliers.size()).width<<", "<<(inliers.size()).height<<endl;
+        LOG(INFO)<<"(inliers.size()): "<<inliers<<endl;
+        LOG(INFO)<<"(inliers.size()).width and height are: "<<(inliers.size()).width<<", "<<(inliers.size()).height<<endl;
 
         if (distanceR < 4 && (inliers.size()).height > 0 && distanceT < 50)
             return (inliers.size()).height;
@@ -607,13 +761,13 @@ public:
 
 //    float Vec3Distance(cv::Mat a, cv::Mat b)
 //    {
-//        cout<<"a shape is: "<<a.size()<<endl;
-//        cout<<"b shape is: "<<b.size()<<endl;
+//        LOG(INFO)<<"a shape is: "<<a.size()<<endl;
+//        LOG(INFO)<<"b shape is: "<<b.size()<<endl;
 //        float result = abs(a.at<double>(0,0) - b.at<double>(0,0))
 //                    +  abs(a.at<double>(0,1) - b.at<double>(0,1))
 //                    +  abs(a.at<double>(0,2) - b.at<double>(0,2));
 //
-//        cout<<"Vec3Distance result is: "<<result<<endl;
+//        LOG(INFO)<<"Vec3Distance result is: "<<result<<endl;
 //
 //        return result;
 //    }
@@ -630,7 +784,7 @@ public:
                     +  abs(a.at<double>(1) - b.at<double>(1))
                     +  abs(a.at<double>(2) - b.at<double>(2));
 
-        cout<<"Vec3Distance result is: "<<result<<endl;
+        LOG(INFO)<<"Vec3Distance result is: "<<result<<endl;
 
         return result;
     }
@@ -646,11 +800,11 @@ public:
 
         cv::Mat essential_mat = cv::findEssentialMat(pts1f, pts2f, focal_length, principal_point, cv::RANSAC);
 
-        cout<<"Recovered essential mat is: \n"<<essential_mat<<endl;
+        LOG(INFO)<<"Recovered essential mat is: \n"<<essential_mat<<endl;
 
         cv::Mat R, t;
 
-        cout<<"Recover Rotation from essential mat, pts1f and pts2f size: "<<pts1f.size()<<", "<<pts2f.size()<<endl;
+        LOG(INFO)<<"Recover Rotation from essential mat, pts1f and pts2f size: "<<pts1f.size()<<", "<<pts2f.size()<<endl;
         cv::recoverPose(essential_mat, pts1f, pts2f, R, t, focal_length, principal_point);
 
         return R;

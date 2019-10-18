@@ -250,6 +250,39 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
     //mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 1, &SceneRetriever::MavrosPoseCallback, this);
 }
 
+SceneRetriever::SceneRetriever(const string& voc,const string& scene_file, const string config_file)
+{
+    this->original_scene.loadFile(scene_file);
+    this->ploop_closing_manager_of_scene = shared_ptr<LoopClosingManager>(new LoopClosingManager(voc));
+
+    this->mpCv_helper = shared_ptr<cv_helper>(new cv_helper(376.0, 376.0, 376.0, 240.0, 45.12));
+    this->mpCv_helper->setMask("mask.png");
+
+
+    this->_init_retriever();
+
+    LOG(INFO)<<"Publishing history pose started!"<<endl;
+    this->publishPoseHistory();
+    LOG(INFO)<<"Publishing history pose finished!"<<endl;
+
+    int image_num = 5000;
+
+    for (int i=0; i<image_num; i++)
+    {
+        string left_path = "./image/left/" + to_string(i) + ".png";
+        mVecLeftImagePath.push_back(left_path);
+    }
+
+    mMavrosSub = mNH.subscribe("/mavros/vision_pose/pose", 1, &SceneRetriever::MavrosPoseCallback, this);
+    //mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 1, &SceneRetriever::MavrosPoseCallback, this);
+
+    cv::FileStorage fsSettings(config_file, cv::FileStorage::READ);
+    mThresFitnessScore = fsSettings["Fitness_Threshold"];
+
+    LOG(INFO)<<"config_file: "<<config_file<<endl;
+    LOG(INFO)<<"mThresFitnessScore: "<<mThresFitnessScore<<endl;
+}
+
 void SceneRetriever::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
 {
     mCurMavrosPose = PoseStampedToMat(pose);
@@ -330,13 +363,12 @@ void SceneRetriever::displayFeatureMatches(cv::Mat curImage, vector<cv::KeyPoint
 
     cv::Mat output_image;
 
-    if (!output_image.empty() && !curImage.empty() && !oldImage.empty() && !matches.empty() && !curKps.empty() && !oldKps.empty()) {
+    if (!curImage.empty() && !oldImage.empty() && !matches.empty() && !curKps.empty() && !oldKps.empty()) {
         cv::drawMatches(curImage, curKps, oldImage, oldKps, matches, output_image);
         cv::putText(output_image, "matched_kps size: " + to_string(matches.size()), cv::Point(20, 60), 2, 2,
                     cv::Scalar(0, 0, 255));
         cv::imwrite("./loopclosure_result/" + std::to_string(this->LoopClosureDebugIndex) + "_" +
                     std::to_string(loop_index) + ".png", output_image);
-
     }
 }
 
@@ -403,6 +435,12 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
         return -1;
     }
 
+//    if(!mpCv_helper->StereoImage2CamPointsORB(image_left_rect, image_right_rect, current_kps_left, current_camera_pts, current_frame_desps))
+//    {
+//        match_success = false;
+//        return -1;
+//    }
+
     // ------------------------------------------------------------------------------------------------------------------------------------
     // NOTE real time computed elements
 //    vector<cv::KeyPoint> old_kps_left;
@@ -454,9 +492,12 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     }
 
 
-    bool debug = true;
+    bool debug = false;
     if(debug)
     {
+        LOG(INFO)<<"current_kps_left size: "<<current_kps_left.size()<<endl;
+        LOG(INFO)<<"old_kps_left size: "<<old_kps_left.size()<<endl;
+        LOG(INFO)<<"result_matches size: "<<result_matches.size()<<endl;
         cv::Mat old_image_left = cv::imread(mVecLeftImagePath[loop_index]);
         this->displayFeatureMatches(image_left_rect, current_kps_left,
                                     old_image_left, old_kps_left,
@@ -548,7 +589,7 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     LOG(INFO)<<"result_t: "<<result_t<<endl;
     LOG(INFO)<<"new_t: "<<new_t<<endl;
 
-    if (fitnesscore < 1.5) //TODO:move this into a config.
+    if (fitnesscore < mThresFitnessScore)
     {
         this->mpCv_helper->publishPose(new_R, new_t, 0);
         RT_mat_of_stereo_cam_output = new_T;
@@ -734,7 +775,7 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     LOG(INFO)<<"result_t: "<<result_t<<endl;
     LOG(INFO)<<"new_t: "<<new_t<<endl;
 
-    if (fitnesscore < 1.5) //TODO:move this into a config.
+    if (fitnesscore < mThresFitnessScore)
     {
         this->mpCv_helper->publishPose(new_R, new_t, 0);
         RT_mat_of_stereo_cam_output = new_T;

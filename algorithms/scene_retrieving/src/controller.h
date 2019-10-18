@@ -241,25 +241,43 @@ public:
         return distance;
     }
 
+//    inline bool isOutlier(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose)
+//    {
+//        float distance = PoseDistance(mavros_pose, scene_retrieved_pose);
+//
+//        float sum = 0;
+//        for(auto& elem : mSceneMavrosDistances)
+//        {
+//            sum += elem;
+//        }
+//        float mean = sum / mSceneMavrosDistances.size();
+//
+//        float factor = (distance/mean);
+//        LOG(INFO)<<"factor: "<<factor<<endl;
+//        if (factor > 2.0 || factor < 0.5)
+//            return true;
+//
+//        return false;
+//    }
+
     inline bool isOutlier(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose)
     {
         float distance = PoseDistance(mavros_pose, scene_retrieved_pose);
 
         float sum = 0;
-        for(auto& elem : mSceneMavrosDistances)
+        for(auto& elem : mSceneMavrosDistanceDeque)
         {
             sum += elem;
         }
-        float mean = sum / mSceneMavrosDistances.size();
+        float mean = sum / mSceneMavrosDistanceDeque.size();
 
         float factor = (distance/mean);
         LOG(INFO)<<"factor: "<<factor<<endl;
-        if (factor > 3.0 || factor < 0.3)
+        if (factor > 2.0 || factor < 0.5)
             return true;
 
         return false;
     }
-
 
     enum mState{
         NO_SCENE_RETRIEVED_BEFORE,
@@ -310,6 +328,8 @@ private:
     deque<tuple<size_t, cv::Mat, geometry_msgs::PoseStamped> > mIdxMavScenes;
 
     deque<tuple<size_t, cv::Mat, geometry_msgs::PoseStamped, geometry_msgs::PoseStamped> > mTest;
+
+    deque<float> mSceneMavrosDistanceDeque;
 
     // Transformation from drone to scene
     cv::Mat mTscene_drone;

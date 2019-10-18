@@ -49,7 +49,6 @@ find_package(catkin REQUIRED COMPONENTS
                                 visualization_msgs
 				)
 
-
 find_package(PCL REQUIRED)
 
 find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
@@ -70,6 +69,8 @@ include_directories(${OpenCV_INCLUDE_DIRS}
 
 MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")
 SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES} -lpthread)
+
+find_package(OpenCV 3.4.5 REQUIRED)
 
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION
@@ -206,19 +207,16 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${EXTRA_EXE_LINKER_FLAGS}")
 SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} ${EXTRA_EXE_LINKER_FLAGS_RELEASE}")
 SET(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} ${EXTRA_EXE_LINKER_FLAGS_DEBUG}")
-
-
-
 #------------------------------------------------
 # DIRS
 #------------------------------------------------
+
+find_package(OpenCV 3.4.5 REQUIRED)
 
 ADD_SUBDIRECTORY(src)
 
 #target_link_libraries(demo ${PROJECT_NAME} ${OpenCV_LIBS})
 #  file(COPY demo/images DESTINATION ${CMAKE_BINARY_DIR}/)
-
-
 
 MESSAGE( STATUS "-------------------------------------------------------------------------------" )
 message( STATUS "General configuration for ${PROJECT_NAME} ${PROJECT_VERSION}")

@@ -11,6 +11,8 @@ Scene::Scene()
 
     mpCv_helper = new cv_helper(376.0, 376.0, 376.0, 240.0, 45.12);
 
+    mLCM = make_shared<LoopClosingManager>("./voc/brief_k10L6.bin");
+
     return;//TODO:fill in init functions.
 }
 
@@ -23,12 +25,13 @@ int Scene::getImageCount()
 
 void Scene::saveFile(const std::string &filename)
 {
-    
     std::ofstream ofs(filename);
 
     {
         boost::archive::text_oarchive oa(ofs);
         oa << *this;
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
     }
 }
 
@@ -128,15 +131,15 @@ void Scene::test()
 SceneFrame Scene::generateSceneFrameFromStereoImage(cv::Mat imgl, cv::Mat imgr, cv::Mat RotationMat, cv::Mat TranslationMat, cv::Mat Q_mat)
 {
 
-    LoopClosingManager lcm("./voc/brief_k10L6.bin");
+//    LoopClosingManager lcm("./voc/brief_k10L6.bin");
 
     std::vector<cv::KeyPoint> key_points2d_candidate;
     std::vector<cv::KeyPoint> key_points2d_final;
     std::vector<cv::Point3d> points3d;
     cv::Mat feature;
 
-    ptr_frameinfo pleft_image_info = lcm.extractFeature(imgl);
-    ptr_frameinfo pright_image_info = lcm.extractFeature(imgr);
+    ptr_frameinfo pleft_image_info = mLCM->extractFeature(imgl);
+    ptr_frameinfo pright_image_info = mLCM->extractFeature(imgr);
 
 
     cout<<"pleft_image_info kps size: "<<pleft_image_info->keypoints.size()<<endl;
@@ -259,7 +262,25 @@ SceneFrame Scene::generateSceneFrameFromStereoImageCamera(cv::Mat imgl, cv::Mat 
     vector<cv::KeyPoint> Keypoints_left;
     vector<cv::Point3f> Camera_pts_left;
     cv::Mat descriptors_left;
-    mpCv_helper->StereoImage2CamPoints(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
+    //mpCv_helper->StereoImage2CamPoints(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
+    bool result = mpCv_helper->StereoImage2CamPointsORB(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
+
+
+//    for(auto& kp : Keypoints_left)
+//    {
+//      cout<<"Keypoints_left: "<<kp.pt.x<<", "<<kp.pt.y<<endl;
+//    }
+//
+//    for(auto& kp : Camera_pts_left)
+//    {
+//      cout<<"Camera_pts_left: "<<kp<<endl;
+//    }
+
+    cout<<"descriptors_left: "<<descriptors_left<<endl;
+
+    cout<<"Keypoints_left size: "<<Keypoints_left.size()<<endl;
+    cout<<"Camera_pts_left size: "<<Camera_pts_left.size()<<endl;
+    cout<<"descriptors_left size: "<<descriptors_left.size()<<endl;
 
     //pts2d_in    pts3d_in    desp,   R,    t
     //typedef  std::tuple<std::vector<cv::KeyPoint>, std::vector<cv::Point3d>, cv::Mat, cv::Mat, cv::Mat> SceneFrame;
@@ -267,6 +288,43 @@ SceneFrame Scene::generateSceneFrameFromStereoImageCamera(cv::Mat imgl, cv::Mat 
     Camera_pts_left_double = mpCv_helper->Points3f2Points3d(Camera_pts_left);
 
     return std::make_tuple(Keypoints_left, Camera_pts_left_double, descriptors_left, RotationMat, TranslationMat);
+}
+
+SceneFrame Scene::generateSceneFrameFromStereoImageCamera(cv::Mat imgl, cv::Mat imgr, cv::Mat RotationMat, cv::Mat TranslationMat, cv::Mat Q_mat, bool& success)
+{
+  vector<cv::KeyPoint> Keypoints_left;
+  vector<cv::Point3f> Camera_pts_left;
+  cv::Mat descriptors_left;
+  mpCv_helper->StereoImage2CamPoints(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
+  bool result = mpCv_helper->StereoImage2CamPointsORB(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
+
+  if(!result)
+  {
+      success = result;
+  }
+
+//    for(auto& kp : Keypoints_left)
+//    {
+//      cout<<"Keypoints_left: "<<kp.pt.x<<", "<<kp.pt.y<<endl;
+//    }
+//
+//    for(auto& kp : Camera_pts_left)
+//    {
+//      cout<<"Camera_pts_left: "<<kp<<endl;
+//    }
+
+  cout<<"descriptors_left: "<<descriptors_left<<endl;
+
+  cout<<"Keypoints_left size: "<<Keypoints_left.size()<<endl;
+  cout<<"Camera_pts_left size: "<<Camera_pts_left.size()<<endl;
+  cout<<"descriptors_left size: "<<descriptors_left.size()<<endl;
+
+  //pts2d_in    pts3d_in    desp,   R,    t
+  //typedef  std::tuple<std::vector<cv::KeyPoint>, std::vector<cv::Point3d>, cv::Mat, cv::Mat, cv::Mat> SceneFrame;
+  vector<cv::Point3d> Camera_pts_left_double;
+  Camera_pts_left_double = mpCv_helper->Points3f2Points3d(Camera_pts_left);
+
+  return std::make_tuple(Keypoints_left, Camera_pts_left_double, descriptors_left, RotationMat, TranslationMat);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////

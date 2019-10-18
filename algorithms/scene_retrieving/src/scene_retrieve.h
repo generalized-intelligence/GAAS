@@ -26,6 +26,7 @@
 #include "cv_helper.h"
 
 
+
 using namespace std;
 
                     //pts2d_in    pts3d_in    desp,   R,    t
@@ -366,7 +367,9 @@ public:
     
     //SceneRetriever(Scene& original_scene_input);
     SceneRetriever(const string& voc,const std::string& scene_file);
-    
+
+    SceneRetriever(const string& voc,const string& scene_file, const string config_file);
+
     float retrieveSceneWithScaleFromMonoImage(cv::Mat image_in_rect, cv::Mat& cameraMatrix, cv::Mat& RT_mat_of_mono_cam_output, bool& match_success,int* pMatchedIndexID_output = nullptr);
 
     float retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv::Mat& image_right_rect,
@@ -511,6 +514,10 @@ private:
     ros::Subscriber mMavrosSub;
 
     cv::Mat mCurMavrosPose;
+
+private:
+
+    float mThresFitnessScore = -1;
 
 };
 #endif

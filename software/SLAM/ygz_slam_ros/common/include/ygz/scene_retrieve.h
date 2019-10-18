@@ -33,7 +33,10 @@
 #include <opencv2/core/eigen.hpp>
 
 #include "ygz/cv_helper.h"
+#include <unistd.h>
 
+#include <chrono>
+#include <thread>
 
 using namespace std;
 using namespace cv;
@@ -114,6 +117,8 @@ public:
 
     SceneFrame generateSceneFrameFromStereoImageCamera(cv::Mat imgl, cv::Mat imgr, cv::Mat RotationMat, cv::Mat TranslationMat, cv::Mat Q_mat);
 
+    SceneFrame generateSceneFrameFromStereoImageCamera(cv::Mat imgl, cv::Mat imgr, cv::Mat RotationMat, cv::Mat TranslationMat, cv::Mat Q_mat, bool& success);
+
     /////////////////////////////////// serialization////////////////////////////////////
     BOOST_SERIALIZATION_SPLIT_MEMBER()
 
@@ -176,6 +181,8 @@ private:
     cv::Mat m_RT_Scene_Fix = cv::Mat::eye(4,4,CV_32F);//fix 3d pose of scene.
 
     cv_helper* mpCv_helper = nullptr;
+
+    shared_ptr<LoopClosingManager> mLCM = nullptr;
 
     //pcl::PointCloud<pcl::PointXYZRGBA>::Ptr point_cloud_of_scene; //Take care:this cloud is not required, so do not use it in any algorithm.
 };

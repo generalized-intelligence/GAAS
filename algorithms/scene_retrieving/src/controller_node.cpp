@@ -90,7 +90,8 @@ int main(int argc, char **argv) {
     World test_world();
 
 
-    pSceneRetrieve = make_shared<SceneRetriever>(voc_path, scene_path);
+    //pSceneRetrieve = make_shared<SceneRetriever>(voc_path, scene_path);
+    pSceneRetrieve = make_shared<SceneRetriever>(voc_path, scene_path, "./config/scene_retrieve.yaml");
     pController = make_shared<Controller>(nh);
 
     message_filters::Subscriber<sensor_msgs::Image> left_sub(nh, "/gi/simulation/left/image_raw", 10);
@@ -99,8 +100,6 @@ int main(int argc, char **argv) {
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub, right_sub);
     sync.setMaxIntervalDuration(ros::Duration(0.01));
     sync.registerCallback(boost::bind(StereoImageCallback, _1, _2));
-
-
 
 
 //    ros::Rate rate(10);

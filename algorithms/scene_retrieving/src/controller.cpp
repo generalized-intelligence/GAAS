@@ -139,13 +139,22 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 	// outlier determination
 	float relative_distance = PoseDistance(retrieved_pose, mavros_pose);
 
-	if (mSceneMavrosDistances.empty())
+	// maintain a deque of size 3, if size exceeds 3, pop front one
+	if (mSceneMavrosDistanceDeque.empty())
 	{
-	    mSceneMavrosDistances.push_back(relative_distance);
+	    //mSceneMavrosDistances.push_back(relative_distance);
+        mSceneMavrosDistanceDeque.push_back(relative_distance);
 	}
 	else if(!isOutlier(retrieved_pose, mavros_pose))
     {
-        mSceneMavrosDistances.push_back(relative_distance);
+        //mSceneMavrosDistances.push_back(relative_distance);
+
+        if(mSceneMavrosDistanceDeque.size() >3)
+        {
+            mSceneMavrosDistanceDeque.pop_front();
+        }
+
+        mSceneMavrosDistanceDeque.push_back(relative_distance);
     }
 
 	// retrieved pose and mavros pose at the moment when trying to retrieve pose

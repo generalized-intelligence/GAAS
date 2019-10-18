@@ -93,7 +93,6 @@ int LoopClosingManager::detectLoopByKeyFrame(ptr_frameinfo info, std::vector<cv:
                 if (match_2_images_flann(info, results[wind_index].Id, this->loop_id, results[wind_index].Score, this->frameinfo_list, matches_out))
                 {
                     LOG(INFO)<<"Loop between [ currenf Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[wind_index].Id<<"]"<<endl;
-                    LOG(INFO)<<"Loop between [ current Frame: "<<this->curFrameIndex<<"\t old_frame: "<<results[wind_index].Id<<"]"<<endl;
 
                     int current_match_size = matches_out.size();
                     ret_index = results[wind_index].Id;
@@ -217,7 +216,6 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     std::vector< cv::DMatch > matches;
     //matcher.match( kdesp_list[index1], kdesp_list[index2], matches );
 
-
     LOG(INFO)<<"frameinfo_list[index2]->descriptors size: "<<frameinfo_list[index2]->descriptors.size()<<endl;
     LOG(INFO)<<"frameinfo_list[index2]->keypoints size: "<<frameinfo_list[index2]->keypoints.size()<<endl;
 
@@ -242,15 +240,16 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
     LOG(INFO)<<"raw matches size: "<<matches.size()<<endl;
 
     //GMS
+    /*
     cv::xfeatures2d::matchGMS(cv::Size(752, 480), cv::Size(752, 480),
                               current_frame->keypoints, frameinfo_list[index2]->keypoints,
                               matches, matches,
                               true, true);
-
+    */
 
     for( int i = 0; i < matches.size(); i++ )
     {
-        if( matches[i].distance <= 2*min_dist || matches[i].distance< 10) // 3.0 too large;2.0 too large.
+        if( matches[i].distance <= 2*min_dist || matches[i].distance< 25) // 3.0 too large;2.0 too large.
         {
             good_matches.push_back( matches[i]);
         }
@@ -273,11 +272,6 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
         match_points2.push_back( frameinfo_list[index2]->keypoints[good_matches[i].trainIdx].pt );
     }
 
-
-//    good_matches_output = good_matches;
-//    return true;
-
-
     LOG(INFO)<<"match_2_images_flann, step 2 sizes are: "<<match_points1.size()<<", "<<match_points2.size()<<endl;
 
     cv::Mat isOutlierMask;
@@ -293,7 +287,6 @@ bool match_2_images_flann(ptr_frameinfo current_frame, int index2, int &save_ind
             final_good_matches_count++;
         }
     }
-
 
 
     if(final_good_matches_count>STEP2_KP_NUM)
