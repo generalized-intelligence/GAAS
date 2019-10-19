@@ -271,9 +271,9 @@ public:
         }
         float mean = sum / mSceneMavrosDistanceDeque.size();
 
-        float factor = (distance/mean);
+        float factor = abs(1 - distance/mean);
         LOG(INFO)<<"factor: "<<factor<<endl;
-        if (factor > 2.0 || factor < 0.5)
+        if (factor < 0.05)
             return true;
 
         return false;

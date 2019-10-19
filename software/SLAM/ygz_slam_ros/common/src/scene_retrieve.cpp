@@ -262,25 +262,8 @@ SceneFrame Scene::generateSceneFrameFromStereoImageCamera(cv::Mat imgl, cv::Mat 
     vector<cv::KeyPoint> Keypoints_left;
     vector<cv::Point3f> Camera_pts_left;
     cv::Mat descriptors_left;
-    //mpCv_helper->StereoImage2CamPoints(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
-    bool result = mpCv_helper->StereoImage2CamPointsORB(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
-
-
-//    for(auto& kp : Keypoints_left)
-//    {
-//      cout<<"Keypoints_left: "<<kp.pt.x<<", "<<kp.pt.y<<endl;
-//    }
-//
-//    for(auto& kp : Camera_pts_left)
-//    {
-//      cout<<"Camera_pts_left: "<<kp<<endl;
-//    }
-
-    cout<<"descriptors_left: "<<descriptors_left<<endl;
-
-    cout<<"Keypoints_left size: "<<Keypoints_left.size()<<endl;
-    cout<<"Camera_pts_left size: "<<Camera_pts_left.size()<<endl;
-    cout<<"descriptors_left size: "<<descriptors_left.size()<<endl;
+    mpCv_helper->StereoImage2CamPoints(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
+    //bool result = mpCv_helper->StereoImage2CamPointsORB(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
 
     //pts2d_in    pts3d_in    desp,   R,    t
     //typedef  std::tuple<std::vector<cv::KeyPoint>, std::vector<cv::Point3d>, cv::Mat, cv::Mat, cv::Mat> SceneFrame;
@@ -295,29 +278,14 @@ SceneFrame Scene::generateSceneFrameFromStereoImageCamera(cv::Mat imgl, cv::Mat 
   vector<cv::KeyPoint> Keypoints_left;
   vector<cv::Point3f> Camera_pts_left;
   cv::Mat descriptors_left;
-  mpCv_helper->StereoImage2CamPoints(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
-  bool result = mpCv_helper->StereoImage2CamPointsORB(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
+  bool result = mpCv_helper->StereoImage2CamPoints(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
+  //bool result = mpCv_helper->StereoImage2CamPointsORB(imgl, imgr, Keypoints_left, Camera_pts_left, descriptors_left);
 
   if(!result)
   {
       success = result;
   }
 
-//    for(auto& kp : Keypoints_left)
-//    {
-//      cout<<"Keypoints_left: "<<kp.pt.x<<", "<<kp.pt.y<<endl;
-//    }
-//
-//    for(auto& kp : Camera_pts_left)
-//    {
-//      cout<<"Camera_pts_left: "<<kp<<endl;
-//    }
-
-  cout<<"descriptors_left: "<<descriptors_left<<endl;
-
-  cout<<"Keypoints_left size: "<<Keypoints_left.size()<<endl;
-  cout<<"Camera_pts_left size: "<<Camera_pts_left.size()<<endl;
-  cout<<"descriptors_left size: "<<descriptors_left.size()<<endl;
 
   //pts2d_in    pts3d_in    desp,   R,    t
   //typedef  std::tuple<std::vector<cv::KeyPoint>, std::vector<cv::Point3d>, cv::Mat, cv::Mat, cv::Mat> SceneFrame;

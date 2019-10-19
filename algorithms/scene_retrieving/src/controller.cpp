@@ -140,7 +140,7 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 	float relative_distance = PoseDistance(retrieved_pose, mavros_pose);
 
 	// maintain a deque of size 3, if size exceeds 3, pop front one
-	if (mSceneMavrosDistanceDeque.empty())
+	if (mSceneMavrosDistanceDeque.size() < 3)
 	{
 	    //mSceneMavrosDistances.push_back(relative_distance);
         mSceneMavrosDistanceDeque.push_back(relative_distance);
@@ -149,7 +149,7 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
     {
         //mSceneMavrosDistances.push_back(relative_distance);
 
-        if(mSceneMavrosDistanceDeque.size() >3)
+        if(mSceneMavrosDistanceDeque.size() > 5)
         {
             mSceneMavrosDistanceDeque.pop_front();
         }

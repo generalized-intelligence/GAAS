@@ -143,19 +143,13 @@ public:
 
         for(size_t i=0; i<image_points.size(); i++)
         {
-
             cv::Point2f pt = image_points[i];
-
 
             float depth = (this->bf) / ( points_disparity[i] );
 
             camera_point.x = (pt.x - cx) * fxinv * depth;
             camera_point.y = (pt.y - cy) * fyinv * depth;
             camera_point.z = depth;
-
-            LOG(INFO)<<"points_disparity[i]: "<<points_disparity[i]<<endl;
-            LOG(INFO)<<"cx cy fxinv fyinv: "<<cx<<", "<<cy<<", "<<fxinv<<", "<<fyinv<<endl;
-            LOG(INFO)<<"pt.x , pt.y , depth: "<<pt.x<<", "<<pt.y<<", "<<depth<<endl;
 
             cam_points.push_back(camera_point);
         }
@@ -231,15 +225,8 @@ public:
 
     void image2KpAndDesp(cv::Mat& image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
     {
-
-        LOG(INFO)<<"image2KpAndDesp 1"<<endl;
         cv::Ptr<cv::ORB> orb = cv::ORB::create(1000);
-        LOG(INFO)<<"image2KpAndDesp 2"<<endl;
-
-        LOG(INFO)<<"image size: "<<image.size()<<endl;
-
         orb->detectAndCompute(image, cv::Mat(), keypoints, descriptors);
-        LOG(INFO)<<"image2KpAndDesp size: "<<keypoints.size()<<", "<<descriptors.size()<<endl;
     }
 
 
@@ -298,8 +285,6 @@ public:
                                   vector<cv::Point3f>& Camera_pts_left,
                                   cv::Mat& descriptors_left)
     {
-
-      LOG(INFO)<<"StereoImage2CamPointsORB 1"<<endl;
 
       //void image2KpAndDesp(cv::Mat& image, vector<cv::KeyPoint>& keypoints, cv::Mat& descriptors)
       vector<cv::KeyPoint> kps_left, kps_right;
@@ -468,18 +453,6 @@ public:
 
         //step 5, given pts2f, disps, R and t, compute mps
         Camera_pts_left = this->image2cam(matched_points, disparity_of_points);
-
-        for(auto& kp : Keypoints_left)
-        {
-            LOG(INFO)<<"normal Keypoints_left: "<<kp.pt.x<<", "<<kp.pt.y<<endl;
-        }
-
-        LOG(INFO)<<"normal descriptors_left size , type: "<<descriptors_left.size()<<", "<<descriptors_left.type()<<endl;
-
-        for(auto& kp : Camera_pts_left)
-        {
-            LOG(INFO)<<"normal Camera_pts_left: "<<kp<<endl;
-        }
 
         return true;
     }
