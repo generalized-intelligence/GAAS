@@ -87,10 +87,11 @@ int main(int argc, char **argv) {
     string scene_path = argv[1];
     string voc_path = argv[2];
 
+    LOG(INFO)<<"world start "<<endl;
     World test_world();
+    LOG(INFO)<<"world stop "<<endl;
 
 
-    //pSceneRetrieve = make_shared<SceneRetriever>(voc_path, scene_path);
     pSceneRetrieve = make_shared<SceneRetriever>(voc_path, scene_path, "./config/scene_retrieve.yaml");
     pController = make_shared<Controller>(nh);
 
@@ -101,21 +102,12 @@ int main(int argc, char **argv) {
     sync.setMaxIntervalDuration(ros::Duration(0.01));
     sync.registerCallback(boost::bind(StereoImageCallback, _1, _2));
 
-
-//    ros::Rate rate(10);
-//    while (ros::ok())
-//    {
-//        ros::spin();
-//        rate.sleep();
-//    }
-//    return 0;
-
-
     ros::MultiThreadedSpinner spinner(4);
 
     while (ros::ok())
     {
         spinner.spin(); // the missing call
     }
+
     return 0;
 }

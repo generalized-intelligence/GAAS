@@ -5,6 +5,10 @@
 #ifndef SCENE_RETRIEVING_BUILDING_H
 #define SCENE_RETRIEVING_BUILDING_H
 
+#include <iostream>
+#include <thread>
+#include <mutex>
+
 #include <opencv2/opencv.hpp>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -16,6 +20,11 @@
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/PoseStamped.h>
 
+#include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
+
+
+
 using namespace std;
 
 class Building {
@@ -25,6 +34,7 @@ public:
     Building(Eigen::Vector3f& point, int starting_id, Eigen::Vector3f& door_position, int door_starting_id,
              float door_w = 2, float door_h=3, float length=10, float width=5, float height=8);
 
+    void BuildingPointCallback(const geometry_msgs::PoseStamped& pose);
 
     inline bool isInBuilding(geometry_msgs::PoseStamped& point, bool use_log=false)
     {
@@ -88,6 +98,31 @@ public:
         return mDoorGlobalPosition;
     }
 
+    void SetCornerPointsAndGate()
+    {
+        LOG(INFO)<<"Start setting building corner points and gate position, please use RVIZ to select!"<<endl;
+        while(mCornerAndGate.size() != 5)
+        {
+            LOG(INFO)<<"Points received: "<<mCornerAndGate.size()<<"/5"<<endl;
+            ros::Duration(2.0).sleep();
+        }
+
+        if(mCornerAndGate.size() == 5)
+        {
+            mCorner_0 = mCornerAndGate[0];
+            mCorner_1 = mCornerAndGate[1];
+            mCorner_2 = mCornerAndGate[2];
+            mCorner_3 = mCornerAndGate[3];
+            mGate = mCornerAndGate[4];
+
+            mFinished = true;
+            LOG(INFO)<<"Setting finished!!"<<endl;
+        } else{
+            LOG(ERROR)<<"Setting failed!, mCornerAndGate size is not 5!"<<endl;
+        }
+
+    }
+
 public:
 
     int mMarkerStartingID = -1;
@@ -112,6 +147,20 @@ private:
     ros::Publisher mBuildingPub;
 
     size_t mMarker_Index = 0;
+
+    vector<Eigen::Vector3f> mCornerPts;
+
+    ros::Subscriber mBuildingSub;
+
+    geometry_msgs::PoseStamped mCorner_0;
+    geometry_msgs::PoseStamped mCorner_1;
+    geometry_msgs::PoseStamped mCorner_2;
+    geometry_msgs::PoseStamped mCorner_3;
+    geometry_msgs::PoseStamped mGate;
+    vector<geometry_msgs::PoseStamped> mCornerAndGate;
+
+//    shared_ptr<std::mutex> mCornerMutex = nullptr;
+    bool mFinished = false;
 };
 
 

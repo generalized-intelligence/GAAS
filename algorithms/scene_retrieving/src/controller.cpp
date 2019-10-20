@@ -30,14 +30,12 @@ Controller::Controller(ros::NodeHandle& nh)
 
 void Controller::Run()
 {
-
     // test
     geometry_msgs::PoseStamped target;
     target.pose.position.x = 0;
     target.pose.position.y = -20;
     target.pose.position.z = 3;
     SetTarget(target);
-
 
 	ros::Rate rate(10.);
 	while (!ros::isShuttingDown())
@@ -123,16 +121,11 @@ bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBo
 		pose.pose.position.z = target.pose.position.z;
 	}
 
-	LOG(INFO)<<"Going to target: "<<pose.pose.position.x<<", "
-								  <<pose.pose.position.y<<", "
-								  <<pose.pose.position.z<<endl;
-
 	mPositionControlPub.publish(pose);
 }
 
 void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 {
-
 	if (retrieved_pose.empty() || mavros_pose.empty())
 		return;
 
@@ -185,8 +178,6 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 		mRetrievedPoseQueue.push_back(retrieved_pose);
 
 		mIdxMavScenes.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mMavPoseCurRetrieved));
-
-//		mTest.push_back(make_tuple(mSceneRetrieveIndex, retrieved_pose, mMavPoseCurRetrieved, mTargetPose));
 
 		testfile<<mSceneRetrieveIndex<<","
 				<<retrieved_pose.at<double>(0,3)<<","
@@ -261,7 +252,6 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 		cout<<"Current state: "<<mSTATE<<endl;
 	}
 
-
 	mSceneRetrieveIndex ++;
 }
 
@@ -286,9 +276,6 @@ bool Controller::isSceneRecoveredMovementValid()
 
 void Controller::UpdateTarget()
 {
-
-    LOG(INFO)<<"UpdateTarget 1"<<endl;
-
 	mTARGET = NEW_TARGET;
 
 	if (mRetrievedPoseQueue.empty())
@@ -364,9 +351,6 @@ void Controller::UpdateTarget()
 		LOG(INFO)<<"mInitialRelativeTransform: \n"<<mInitialRelativeTransform<<endl;
 	}
 	else{
-
-        LOG(INFO)<<"UpdateTarget 2"<<endl;
-
         mCurrentRelativeTransform = relative_transform;
 
         if(mCurrentRelativeTransform.empty() || mInitialRelativeTransform.empty())
@@ -385,6 +369,10 @@ void Controller::UpdateTarget()
         geometry_msgs::PoseStamped result_target = MatToPoseStamped(updatedInitialTarget, mInitialTarget.header.frame_id);
 
         mTargetPose = result_target;
+
+        LOG(INFO)<<"Going to target: "<<mTargetPose.pose.position.x<<", "
+								      <<mTargetPose.pose.position.y<<", "
+								      <<mTargetPose.pose.position.z<<endl;
 
         LOG(INFO)<<"current2initial, current pose diff to original pose diff: \n"<<current2initial<<endl;
         LOG(INFO)<<"current2initial, mInitialTarget: \n"<<initialMat<<endl;

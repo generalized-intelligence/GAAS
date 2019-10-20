@@ -12,52 +12,49 @@ Building::Building(Eigen::Vector3f& point, int starting_id, Eigen::Vector3f& doo
     mMarkerStartingID = starting_id;
     mDoorMarkerStartingID = door_starting_id;
 
-    // door position is relative to its mC0 (building origin), in FLU frame(default RVIZ frame)
-    mDoorPosition = door_position;
-    mDoorHeight = door_h;
-    mDoorWidth = door_w;
+    mBuildingSub = mNH.subscribe("/gi/flag_pub/pose", 100, &Building::BuildingPointCallback, this);
 
-    mStartingPoint[0] = point[0];
-    mStartingPoint[1] = point[1];
-    mStartingPoint[2] = point[2];
+//    mCornerMutex = make_shared<std::mutex>();
 
-    mLength = length;
-    mWidth = width;
-    mHeight = height;
+    LOG(INFO)<<"Building initializing!"<<endl;
 
-    /*  C2        C3
-     *   __________    +x
-     *   |        |    ^
-     *   |____D___|    |
-     *   C1       C0   |
-     *                 |
-     *  +y <-----------|0
-     */
+    std::thread t(&Building::SetCornerPointsAndGate, this);
+    t.detach();
 
-    mC0 = mStartingPoint;
-    mC1 = mC0;
-    mC2 = mC0;
-    mC3 = mC0;
+    while(mCornerAndGate.size() <= 5 && !mFinished)
+    {
+        ros::Duration(0.1).sleep();
+        ros::spinOnce();
+    }
+    LOG(INFO)<<"loop finished"<<endl;
 
-    mC1[1] += mLength;
+//    /*  C2        C3
+//     *   __________    +x
+//     *   |        |    ^
+//     *   |____D___|    |
+//     *   C1       C0   |
+//     *                 |
+//     *  +y <-----------|0
+//     */
 
-    mC2[0] += mLength;
-    mC2[1] += mWidth;
-
-    mC3[0] += mWidth;
-
-    LOG(INFO)<<"mC0:\n"<<mC0<<endl;
-    LOG(INFO)<<"mC1:\n"<<mC1<<endl;
-    LOG(INFO)<<"mC2:\n"<<mC2<<endl;
-    LOG(INFO)<<"mC3:\n"<<mC3<<endl;
-
-    mBuildingPub = mNH.advertise<visualization_msgs::Marker>("/buildings", 10);
-
-    CreatePerimPoints();
-    CreateDoorPoints();
-    LOG(INFO)<<"CreatePerimPoints Finished!"<<endl;
-    PublishBuildingPoints();
+//    mBuildingPub = mNH.advertise<visualization_msgs::Marker>("/buildings", 10);
+//    CreatePerimPoints();
+//    CreateDoorPoints();
+//    PublishBuildingPoints();
 }
+
+
+void Building::BuildingPointCallback(const geometry_msgs::PoseStamped& pose)
+{
+//    mCornerMutex->lock();
+    if(mCornerAndGate.size() <= 5)
+    {
+        mCornerAndGate.push_back(pose);
+        LOG(WARNING)<<"Received Position: "<<pose.pose.position.x<<", "<<pose.pose.position.y<<", "<<pose.pose.position.z<<endl;
+    }
+//    mCornerMutex->unlock();
+}
+
 
 void Building::CreatePerimPoints()
 {
@@ -199,3 +196,4 @@ void Building::PublishBuildingPoints()
 
     LOG(INFO)<<"PublishBuildingPoints finished!"<<endl;
 }
+
