@@ -87,11 +87,6 @@ int main(int argc, char **argv) {
     string scene_path = argv[1];
     string voc_path = argv[2];
 
-    LOG(INFO)<<"world start "<<endl;
-    World test_world();
-    LOG(INFO)<<"world stop "<<endl;
-
-
     pSceneRetrieve = make_shared<SceneRetriever>(voc_path, scene_path, "./config/scene_retrieve.yaml");
     pController = make_shared<Controller>(nh);
 

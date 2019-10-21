@@ -4,17 +4,12 @@
 
 #include "building.h"
 
-Building::Building(Eigen::Vector3f& point, int starting_id, Eigen::Vector3f& door_position, int door_starting_id, float door_w, float door_h,
-        float length, float width, float height)
+Building::Building(float height)
 {
-    // for multiple buildings, each building's marker's ID should start with the ID of last building, whcih is
-    // required by rviz
-    mMarkerStartingID = starting_id;
-    mDoorMarkerStartingID = door_starting_id;
 
     mBuildingSub = mNH.subscribe("/gi/flag_pub/pose", 100, &Building::BuildingPointCallback, this);
 
-//    mCornerMutex = make_shared<std::mutex>();
+    mCornerMutex = make_shared<std::mutex>();
 
     LOG(INFO)<<"Building initializing!"<<endl;
 
@@ -26,33 +21,31 @@ Building::Building(Eigen::Vector3f& point, int starting_id, Eigen::Vector3f& doo
         ros::Duration(0.1).sleep();
         ros::spinOnce();
     }
-    LOG(INFO)<<"loop finished"<<endl;
 
-//    /*  C2        C3
-//     *   __________    +x
-//     *   |        |    ^
-//     *   |____D___|    |
-//     *   C1       C0   |
-//     *                 |
-//     *  +y <-----------|0
-//     */
+//    if( point.pose.position.x > (mStartingPoint[0] + mWidth) || point.pose.position.x < mStartingPoint[0])
+//        return false;
+//    else if(point.pose.position.y > (mStartingPoint[1] + mLength) || point.pose.position.y < mStartingPoint[1])
+//        return false;
+//    else if(point.pose.position.z > (mStartingPoint[2] + mHeight) || point.pose.position.z < mStartingPoint[2])
+//        return false;
 
-//    mBuildingPub = mNH.advertise<visualization_msgs::Marker>("/buildings", 10);
-//    CreatePerimPoints();
-//    CreateDoorPoints();
-//    PublishBuildingPoints();
+    // TODO, assuming the building is a regular rectangle
+    mWidth = mCorner_2.pose.position.x - mCorner_1.pose.position.z;
+    mLength = mCorner_1.pose.position.y - mCorner_0.pose.position.y;
+    mHeight = height;
+
 }
 
 
 void Building::BuildingPointCallback(const geometry_msgs::PoseStamped& pose)
 {
-//    mCornerMutex->lock();
+    mCornerMutex->lock();
     if(mCornerAndGate.size() <= 5)
     {
         mCornerAndGate.push_back(pose);
         LOG(WARNING)<<"Received Position: "<<pose.pose.position.x<<", "<<pose.pose.position.y<<", "<<pose.pose.position.z<<endl;
     }
-//    mCornerMutex->unlock();
+    mCornerMutex->unlock();
 }
 
 
@@ -109,11 +102,6 @@ void Building::CreateDoorPoints()
  *                 |
  *  +y <-----------|0
  */
-//    mDoorPosition = door_position;
-//    mDoorHeight = door_h;
-//    mDoorWidth = door_w;
-
-    // TODO: assuming that door is only located at above mentioned postion, make it general!
 
     Eigen::Vector3f door_global_position(mC0[0]+mDoorPosition[0],
                                          mC0[1]+mDoorPosition[1] + mDoorWidth/2.0,
@@ -192,7 +180,6 @@ void Building::PublishBuildingPoints()
         mBuildingPub.publish(mark);
         mDoorMarkerStartingID ++;
     }
-
 
     LOG(INFO)<<"PublishBuildingPoints finished!"<<endl;
 }

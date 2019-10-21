@@ -9,25 +9,21 @@
 World::World()
 {
     //for debugging
-    Eigen::Vector3f door(0,3,0);
-    Eigen::Vector3f origin(5,0,0);
-
     LOG(INFO)<<"Building 1 started"<<endl;
-    Building test_building(origin, 0,
-                           door, 0);
+    Building test_building;
     LOG(INFO)<<"Building 1 finished"<<endl;
     LOG(INFO)<<"mBuildings 1"<<endl;
     mBuildings.push_back(test_building);
 
+
+
     LOG(INFO)<<"Building 2 started"<<endl;
-    Eigen::Vector3f origin2(5,15,0);
-    Building test_building2(origin2, test_building.PointsNum(),
-                            door, test_building.DoorPtsNum());
+    Building test_building2;
+    mBuildings.push_back(test_building2);
+    LOG(INFO)<<"mBuildings 2"<<endl;
 
-
-//    LOG(INFO)<<"mBuildings 2"<<endl;
-//    mBuildings.push_back(test_building2);
-//    LOG(INFO)<<"mBuildings 3"<<endl;
+    //    mBuildings.push_back(test_building2);
+    //    LOG(INFO)<<"mBuildings 3"<<endl;
 
     //coordinate used by this world
     /*
@@ -42,11 +38,6 @@ World::World()
 
 vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamped& mavros_pose, geometry_msgs::PoseStamped& target_pose)
 {
-
-    LOG(INFO)<<"FindWayPoints!"<<endl;
-    LOG(INFO)<<"mavros_pose: "<<mavros_pose<<endl;
-    LOG(INFO)<<"target pose: "<<target_pose<<endl;
-
     vector<geometry_msgs::PoseStamped> path;
     Eigen::Vector3f safe_point(0, 0, 3);
     geometry_msgs::PoseStamped safe_point_pose = Eigen2Pose(safe_point);
@@ -61,8 +52,7 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
     {
         if(isInBuilding(target_pose, building_index))
         {
-            Eigen::Vector3f door_position = mBuildings[building_index].DoorGlobalPosition();
-            geometry_msgs::PoseStamped door = Eigen2Pose(door_position);
+            geometry_msgs::PoseStamped door = mBuildings[building_index].DoorGlobalPosition();
             path.push_back(safe_point_pose);
             path.push_back(door);
             path.push_back(target_pose);
@@ -80,8 +70,7 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
     {
         if(isInBuilding(mavros_pose, building_index_2))
         {
-            Eigen::Vector3f door_position = mBuildings[building_index_2].DoorGlobalPosition();
-            geometry_msgs::PoseStamped door = Eigen2Pose(door_position);
+            geometry_msgs::PoseStamped door = mBuildings[building_index_2].DoorGlobalPosition();
             path.push_back(door);
             path.push_back(safe_point_pose);
             path.push_back(target_pose);
@@ -101,16 +90,14 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
         if(isInBuilding(target_pose, building_index_4))
         {
             // go out of current door
-            Eigen::Vector3f current_door_position = mBuildings[building_index_3].DoorGlobalPosition();
-            geometry_msgs::PoseStamped door = Eigen2Pose(current_door_position);
+            geometry_msgs::PoseStamped door = mBuildings[building_index_3].DoorGlobalPosition();;
             path.push_back(door);
 
             // go to a safe point before going to the next door
             path.push_back(safe_point_pose);
 
             // go to the target building door
-            Eigen::Vector3f target_door_position = mBuildings[building_index_4].DoorGlobalPosition();
-            geometry_msgs::PoseStamped target_door = Eigen2Pose(target_door_position);
+            geometry_msgs::PoseStamped target_door = mBuildings[building_index_4].DoorGlobalPosition();;
             path.push_back(target_door);
 
             // go to the target from the target building door

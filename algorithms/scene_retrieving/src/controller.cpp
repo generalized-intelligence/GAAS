@@ -4,40 +4,42 @@
 Controller::Controller(ros::NodeHandle& nh)
 {
 	mNH = nh;
-	mMavrosSub = mNH.subscribe("/mavros/vision_pose/pose", 100, &Controller::MavrosPoseCallback, this);
+	mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &Controller::MavrosPoseCallback, this);
 	mTargetSetSub = mNH.subscribe("/move_base_simple/goal", 100, &Controller::TargetSetSubCallback, this);
 
 	mPositionControlPub = mNH.advertise<geometry_msgs::PoseStamped>("gi/set_pose/position", 100);
 	mYawControlPub = mNH.advertise<std_msgs::Float32>("gi/set_pose/orientation", 100);
 
 	mSceneRetrievedPosition = cv::Mat::zeros(cv::Size(4, 4), CV_64FC1);
-	mTargetPose.pose.position.x = 0;
-	mTargetPose.pose.position.y = 0;
-	mTargetPose.pose.position.z = 0;
 
 	mSTATE = NO_SCENE_RETRIEVED_BEFORE;
-	mTARGET = NEW_TARGET;
 
 	this->PosePublisher = this->nh.advertise<visualization_msgs::Marker>("/updated_target",10);
 
-	std::thread t(&Controller::Run, this);
-	t.detach();
-
+	LOG(INFO)<<"Controller Example World Initializing!"<<endl;
 	mpWorld = make_shared<World>();
+    LOG(INFO)<<"Controller Example World Initialized!"<<endl;
 
-	testfile.open("all.txt", fstream::out | fstream::app);
+    LOG(INFO)<<"Controller Main thread initializing!"<<endl;
+    std::thread t(&Controller::Run, this);
+    LOG(INFO)<<"Controller Main thread initialized!"<<endl;
+
+    t.detach();
+
+    testfile.open("all.txt", fstream::out | fstream::app);
 }
 
 void Controller::Run()
 {
     // test
-    geometry_msgs::PoseStamped target;
-    target.pose.position.x = 0;
-    target.pose.position.y = -20;
-    target.pose.position.z = 3;
-    SetTarget(target);
+//    geometry_msgs::PoseStamped target;
+//    target.pose.position.x = 0;
+//    target.pose.position.y = -20;
+//    target.pose.position.z = 3;
+//    SetTarget(target);
+//    mTARGET == NEW_TARGET;
 
-	ros::Rate rate(10.);
+	ros::Rate rate(5.0);
 	while (!ros::isShuttingDown())
 	{
 		//constantly fetching information from MAVROS
@@ -52,23 +54,22 @@ void Controller::Run()
 		}
 		else if (mTARGET == NEW_TARGET)
 		{
-//			int building_idx = -1;
-//			bool result = mpWorld->isInBuilding(mTargetPose, building_idx, true);
-//			cout<<"Is mTargetPose in building?: "<<result<<endl;
-//
-//			auto wps = mpWorld->FindWayPoints(mCurMavrosPose, mTargetPose);
-//
-//			for(auto& wp : wps)
-//			{
-//				LOG(INFO)<<"Current waypoints: "<<wp<<endl;
-//			}
-//
-//			GoByWayPoints(wps);
+			int building_idx = -1;
+			bool result = mpWorld->isInBuilding(mTargetPose, building_idx, true);
+			LOG(INFO)<<"Is mTargetPose in building?: "<<result<<endl;
 
-            GoToTarget(mTargetPose);
+            vector<geometry_msgs::PoseStamped> wps = mpWorld->FindWayPoints(mCurMavrosPose, mTargetPose);
+
+            // NOTE fix all way point at height 3 meters
+            for(auto& wp : wps)
+            {
+                wp.pose.position.z = 3;
+            }
+
+            GoByWayPoints(wps);
 
 			// disable movement after finishing current task mission.
-			//mTARGET = NO_TARGET;
+			mTARGET = NO_TARGET;
 		}
 
 		rate.sleep();
@@ -79,25 +80,35 @@ void Controller::Run()
 
 void Controller::SetTarget(geometry_msgs::PoseStamped& target)
 {
-    LOG(WARNING)<<"SetTarget: "<<target<<endl;
+    LOG(WARNING)<<"SetTarget: "<<target.pose.position.x<<", "<<target.pose.position.y<<", "<<target.pose.position.z<<endl;
 	mTargetPose = target;
     mInitialTarget = target;
 
 	mTARGET = NEW_TARGET;
 }
 
-
 void Controller::GoByWayPoints(vector<geometry_msgs::PoseStamped>& way_points)
 {
 	if(way_points.empty())
 		LOG(INFO)<<"Way points empty!"<<endl;
 
+	int i=1;
 	for(auto& wp : way_points)
 	{
-		LOG(INFO)<<"Current waypoint: "<<wp<<endl;
-		GoToTarget(wp);
-		ros::Duration(5).sleep();
+		LOG(INFO)<<"Current waypoint: "<<i<<"/"<<way_points.size()<<", "
+		         <<wp.pose.position.x<<", "<<wp.pose.position.y<<", "<<3<<endl;
+        i++;
+		while(distanceToTarget(wp) > 1.0)
+		{
+//            LOG(INFO)<<"mCurMavrosPose: "<<mCurMavrosPose.pose.position.x<<", "<<
+//                                         mCurMavrosPose.pose.position.y<<", "<<
+//                                         mCurMavrosPose.pose.position.z<<", "<<
+//                                         distanceToTarget(wp)<<endl;
+//		    LOG(INFO)<<"distanceToTarget(wp): "<<distanceToTarget(wp)<<endl;
+            GoToTarget(wp);
+        }
 	}
+    LOG(INFO)<<"Finished All WayPoints!"<<endl;
 }
 
 bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame)
@@ -495,12 +506,7 @@ void Controller::UpdateTarget()
 
 void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
 {
-//    geometry_msgs::PoseStamped test;
-//    test.pose.position.x = 0;
-//    test.pose.position.y = -10;
-//    test.pose.position.z = 3;
-//    mTargetPose = test;
-
+    //mTargetPose, set height at fixed 3 meters
 	mTargetPose = target;
 	mTargetPose.pose.position.z = 3;
 

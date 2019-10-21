@@ -31,14 +31,13 @@ class Building {
 
 public:
 
-    Building(Eigen::Vector3f& point, int starting_id, Eigen::Vector3f& door_position, int door_starting_id,
-             float door_w = 2, float door_h=3, float length=10, float width=5, float height=8);
+    Building(float height = 5);
 
     void BuildingPointCallback(const geometry_msgs::PoseStamped& pose);
 
+
     inline bool isInBuilding(geometry_msgs::PoseStamped& point, bool use_log=false)
     {
-
         if(use_log)
         {
             cout << "point.pose.position: " << point.pose.position << endl;
@@ -57,11 +56,20 @@ public:
                  << endl;
         }
 
-        if( point.pose.position.x > (mStartingPoint[0] + mWidth) || point.pose.position.x < mStartingPoint[0])
+        //    /*  C2        C3
+        //     *   __________    +x
+        //     *   |        |    ^
+        //     *   |____D___|    |
+        //     *   C1       C0   |
+        //     *                 |
+        //     *  +y <-----------|0
+        //     */
+
+        if( point.pose.position.x > (mCorner_0.pose.position.x + mWidth) || point.pose.position.x < mCorner_0.pose.position.x)
             return false;
-        else if(point.pose.position.y > (mStartingPoint[1] + mLength) || point.pose.position.y < mStartingPoint[1])
+        else if(point.pose.position.y > (mCorner_0.pose.position.y + mLength) || point.pose.position.y < mCorner_0.pose.position.y)
             return false;
-        else if(point.pose.position.z > (mStartingPoint[2] + mHeight) || point.pose.position.z < mStartingPoint[2])
+        else if(point.pose.position.z > (mCorner_0.pose.position.z + mHeight) || point.pose.position.z < mCorner_0.pose.position.z )
             return false;
 
         return true;
@@ -93,9 +101,9 @@ public:
         return mDoorPoints.size();
     }
 
-    inline Eigen::Vector3f DoorGlobalPosition()
+    inline geometry_msgs::PoseStamped DoorGlobalPosition()
     {
-        return mDoorGlobalPosition;
+        return mGate;
     }
 
     void SetCornerPointsAndGate()
@@ -116,7 +124,7 @@ public:
             mGate = mCornerAndGate[4];
 
             mFinished = true;
-            LOG(INFO)<<"Setting finished!!"<<endl;
+            LOG(INFO)<<"Setting finished!!, mGate: "<<mGate<<endl;
         } else{
             LOG(ERROR)<<"Setting failed!, mCornerAndGate size is not 5!"<<endl;
         }
@@ -159,7 +167,7 @@ private:
     geometry_msgs::PoseStamped mGate;
     vector<geometry_msgs::PoseStamped> mCornerAndGate;
 
-//    shared_ptr<std::mutex> mCornerMutex = nullptr;
+    shared_ptr<std::mutex> mCornerMutex = nullptr;
     bool mFinished = false;
 };
 

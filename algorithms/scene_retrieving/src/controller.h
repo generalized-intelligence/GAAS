@@ -157,12 +157,12 @@ public:
         return Twb1;
     }
 
-    inline float distanceToTarget()
+    inline float distanceToTarget(geometry_msgs::PoseStamped& target)
     {
-        float delta_x = mCurMavrosPose.pose.position.x - mTargetPose.pose.position.x;
-        float delta_y = mCurMavrosPose.pose.position.y - mTargetPose.pose.position.y;
-        float delta_z = mCurMavrosPose.pose.position.z - mTargetPose.pose.position.z;
-        float delta = sqrt(delta_x*delta_x + delta_y+delta_y + delta_z*delta_z);
+        float delta_x = mCurMavrosPose.pose.position.x - target.pose.position.x;
+        float delta_y = mCurMavrosPose.pose.position.y - target.pose.position.y;
+        float delta_z = mCurMavrosPose.pose.position.z - target.pose.position.z;
+        float delta = sqrt(delta_x*delta_x + delta_y*delta_y + delta_z*delta_z);
 
         return delta;
     }
@@ -287,8 +287,8 @@ public:
     };
 
     enum mTarget{
-        NEW_TARGET,
         NO_TARGET,
+        NEW_TARGET,
         TARGET_REACHED,
     };
 
