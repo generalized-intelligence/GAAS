@@ -19,6 +19,10 @@ target_x = []
 target_y = []
 target_z = []
 
+slam_x = []
+slam_y = []
+slam_z = []
+
 for idx, line in enumerate(raw_file):
     line = re.split(',|\n', line)
     print(line)
@@ -34,6 +38,7 @@ for idx, line in enumerate(raw_file):
     target_x.append(float(line[7]))
     target_y.append(float(line[8]))
     target_z.append(float(line[9]))
+
 
     ax.text(float(line[1]), float(line[2]), float(line[3]), str(idx), color='red')
     ax.text(float(line[4]), float(line[5]), float(line[6]), str(idx), color='green')

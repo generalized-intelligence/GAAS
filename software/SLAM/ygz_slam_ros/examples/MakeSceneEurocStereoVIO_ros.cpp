@@ -487,15 +487,14 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
                                         posemsg.pose.orientation.y,
                                         posemsg.pose.orientation.z);
 
-    Eigen::Matrix3d mavros_rotation_matrix = mavros_quaterion.toRotationMatrix();
-
     Eigen::Vector3d mavros_position(posemsg.pose.position.x,
                                     posemsg.pose.position.y,
                                     posemsg.pose.position.z);
 
     cv::Mat rotationmat,translationmat;
+    Eigen::Matrix3d mavros_rotation_matrix = mavros_quaterion.toRotationMatrix();
     cv::eigen2cv(mavros_rotation_matrix, rotationmat);
-    cv::eigen2cv(mavros_position,translationmat);
+    cv::eigen2cv(mavros_position, translationmat);
 
     //NOTE not used
     cv::Mat Q_mat = (Mat_<float>(4,4) << 1, 0, 0, 0,
@@ -505,13 +504,17 @@ void TEMP_FetchImageAndAttitudeCallback(const sensor_msgs::ImageConstPtr& msgLef
 
     if(!rotationmat.empty() && !translationmat.empty())
     {
-        cout<<"r, t, q are: "<<rotationmat<<endl<<translationmat<<endl;
-
         //pts2d_in    pts3d_in    desp,   R,    t
         //typedef  std::tuple<std::vector<cv::KeyPoint>, std::vector<cv::Point3d>, cv::Mat, cv::Mat, cv::Mat> SceneFrame;
 
+        bool succeed;
         //SceneFrame scene_frame = pScene->generateSceneFrameFromStereoImage(CurrentLeftImage, CurrentRightImage, rotationmat, translationmat, Q_mat);
-        SceneFrame scene_frame = pScene->generateSceneFrameFromStereoImageCamera(CurrentLeftImage, CurrentRightImage, rotationmat, translationmat, Q_mat);
+        SceneFrame scene_frame = pScene->generateSceneFrameFromStereoImageCamera(CurrentLeftImage, CurrentRightImage, rotationmat, translationmat, Q_mat, succeed);
+
+        if(!succeed)
+        {
+          return;
+        }
 
         //save scene
         pScene->addFrame(scene_frame);
@@ -564,7 +567,10 @@ int main(int argc, char **argv) {
     px4PoseHistory.open("./px4pose.csv");
 
 
-    google::InitGoogleLogging(argv[0]);    
+    google::SetLogDestination(google::GLOG_INFO, "./make_scene_" );
+    FLAGS_alsologtostderr = 1;
+    google::InitGoogleLogging(argv[0]);
+
     string config_path = argv[1];
     
     string configFile(config_path);

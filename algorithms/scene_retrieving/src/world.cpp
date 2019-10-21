@@ -11,15 +11,23 @@ World::World()
     //for debugging
     Eigen::Vector3f door(0,3,0);
     Eigen::Vector3f origin(5,0,0);
+
+    LOG(INFO)<<"Building 1 started"<<endl;
     Building test_building(origin, 0,
                            door, 0);
+    LOG(INFO)<<"Building 1 finished"<<endl;
+    LOG(INFO)<<"mBuildings 1"<<endl;
+    mBuildings.push_back(test_building);
+
+    LOG(INFO)<<"Building 2 started"<<endl;
     Eigen::Vector3f origin2(5,15,0);
     Building test_building2(origin2, test_building.PointsNum(),
                             door, test_building.DoorPtsNum());
 
 
-    mBuildings.emplace_back(test_building);
-    mBuildings.emplace_back(test_building2);
+//    LOG(INFO)<<"mBuildings 2"<<endl;
+//    mBuildings.push_back(test_building2);
+//    LOG(INFO)<<"mBuildings 3"<<endl;
 
     //coordinate used by this world
     /*

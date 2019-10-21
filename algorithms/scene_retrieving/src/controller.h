@@ -103,7 +103,7 @@ public:
         return T;
     }
 
-    inline geometry_msgs::PoseStamped MatToPoseStamped(cv::Mat& pose_mat, string& frame_id)
+    inline geometry_msgs::PoseStamped MatToPoseStamped(cv::Mat& pose_mat, string frame_id)
     {
         cv::Mat rotation_mat = pose_mat.colRange(0, 3).rowRange(0, 3);
         Eigen::Matrix3d rotation_eigen;
@@ -137,6 +137,24 @@ public:
         LOG(INFO)<<"Tb1b2: \n"<<Tb2b1<<endl;
 
         return Tb2b1;
+    }
+
+    // since they are not in the same frame, yaw in ROS and QGroundControl is 0, while in mavros it is 90;
+    // we neglect their rotation, but use position instead;
+    inline cv::Mat findRelativeTransformTest(cv::Mat& Twb1, cv::Mat& Twb2)
+    {
+
+        LOG(WARNING)<<"Twb1: "<<Twb1<<endl;
+
+        Twb1.at<double>(0, 3) = Twb1.at<double>(0, 3) - Twb2.at<double>(0, 3);
+        Twb1.at<double>(1, 3) = Twb1.at<double>(1, 3) - Twb2.at<double>(1, 3);
+        Twb1.at<double>(2, 3) = Twb1.at<double>(2, 3) - Twb2.at<double>(2, 3);
+
+        LOG(WARNING)<<"Twb2: \n"<<Twb2<<endl;
+        LOG(WARNING)<<"Twb1: \n"<<Twb1<<endl;
+        LOG(WARNING)<<"Twb2: \n"<<Twb2<<endl;
+
+        return Twb1;
     }
 
     inline float distanceToTarget()
@@ -223,23 +241,43 @@ public:
         return distance;
     }
 
+//    inline bool isOutlier(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose)
+//    {
+//        float distance = PoseDistance(mavros_pose, scene_retrieved_pose);
+//
+//        float sum = 0;
+//        for(auto& elem : mSceneMavrosDistances)
+//        {
+//            sum += elem;
+//        }
+//        float mean = sum / mSceneMavrosDistances.size();
+//
+//        float factor = (distance/mean);
+//        LOG(INFO)<<"factor: "<<factor<<endl;
+//        if (factor > 2.0 || factor < 0.5)
+//            return true;
+//
+//        return false;
+//    }
+
     inline bool isOutlier(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose)
     {
         float distance = PoseDistance(mavros_pose, scene_retrieved_pose);
 
         float sum = 0;
-        for(auto& elem : mSceneMavrosDistances)
+        for(auto& elem : mSceneMavrosDistanceDeque)
         {
             sum += elem;
         }
-        float mean = sum / mSceneMavrosDistances.size();
+        float mean = sum / mSceneMavrosDistanceDeque.size();
 
-        if ((distance/mean) > 3.0 || (distance/mean) < 0.3)
+        float factor = abs(1 - distance/mean);
+        LOG(INFO)<<"factor: "<<factor<<endl;
+        if (factor < 0.05)
             return true;
 
         return false;
     }
-
 
     enum mState{
         NO_SCENE_RETRIEVED_BEFORE,
@@ -249,8 +287,8 @@ public:
     };
 
     enum mTarget{
-        NO_TARGET,
         NEW_TARGET,
+        NO_TARGET,
         TARGET_REACHED,
     };
 
@@ -264,6 +302,7 @@ private:
 
     int mLoopIndex = 0;
 
+    geometry_msgs::PoseStamped mRetrievedMavrosPose;
     geometry_msgs::PoseStamped mCurMavrosPose;
     geometry_msgs::PoseStamped mLastMavrosPose;
 
@@ -275,6 +314,7 @@ private:
 
     geometry_msgs::PoseStamped mMavrosPose;
     geometry_msgs::PoseStamped mTargetPose;
+    geometry_msgs::PoseStamped mInitialTarget;
 
     cv::Mat mUpdatedCurrentPose;
     cv::Mat mCurrentDistanceToTarget;
@@ -288,6 +328,8 @@ private:
     deque<tuple<size_t, cv::Mat, geometry_msgs::PoseStamped> > mIdxMavScenes;
 
     deque<tuple<size_t, cv::Mat, geometry_msgs::PoseStamped, geometry_msgs::PoseStamped> > mTest;
+
+    deque<float> mSceneMavrosDistanceDeque;
 
     // Transformation from drone to scene
     cv::Mat mTscene_drone;
