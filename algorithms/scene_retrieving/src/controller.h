@@ -144,15 +144,14 @@ public:
     inline cv::Mat findRelativeTransformTest(cv::Mat& Twb1, cv::Mat& Twb2)
     {
 
-        LOG(WARNING)<<"Twb1: "<<Twb1<<endl;
+        LOG(WARNING)<<"Twb1: \n"<<Twb1<<endl;
 
         Twb1.at<double>(0, 3) = Twb1.at<double>(0, 3) - Twb2.at<double>(0, 3);
         Twb1.at<double>(1, 3) = Twb1.at<double>(1, 3) - Twb2.at<double>(1, 3);
         Twb1.at<double>(2, 3) = Twb1.at<double>(2, 3) - Twb2.at<double>(2, 3);
 
         LOG(WARNING)<<"Twb2: \n"<<Twb2<<endl;
-        LOG(WARNING)<<"Twb1: \n"<<Twb1<<endl;
-        LOG(WARNING)<<"Twb2: \n"<<Twb2<<endl;
+        LOG(WARNING)<<"Tb21: \n"<<Twb1<<endl;
 
         return Twb1;
     }
@@ -241,26 +240,7 @@ public:
         return distance;
     }
 
-//    inline bool isOutlier(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose)
-//    {
-//        float distance = PoseDistance(mavros_pose, scene_retrieved_pose);
-//
-//        float sum = 0;
-//        for(auto& elem : mSceneMavrosDistances)
-//        {
-//            sum += elem;
-//        }
-//        float mean = sum / mSceneMavrosDistances.size();
-//
-//        float factor = (distance/mean);
-//        LOG(INFO)<<"factor: "<<factor<<endl;
-//        if (factor > 2.0 || factor < 0.5)
-//            return true;
-//
-//        return false;
-//    }
-
-    inline bool isOutlier(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose)
+    inline bool isOutlier(cv::Mat& mavros_pose, cv::Mat& scene_retrieved_pose, float& result)
     {
         float distance = PoseDistance(mavros_pose, scene_retrieved_pose);
 
@@ -272,11 +252,10 @@ public:
         float mean = sum / mSceneMavrosDistanceDeque.size();
 
         float factor = abs(1 - distance/mean);
-        LOG(INFO)<<"factor: "<<factor<<endl;
-        if (factor < 0.05)
-            return true;
+        result = factor;
+        LOG(INFO)<<"factor: "<<factor<<", distance and mean are: "<<distance<<", "<<mean<<endl;
 
-        return false;
+        return factor > mOutlierThreshold;
     }
 
     enum mState{
@@ -330,6 +309,8 @@ private:
     deque<tuple<size_t, cv::Mat, geometry_msgs::PoseStamped, geometry_msgs::PoseStamped> > mTest;
 
     deque<float> mSceneMavrosDistanceDeque;
+
+    float mOutlierThreshold = -1;
 
     // Transformation from drone to scene
     cv::Mat mTscene_drone;

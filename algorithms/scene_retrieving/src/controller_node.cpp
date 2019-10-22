@@ -46,15 +46,11 @@ void StereoImageCallback(const sensor_msgs::ImageConstPtr& msgLeft ,const sensor
         // mavros pose: return value, FCU returned pose, could be either from GPS or SLAM
         // RT_mat: return value, recovered pose from loaded scene
         float fitness_score = pSceneRetrieve->retrieveSceneFromStereoImage(imgL, imgR, mavros_pose, RT_mat, match_success, loop_index);
-
         LOG(INFO)<<"fitness_score: "<<fitness_score<<endl;
-        LOG(INFO)<<"RT_mat: "<<RT_mat<<endl;
-        LOG(INFO)<<"RT_mat type: "<<RT_mat.type()<<endl;
 
-        if(fitness_score >= 0 && fitness_score <= 1.5)
+        if(fitness_score >= 0)
         {
-
-            LOG(INFO)<<"fitness_score >= 0 && fitness_score <= 3.0"<<endl;
+            LOG(INFO)<<"fitness_score >= 0 && !mavros_pose.empty() && !RT_mat.empty(), AddRetrievedPose!"<<endl;
 
             pController->AddRetrievedPose(RT_mat, mavros_pose);
         }

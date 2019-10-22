@@ -246,6 +246,8 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file)
         mVecLeftImagePath.push_back(left_path);
     }
 
+    mThresFitnessScore = 2.0;
+
     mMavrosSub = mNH.subscribe("/mavros/vision_pose/pose", 1, &SceneRetriever::MavrosPoseCallback, this);
     //mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 1, &SceneRetriever::MavrosPoseCallback, this);
 }
@@ -278,9 +280,9 @@ SceneRetriever::SceneRetriever(const string& voc,const string& scene_file, const
 
     cv::FileStorage fsSettings(config_file, cv::FileStorage::READ);
     mThresFitnessScore = fsSettings["Fitness_Threshold"];
+    LOG(INFO)<<"mThresFitnessScore: "<<mThresFitnessScore<<endl;
 
     LOG(INFO)<<"config_file: "<<config_file<<endl;
-    LOG(INFO)<<"mThresFitnessScore: "<<mThresFitnessScore<<endl;
 }
 
 void SceneRetriever::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
@@ -441,26 +443,11 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 //        return -1;
 //    }
 
-    // ------------------------------------------------------------------------------------------------------------------------------------
-    // NOTE real time computed elements
-//    vector<cv::KeyPoint> old_kps_left;
-//    vector<cv::Point3f> old_camera_pts;
-//    cv::Mat old_frame_desps;
-//    LOG(INFO)<<"old_image_left size: "<<old_image_left.size()<<endl;
-//    if(!mpCv_helper->StereoImage2CamPoints(old_image_left, old_image_right, old_kps_left, old_camera_pts, old_frame_desps))
-//    {
-//        match_success = false;
-//        return -1;
-//    }
-
-    // NOTE, previously computed elements
+    // NOTE, retrieved elements from boost deserialization
     auto old_kps_left = original_scene.vec_p2d[loop_index];
     auto old_camera_pts_3d = original_scene.vec_p3d[loop_index];
     auto old_camera_pts = pts3dto3f(old_camera_pts_3d);
     auto old_frame_desps = original_scene.point_desps[loop_index];
-    LOG(INFO)<<"old_kps_left size: "<<old_kps_left.size()<<endl;
-    LOG(INFO)<<"old_camera_pts_3d size: "<<old_camera_pts_3d.size()<<endl;
-    LOG(INFO)<<"old_frame_desps size: "<<old_frame_desps.size()<<endl;
 
     //step 3, match current and old features
     vector<cv::DMatch> result_matches;
@@ -506,6 +493,7 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
 
     //step 6, now that we have matched camera points we can conduct ICP, we can use either PCL method or opencv method
+    // in practical I find GeneralICP is slower than regular ICP
     Eigen::Matrix4f result;
     //float fitnesscore = mpCv_helper->GeneralICP(matched_current_cam_pts, matched_old_cam_pts, result);
     float fitnesscore = mpCv_helper->ICP(matched_current_cam_pts, matched_old_cam_pts, result);
@@ -525,7 +513,6 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     cv::eigen2cv(result, result_relative_T);
     cv::Mat result_R = result_relative_T.colRange(0,3).rowRange(0,3);
     cv::Mat result_t = result_relative_T.rowRange(0,3).col(3);
-
 
     //step 8, given old left image and current left image, compute relative R vec from rodrigues by essential mat
     cv::Mat essentialR = mpCv_helper->getRotationfromEssential(matched_current_kps, matched_old_kps);
@@ -577,17 +564,15 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
                                                     0, 0, 0, 1);
 
     //NOTE, result relative_T is relative from current to old camera frame, old_T is in global frame.
-    //we need to update computed current pose.
-
+    //we need to update computed current pose.s
     new_T = old_T * (image_to_flu * result_relative_T);
-    //new_T = old_T * result_relative_T;
 
     cv::Mat new_R = new_T.colRange(0,3).rowRange(0,3);
     cv::Mat new_t = new_T.rowRange(0,3).col(3);
 
-    LOG(INFO)<<"old t: "<<t<<endl;
-    LOG(INFO)<<"result_t: "<<result_t<<endl;
     LOG(INFO)<<"new_t: "<<new_t<<endl;
+    LOG(INFO)<<"fitnesscore: "<<fitnesscore<<endl;
+    LOG(INFO)<<"mThresFitnessScore: "<<mThresFitnessScore<<endl;
 
     if (fitnesscore < mThresFitnessScore)
     {

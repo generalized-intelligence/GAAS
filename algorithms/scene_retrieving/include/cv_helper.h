@@ -857,6 +857,12 @@ public:
 
         reg.align (output);
 
+        if (!reg.hasConverged())
+        {
+            LOG(INFO)<<"ICP didn't converge, neglect!"<<endl;
+            return -1;
+        }
+
         // expect fitness score is less than a certain value
         LOG(INFO)<<"GeneralICP::General ICP fitness score: "<<reg.getFitnessScore()<<endl;
 
@@ -923,6 +929,12 @@ public:
         reg.setTransformationEpsilon(transformationEpsilon);
 
         reg.align (output);
+
+        if (!reg.hasConverged())
+        {
+            LOG(INFO)<<"ICP didn't converge, neglect!"<<endl;
+            return -1;
+        }
 
         // expect fitness score is less than a certain value
         LOG(INFO)<<"GeneralICP::General ICP fitness score: "<<reg.getFitnessScore()<<endl;

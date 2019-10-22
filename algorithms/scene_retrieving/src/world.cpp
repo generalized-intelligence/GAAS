@@ -6,24 +6,21 @@
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 
-World::World()
+World::World(string config_path)
 {
-    //for debugging
-    LOG(INFO)<<"Building 1 started"<<endl;
-    Building test_building;
-    LOG(INFO)<<"Building 1 finished"<<endl;
-    LOG(INFO)<<"mBuildings 1"<<endl;
-    mBuildings.push_back(test_building);
 
+    cv::FileStorage fsSettings(config_path, cv::FileStorage::READ);
+    mBuildingNum = fsSettings["Building_Number"];
+    LOG(INFO)<<"mBuildingNum: "<<mBuildingNum<<endl;
 
+    assert(int(mBuildingNum) > 0);
 
-    LOG(INFO)<<"Building 2 started"<<endl;
-    Building test_building2;
-    mBuildings.push_back(test_building2);
-    LOG(INFO)<<"mBuildings 2"<<endl;
+    for(int i=0; i<int(mBuildingNum); i++)
+    {
+        Building test_building;
+        mBuildings.push_back(test_building);
+    }
 
-    //    mBuildings.push_back(test_building2);
-    //    LOG(INFO)<<"mBuildings 3"<<endl;
 
     //coordinate used by this world
     /*

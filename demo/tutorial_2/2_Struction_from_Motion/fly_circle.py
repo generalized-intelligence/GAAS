@@ -73,7 +73,7 @@ if __name__ == '__main__':
     com = Commander()
 
     # 1st circle
-    circle = fly_circle(com, height=3, building_radius=15, n=20)
+    circle = fly_circle(com, height=3, building_radius=10, n=20)
     #circle.visualize_path()
     circle.fly()
     

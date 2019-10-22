@@ -14,7 +14,7 @@ class World {
 
 public:
 
-    World();
+    World(string config_path);
 
     // NOTE it is different from "Path Finding"
     vector<geometry_msgs::PoseStamped> FindWayPoints(geometry_msgs::PoseStamped& mavros_pose,
@@ -57,9 +57,11 @@ public:
 
 
 public:
-
     vector<Building> mBuildings;
 
+private:
+
+    int mBuildingNum = -1;
 };
 
 

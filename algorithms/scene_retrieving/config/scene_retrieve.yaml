@@ -1,6 +1,8 @@
 %YAML:1.0
 
 
-Fitness_Threshold: 1.5
+Fitness_Threshold: 1.0
 
+Building_Number: 1
 
+Outlier_Threshold: 1.0

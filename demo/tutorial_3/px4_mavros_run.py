@@ -141,6 +141,8 @@ class Px4Controller:
 
 
 
+
+
     def mavros_state_callback(self, msg):
         self.mavros_state = msg.mode
 
