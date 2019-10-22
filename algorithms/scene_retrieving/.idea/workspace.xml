@@ -127,16 +127,9 @@
       <change beforePath="$PROJECT_DIR$/UNKNOWN.INFO" beforeDir="false" afterPath="$PROJECT_DIR$/UNKNOWN.INFO" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/all.txt" beforeDir="false" afterPath="$PROJECT_DIR$/all.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config/scene_retrieve.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/config/scene_retrieve.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/debug_scripts/debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/debug_scripts/debug.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/include/cv_helper.h" beforeDir="false" afterPath="$PROJECT_DIR$/include/cv_helper.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/controller.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/controller.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/controller_node.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/controller_node.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/scene_retrieve.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/scene_retrieve.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/world.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/world.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/world.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/world.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../demo/tutorial_2/2_Struction_from_Motion/fly_circle.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../demo/tutorial_2/2_Struction_from_Motion/fly_circle.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../demo/tutorial_3/px4_mavros_run.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../demo/tutorial_3/px4_mavros_run.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -967,7 +960,7 @@
       <workItem from="1571656294511" duration="42000" />
       <workItem from="1571715364339" duration="2876000" />
       <workItem from="1571722424766" duration="3121000" />
-      <workItem from="1571725735150" duration="5445000" />
+      <workItem from="1571725735150" duration="8759000" />
     </task>
     <servers />
   </component>

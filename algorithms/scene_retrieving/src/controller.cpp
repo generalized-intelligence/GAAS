@@ -135,6 +135,9 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 	if (retrieved_pose.empty() || mavros_pose.empty())
 		return;
 
+    LOG(INFO)<<"retrieved_pose: \n"<<retrieved_pose<<endl;
+    LOG(INFO)<<"mavros_pose: \n"<<mavros_pose<<endl;
+
 	// outlier determination
 	float relative_distance = PoseDistance(retrieved_pose, mavros_pose);
 
@@ -297,7 +300,8 @@ void Controller::UpdateTarget()
 		if(mav_pose_mat.empty() || scene_pose_mat.empty())
 			return;
 
-		cv::Mat RelativeTransform = findRelativeTransformTest(mav_pose_mat, scene_pose_mat);
+		// for this method, the result is using the relativeTransform's orientation
+		cv::Mat RelativeTransform = findRelativeTransformPosition(mav_pose_mat, scene_pose_mat);
 
 		cv::Mat temp_rotation = RelativeTransform.colRange(0, 3).rowRange(0, 3);
 		Eigen::Matrix3d rotation_eigen;
@@ -351,17 +355,17 @@ void Controller::UpdateTarget()
 	{
 		//initial transform is mavros to scene
 		mInitialRelativeTransform = relative_transform;
-
 		LOG(INFO)<<"mInitialRelativeTransform: \n"<<mInitialRelativeTransform<<endl;
 	}
 	else{
         mCurrentRelativeTransform = relative_transform;
 
+        // this should not happend ...
         if(mCurrentRelativeTransform.empty() || mInitialRelativeTransform.empty())
             return;
 
         //current transform is from mavros to scene
-        cv::Mat current2initial = findRelativeTransformTest(mCurrentRelativeTransform, mInitialRelativeTransform);
+        cv::Mat current2initial = findRelativeTransformPosition(mCurrentRelativeTransform, mInitialRelativeTransform);
 
         cv::Mat initialMat = PoseStampedToMat(mInitialTarget);
 

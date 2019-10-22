@@ -558,14 +558,16 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
     //NOTE previously computed ICP result is relative from current camera pose to fetched camera pose,
     //computed relative ICP is in opencv image frame, x points to right, y points to down and z points up.
     //we need to convert relative ICP results to the old_T frame, which is FLU
-    cv::Mat image_to_flu = (cv::Mat_<double>(4,4) << 0, 0, 1, 0,
-                                                    -1, 0, 0, 0,
-                                                    0, -1, 0, 0,
-                                                    0, 0, 0, 1);
+
+
+    cv::Mat image_to_flu = (cv::Mat_<double>(4,4) << 1, 0, 0, result_relative_T.at<double>(2, 3),
+                                                     0, 1, 0, - result_relative_T.at<double>(0, 3),
+                                                     0, 0, 1, - result_relative_T.at<double>(1, 3),
+                                                     0, 0, 0, 1);
 
     //NOTE, result relative_T is relative from current to old camera frame, old_T is in global frame.
     //we need to update computed current pose.s
-    new_T = old_T * (image_to_flu * result_relative_T);
+    cv::Mat new_T_2 = old_T * image_to_flu;
 
     cv::Mat new_R = new_T.colRange(0,3).rowRange(0,3);
     cv::Mat new_t = new_T.rowRange(0,3).col(3);

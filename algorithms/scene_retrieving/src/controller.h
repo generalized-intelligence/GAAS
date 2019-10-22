@@ -141,7 +141,7 @@ public:
 
     // since they are not in the same frame, yaw in ROS and QGroundControl is 0, while in mavros it is 90;
     // we neglect their rotation, but use position instead;
-    inline cv::Mat findRelativeTransformTest(cv::Mat& Twb1, cv::Mat& Twb2)
+    inline cv::Mat findRelativeTransformPosition(cv::Mat& Twb1, cv::Mat& Twb2)
     {
 
         LOG(WARNING)<<"Twb1: \n"<<Twb1<<endl;
