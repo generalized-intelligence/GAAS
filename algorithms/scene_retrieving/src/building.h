@@ -35,25 +35,26 @@ public:
 
     void BuildingPointCallback(const geometry_msgs::PoseStamped& pose);
 
-
-    inline bool isInBuilding(geometry_msgs::PoseStamped& point, bool use_log=false)
+    inline bool inRange(geometry_msgs::PoseStamped& point, float low = -1e8, float high = 1e8)
     {
-        if(use_log)
+        if(point.pose.position.x > high || point.pose.position.x < low)
+            return false;
+
+        if(point.pose.position.y > high || point.pose.position.y < low)
+            return false;
+
+        if(point.pose.position.z > high || point.pose.position.z < low)
+            return false;
+
+        return true;
+    }
+
+    inline bool isInBuilding(geometry_msgs::PoseStamped& point)
+    {
+        if(!inRange(point))
         {
-            cout << "point.pose.position: " << point.pose.position << endl;
-            cout << "(mStartingPoint[0]: " << mStartingPoint[0] << endl;
-            cout << "point.pose.position.x > (mStartingPoint[0] + mWidth): "
-                 << (point.pose.position.x > (mStartingPoint[0] + mWidth)) << endl;
-            cout << "point.pose.position.x < mStartingPoint[0]: " << (point.pose.position.x < mStartingPoint[0])
-                 << endl;
-            cout << "point.pose.position.y > (mStartingPoint[1] + mLength: "
-                 << (point.pose.position.y > (mStartingPoint[1] + mLength)) << endl;
-            cout << "point.pose.position.y < mStartingPoint[1]: " << (point.pose.position.y < mStartingPoint[1])
-                 << endl;
-            cout << "point.pose.position.z > (mStartingPoint[2] + mHeight: "
-                 << (point.pose.position.z > (mStartingPoint[2] + mHeight)) << endl;
-            cout << "point.pose.position.z < mStartingPoint[2]: " << (point.pose.position.z < mStartingPoint[2])
-                 << endl;
+            LOG(INFO)<<"Points not valid, consider it in building!"<<endl;
+            return true;
         }
 
         //    /*  C2        C3
@@ -75,12 +76,6 @@ public:
         return true;
     }
 
-    void CreatePerimPoints();
-
-    void CreateDoorPoints();
-
-    void PublishBuildingPoints();
-
     template<class T>
     inline float distance(T& p1, T& p2)
     {
@@ -91,19 +86,13 @@ public:
         return sqrt(square_x + square_y + square_z);
     }
 
-    inline int PointsNum()
-    {
-        return mPerimPoints.size();
-    }
-
-    inline int DoorPtsNum()
-    {
-        return mDoorPoints.size();
-    }
-
     inline geometry_msgs::PoseStamped DoorGlobalPosition()
     {
-        return mGate;
+        if(mFinished)
+            return mGate;
+        else{
+            LOG(ERROR)<<"Retrieving Door Position Before Finishing Setting Points and Gate is not defined!"<<endl;
+        }
     }
 
     void SetCornerPointsAndGate()
@@ -124,41 +113,22 @@ public:
             mGate = mCornerAndGate[4];
 
             mFinished = true;
-            LOG(INFO)<<"Setting finished!!, mGate: "<<mGate<<endl;
-        } else{
-            LOG(ERROR)<<"Setting failed!, mCornerAndGate size is not 5!"<<endl;
+            LOG(WARNING)<<"Setting finished!!, mGate: "<<mGate.pose.position.x<<", "
+                                                       <<mGate.pose.position.y<<", "
+                                                       <<mGate.pose.position.z<<endl;
         }
-
     }
 
 public:
 
-    int mMarkerStartingID = -1;
-    int mDoorMarkerStartingID = -1;
-
-    Eigen::Vector3f mStartingPoint;
-    Eigen::Vector3f mC0, mC1, mC2, mC3;
     float mLength = 0;
     float mWidth = 0;
     float mHeight = 0;
 
-    vector<Eigen::Vector3f> mPerimPoints;
-
-    Eigen::Vector3f mDoorPosition;
-    Eigen::Vector3f mDoorGlobalPosition;
-    float mDoorWidth, mDoorHeight;
-    vector<Eigen::Vector3f> mDoorPoints;
 
 private:
 
     ros::NodeHandle mNH;
-    ros::Publisher mBuildingPub;
-
-    size_t mMarker_Index = 0;
-
-    vector<Eigen::Vector3f> mCornerPts;
-
-    ros::Subscriber mBuildingSub;
 
     geometry_msgs::PoseStamped mCorner_0;
     geometry_msgs::PoseStamped mCorner_1;
@@ -169,6 +139,8 @@ private:
 
     shared_ptr<std::mutex> mCornerMutex = nullptr;
     bool mFinished = false;
+
+    ros::Subscriber mBuildingSub;
 };
 
 

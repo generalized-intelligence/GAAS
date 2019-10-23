@@ -36,6 +36,7 @@
 
 #include <opencv2/core/eigen.hpp>
 #include <visualization_msgs/Marker.h>
+#include <mutex>
 
 #include "world.h"
 
@@ -51,9 +52,9 @@ public:
 
     void SetTarget(geometry_msgs::PoseStamped& target);
 
-    void GoByWayPoints(vector<geometry_msgs::PoseStamped>& way_points);
+    void GoByWayPoints(vector<geometry_msgs::PoseStamped>& way_points, float distance_threshold = 1.0);
 
-    bool GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame=false);
+    bool GoToTarget(const geometry_msgs::PoseStamped& target, bool useWorldFrame=true);
 
     void AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose);
 
@@ -143,15 +144,9 @@ public:
     // we neglect their rotation, but use position instead;
     inline cv::Mat findRelativeTransformPosition(cv::Mat& Twb1, cv::Mat& Twb2)
     {
-
-        LOG(WARNING)<<"Twb1: \n"<<Twb1<<endl;
-
         Twb1.at<double>(0, 3) = Twb1.at<double>(0, 3) - Twb2.at<double>(0, 3);
         Twb1.at<double>(1, 3) = Twb1.at<double>(1, 3) - Twb2.at<double>(1, 3);
         Twb1.at<double>(2, 3) = Twb1.at<double>(2, 3) - Twb2.at<double>(2, 3);
-
-        LOG(WARNING)<<"Twb2: \n"<<Twb2<<endl;
-        LOG(WARNING)<<"Tb21: \n"<<Twb1<<endl;
 
         return Twb1;
     }
@@ -163,6 +158,9 @@ public:
         float delta_z = mCurMavrosPose.pose.position.z - target.pose.position.z;
         float delta = sqrt(delta_x*delta_x + delta_y*delta_y + delta_z*delta_z);
 
+        LOG(INFO)<<"MAVROS pose: "<<mCurMavrosPose.pose.position.x<<", "
+                                  <<mCurMavrosPose.pose.position.y<<", "
+                                  <<mCurMavrosPose.pose.position.z<<endl;
         return delta;
     }
 
@@ -311,6 +309,7 @@ private:
     deque<float> mSceneMavrosDistanceDeque;
 
     float mOutlierThreshold = -1;
+    float mTargetDistanceThres = 1;
 
     // Transformation from drone to scene
     cv::Mat mTscene_drone;
@@ -337,10 +336,10 @@ private:
     ros::NodeHandle mNH;
 
     // for testing
-    ofstream myfile;
     ofstream testfile;
-    ofstream relative_and_average_file;
-    ofstream relative_distance_file;
+
+    bool mReceivedPose = false;
+
 };
 
 

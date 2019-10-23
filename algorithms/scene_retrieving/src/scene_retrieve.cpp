@@ -567,7 +567,7 @@ float SceneRetriever::retrieveSceneFromStereoImage(cv::Mat& image_left_rect, cv:
 
     //NOTE, result relative_T is relative from current to old camera frame, old_T is in global frame.
     //we need to update computed current pose.s
-    cv::Mat new_T_2 = old_T * image_to_flu;
+    new_T = old_T * image_to_flu;
 
     cv::Mat new_R = new_T.colRange(0,3).rowRange(0,3);
     cv::Mat new_t = new_T.rowRange(0,3).col(3);

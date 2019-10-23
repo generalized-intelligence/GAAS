@@ -15,10 +15,12 @@ World::World(string config_path)
 
     assert(int(mBuildingNum) > 0);
 
+    shared_ptr<Building> test_building = nullptr;
+    mBuildings.resize(int(mBuildingNum));
     for(int i=0; i<int(mBuildingNum); i++)
     {
-        Building test_building;
-        mBuildings.push_back(test_building);
+        test_building = make_shared<Building>();
+        mBuildings[i] = test_building;
     }
 
 
@@ -40,6 +42,7 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
     geometry_msgs::PoseStamped safe_point_pose = Eigen2Pose(safe_point);
 
     // TODO: There is no obstacle avoidance at the moment, and I am using a very simple logic to control the drone
+    // the output could be used as the input of path planning start and end
     // we can introduce obstacle avoidance to it.
 
     // case 1, drone not in any building, target in building
@@ -49,13 +52,13 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
     {
         if(isInBuilding(target_pose, building_index))
         {
-            geometry_msgs::PoseStamped door = mBuildings[building_index].DoorGlobalPosition();
+            geometry_msgs::PoseStamped door = mBuildings[building_index]->DoorGlobalPosition();
             path.push_back(safe_point_pose);
             path.push_back(door);
             path.push_back(target_pose);
             LOG(INFO)<<"door: "<<door<<endl;
             LOG(INFO)<<"target: "<<target_pose<<endl;
-            LOG(INFO)<<"Drone not in any building, target in building!"<<endl;
+            LOG(WARNING)<<"Drone not in any building, target in building!"<<endl;
             return path;
         }
     }
@@ -67,13 +70,13 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
     {
         if(isInBuilding(mavros_pose, building_index_2))
         {
-            geometry_msgs::PoseStamped door = mBuildings[building_index_2].DoorGlobalPosition();
+            geometry_msgs::PoseStamped door = mBuildings[building_index_2]->DoorGlobalPosition();
             path.push_back(door);
             path.push_back(safe_point_pose);
             path.push_back(target_pose);
             LOG(INFO)<<"door: "<<door<<endl;
             LOG(INFO)<<"target: "<<target_pose<<endl;
-            LOG(INFO)<<"Drone in building, target not in building!"<<endl;
+            LOG(WARNING)<<"Drone in building, target not in building!"<<endl;
             return path;
         }
     }
@@ -87,14 +90,14 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
         if(isInBuilding(target_pose, building_index_4))
         {
             // go out of current door
-            geometry_msgs::PoseStamped door = mBuildings[building_index_3].DoorGlobalPosition();;
+            geometry_msgs::PoseStamped door = mBuildings[building_index_3]->DoorGlobalPosition();;
             path.push_back(door);
 
             // go to a safe point before going to the next door
             path.push_back(safe_point_pose);
 
             // go to the target building door
-            geometry_msgs::PoseStamped target_door = mBuildings[building_index_4].DoorGlobalPosition();;
+            geometry_msgs::PoseStamped target_door = mBuildings[building_index_4]->DoorGlobalPosition();;
             path.push_back(target_door);
 
             // go to the target from the target building door
@@ -102,7 +105,7 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
 
             LOG(INFO)<<"door: "<<door<<endl;
             LOG(INFO)<<"target: "<<target_pose<<endl;
-            LOG(INFO)<<"Drone in building, target in building!"<<endl;
+            LOG(WARNING)<<"Drone in building, target in building!"<<endl;
             return path;
         }
     }
@@ -116,12 +119,11 @@ vector<geometry_msgs::PoseStamped> World::FindWayPoints(geometry_msgs::PoseStamp
         {
             path.push_back(safe_point_pose);
             path.push_back(target_pose);
-            LOG(INFO)<<"Drone not in building, target not in building!"<<endl;
+            LOG(WARNING)<<"Drone not in building, target not in building!"<<endl;
             return path;
         }
     }
 
-    LOG(WARNING)<<"It should have been all possible cases, but I don't know why I can see this log!"<<endl;
-
+    LOG(WARNING)<<"Does not fit in any case, neglect!"<<endl;
 }
 

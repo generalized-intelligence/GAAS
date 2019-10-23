@@ -4,7 +4,7 @@
 Controller::Controller(ros::NodeHandle& nh)
 {
 	mNH = nh;
-	mMavrosSub = mNH.subscribe("/mavros/vision_pose/pose", 100, &Controller::MavrosPoseCallback, this);
+	mMavrosSub = mNH.subscribe("/mavros/local_position/pose", 100, &Controller::MavrosPoseCallback, this);
 	mTargetSetSub = mNH.subscribe("/move_base_simple/goal", 100, &Controller::TargetSetSubCallback, this);
 
 	mPositionControlPub = mNH.advertise<geometry_msgs::PoseStamped>("gi/set_pose/position", 100);
@@ -20,6 +20,8 @@ Controller::Controller(ros::NodeHandle& nh)
 
     cv::FileStorage fsSettings("./config/scene_retrieve.yaml", cv::FileStorage::READ);
     mOutlierThreshold = fsSettings["Outlier_Threshold"];
+    mTargetDistanceThres = fsSettings["Target_Threshold"];
+
     LOG(INFO)<<"mOutlierThreshold: "<<mOutlierThreshold<<endl;
 
     std::thread t(&Controller::Run, this);
@@ -32,11 +34,11 @@ Controller::Controller(ros::NodeHandle& nh)
 void Controller::Run()
 {
     // test
-    geometry_msgs::PoseStamped target;
-    target.pose.position.x = 0;
-    target.pose.position.y = -10;
-    target.pose.position.z = 3;
-    SetTarget(target);
+//    geometry_msgs::PoseStamped target;
+//    target.pose.position.x = 0;
+//    target.pose.position.y = -10;
+//    target.pose.position.z = 3;
+//    SetTarget(target);
 
 	ros::Rate rate(5.0);
 	while (!ros::isShuttingDown())
@@ -51,24 +53,30 @@ void Controller::Run()
 		{
 			continue;
 		}
-		else if (mTARGET == NEW_TARGET)
+		else if (mTARGET == NEW_TARGET && mReceivedPose)
 		{
-//			int building_idx = -1;
-//			bool result = mpWorld->isInBuilding(mTargetPose, building_idx, true);
-//			LOG(INFO)<<"Is mTargetPose in building?: "<<result<<endl;
-//
-//            vector<geometry_msgs::PoseStamped> wps = mpWorld->FindWayPoints(mCurMavrosPose, mTargetPose);
-//
-//            // NOTE fix all way point at height 3 meters
-//            for(auto& wp : wps)
-//            {
-//                wp.pose.position.z = 3;
-//            }
-//
-//            GoByWayPoints(wps);
-//
-//			// disable movement after finishing current task mission.
-//			mTARGET = NO_TARGET;
+			int building_idx = -1;
+			bool result = mpWorld->isInBuilding(mTargetPose, building_idx);
+
+            vector<geometry_msgs::PoseStamped> wps = mpWorld->FindWayPoints(mCurMavrosPose, mTargetPose);
+
+            if(wps.empty())
+            {
+                LOG(INFO)<<"Cannot find way, wps empty! Continue!"<<endl;
+                continue;
+            }
+
+            // NOTE fix all way point at height 3 meters
+            for(auto& wp : wps)
+            {
+                wp.pose.position.z = 3;
+            }
+
+            GoByWayPoints(wps);
+
+			// disable movement after finishing current task mission.
+			mTARGET = NO_TARGET;
+
 		}
 
 		rate.sleep();
@@ -79,14 +87,13 @@ void Controller::Run()
 
 void Controller::SetTarget(geometry_msgs::PoseStamped& target)
 {
-    LOG(WARNING)<<"SetTarget: "<<target.pose.position.x<<", "<<target.pose.position.y<<", "<<target.pose.position.z<<endl;
 	mTargetPose = target;
     mInitialTarget = target;
 
 	mTARGET = NEW_TARGET;
 }
 
-void Controller::GoByWayPoints(vector<geometry_msgs::PoseStamped>& way_points)
+void Controller::GoByWayPoints(vector<geometry_msgs::PoseStamped>& way_points, float distance_threshold)
 {
 	if(way_points.empty())
 		LOG(INFO)<<"Way points empty!"<<endl;
@@ -94,18 +101,21 @@ void Controller::GoByWayPoints(vector<geometry_msgs::PoseStamped>& way_points)
 	int i=1;
 	for(auto& wp : way_points)
 	{
-		LOG(INFO)<<"Current waypoint: "<<i<<"/"<<way_points.size()<<", "
-		         <<wp.pose.position.x<<", "<<wp.pose.position.y<<", "<<3<<endl;
+		LOG(WARNING)<<"Current waypoint: "<<i<<"/"<<way_points.size()<<", "<<
+		                                           wp.pose.position.x<<", "<<
+		                                           wp.pose.position.y<<", "<<
+		                                           3<<endl;
         i++;
-		while(distanceToTarget(wp) > 1.0)
-		{
+        while(distanceToTarget(wp) > distance_threshold)
+        {
+            LOG(WARNING)<<"DistanceToTarget(wp): "<<distanceToTarget(wp)<<endl;
             GoToTarget(wp);
         }
 	}
     LOG(INFO)<<"Finished All WayPoints!"<<endl;
 }
 
-bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBodyFrame)
+bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useWorldFrame)
 {
 	publishPose(target);
 
@@ -116,7 +126,7 @@ bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBo
 
 	//NOTE the callback from RVIZ is in FLU frame, to convert it to ENU frame we have to
 	//apply a custom transformation
-	if (useBodyFrame)
+	if (!useWorldFrame)
 		pose.header.frame_id = "base_link";
 	else {
 		pose.header.frame_id = "map";
@@ -125,7 +135,6 @@ bool Controller::GoToTarget(const geometry_msgs::PoseStamped& target, bool useBo
 		pose.pose.position.y = target.pose.position.x;
 		pose.pose.position.z = target.pose.position.z;
 	}
-
 	mPositionControlPub.publish(pose);
 }
 
@@ -241,9 +250,6 @@ void Controller::AddRetrievedPose(cv::Mat& retrieved_pose, cv::Mat& mavros_pose)
 			// could be updated, we can find a transform from current drone pose to retrieved scene pose
 			// rather than updating current drone pose with this transform, we update the current target of
 			// the drone with this transform.
-
-			LOG(INFO)<<"mTARGET: "<<mTARGET<<endl;
-
 			if(mTARGET == NO_TARGET) {
                 return;
             }
@@ -282,7 +288,6 @@ bool Controller::isSceneRecoveredMovementValid()
 
 void Controller::UpdateTarget()
 {
-	mTARGET = NEW_TARGET;
 
 	if (mIdxMavScenes.empty())
 		return;
@@ -370,6 +375,8 @@ void Controller::UpdateTarget()
         cv::Mat initialMat = PoseStampedToMat(mInitialTarget);
 
         cv::Mat updatedInitialTarget = cv::Mat::eye(4,4, CV_64F);
+
+        // again, they have different rotations because the retrieved slam pose has a different rotation angle.
         updatedInitialTarget.at<double>(0, 3) = initialMat.at<double>(0, 3) - current2initial.at<double>(0, 3);
         updatedInitialTarget.at<double>(1, 3) = initialMat.at<double>(1, 3) - current2initial.at<double>(1, 3);
         updatedInitialTarget.at<double>(2, 3) = initialMat.at<double>(2, 3) - current2initial.at<double>(2, 3);
@@ -385,9 +392,9 @@ void Controller::UpdateTarget()
         LOG(INFO)<<"current2initial, current pose diff to original pose diff: \n"<<current2initial<<endl;
         LOG(INFO)<<"current2initial, mInitialTarget: \n"<<initialMat<<endl;
         LOG(INFO)<<"current2initial, updatedInitialTarget: \n"<<updatedInitialTarget<<endl;
-        LOG(INFO)<<"current2initial, mTargetPose: \n"<<mTargetPose<<endl;
-
 	}
+
+    mTARGET = NEW_TARGET;
 }
 
 void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
@@ -396,14 +403,11 @@ void Controller::TargetSetSubCallback(const geometry_msgs::PoseStamped& target)
 	mTargetPose = target;
 	mTargetPose.pose.position.z = 3;
 
-	LOG(INFO)<<"Received new target: "<<mTargetPose.pose.position.x<<", "<<
-										mTargetPose.pose.position.y<<", "<<
-										mTargetPose.pose.position.z<<endl;
-	//UpdateTarget();
-	//GoToTarget(mTargetPose);
+    SetTarget(mTargetPose);
 
-	// enable new task after each targetset callback
-	mTARGET = NEW_TARGET;
+	LOG(WARNING)<<"Received new target: "<<mTargetPose.pose.position.x<<", "<<
+										   mTargetPose.pose.position.y<<", "<<
+										   mTargetPose.pose.position.z<<endl;
 }
 
 void Controller::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
@@ -412,6 +416,8 @@ void Controller::MavrosPoseCallback(const geometry_msgs::PoseStamped& pose)
 
 	mLastMavrosPose = mCurMavrosPose;
 	mCurMavrosPose = pose;
+
+    mReceivedPose = true;
 
 //	if (!isMavrosPoseValid())
 //		mSTATE = MAVROS_STATE_ERROR;

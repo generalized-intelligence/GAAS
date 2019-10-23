@@ -66,7 +66,9 @@ int main(int argc, char **argv) {
     }
 
     google::SetLogDestination(google::GLOG_INFO, "./log_controller_" );
+    //google::SetCommandLineOption("GLOG_minloglevel", "2");
     FLAGS_alsologtostderr = 1;
+    FLAGS_minloglevel = 1;
     google::InitGoogleLogging(argv[0]);
 
     ros::init(argc, argv, "controller_node");

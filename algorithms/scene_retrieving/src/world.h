@@ -8,6 +8,8 @@
 #include "building.h"
 #include <geometry_msgs/PoseStamped.h>
 
+#include <mutex>
+
 using namespace std;
 
 class World {
@@ -21,11 +23,11 @@ public:
                                                      geometry_msgs::PoseStamped& target_pose);
 
     template<class T>
-    inline bool isInBuilding(T& point, int& building_idx, bool use_log = false)
+    inline bool isInBuilding(T& point, int& building_idx)
     {
-        for(int i=0; i<=mBuildings.size(); i++)
+        for(int i=0; i<mBuildings.size(); i++)
         {
-            if(mBuildings[i].isInBuilding(point, use_log))
+            if(mBuildings[i]->isInBuilding(point))
             {
                 building_idx = i;
                 return true;
@@ -49,19 +51,17 @@ public:
         pose.pose.position.y = position[1];
         pose.pose.position.z = position[2];
 
-        LOG(INFO)<<"Eigen: "<<position<<endl;
-        LOG(INFO)<<"position: "<<pose.pose.position<<endl;
-
         return pose;
     }
 
 
 public:
-    vector<Building> mBuildings;
+    vector<shared_ptr<Building>> mBuildings;
 
 private:
 
     int mBuildingNum = -1;
+
 };
 
 
