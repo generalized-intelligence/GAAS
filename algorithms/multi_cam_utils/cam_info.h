@@ -1,5 +1,8 @@
 #ifndef CAM_INFO_H
 #define CAM_INFO_H
+#include <opencv2/core/persistence.hpp>
+#include <opencv2/core/mat.hpp>
+
 /*class CamInfo
 {
 publish:
@@ -19,20 +22,24 @@ public:
     {
         return false;
     }
-    CamInfo(const FileNode& cam_node)
+    CamInfo()
+    {
+        ;
+    }
+    CamInfo(const cv::FileNode& cam_node)
     {
         //eg:
         //A = (int)node["A"];
         //X = (double)node["X"];
         //id = (string)node["id"];
     }
-    virtual cv::Mat& getCamMat()
+    virtual cv::Mat getCamMat()
     {
-        return &(this->camera_mat);
+        return (this->camera_mat);
     }   
-    virtual cv::Mat& getRTMat()
+    virtual cv::Mat getRTMat()
     {
-        return &(this->rt_mat);
+        return (this->rt_mat);
     } 
 private:
     cv::Mat camera_mat;

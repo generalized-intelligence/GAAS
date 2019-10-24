@@ -1,7 +1,7 @@
 #ifndef STEREOCAM_UTIL_H
 #define STEREOCAM_UTIL_H
 
-#include "multi_cam_utils/cam_info.h"
+#include "cam_info.h"
 
 class StereoCamConfig:CamInfo
 {
@@ -10,22 +10,22 @@ public:
     {
         return true;
     }
-    StereoCamConfig(const FileNode& cam_node)
+    StereoCamConfig(const cv::FileNode& cam_node)
     {
         //eg:
         //A = (int)node["A"];
         //X = (double)node["X"];
         //id = (string)node["id"];
     }
-    virtual cv::Mat& getCamMat()
+    virtual cv::Mat getCamMat()
     {
         return (this->camera1_mat);
     }
-    virtual cv::Mat& getRTMat()
+    virtual cv::Mat getRTMat()
     {
         return (this->rt_mat);
     }
-    cv::Mat& getQMat()
+    cv::Mat getQMat()
     {
         return this->q_mat;
     }

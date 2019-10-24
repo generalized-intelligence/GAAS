@@ -64,6 +64,11 @@ public:
         }
 
     }
+    void addPose();
+    void addPoint3d();
+    void addPoint2d_3d_projection();
+
+    //
     void addCamObservation(int cam_index,vector<...> p2ds,vector<...> p3ds)
     {
         graph.emplace_shared(GeneralICPFactor<Pose3,Point3>(Symbol('c',cam_index + cam_num*frame_index),p3d,Noise ....));//bind with relative camera.

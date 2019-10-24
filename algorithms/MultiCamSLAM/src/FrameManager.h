@@ -4,7 +4,7 @@
 #include <glog/logging.h>
 
 
-
+#include "Frame.h"
 #include "SLAMOptimizationGraph.h"
 
 using namespace std;
@@ -15,9 +15,9 @@ namespace mcs
     
     
     typedef cv::Mat Feature;
-    typedef cv::Point2f p2dT;
-    typedef cv::Point3f p3dT;
-    typedef std::pair<shared_ptr<cv::Mat>,shared_ptr<cv::Mat> > StereoMatPtrPair;
+    //typedef cv::Point2f p2dT;
+    //typedef cv::Point3f p3dT;
+    //typedef std::pair<shared_ptr<cv::Mat>,shared_ptr<cv::Mat> > StereoMatPtrPair;
     struct MapPoint
     {
         Feature feat;
@@ -54,10 +54,11 @@ namespace mcs
         vector<shared_ptr<MapPoint> > fetchMapPoints();
         void removeOriginalImages()
         {
-
+            
         }
         shared_ptr<StereoMatPtrPair> pLRImgs;
         shared_ptr<vector<shared_ptr<cv::Mat> > > pOriginalImgs,pDepthImgs;
+        
         int frame_type;
     };
     class KeyFrame:Frame
@@ -85,9 +86,26 @@ namespace mcs
         {
             pts2d_gftt = pf1.extract
         }
-        ProcessFrame(Frame frame_in)
+        bool needNewKeyFrame();
+        ProcessNewFrame(Frame frame_in)
         {
-            ;
+            //step<1>. extract feature.
+            //step<2>. check needNewKeyFrame()
+            if(needNewKeyFrame())
+            {
+                //create new keyframe:for stereo cam, generate 3d points; for depth cam, check depth valid and store 3d points.
+                shared_ptr<KeyFrame> pkf = CreateNewKeyFrame(frame_in);
+            }
+            else
+            {
+                //track old kf.
+                OptFlowForFrameWiseTracking(...);
+            }
+            //step<3>.push into sliding_window, and do optimization.
+            this->sliding_wind.push_back(...)
+            Eigen::Matrix3d R_output;
+            Eigen::Vector3d t_output;
+            doOptimization(R_output,t_output);
         }
     private:
         FrameSlidingWindow sliding_wind;
