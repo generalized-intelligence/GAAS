@@ -4,3 +4,9 @@ FeatureFrontEndCV
 ${REQUIRED_LIBRARIES}
 )
 
+add_executable(test_cvFrontEnd2_optflow test_cvFrontEnd2_optflow.cpp)
+target_link_libraries(test_cvFrontEnd2_optflow
+FeatureFrontEndCV
+${REQUIRED_LIBRARIES}
+)
+

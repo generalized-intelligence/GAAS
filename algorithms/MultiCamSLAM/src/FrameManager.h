@@ -18,6 +18,7 @@ namespace mcs
     //typedef cv::Point2f p2dT;
     //typedef cv::Point3f p3dT;
     //typedef std::pair<shared_ptr<cv::Mat>,shared_ptr<cv::Mat> > StereoMatPtrPair;
+    typedef vector<double> IMU_Data_T;
     struct MapPoint
     {
         Feature feat;
@@ -39,6 +40,7 @@ namespace mcs
         // flags
         bool mbOutlier = false;                  // true if it is an outlier
     };
+    /*
     static const int FRAME_TYPE_STEREO = 0;
     static const int FRAME_TYPE_DEPTH = 1;
     struct Frame
@@ -52,6 +54,7 @@ namespace mcs
         vector<CamConfig> camconfig;
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;
         vector<shared_ptr<MapPoint> > fetchMapPoints();
+        vector<IMU_Data_T> imu_vec;
         void removeOriginalImages()
         {
             
@@ -60,7 +63,7 @@ namespace mcs
         shared_ptr<vector<shared_ptr<cv::Mat> > > pOriginalImgs,pDepthImgs;
         
         int frame_type;
-    };
+    };*/
     class KeyFrame:Frame
     {
     public:
