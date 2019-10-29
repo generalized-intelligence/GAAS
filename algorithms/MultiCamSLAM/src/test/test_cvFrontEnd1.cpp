@@ -3,7 +3,7 @@
 #include <opencv2/features2d.hpp>
 #include <opencv2/highgui.hpp>
 #include "FeatureFrontEndCV.h"
-
+#include "Timer.h"
 
 using namespace std;
 using namespace chrono;
@@ -11,7 +11,7 @@ using mcs::cvMat_T;
 int main(int argc,char** argv)
 {
     //cv::Mat* pimg_1 = new cv::Mat(cv::imread("data/0_Marmalade-the-Hamster-has-fun-in-his-cage.jpg") );
-    cv::Mat* p_original_img_1 = new cv::Mat(cv::imread("data/mono1.png",0) );
+    /*cv::Mat* p_original_img_1 = new cv::Mat(cv::imread("data/mono1.png",0) );
     cvMat_T* pimg_1 = new( cvMat_T );
     #if USE_UMAT_AS_TYPE == 1
     p_original_img_1->copyTo(*pimg_1);
@@ -20,6 +20,8 @@ int main(int argc,char** argv)
     pimg_1 =  p_original_img_1;//new cv::Mat(cv::imread("data/mono1.png"));
     LOG(INFO)<<"using original cv::Mat as cvMat_T."<<endl;
     #endif
+    */
+    cvMat_T* pimg_1 = new cvMat_T (mcs::IMREAD("data/mono1.png") );
     LOG(INFO)<<"Mat size:"<<pimg_1->cols<<","<<pimg_1->rows<<"."<<endl;
     shared_ptr<cvMat_T> ptr(pimg_1);
     vector<shared_ptr<cvMat_T> > v;

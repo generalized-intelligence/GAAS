@@ -1,3 +1,10 @@
+#ifndef HEADER_TIMER_H_FILE
+#define HEADER_TIMER_H_FILE
+
+
+#include <chrono>
+//using namespace chrono;
+
 struct ScopeTimer
 {
     std::chrono::high_resolution_clock::time_point begin,end;
@@ -45,4 +52,4 @@ struct ScopeTimer
         }   
     }   
 };
-
+#endif

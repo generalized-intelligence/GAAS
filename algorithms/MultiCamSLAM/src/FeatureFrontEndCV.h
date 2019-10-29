@@ -198,23 +198,28 @@ namespace mcs
 
     inline bool check_stereo_match(Point2f& p1,Point2f& p2)
     {
-        const float diff_v_max = 2.0;
+        //const float diff_v_max = 2.0;
+        const float diff_v_max = 4.0;
         //const diff_u_max = 100;//TODO:
-        if(abs(p1.y - p2.y) < diff_v_max
-			/// && p1.x-p2.x < 
-		)
+        if  (
+              abs(p1.y - p2.y) < diff_v_max
+                // && p1.x-p2.x <
+            )
         {
             return true;
         }
     }
     void createStereoMatchViaOptFlowMatching(cvMat_T& l,cvMat_T& r,StereoCamConfig& cam_info,shared_ptr<vector<p2dT> >& p2d_output,shared_ptr<vector<p3dT> >& p3d_output,bool& output_create_success)//for this is a multi-thread usage function, we let it return void.
     {
+        LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:extracting features."<<endl;
         shared_ptr<mcs::PointWithFeatureT> pPWFT_l_img = mcs::extractCamKeyPoints(l,mcs::KEYPOINT_METHOD_GFTT,false);
+        LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:kp.size():"<<pPWFT_l_img->kps.size()<<endl;
         vector<Point2f> l_p2fs_original;
         cv::KeyPoint::convert(pPWFT_l_img->kps,l_p2fs_original);
         vector<Point2f> tracked_unchecked;
         vector<unsigned char> v_track_success;
         vector<float> err;
+        LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:starting OptFlow."<<endl;
         cv::calcOpticalFlowPyrLK(l,r,l_p2fs_original,tracked_unchecked,v_track_success,err,cv::Size(21, 21), 3,
                                  cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01)
                                  );
@@ -223,16 +228,21 @@ namespace mcs
         p3d_output = shared_ptr<vector<p3dT> >(new vector<p3dT>);
         vector<Point2f>& checked_l = *p2d_output;
         vector<Point2f> checked_r;
+        LOG(INFO)<<"checking vtrack_success"<<endl;
         for(int i = 0;i<v_track_success.size();i++)
         {
             if(v_track_success[i] && check_stereo_match(l_p2fs_original[i],tracked_unchecked[i]))// check v.diff(v) shall be smaller than 2
             {
+                //LOG(INFO)<<"track success,dealing with 3d reconstruction."<<endl;
+
                 checked_l.push_back(l_p2fs_original[i]);
                 checked_r.push_back(tracked_unchecked[i]);
                 float disparity = tracked_unchecked[i].x - l_p2fs_original[i].x;
                 float x,y,z,scale;
                 //calc p3d.
                 const auto &QMat = cam_info.getQMat();
+                //LOG(INFO)<<"Q_mat:\n"<<QMat<<endl;
+                //LOG(INFO)<<"Q_mat dtype:"<<QMat.type()<<";cv_32f is:"<<CV_32F<<"cv_64f is:"<<CV_64F<<endl;
                 scale = 1.0/(disparity*QMat.at<float>(3,2)+QMat.at<float>(3,3));
                 x = (l_p2fs_original[i].x + QMat.at<float>(0,3))*scale;
                 y = (l_p2fs_original[i].y + QMat.at<float>(1,3))*scale;
@@ -243,6 +253,7 @@ namespace mcs
                 matp1.at<float>(1,0)= y;
                 matp1.at<float>(2,0)= z;
                 matp1.at<float>(3,0)= 1.0;
+                //LOG(INFO)<<"RT_mat:\n"<<cam_info.getRTMat()<<endl;
                 matp1 = cam_info.getRTMat()*matp1;
                 //Transformation of rt mat.
                 x = matp1.at<float>(0,0);
@@ -251,7 +262,7 @@ namespace mcs
                 p3d_output->push_back(Point3f(x,y,z));
             }
         }
-        
+        LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:points matched success num:"<<checked_l.size()<<endl;
         if(checked_l.size()>15)
         {
             output_create_success = true;

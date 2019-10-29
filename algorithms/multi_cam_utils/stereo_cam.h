@@ -2,7 +2,7 @@
 #define STEREOCAM_UTIL_H
 
 #include "cam_info.h"
-
+#include <iostream>
 class StereoCamConfig:CamInfo
 {
 public:
@@ -16,6 +16,14 @@ public:
         //A = (int)node["A"];
         //X = (double)node["X"];
         //id = (string)node["id"];
+        LOG(INFO)<<"check stereo cam config:"<<std::endl;
+        cam_node["camMat1"]>>this->camera1_mat;
+        LOG(INFO)<<"check stereo cam config: 1"<<std::endl;
+        cam_node["camMat2"]>>this->camera2_mat;
+        LOG(INFO)<<"check stereo cam config: 2"<<std::endl;
+        cam_node["camRTMat"]>>this->rt_mat;
+        LOG(INFO)<<"check stereo cam config: 3"<<std::endl;
+        cam_node["QMat"]>>this->q_mat;
     }
     virtual cv::Mat getCamMat()
     {

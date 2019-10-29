@@ -9,4 +9,8 @@ target_link_libraries(test_cvFrontEnd2_optflow
 FeatureFrontEndCV
 ${REQUIRED_LIBRARIES}
 )
-
+add_executable(test_cvFrontEnd3_createStereoFrame test_cvFrontEnd3_createStereoFrame.cpp)
+target_link_libraries(test_cvFrontEnd3_createStereoFrame
+    FeatureFrontEndCV
+    ${REQUIRED_LIBRARIES}
+    )

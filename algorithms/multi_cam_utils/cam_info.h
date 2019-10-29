@@ -24,7 +24,7 @@ public:
     }
     CamInfo()
     {
-        ;
+
     }
     CamInfo(const cv::FileNode& cam_node)
     {
@@ -32,6 +32,8 @@ public:
         //A = (int)node["A"];
         //X = (double)node["X"];
         //id = (string)node["id"];
+        cam_node["camMat"]>>this->camera_mat;
+        cam_node["camRTMat"]>>this->rt_mat;
     }
     virtual cv::Mat getCamMat()
     {

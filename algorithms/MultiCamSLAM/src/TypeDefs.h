@@ -9,8 +9,11 @@
 #include "opencv2/xfeatures2d.hpp"
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/calib3d.hpp"
+#include "opencv2/core.hpp"
+#include <opencv2/opencv.hpp>
 
-#define USE_UMAT_AS_TYPE 1
+
+#define USE_UMAT_AS_TYPE 0
 namespace mcs 
 {
     using namespace std;
@@ -24,6 +27,18 @@ namespace mcs
     #else
     typedef cv::Mat cvMat_T;
     #endif
+
+
+    cvMat_T IMREAD(const string& path)
+    {
+        #if USE_UMAT_AS_TYPE == 1
+        cvMat_T res;
+        cv::imread(path).copyTo(res);
+        return res;
+        #else
+        return cv::imread(path);
+        #endif
+    }
     typedef struct
     {   
         std::vector<KeyPoint> kps;

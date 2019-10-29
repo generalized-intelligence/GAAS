@@ -67,6 +67,7 @@ include_directories(${OpenCV_INCLUDE_DIRS}
 			${catkin_INCLUDE_DIRS}
                         ../multi_cam_utils/
                         ./src/
+                        ./src/utils/
                         )
 
 MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")
