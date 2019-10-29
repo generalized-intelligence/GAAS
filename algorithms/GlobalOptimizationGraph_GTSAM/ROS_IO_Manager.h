@@ -67,9 +67,6 @@ public:
         ros::spinOnce();//Handle all callbacks.
         //一个简单实现:如果两种消息都凑齐至少一个,送一次.GPS有没有无所谓.
         //TODO:delete check gps in this ().
-        //策略修改：这里只要有消息就调用对应的回调函数。
-        //bool msg_avail = this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0&&this->GPS_buffer.size()>0;cout<<"TODO:remove GPS here."<<endl;
-        //bool msg_avail = this->SLAM_buffer.size()>0 && this->AHRS_buffer.size()>0;
         bool msg_avail = this->_slam_msg_update ||this->_gps_pos_update;
         if(msg_avail)
         {

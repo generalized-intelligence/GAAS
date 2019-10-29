@@ -39,7 +39,6 @@
 #include "GPS_like.h"
 
 using namespace std;
-using namespace ygz;
 using namespace gtsam;
 
 
