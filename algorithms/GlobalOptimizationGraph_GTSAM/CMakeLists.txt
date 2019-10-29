@@ -9,7 +9,7 @@ set( CMAKE_BUILD_TYPE "Debug" )
 
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(GTSAM REQUIRED)
-find_package(OpenCV 3.3.1 REQUIRED)
+find_package(OpenCV 3.4.5 REQUIRED)
 
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
 find_package(Glog)
@@ -25,8 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 include_directories(${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/ygz_common_headers
-		${PROJECT_SOURCE_DIR/Thirdparty/Sophus/sophus}
-		${EIGEN3_INCLUDE_DIR}
+	${EIGEN3_INCLUDE_DIR}
         ${catkin_INCLUDE_DIRS}
         ${GTSAM_INCLUDE_DIR}
 
@@ -40,10 +39,10 @@ set (THIRD_PARTY_LIBS
 
 add_library(ROS_IO_Manager ROS_IO_Manager.cpp)
 
-
 add_library(GlobalOptimizationGraph GlobalOptimizationGraph.cpp)
 target_link_libraries(GlobalOptimizationGraph
-        gtsam;${Boost_PROGRAM_OPTIONS_LIBRARY}
+        gtsam
+        ${Boost_PROGRAM_OPTIONS_LIBRARY}
 	${THIRD_PARTY_LIBS})
 
 add_executable(GlobalOptimizationGraph_main main.cpp)

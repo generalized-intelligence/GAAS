@@ -8,7 +8,6 @@
 //#include <gtsam/geometry/Pose2.h>
 //#include <gtsam/geometry/Point2.h>
 
-
 #include <glog/logging.h>
 
 #include <gtsam/inference/Key.h>
@@ -35,6 +34,8 @@
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
+
+#include <mutex>
 
 #include "GPSExpand.h"
 #include "CallbacksBufferBlock.h"
