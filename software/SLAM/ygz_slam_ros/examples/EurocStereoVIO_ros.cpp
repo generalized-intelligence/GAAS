@@ -563,7 +563,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& msgLeft,const sensor_m
     geometry_msgs::PoseStamped EstimatedPose;
     EstimatedPose.header.stamp = ros::Time::now();
 
-    //NED  +z +y
+    //ENU  +z +y
     //     | /
     //     |/
     //     0____ +x
