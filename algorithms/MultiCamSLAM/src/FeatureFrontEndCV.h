@@ -271,7 +271,7 @@ namespace mcs
     void createStereoMatchViaOptFlowMatching_MultiThread();//TODO
     shared_ptr<Frame> createFrameStereos(shared_ptr<vector<StereoMatPtrPair> >stereo_pair_imgs_vec,
                                       vector<StereoCamConfig>& cam_distribution_info_vec,
-                                      bool create_Frame_success = false,
+                                      bool& create_Frame_success,
                                       bool create_key_frame = true)
     {
 
@@ -285,7 +285,18 @@ namespace mcs
              shared_ptr<vector<p2dT> > p2d_output_;
              shared_ptr<vector<p3dT> > p3d_output_;
              bool create_stereo_successs = false;
-             createStereoMatchViaOptFlowMatching(l,r,cam_distribution_info_vec[i],p2d_output_,p3d_output_,create_stereo_successs);
+             if(create_key_frame)
+             {
+                 createStereoMatchViaOptFlowMatching(l,r,cam_distribution_info_vec[i],p2d_output_,p3d_output_,create_stereo_successs);
+                 if(!create_stereo_successs)
+                 {
+                     create_Frame_success = false;
+                 }
+             }
+             else
+             {//maybe detect gftt for optflow check is needed.TODO.
+
+             }
         }
         //method<2> multiple thread.
         //
@@ -302,7 +313,6 @@ namespace mcs
                                       bool create_Frame_success = false,
                                       bool create_key_frame = true);
 
-    
 }
 
 

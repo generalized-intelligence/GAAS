@@ -38,6 +38,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 # ----------------------------------------------------------------------------
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 find_package(OpenCV 3.4.5 REQUIRED) # same with ros.
+find_package(GTSAM REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
                                 cv_bridge
@@ -68,10 +69,11 @@ include_directories(${OpenCV_INCLUDE_DIRS}
                         ../multi_cam_utils/
                         ./src/
                         ./src/utils/
+            ${GTSAM_INCLUDE_DIR}
                         )
 
 MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES} -lpthread)
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES} -lpthread gtsam;${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 find_package(OpenCV 3.4.5 REQUIRED)
 

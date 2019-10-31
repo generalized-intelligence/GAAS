@@ -5,7 +5,9 @@
 
 
 #include "Frame.h"
+#include "FrameWiseGeometry.h"
 #include "SLAMOptimizationGraph.h"
+
 
 using namespace std;
 
@@ -18,8 +20,8 @@ namespace mcs
     //typedef cv::Point2f p2dT;
     //typedef cv::Point3f p3dT;
     //typedef std::pair<shared_ptr<cv::Mat>,shared_ptr<cv::Mat> > StereoMatPtrPair;
-    typedef vector<double> IMU_Data_T;
-    struct MapPoint
+    //typedef vector<double> IMU_Data_T;
+    /*struct MapPoint
     {
         Feature feat;
         Point3 pos;
@@ -39,7 +41,7 @@ namespace mcs
 
         // flags
         bool mbOutlier = false;                  // true if it is an outlier
-    };
+    };*/
     /*
     static const int FRAME_TYPE_STEREO = 0;
     static const int FRAME_TYPE_DEPTH = 1;
@@ -82,33 +84,34 @@ namespace mcs
     {
     public:
         FrameManager();
-        Match2FrameAndTriangulate(shared_ptr<Frame> pf1,shared_ptr<Frame> pf2)
+        void Match2FrameAndTriangulate(shared_ptr<Frame> pf1,shared_ptr<Frame> pf2)
         {
         }
-        Match2FrameAndTriangulateWithOptFlow(shared_ptr<Frame> pf1,shared_ptr pf2)
+        void Match2FrameAndTriangulateWithOptFlow(shared_ptr<Frame> pf1,shared_ptr<Frame> pf2)
         {
-            pts2d_gftt = pf1.extract
+            //pts2d_gftt = pf1.extract
         }
         bool needNewKeyFrame();
-        ProcessNewFrame(Frame frame_in)
+        void ProcessNewFrame(Frame frame_in)
         {
             //step<1>. extract feature.
             //step<2>. check needNewKeyFrame()
             if(needNewKeyFrame())
             {
                 //create new keyframe:for stereo cam, generate 3d points; for depth cam, check depth valid and store 3d points.
-                shared_ptr<KeyFrame> pkf = CreateNewKeyFrame(frame_in);
+                //shared_ptr<KeyFrame> pkf = CreateNewKeyFrame(frame_in);
             }
             else
             {
                 //track old kf.
-                OptFlowForFrameWiseTracking(...);
+                //if(track)
+                //OptFlowForFrameWiseTracking(...);
             }
             //step<3>.push into sliding_window, and do optimization.
-            this->sliding_wind.push_back(...)
+            //this->sliding_wind.push_back(...)
             Eigen::Matrix3d R_output;
             Eigen::Vector3d t_output;
-            doOptimization(R_output,t_output);
+            //doOptimization(R_output,t_output);
         }
     private:
         FrameSlidingWindow sliding_wind;

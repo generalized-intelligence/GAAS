@@ -14,3 +14,9 @@ target_link_libraries(test_cvFrontEnd3_createStereoFrame
     FeatureFrontEndCV
     ${REQUIRED_LIBRARIES}
     )
+add_executable(test_FrameManager4_trackLocalFrame test_FrameManager4_trackLocalFrame.cpp)
+target_link_libraries(test_FrameManager4_trackLocalFrame
+    FeatureFrontEndCV
+    FrameManager
+    ${REQUIRED_LIBRARIES}
+    )

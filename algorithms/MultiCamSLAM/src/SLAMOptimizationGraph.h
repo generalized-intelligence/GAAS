@@ -35,12 +35,29 @@ using namespace std;
 class SLAMOptimizationGraph
 {
 public:
-    SLAMOptimizationGraph(FileStorage fSettings)
+    SLAMOptimizationGraph(cv::FileStorage fSettings)
     {
         //...
     }
 
-    void initCams()
+    void initCams();
+    void insertFrame();
+    void addPose();
+    void addPoint3d();
+    void addPoint2d_3d_projection();
+
+    //
+    //void addCamObservation(int cam_index,vector<...> p2ds,vector<...> p3ds)
+    //{
+    //    graph.emplace_shared(GeneralICPFactor<Pose3,Point3>(Symbol('c',cam_index + cam_num*frame_index),p3d,Noise ....));//bind with relative camera.
+    //}
+private:
+    NonlinearFactorGraph graph;
+    ISAM2 *p_isam;
+    cv::FileStorage* pfSettings;
+};
+/*
+    void initCams();
     {
         noiseModel bind_model(0,0,0,0,0,0);
         //Symbol('c',0) stands for original pose.
@@ -48,39 +65,23 @@ public:
         {
             Pose3 CamPose = ....
             graph.addPrior<BetweenFactor>(Symbol('c',i),Symbol('c',0),CamPose,bind_model);
-            
+
         }
 
     }
-    void insertFrame()
-    {
-        noiseModel bind_model(0,0,0,0,0,0);
-        //Symbol('c',0) stands for original pose.
-        for(caminfo = CamInfoList[i],.....)
+        void insertFrame();
         {
-            Pose3 CamPose = ....
-            graph.addPrior<BetweenFactor>(Symbol('c',i+cam_num*frame_index),Symbol('c',0),CamPose,bind_model);
-            
+            noiseModel bind_model(0,0,0,0,0,0);
+            //Symbol('c',0) stands for original pose.
+            for(caminfo = CamInfoList[i],.....)
+            {
+                Pose3 CamPose = ....
+                graph.addPrior<BetweenFactor>(Symbol('c',i+cam_num*frame_index),Symbol('c',0),CamPose,bind_model);
+
+            }
+
         }
-
-    }
-    void addPose();
-    void addPoint3d();
-    void addPoint2d_3d_projection();
-
-    //
-    void addCamObservation(int cam_index,vector<...> p2ds,vector<...> p3ds)
-    {
-        graph.emplace_shared(GeneralICPFactor<Pose3,Point3>(Symbol('c',cam_index + cam_num*frame_index),p3d,Noise ....));//bind with relative camera.
-    }
-private:
-    NonlinearFactorGraph graph;
-    ISAM2 *p_isam;
-    FileStorage& fSettings;
-};
-
-
-
+*/
 
 
 #endif

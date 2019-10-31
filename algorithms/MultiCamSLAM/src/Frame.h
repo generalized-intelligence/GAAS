@@ -45,7 +45,7 @@ namespace mcs
     };
     static const int FRAME_TYPE_STEREO = 0;
     static const int FRAME_TYPE_DEPTH = 1;
-
+    typedef vector<double> IMU_Data_T;
     struct Frame
     {   
     public:
@@ -68,6 +68,24 @@ namespace mcs
         }
         shared_ptr<vector<StereoMatPtrPair> > pLRImgs;
         shared_ptr<vector<shared_ptr<cvMat_T> > > pOriginalImgs,pDepthImgs;
+        IMU_Data_T imu_info_vec;
+        vector<shared_ptr<cvMat_T> > getMainImages()//for stereo frame: main images is the left ones of each pair;
+                                                    //for depth frame: main images is the main rgb/grayscale cam.
+        {
+            if(this->frame_type == FRAME_TYPE_STEREO)
+            {
+                vector<shared_ptr<cvMat_T> > ret_vec;
+                for(auto u:(*pLRImgs))
+                {
+                    ret_vec.push_back(std::get<0>(u));
+                }
+                return ret_vec;
+            }
+            else
+            {
+                LOG(ERROR)<<"not implemented yet."<<endl;
+            }
+        }
     
         int frame_type;
     };
