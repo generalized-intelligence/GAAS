@@ -60,7 +60,7 @@ ax = plt.plot(rs,'b',linewidth=3)
 #ax.set_ylim3d(-20,20)
 #ax.set_zlim3d(-20,20)
 plt.show()
-'''
+
 plt.scatter(xs,ys,alpha=0.6)  # 绘制散点图，透明度为0.6（这样颜色浅一点，比较好看）
 plt.scatter(xslam,yslam,alpha = 0.5)
 plt.figure()
@@ -74,10 +74,10 @@ plt.plot(zs, 'b')
 plt.plot(xsgps,'r.')
 plt.plot(ysgps,'y.')
 plt.plot(zsgps,'b.')
-'''
+
 #plt.plot(xs_gt_al,'r.')
 #plt.plot(ys_gt_al,'y.')
 #plt.plot(zs_gt_al,'b.')
-#plt.show()
+plt.show()
 
 

@@ -48,6 +48,7 @@ public:
     const int STATE_NO_GPS = 0;
     const int STATE_WITH_GPS = 1;
     const int STATE_INITIALIZING = 2;//只有位置,没有yaw.
+
     StateTransferManager(GPS_SLAM_MATCHER& matcher,cv::FileStorage& fSettings,NonlinearFactorGraph& graph,GPSExpand& gps_coord,CallbackBufferBlock<sensor_msgs::NavSatFix>* pGPS_buffer_in,CallbackBufferBlock<geometry_msgs::PoseStamped>* pSLAM_buffer_in)
     {
         pSettings = &fSettings;
@@ -59,6 +60,7 @@ public:
         this->pSLAM_buffer = pSLAM_buffer_in;
         LOG(INFO)<<"StateTransferManager Initiated!"<<endl;
     }
+
     void getNewestYawAndVarianceRad(double& newestRad_out,double& newestCoariance_out)
     {
         newestRad_out = this->segment_yaw_slam_to_gps_initial.back()
@@ -66,6 +68,7 @@ public:
                                    //this->estimatedBias;//获取对应的值+偏置.(在slam里 减去这个偏置. 后面实现.)
         newestCoariance_out = this->newestCovariance;//this->segment_yaw_slam_to_gps_initial_variance.back();//获取对应的值
     }
+
     int updateSlam()//接收到SLAM消息时候调用.
     {
         if(this->pgps_slam_matcher->matchLen() == 0)
@@ -73,7 +76,7 @@ public:
             return STATE_NO_GPS;
         }
         auto last_match = this->pgps_slam_matcher->at(this->pgps_slam_matcher->matchLen()-1);
-        if(1)//WTF??
+        if(1)
         {
             if( this->pSLAM_buffer->queryLastMessageTime() - this-> pGPS_buffer->at(last_match.gps_index).header.stamp.toSec() > 4)//TODO:阈值移到配置文件中.
             {
@@ -92,6 +95,7 @@ public:
         }
         return currentState;
     }
+
     int updateState(bool gps_valid,bool& gpsLoopMode_output)//GPS_Valid只检验GPS和SLAM时间戳 以及gps covariance合格与否
     //返回新状态,以及在gpsLoopMode_output中给出这次是否应该以回环形式处理.
     {//读取里面GPS消息的状态.
@@ -161,12 +165,15 @@ public:
         }
         return this->currentState;
     }
+
     inline double getInitYawToWorldRad(bool& valueValid)
     {
         valueValid = this->everInitWithGPS;
         return this->init_yaw_to_world_enu_rad_const;
     }
+
     void checkMatcherToInitGPSYaw(bool& init_success,double& init_yaw,double& init_yaw_variance);//初始化成功与否 剩余可重试次数.
+
 //从STATE_INITIALIZING 进行状态转移.
     inline int getCurrentState()
     {

@@ -4,9 +4,6 @@
 
 #include <gtsam/base/Matrix.h>
 #include <gtsam/base/Vector.h>
-//#include <gtsam/geometry/Rot2.h>
-//#include <gtsam/geometry/Pose2.h>
-//#include <gtsam/geometry/Point2.h>
 
 #include <glog/logging.h>
 
@@ -77,10 +74,10 @@ double fix_angle(double& angle)
     double ret_val = angle;
     return ret_val;
 }
+
 double get_yaw_from_slam_msg(const geometry_msgs::PoseStamped &m);
+
 void get_rpy_from_slam_msg(const geometry_msgs::PoseStamped &m,double& roll,double& pitch,double& yaw);
-
-
 
 typedef struct OptimizationGraphStatus
 {
@@ -94,7 +91,9 @@ OptimizationGraphStatusT;
 
 class GlobalOptimizationGraph
 {
+
 public:
+
     GlobalOptimizationGraph(int argc,char** argv);
     
     bool checkAHRSValid();
@@ -117,9 +116,9 @@ public:
     void addBlockBarometer(int msg_index);
     void addBlockVelocity(int msg_index);//(const geometry_msgs::TwistStamped& velocity_msg);
     void addBlockQRCode();
-    //void addBlockSceneRetriever();
     void addBlockLoop(const LoopMessage& msg);
     void addBlockFCAttitude();
+    //void addBlockSceneRetriever();
     
     //SLAM msg as edge prv and vertexspeed.
     std::deque<nav_msgs::Odometry> slam_prv_buffer;    
@@ -145,7 +144,9 @@ public:
         this->p_state_tranfer_manager = shared_ptr<StateTransferManager>(new StateTransferManager(*p_gps_slam_matcher,this->fSettings,this->graph,this->GPS_coord,this->pGPS_Buffer,this->pSLAM_Buffer));
         this->p_BarometerManager = shared_ptr<BarometerManager>(new BarometerManager());
     }
+
     //std::tuple<bool,Quaterniond,Vector3d,double,int> queryCurrentFullStatus()
+
     OptimizationGraphStatusT queryCurrentFullStatus()
     {
         state_mutex.lock();
@@ -153,20 +154,27 @@ public:
         state_mutex.unlock();
         return ret_val;
     }
+
 private:
+
     cv::FileStorage fSettings;
-    //status management.
+
 public:
-    static const int STATUS_NO_GPS_NO_SCENE = 0; // a bit map.
+
+    static const int STATUS_NO_GPS_NO_SCENE = 0;
     static const int STATUS_NO_GPS_WITH_SCENE = 1;
     static const int STATUS_WITH_GPS_NO_SCENE = 2;
     static const int STATUS_GPS_SCENE = 3;
+
     int GPS_AVAIL_MINIMUM;
+
     inline int getStatus()
     {
         return this->status;
     }
+
 private:
+
     shared_ptr<GPS_SLAM_MATCHER> p_gps_slam_matcher;
     shared_ptr<StateTransferManager> p_state_tranfer_manager;
     shared_ptr<BarometerManager> p_BarometerManager;
@@ -187,7 +195,6 @@ private:
     int last_gps_vel_index = -1;
     int last_baro_vertex_index = -1;
     double yaw_init_to_slam = 0.0; //GOG初始的y轴 转向 slam的y轴夹角.
-
 
     double current_yaw_slam_drift = 0;
     //double yaw_init_to_gps = 0.0; //GOG的y轴 到 gps的北 夹角.
@@ -215,7 +222,9 @@ private:
     double init_slam_msg_time;
 
     OptimizationGraphStatusT current_status;
-    std::mutex state_mutex;//锁定当前返回值的状态.
+    std::mutex state_mutex;
+
+    ofstream mInputSlamFile;
 };
 
 GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
@@ -232,7 +241,7 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     //Initialize optimizer:
 
     //p_isam = new NonlinearISAM (relinearizeInterval);
-    ISAM2Params isam2_params_; //在定義ISAM2例項的時候儲存引數的。
+    ISAM2Params isam2_params_;
     int enable_relinearize_in = this->fSettings["ENABLE_RELINEARIZE"];
     bool enable_relinearize = (enable_relinearize_in!=0);
     double relinearizeThres = this->fSettings["RELINEARIZE_THRES"];
@@ -240,6 +249,7 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     int relinearizeSkip_num = this->fSettings["RELINEARIZE_SKIP_NUM"];
     isam2_params_.relinearizeSkip = relinearizeSkip_num;//1;//多少个变量之后,relinearize.
     isam2_params_.enableRelinearization = enable_relinearize;//false;//禁止relinearize.
+
     int online_mode_i = fSettings["ONLINE_MODE"];
     if(online_mode_i)
     {
@@ -250,8 +260,10 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     {
         this->online_mode = false;
     }
-    
+
+    mInputSlamFile.open("./results/slam_position.txt");
 }
+
 bool gps_msg_is_valid(const sensor_msgs::NavSatFix& gps)
 {
     if(gps.status.status>=0 && gps.position_covariance_type>=2)
@@ -266,11 +278,17 @@ bool gps_msg_is_valid(const sensor_msgs::NavSatFix& gps)
 
 void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::NavSatFix& GPS_msg)
 {
-    //禁用GPS:
+
     int enable_gps = this->fSettings["ENABLE_GPS"];
     if (enable_gps == 0) 
     {
         LOG(INFO)<<"GPS disabled in GlobalOptimizationGraph::addBlockGPS().CHECK CONFIG FILE."<<endl;
+        return;
+    }
+
+    if(slam_vertex_index==0)
+    {
+        LOG(WARNING) <<"In addBlockGPS():slam not ready,return."<<endl;
         return;
     }
 
@@ -281,18 +299,15 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
         LOG(INFO)<<"GPS msg check failed.Return."<<endl;
         return;
     }
-    if(slam_vertex_index==0)
+
+    if (last_gps_vertex_index< 0 && !gps_expand_ever_init)//初始化GPS.
     {
-       LOG(WARNING) <<"In addBlockGPS():slam not ready,return."<<endl;
-       return;
-    }
-    if (last_gps_vertex_index<0&&!gps_expand_ever_init)//初始化GPS.
-    {
-        GPS_coord.expandAt(GPS_msg.longitude,GPS_msg.latitude,GPS_msg.altitude); //这里已经初始化了altitude.
+        GPS_coord.expandAt(GPS_msg.longitude, GPS_msg.latitude, GPS_msg.altitude); //这里已经初始化了altitude.
         LOG(INFO)<<"Initializing GPS expand at:"<<GPS_msg.longitude<<","<<GPS_msg.latitude<<","<<GPS_msg.altitude<<endl;
         cout <<"Initializing GPS block in Optimization Graph!"<<endl;
         gps_expand_ever_init = true;
     }
+
 //    if(this->allow_gps_usage == false || this->gps_init_success == false||  !(this->status&0x01)  )//check if GPS valid.
 //    {
 //        cout<<"[WARNING] Unable to add GPS edge.GPS usage is forbidden in config file."<<endl;
@@ -304,21 +319,24 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
 //        return;
 //    }
     //新的方法.
-    bool add_match_success = this->p_gps_slam_matcher->addMatch(slam_vertex_index-1,msg_index);
+    bool add_match_success = this->p_gps_slam_matcher->addMatch(slam_vertex_index-1, msg_index);
     LOG(INFO)<<"Add match result:"<<add_match_success<<endl;
     bool inGPSLoopMode_out = false;
     int newestState = this->p_state_tranfer_manager->updateState(add_match_success,inGPSLoopMode_out);
+
     if(newestState == this->p_state_tranfer_manager->STATE_NO_GPS)
-    { // 无有效GPS信号.
+    { // no valid GPS received.
         LOG(INFO)<<"Running in addBlockGPS() branch newstate == STATE_NO_GPS"<<endl;
         return;
     }
+
     if(newestState == this->p_state_tranfer_manager->STATE_INITIALIZING)
     {
         //add relative_pos only.
         LOG(INFO)<<"Running in addBlockGPS() branch newstate == STATE_INITIALIZING"<<endl;
         return;//TODO:暂定.未来加入这种情况的绝对位置确定.
     }
+
     if (newestState == this->p_state_tranfer_manager->STATE_WITH_GPS)
     {
         LOG(INFO)<<"Running in addBlockGPS() branch newstate == STATE_WITH_GPS"<<endl;
@@ -412,16 +430,16 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             LOG(INFO)<<"Loop mode GPS insertion step<2> finished."<<endl;
             //this->p_isam->update();Values currentEstimate = p_isam->calculateBestEstimate();
 
-        }//GPS 环形约束形式结束.
+        }
         else
-        {//常规操作.
+        {   // normal operation.
             LOG(INFO)<<"addingGPSBlock():In ordinary mode."<<endl;
             double delta_lon = GPS_msg.longitude - GPS_coord.getLon();
             double delta_lat = GPS_msg.latitude - GPS_coord.getLat();
             double delta_alt = GPS_msg.altitude - GPS_coord.getAlt();
             bool init_yaw_valid_ = false;
             //double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);
-            //好像也是符号问题.
+
             double yaw_init_to_gps = this->p_state_tranfer_manager->getInitYawToWorldRad(init_yaw_valid_);
             LOG(INFO)<<"in addBlockGPS():  yaw_init_to_gps value:"<<yaw_init_to_gps<< "init_yaw_valid_:"<<init_yaw_valid_<<endl;
             LOG(INFO) <<"setting gps measurement!"<<endl;
@@ -552,19 +570,17 @@ double calcnorm(double x,double y)
     return sqrt(x*x+y*y);
 }
 
-
 const double dx_slam_var = 0.01;
 const double dy_slam_var = 0.01;
 
 const double vel_x_var = 0.05;
 const double vel_y_var = 0.05;
 
-
-
 void getDxDyFromSlamMsg(const geometry_msgs::PoseStamped& msg)
 {
     
 }
+
 void GlobalOptimizationGraph::addBlockBarometer(int msg_index)
 {
     auto msg = this->pBarometer_Buffer->at(msg_index);
@@ -632,16 +648,21 @@ void GlobalOptimizationGraph::addBlockBarometer(int msg_index)
     last_baro_vertex_index = slam_vertex_index-1;
 }
 
-void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs::PoseStamped& SLAM_msg)
+void GlobalOptimizationGraph::addBlockSLAM(int msg_index)
 //if use this api,only reserve the last one.
 //void GlobalOptimizationGraph::addBlockSLAM(std::vector<const geometry_msgs::PoseStamped&> SLAM_msg_list)
 //for multiple msgs.
 {
-    //两种策略：1.来slam消息就立即创建节点
-    //          2.等到gps信息到来再创建。
-    //这里我们选择第2种。
+    //two approaches：  1.create vertex when slam arrives
+    //                  2.create vertex when gps arrives。
+    //choose the second approach。
     LOG(INFO)<<"In addBlockSLAM(): adding slam msg at slam_vertex_index: "<<slam_vertex_index<<"."<<endl;
+    LOG(INFO)<<"msg_index: "<<msg_index<<"."<<endl;
     auto SLAM_msg = pSLAM_Buffer->at(msg_index);
+
+    //NOTE : for comparing results and debugging
+    mInputSlamFile << SLAM_msg.pose.position.x<<","<<SLAM_msg.pose.position.y<<","<<SLAM_msg.pose.position.z<<endl;
+
     //addGOGFrame(SLAM_msg.pose.position.x,SLAM_msg.pose.position.y);//create a new map 'vertexPR'
     {
         double r,p,y;
@@ -661,58 +682,43 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
 
     if (slam_vertex_index >0)
     {
-        initialEstimate.insert(Symbol('x',slam_vertex_index),Pose2(//initial guess of abs pos and yaw
-                                                   SLAM_msg.pose.position.x,SLAM_msg.pose.position.y,get_yaw_from_slam_msg(SLAM_msg)//this->yaw_rad_current_estimate //这里出了问题.
+        //initial guess of abs pos and yaw
+        initialEstimate.insert(Symbol('x',slam_vertex_index),
+                Pose2(SLAM_msg.pose.position.x,SLAM_msg.pose.position.y,get_yaw_from_slam_msg(SLAM_msg)//this->yaw_rad_current_estimate //这里出了问题.
 				)); //here we use basic_vertex_id to represent vehicle position vertex id
-        initialEstimate.insert(Symbol('h',slam_vertex_index),Point2(0,0));//initial guess of height:0.//TODO.
+
+        initialEstimate.insert(Symbol('h',slam_vertex_index), Point2(0,0));//initial guess of height:0.//TODO.
+
         //calc diff for index
         auto orient = SLAM_msg.pose.orientation;
         Eigen::Quaterniond q_;
-        q_.x() = orient.x;q_.y() = orient.y;q_.z() = orient.z;q_.w() = orient.w;
+        q_.x() = orient.x;
+        q_.y() = orient.y;
+        q_.z() = orient.z;
+        q_.w() = orient.w;
         const geometry_msgs::PoseStamped& slam_msg_old = this->pSLAM_Buffer->at(slam_vertex_index-1);
-        /*
-        Matrix3d R_SLAM_Mat = q_.toRotationMatrix();
-        double fx,fy;//reproject to xOy;
-        Vector3d vec_forward = R_SLAM_Mat*Vector3d(1,0,0);
-        fx = vec_forward[0];fy = vec_forward[1];
-        double diff_x,diff_y;
-        diff_x = fx*cos(yaw_init_to_slam) - fy*sin(yaw_init_to_slam);
-        diff_y = fy*cos(yaw_init_to_slam) + fx*sin(yaw_init_to_slam);
-        //for index-1
-        const geometry_msgs::PoseStamped& slam_msg_old = this->pSLAM_Buffer->at(slam_vertex_index-1);
-        orient = slam_msg_old.pose.orientation;
-        q_.x() = orient.x;q_.y() = orient.y;q_.z() = orient.z;q_.w() = orient.w;
-        R_SLAM_Mat = q_.toRotationMatrix();
-        vec_forward = R_SLAM_Mat*Vector3d(1,0,0);
-        fx = vec_forward[0];fy = vec_forward[1];
-        double oldx,oldy;
-        oldx = fx*cos(yaw_init_to_slam) - fy*sin(yaw_init_to_slam);
-        oldy = fy*cos(yaw_init_to_slam) + fx*sin(yaw_init_to_slam);
-        //minus
-        diff_x -= oldx;
-        diff_y -= oldy;
-*/
-        double diff_x,diff_y;
-        diff_x = SLAM_msg.pose.position.x - slam_msg_old.pose.position.x;
-        diff_y = SLAM_msg.pose.position.y - slam_msg_old.pose.position.y;
+
+        double diff_x = SLAM_msg.pose.position.x - slam_msg_old.pose.position.x;
+        double diff_y = SLAM_msg.pose.position.y - slam_msg_old.pose.position.y;
         double diff_height = SLAM_msg.pose.position.z - slam_msg_old.pose.position.z;
         double diff_yaw = (get_yaw_from_slam_msg(SLAM_msg) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(slam_vertex_index-1)));
-        //调调参数.
-        //noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(gtsam::Vector3(0.2,0.2,0.1));//for slam diff rotation and translation.
-
 
         double slam_xy_noise_m = this->fSettings["SLAM_RELATIVE_XY_VARIANCE_m"];
-        double slam_yaw_noise_deg = this->fSettings["SLAM_RELATIVE_YAW_VARIANCE_deg"];
         double slam_height_noise_m = this->fSettings["SLAM_RELATIVE_HEIGHT_VARIANCE_m"];
+        double slam_yaw_noise_deg = this->fSettings["SLAM_RELATIVE_YAW_VARIANCE_deg"];
 
-        noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(gtsam::Vector3(slam_xy_noise_m,slam_xy_noise_m,0.01744*slam_yaw_noise_deg));// recommended value:10mm/帧 0.01744 1.5度1帧.
-        noiseModel::Diagonal::shared_ptr model_relative_height_ = noiseModel::Diagonal::Sigmas(gtsam::Vector2(slam_height_noise_m,0));//1mm/帧,第二个没用.
+        //tune parameters
+        //noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(gtsam::Vector3(0.2,0.2,0.1));//for slam diff rotation and translation.
+        noiseModel::Diagonal::shared_ptr model_relative_movement = noiseModel::Diagonal::Sigmas(gtsam::Vector3(slam_xy_noise_m,slam_xy_noise_m,0.01744*slam_yaw_noise_deg));// recommended value:10mm/frame 0.01744 1.5deg/frame.
+        noiseModel::Diagonal::shared_ptr model_relative_height_ = noiseModel::Diagonal::Sigmas(gtsam::Vector2(slam_height_noise_m,0));//1mm/frame
         LOG(INFO)<<"SLAM relative noise setting xy(m):"<<slam_xy_noise_m<<",yaw(deg):"<<slam_yaw_noise_deg<<",height noise(m):"<<slam_height_noise_m<<endl;
-        //'x':xOy平面位置;'h':高度;'y':朝向角偏差.
-        graph.emplace_shared<BetweenFactor<Pose2> >(Symbol('x', slam_vertex_index-1),Symbol('x',slam_vertex_index),Pose2( diff_x,diff_y,diff_yaw),model_relative_movement);
-        graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',slam_vertex_index-1),Symbol('h',slam_vertex_index),Point2(diff_height,0.0),model_relative_height_);//高度,第二项随便填的
-        //graph.emplace_shared<BetweenFactor<Pose2> >(Symbol('x', slam_vertex_index),Symbol('x',slam_vertex_index-1),Pose2( diff_x,diff_y,diff_yaw),model_relative_movement);
-        //graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',slam_vertex_index),Symbol('h',slam_vertex_index-1),Point2(diff_height,0.0),model_relative_height_);//高度,第二项随便填的
+
+        //'x': xOy, horizontal position;
+        //'h': height;
+        //'y': yaw offset.
+        graph.emplace_shared<BetweenFactor<Pose2> >(Symbol('x', slam_vertex_index-1), Symbol('x',slam_vertex_index), Pose2( diff_x, diff_y, diff_yaw), model_relative_movement);
+        graph.emplace_shared<BetweenFactor<Point2> >(Symbol('h',slam_vertex_index-1), Symbol('h',slam_vertex_index), Point2(diff_height, 0.0), model_relative_height_);//the second parameter is picked arbitraly
+
         {//仅供实验:在没有GPS约束的时候,给一个很弱的绝对位置约束.
             int newestState = this->p_state_tranfer_manager->getCurrentState();
             if(newestState != this->p_state_tranfer_manager->STATE_WITH_GPS)
@@ -725,20 +731,21 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
                 graph.emplace_shared<PriorFactor<Point2> >(Symbol('h',slam_vertex_index),Point2(p__.z,0),priorNoise_Height);//高度初始化成0
             }
         }
-        //graph.emplace_shared<BetweenFactor<Rot2> >(Symbol('y',slam_vertex_index-1),Symbol('y',slam_vertex_index),....);//朝向角的偏移量.
+
+        //graph.emplace_shared<BetweenFactor<Rot2> >(Symbol('y',slam_vertex_index-1),Symbol('y',slam_vertex_index),....);// offset in heading
         slam_vertex_index++;
         if(online_mode)
         {
-            p_isam->update(graph,initialEstimate);
+            p_isam->update(graph, initialEstimate);
     
-            //FEJ实现:设置parameters.relinearizeSkip
-            //ISAM2Params params_; //在定義ISAM2例項的時候儲存引數的。
-    	//  parameters.relinearizeThreshold = 0.01;
-      	// parameters.relinearizeSkip = 1;
-    
+            // FEJ
+            // ISAM2Params params_;
+            // parameters.relinearizeThreshold = 0.01;
+            // parameters.relinearizeSkip = 1;
+
             Values currentEstimate = p_isam->calculateEstimate();//p_isam->estimate();
             int current_dof = 0;
-            double current_chi2 = chi2_red(graph,currentEstimate,current_dof);
+            double current_chi2 = chi2_red(graph,currentEstimate, current_dof);
             LOG(INFO)<<"[Optimizer INFO] Current dof and chi2:"<<current_dof<<","<<current_chi2<<endl;
             LOG(INFO)<<"current yaw_init_to_slam:"<<yaw_init_to_slam*180/3.14159<<" deg."<<endl;
             cout <<"last state:"<<endl;
@@ -748,11 +755,15 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
                            //dynamic_cast<Pose2> (currentEstimate.at(slam_vertex_index-1));
             LOG(INFO)<<"Current NODE ESTIMATED STATE at index:"<<slam_vertex_index-1<< " x:"<<p_obj->x()<<",y:"<<p_obj->y()<<",theta:"<<p_obj->theta()<<endl;
             LOG(INFO)<<"Current NODE ESTIMATED Position for visualizer:"<<p_obj->x()<<","<<p_obj->y()<<","<<p_obj->theta()*10<<endl;
-            currentEstimate.print("Current estimate: ");
-            //取出优化器里的量.
-            {//在新的作用域里搞,不动外面的东西.将来可以挪到新函数里去.
+
+            //currentEstimate.print("Current estimate: ");
+
+            LOG(INFO)<<"Online Mode!"<<endl;
+
+            // fetch values from optimizer
+            {
                 state_mutex.lock();
-                LOG(INFO)<<"Changing current_status output."<<endl;
+                LOG(WARNING)<<"Changing current_status output."<<endl;
                 //    bool state_correct = false;
                 //    Quaterniond ret_val_R;
                 //    Vector3d ret_val_t;
@@ -765,14 +776,14 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
                 const Pose2 current_pose2d = currentEstimate.at(Symbol('x',slam_vertex_index-1)).cast<Pose2>();
                 double new_yaw_rad = current_pose2d.theta();
                 this->yaw_rad_current_estimate = new_yaw_rad;
-                double newx,newy,newz,neww;
+                double newx, newy, newz, neww;
                 //LOG(WARNING)<<"CHANGING newxyzw for DEBUG QUAT ONLY!!!"<<endl;
                 //newx = Q__.x;newy=Q__.y;newz=Q__.z;neww=Q__.w;//Debug.
                 //尝试如果不改变xyzw,是否坐标系仍然不正常.
                 getNewQuaternionFromOriginalQuaternionAndNewYawAngle(Q__.x,Q__.y,Q__.z,Q__.w,new_yaw_rad,
                                                              newx,newy,newz,neww);
                 
-                current_status.ret_val_R.x() = newx;//生成一个.
+                current_status.ret_val_R.x() = newx;
                 current_status.ret_val_R.y() = newy;
                 current_status.ret_val_R.z() = newz;
                 current_status.ret_val_R.w() = neww;
@@ -783,12 +794,14 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
                 current_status.ret_val_t[2] = current_height.x();//y没用.
                 current_status.header_ = SLAM_msg.header;
                 current_status.innerID_of_GOG = this->slam_vertex_index-1;
+
                 //TODO:dump current_status to a log file.
                 LOG(INFO)<<"Current_status output changed!"<<endl;
+
                 state_mutex.unlock();
             }
-    
-    
+
+
             /*if(slam_vertex_index%1000 == 0)
             {
                 GaussNewtonParams parameters;
@@ -801,22 +814,22 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
                 Values result= optimizer.optimize();
             }*/
     
-            if(slam_vertex_index%300 == 0)
-            {
-                stringstream ss;
-                ss<<"Pose2SLAMExample_"<<slam_vertex_index/300<<".dot";
-                string path;
-                ss>>path;
-                ofstream os(path.c_str());
-                //graph.bayesTree().saveGraph(os, currentEstimate);
-                p_isam->saveGraph(path.c_str());
-                //导出g2o图文件.
-                stringstream ss_g2o;
-                ss_g2o<<"Pose2SLAMExample_"<<slam_vertex_index/300<<".g2o";
-                string g2o_path;
-                ss_g2o>>g2o_path;
-                writeG2o(graph,currentEstimate,g2o_path.c_str());
-            }
+//            if(slam_vertex_index%300 == 0)
+//            {
+//                stringstream ss;
+//                ss<<"Pose2SLAMExample_"<<slam_vertex_index/300<<".dot";
+//                string path;
+//                ss>>path;
+//                ofstream os(path.c_str());
+//                //graph.bayesTree().saveGraph(os, currentEstimate);
+//                p_isam->saveGraph(path.c_str());
+//                //导出g2o图文件.
+//                stringstream ss_g2o;
+//                ss_g2o<<"Pose2SLAMExample_"<<slam_vertex_index/300<<".g2o";
+//                string g2o_path;
+//                ss_g2o>>g2o_path;
+//                writeG2o(graph,currentEstimate,g2o_path.c_str());
+//            }
             graph.resize(0);
             initialEstimate.clear();
             cout<<"-------- ---------------------------------- --------"<<endl;
@@ -842,19 +855,19 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)//(const geometry_msgs:
                     Point2 var_h = offline_result.at(Symbol('h',i)).cast<Point2>();
                     LOG(INFO)<<"    [OFFLINE OPTIMIZED RESULT] node_id:"<<i<<";xyz:"<<var_x.x()<<","<<var_x.y()<<","<<var_h.x()<<";yaw:"<<var_x.theta()*180/3.1415926535<<" deg."<<endl;
                 }
-                offline_result.print("Final Result:\n");
-                stringstream ss; 
-                ss<<"Offline_"<<optimize_count<<".dot";
-                string path;
-                ss>>path;
-                ofstream os(path.c_str());
-                graph.saveGraph(os);
-                //导出g2o图文件.
-                stringstream ss_g2o;
-                ss_g2o<<"Offline_"<<optimize_count<<".g2o";
-                string g2o_path;
-                ss_g2o>>g2o_path;
-                writeG2o(graph,offline_result,g2o_path.c_str());
+//                offline_result.print("Final Result:\n");
+//                stringstream ss;
+//                ss<<"Offline_"<<optimize_count<<".dot";
+//                string path;
+//                ss>>path;
+//                ofstream os(path.c_str());
+//                graph.saveGraph(os);
+//                //导出g2o图文件.
+//                stringstream ss_g2o;
+//                ss_g2o<<"Offline_"<<optimize_count<<".g2o";
+//                string g2o_path;
+//                ss_g2o>>g2o_path;
+//                writeG2o(graph,offline_result,g2o_path.c_str());
             }
         }
     }

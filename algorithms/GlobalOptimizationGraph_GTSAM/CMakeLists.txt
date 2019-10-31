@@ -7,6 +7,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fpermissive")
 set( CMAKE_BUILD_TYPE "Debug" )
 #set(CMAKE_BUILD_TYPE "Release")
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(GTSAM REQUIRED)
 find_package(OpenCV 3.4.5 REQUIRED)
