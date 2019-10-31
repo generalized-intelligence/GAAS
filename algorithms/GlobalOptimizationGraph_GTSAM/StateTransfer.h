@@ -269,7 +269,7 @@ private:
     CallbackBufferBlock<geometry_msgs::PoseStamped>* pSLAM_buffer;
 };
 
-void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success,double& init_yaw,double& init_yaw_variance)
+void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success, double& init_yaw, double& init_yaw_variance)
 //用于尝试将State从INIT_GPS转移到WITH_GPS
 
 //init_success:输出参数,这次初始化是否成功.

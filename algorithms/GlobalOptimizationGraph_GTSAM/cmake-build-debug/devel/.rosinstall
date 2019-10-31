@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/shr/software/GAAS_master/GAAS/algorithms/GlobalOptimizationGraph_GTSAM/cmake-build-debug/devel/setup.sh

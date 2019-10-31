@@ -55,7 +55,12 @@ target_link_libraries(GlobalOptimizationGraph_main
 			${THIRD_PARTY_LIBS}
 )
 
-
+add_executable(test1 test.cpp)
+target_link_libraries(test1
+			ROS_IO_Manager
+			GlobalOptimizationGraph
+			${THIRD_PARTY_LIBS}
+)
 
 
 

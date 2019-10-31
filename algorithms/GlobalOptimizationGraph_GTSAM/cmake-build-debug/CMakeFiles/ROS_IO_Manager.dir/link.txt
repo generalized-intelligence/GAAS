@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -std=c++11 -fpermissive -g  -shared -Wl,-soname,libROS_IO_Manager.so -o ../lib/libROS_IO_Manager.so CMakeFiles/ROS_IO_Manager.dir/ROS_IO_Manager.cpp.o 

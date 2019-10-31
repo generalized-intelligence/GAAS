@@ -2,7 +2,7 @@
 
 
 
-void gps_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<sensor_msgs::NavSatFix>& nav_buffer,
+void gps_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<sensor_msgs::NavSatFix>& nav_buffer,
 		const boost::shared_ptr<sensor_msgs::NavSatFix const>& nav_msg)
 {
     LOG(INFO)<<"GPS pos info received!"<<endl;
@@ -18,7 +18,7 @@ void gps_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<sensor_msgs::Nav
     pRIM->_gps_pos_update = true;
 }
 
-void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::PoseStamped>& slam_buffer,
+void slam_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs::PoseStamped>& slam_buffer,
 		const boost::shared_ptr<geometry_msgs::PoseStamped const>& slam_msg)
 {
     LOG(INFO)<<"SLAM msg received!"<<endl;
@@ -82,6 +82,7 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     new_msg = *slam_msg;
     new_msg.pose.position.x = xyz[0];
     new_msg.pose.position.y = xyz[1];
+
     if(pRIM->invert_slam_z)
     {
         new_msg.pose.position.z = -1*xyz[2];
@@ -90,9 +91,10 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM,CallbackBufferBlock<geometry_msgs::
     {
         new_msg.pose.position.z = xyz[2];
     }
-    LOG(WARNING)<<"z invert only should be used for YGZ."<<endl;
 
+    LOG(WARNING)<<"z invert only should be used for YGZ."<<endl;
     LOG(INFO)<<"Original SLAM xyz:"<<xyz[0]<<","<<xyz[1]<<","<<xyz[2]<<endl;
+
     Quaterniond rot_2(rotation);
     new_msg.pose.orientation.x = rot_2.x();
     new_msg.pose.orientation.y = rot_2.y();

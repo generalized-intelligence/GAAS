@@ -59,19 +59,14 @@ private:
     std::deque<T> msgBuffer;
     //const int buffer_size = 100;
 };
+
 template <typename T>
 void CallbackBufferBlock<T>::onCallbackBlock(const T& msg)
 {
-    //access: .front(),.back().
-    //push_front,push_back();
-    //pop_front,pop_back();
-    //at(),operator []
-    this->msgBuffer.push_back(msg); //msgBuffer.front() oldest.msgBuffer.end() latest.
-    //if (this->msgBuffer.size()>=this->buffer_size)
-    //{
-    //    this->msgBuffer.pop_back();
-    //}
+
+    this->msgBuffer.push_back(msg);
 }
+
 template <typename T>
 double CallbackBufferBlock<T>::queryLastMessageTime()
 {
@@ -79,6 +74,7 @@ double CallbackBufferBlock<T>::queryLastMessageTime()
     cout<<"MessageTime:"<<ret_time<<endl;
     return ret_time;
 }
+
 template <typename T>
 T CallbackBufferBlock<T>::getLastMessage()
 {
