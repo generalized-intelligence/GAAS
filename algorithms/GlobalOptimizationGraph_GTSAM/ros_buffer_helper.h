@@ -23,6 +23,7 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs:
 {
     LOG(INFO)<<"SLAM msg received!"<<endl;
     bool locked = pRIM->slam_buf_mutex.try_lock();
+
     if(!locked)
     {
         return;
@@ -32,9 +33,12 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs:
         cout<<"waiting for gog init.pass this msg."<<endl;
         return;
     }
+
     cout<<"SLAM message received!"<<endl;
     bool state = ( pRIM->getGraph()->getStatus() & 1 );
     cout<<"Is running with gps:"<<state<<endl;
+
+    //------------------------ for visualization ------------------
     visualization_msgs::Marker slam_marker;
     slam_marker.header.frame_id = "world";
     slam_marker.header.stamp = ros::Time::now();
@@ -56,6 +60,8 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs:
     slam_marker.color.b = 1;
     slam_marker.color.a = 1;
     pRIM->publish_slam_marker(slam_marker);
+    //---------------------- for visualization end ------------------
+
     pRIM->_slam_msg_update = true;
     Quaterniond rot_origin;
 
@@ -82,7 +88,6 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs:
     new_msg = *slam_msg;
     new_msg.pose.position.x = xyz[0];
     new_msg.pose.position.y = xyz[1];
-
     if(pRIM->invert_slam_z)
     {
         new_msg.pose.position.z = -1*xyz[2];
@@ -100,7 +105,17 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs:
     new_msg.pose.orientation.y = rot_2.y();
     new_msg.pose.orientation.z = rot_2.z();
     new_msg.pose.orientation.w = rot_2.w();
-    //cout <<pRIM->SLAM_ROTATION_EIGEN<<endl;
+
+    // use optical frame ?
+//    geometry_msgs::PoseStamped new_msg;
+//    new_msg.pose.position.x = slam_msg->pose.position.x;
+//    new_msg.pose.position.y = slam_msg->pose.position.y;
+//    new_msg.pose.position.z = slam_msg->pose.position.z;
+//    new_msg.pose.orientation.x = slam_msg->pose.orientation.x;
+//    new_msg.pose.orientation.y = slam_msg->pose.orientation.y;
+//    new_msg.pose.orientation.z = slam_msg->pose.orientation.z;
+//    new_msg.pose.orientation.w = slam_msg->pose.orientation.w;
+
     slam_buffer.onCallbackBlock(new_msg);
 }
 

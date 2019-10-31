@@ -59,46 +59,54 @@ double euc_dist(double x,double y)
 {
     return sqrt(x*x+y*y);
 }
+
 class GPS_SLAM_MATCHER
 {
+
 public:
+
     GPS_SLAM_MATCHER(CallbackBufferBlock<geometry_msgs::PoseStamped>* pslam_buffer,CallbackBufferBlock<sensor_msgs::NavSatFix>* pgps_pos_buffer,cv::FileStorage* pSettings)
     {
         this->pgps_pos_buf = pgps_pos_buffer;
         this->pslam_buf = pslam_buffer;
         this->pSettings = pSettings;
     }
+
     inline int matchLen()
     {
         return match_vec.size();
     }
+
     slam_gps_match queryMatchByIndex(int index)
     {
         return this->match_vec[index];
     }
-    bool addMatch(int slam_index,int gps_index)//加入一组匹配。
-    {//校验时间误差和gps_covariance.
+
+    // add one pair of matched index
+    bool addMatch(int slam_index,int gps_index)
+    {
         double slam_gps_delay_thres = (*pSettings)["SLAM_GPS_DELAY_THRESHOLD"];
         double gps_pos_thres_m = (*pSettings)["GPS_POS_THRES_m"];
-        if (
-            //abs(pslam_buf->at(slam_index).header.stamp.toSec()-pgps_pos_buf->at(gps_index).header.stamp.toSec() )<slam_gps_delay_thres
-         //&& 
-             calc_gps_covariance(pgps_pos_buf->at(gps_index) )< gps_pos_thres_m
-           )
+
+        if (calc_gps_covariance(pgps_pos_buf->at(gps_index) )< gps_pos_thres_m)
         {
-            this->match_vec.push_back(slam_gps_match(slam_index,gps_index));
+            this->match_vec.push_back(slam_gps_match(slam_index, gps_index));
             return true;
         }
-        if(!abs(pslam_buf->at(slam_index).header.stamp.toSec()-pgps_pos_buf->at(gps_index).header.stamp.toSec() )<    slam_gps_delay_thres)
+
+        if(!abs(pslam_buf->at(slam_index).header.stamp.toSec()-pgps_pos_buf->at(gps_index).header.stamp.toSec() ) < slam_gps_delay_thres)
         {
             LOG(WARNING)<<"gps slam delay >thres!Delay:"<<abs(pslam_buf->at(slam_index).header.stamp.toSec() - pgps_pos_buf->at(gps_index).header.stamp.toSec() )<<endl;
         }
+
         if(calc_gps_covariance(pgps_pos_buf->at(gps_index) )>= gps_pos_thres_m)
         {
             LOG(WARNING)<<"gps variance > thres.variance:"<< calc_gps_covariance(pgps_pos_buf->at(gps_index) )<<endl;
         }
+
         return false;
     }
+
     //需要选择一种策略。
     void check2IndexAndCalcDeltaDeg(int matchindex1,int matchindex2,GPSExpand& GPS_coord,bool& valid,double& delta_deg,double& deg_variance)
     {

@@ -60,7 +60,7 @@ SLAM_RT_TRANS_MAT: !!opencv-matrix
     cols: 3
     dt: d
     data: [0,1,0,0,0,1,1,0,0]
-INVERT_SLAM_Z: 1
+INVERT_SLAM_Z: 0
 
 
 

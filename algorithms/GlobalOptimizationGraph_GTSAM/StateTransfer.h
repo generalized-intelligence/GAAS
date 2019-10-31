@@ -96,9 +96,10 @@ public:
         return currentState;
     }
 
-    int updateState(bool gps_valid,bool& gpsLoopMode_output)//GPS_Valid只检验GPS和SLAM时间戳 以及gps covariance合格与否
+    //GPS_Valid只检验GPS和SLAM时间戳 以及gps covariance合格与否
     //返回新状态,以及在gpsLoopMode_output中给出这次是否应该以回环形式处理.
-    {//读取里面GPS消息的状态.
+    int updateState(bool gps_valid, bool& gpsLoopMode_output)
+    {   //读取里面GPS消息的状态.
         //TODO:set this->newestVariance 以提供查询.
         gpsLoopMode_output = false;
         if(this->currentState==STATE_WITH_GPS)
@@ -163,6 +164,7 @@ public:
                 segment_yaw_calib_beginning_id.push_back(pgps_slam_matcher->matchLen()-1);
             }
         }
+
         return this->currentState;
     }
 

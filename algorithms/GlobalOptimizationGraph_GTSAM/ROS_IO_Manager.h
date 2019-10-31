@@ -198,12 +198,12 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
     boost::function<void(const boost::shared_ptr<sensor_msgs::FluidPressure const>&
                    )> barometer_callback( boost::bind(&barometer_buffer_helper,this,boost::ref(this->Barometer_buffer),_1));
 
-    AHRS_sub = pNH->subscribe("/mavros/local_position/odom", 10, ahrs_callback); // not implemented
-    GPS_sub = pNH->subscribe("/1mavros/global_position/raw/fix", 10,gps_callback);
+    AHRS_sub = pNH->subscribe("/mavros/local_position/odom", 10, ahrs_callback);
+    GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix", 10,gps_callback);
     SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid", 10, slam_callback);
     //SLAM_sub = pNH->subscribe("/mavros/vision_pose/pose", 10, slam_callback);
-    Velocity_sub = pNH->subscribe("/mavros/global_position/raw/gps_vel", 10, velocity_callback); // not implemented
-    Barometer_sub = pNH->subscribe("/mavros/imu/static_pressure", 10, barometer_callback); // callback not implemented
+    Velocity_sub = pNH->subscribe("/mavros/global_position/raw/gps_vel", 10, velocity_callback);
+    Barometer_sub = pNH->subscribe("/mavros/imu/static_pressure", 10, barometer_callback);
 
     cout <<"callback function binding finished!"<<endl;
 
