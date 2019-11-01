@@ -11,7 +11,7 @@ void gps_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<sensor_msgs::Na
     {
         return;
     }
-    cout<<"GPS message received!"<<endl;
+
     nav_msg->header.stamp = ros::Time::now();
 
     nav_buffer.onCallbackBlock(*nav_msg);

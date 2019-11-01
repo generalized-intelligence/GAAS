@@ -14,8 +14,6 @@
 #include <message_filters/sync_policies/approximate_time.h>
 #include <ros/duration.h>
 
-
-//#include "uNavAHRS.h"
 #include <memory>
 #include <opencv2/core/persistence.hpp>
 #include <opencv2/core/eigen.hpp>
@@ -137,11 +135,15 @@ private:
     CallbackBufferBlock<sensor_msgs::FluidPressure> Barometer_buffer;
     ros::Subscriber Barometer_sub;
 
+    void gt_callback(const nav_msgs::Odometry& msg);
+    ros::Subscriber GroundTruth_sub;
+
     shared_ptr<GlobalOptimizationGraph> pGraph = nullptr;
     shared_ptr<cv::FileStorage> pSettings;
 
     ros::Publisher attitude_ahrs;
     ros::Publisher attitude_slam;
+    ros::Publisher gog_odometry;
     ros::Publisher state_string_publisher;
     int attitude_marker_id = 0;
     //CallbackBufferBlock<xxx_msgs::SceneRetrieveInfo> SceneRetrieve_Buffer;
@@ -181,6 +183,7 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
 
     attitude_ahrs = this->pNH->advertise<visualization_msgs::Marker>("attitude_ahrs",1);
     attitude_slam = this->pNH->advertise<visualization_msgs::Marker>("attitude_slam",1);
+    gog_odometry = this->pNH->advertise<nav_msgs::Odometry>("/gaas/gog_out/odometry",1);
     state_string_publisher = this->pNH->advertise<roseus::StringStamped>("/gaas/global_optimization_graph/state",1);
 
     boost::function<void(const boost::shared_ptr<nav_msgs::Odometry const>&
@@ -199,11 +202,13 @@ ROS_IO_Manager::ROS_IO_Manager(int argc,char** argv)
                    )> barometer_callback( boost::bind(&barometer_buffer_helper,this,boost::ref(this->Barometer_buffer),_1));
 
     AHRS_sub = pNH->subscribe("/mavros/local_position/odom", 10, ahrs_callback);
-    GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix", 10,gps_callback);
+    GPS_sub = pNH->subscribe("/mavros/global_position/raw/fix", 10, gps_callback);
     SLAM_sub = pNH->subscribe("/SLAM/pose_for_obs_avoid", 10, slam_callback);
     //SLAM_sub = pNH->subscribe("/mavros/vision_pose/pose", 10, slam_callback);
     Velocity_sub = pNH->subscribe("/mavros/global_position/raw/gps_vel", 10, velocity_callback);
     Barometer_sub = pNH->subscribe("/mavros/imu/static_pressure", 10, barometer_callback);
+
+    //GroundTruth_sub = pNH->subscribe<nav_msgs::Odometry>("/gi/ground_truth/state", 10, &ROS_IO_Manager::gt_callback, this);
 
     cout <<"callback function binding finished!"<<endl;
 
@@ -268,6 +273,11 @@ void ROS_IO_Manager::SLAM_callback(const geometry_msgs::PoseStamped& SLAM_msg)
     this->SLAM_buffer.onCallbackBlock(SLAM_msg);
 }
 
+void ROS_IO_Manager::gt_callback(const nav_msgs::Odometry& msg)
+{
+    //not implemented.
+}
+
 bool ROS_IO_Manager::publishAll()
 {
     auto info = this->pGraph->queryCurrentFullStatus(); // TODO: query the latest information
@@ -296,6 +306,18 @@ bool ROS_IO_Manager::publishAll()
 
         //NOTE for comparing results and debugging
         mOutputPositionFile << info.ret_val_t[0]<<","<<info.ret_val_t[1]<<","<<info.ret_val_t[2]<<endl;
+
+        nav_msgs::Odometry gog_result;
+        gog_result.header = info.header_;
+        gog_result.header.frame_id = "map";
+        gog_result.pose.pose.position.x = info.ret_val_t[0];
+        gog_result.pose.pose.position.y = info.ret_val_t[1];
+        gog_result.pose.pose.position.z = info.ret_val_t[2];
+        gog_result.pose.pose.orientation.w = info.ret_val_R.w();
+        gog_result.pose.pose.orientation.x = info.ret_val_R.x();
+        gog_result.pose.pose.orientation.y = info.ret_val_R.y();
+        gog_result.pose.pose.orientation.z = info.ret_val_R.z();
+        gog_odometry.publish(gog_result);
     }
     else
     {
