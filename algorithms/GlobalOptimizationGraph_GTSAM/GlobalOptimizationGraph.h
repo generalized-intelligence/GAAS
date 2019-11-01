@@ -465,7 +465,7 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
 
             Vector3d gps_measurement_vec3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),
                                            delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),
-                                            delta_alt);
+                                           delta_alt);
 
             bool covariance_valid = (GPS_msg.position_covariance_type >=2);
             double dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) - gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //project to gog coordinate.
@@ -485,8 +485,13 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
 //                return;
 //            }
 
+            //for debug
+//            noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
+//            graph.add(GPSPose2Factor(Symbol('x', slam_vertex_index-1), Point2(dx, dy), gpsModel));
+//            noiseModel::Diagonal::shared_ptr gps_altitude_model = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[8], 0.0));//2nd parameter is not used, picked arbitrarily
+//            graph.add(GPSAltitudeFactor(Symbol('h',slam_vertex_index-1), Point2(dh,0.0), gps_altitude_model)); //GPS height relative change
             noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
-            graph.add(GPSPose2Factor(Symbol('x', slam_vertex_index-1), Point2(dx, dy), gpsModel));
+            graph.add(GPSPose2Factor(Symbol('x', slam_vertex_index-1), Point2(dy, dx), gpsModel));
             noiseModel::Diagonal::shared_ptr gps_altitude_model = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[8], 0.0));//2nd parameter is not used, picked arbitrarily
             graph.add(GPSAltitudeFactor(Symbol('h',slam_vertex_index-1), Point2(dh,0.0), gps_altitude_model)); //GPS height relative change
 
@@ -495,8 +500,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
 //            noiseModel::Diagonal::shared_ptr model_yaw_fix = noiseModel::Diagonal::Sigmas(gtsam::Vector3(GPS_msg.position_covariance[0],
 //                                                                                                         GPS_msg.position_covariance[4],
 //                                                                                                         0.01744*loop_variance_deg));
-            noiseModel::Diagonal::shared_ptr model_yaw_fix = noiseModel::Diagonal::Sigmas(gtsam::Vector3(GPS_msg.position_covariance[0] / 20,
-                                                                                                         GPS_msg.position_covariance[4] / 20,
+            noiseModel::Diagonal::shared_ptr model_yaw_fix = noiseModel::Diagonal::Sigmas(gtsam::Vector3(GPS_msg.position_covariance[0] / 10.0,
+                                                                                                         GPS_msg.position_covariance[4] / 10.0,
                                                                                                          0.01744*loop_variance_deg));
 
             double yaw_slam_diff = get_yaw_from_slam_msg(pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(this->p_gps_slam_matcher->at(0).slam_index));
@@ -767,7 +772,17 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)
         slam_vertex_index++;
         if(online_mode)
         {
-            p_isam->update(graph, initialEstimate);
+
+            // TODO: properly handle underconstrained problem
+            try {
+                p_isam->update(graph, initialEstimate);
+            }
+            catch (gtsam::IndeterminantLinearSystemException){
+                LOG(ERROR)<<"gtsam::IndeterminantLinearSystemException encountered!"<<endl;
+                graph.resize(0);
+                initialEstimate.clear();
+                return;
+            }
     
             // FEJ
             // ISAM2Params params_;

@@ -1,6 +1,5 @@
 
-
-
+const double INF = 1e10;
 
 void gps_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<sensor_msgs::NavSatFix>& nav_buffer,
 		const boost::shared_ptr<sensor_msgs::NavSatFix const>& nav_msg)
@@ -21,6 +20,12 @@ void gps_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<sensor_msgs::Na
 void slam_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs::PoseStamped>& slam_buffer,
 		const boost::shared_ptr<geometry_msgs::PoseStamped const>& slam_msg)
 {
+
+    if(slam_msg->pose.position.x > INF || slam_msg->pose.position.y > INF || slam_msg->pose.position.z > INF)
+    {
+        return;
+    }
+
     LOG(INFO)<<"SLAM msg received!"<<endl;
     bool locked = pRIM->slam_buf_mutex.try_lock();
 
@@ -105,16 +110,6 @@ void slam_buffer_helper(ROS_IO_Manager* pRIM, CallbackBufferBlock<geometry_msgs:
     new_msg.pose.orientation.y = rot_2.y();
     new_msg.pose.orientation.z = rot_2.z();
     new_msg.pose.orientation.w = rot_2.w();
-
-    // use optical frame ?
-//    geometry_msgs::PoseStamped new_msg;
-//    new_msg.pose.position.x = slam_msg->pose.position.x;
-//    new_msg.pose.position.y = slam_msg->pose.position.y;
-//    new_msg.pose.position.z = slam_msg->pose.position.z;
-//    new_msg.pose.orientation.x = slam_msg->pose.orientation.x;
-//    new_msg.pose.orientation.y = slam_msg->pose.orientation.y;
-//    new_msg.pose.orientation.z = slam_msg->pose.orientation.z;
-//    new_msg.pose.orientation.w = slam_msg->pose.orientation.w;
 
     slam_buffer.onCallbackBlock(new_msg);
 }
