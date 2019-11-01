@@ -37,6 +37,7 @@ public:
     }
     virtual cv::Mat getCamMat()
     {
+        LOG(INFO)<<"in base cam class getCamMat()"<<std::endl;
         return (this->camera_mat);
     }   
     virtual cv::Mat getRTMat()

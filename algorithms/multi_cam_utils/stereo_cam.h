@@ -3,7 +3,7 @@
 
 #include "cam_info.h"
 #include <iostream>
-class StereoCamConfig:CamInfo
+class StereoCamConfig:public CamInfo
 {
 public:
     virtual bool isStereo()
@@ -27,6 +27,7 @@ public:
     }
     virtual cv::Mat getCamMat()
     {
+        LOG(INFO)<<"in stereo cam getCamMat()"<<std::endl;
         return (this->camera1_mat);
     }
     virtual cv::Mat getRTMat()

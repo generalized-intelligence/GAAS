@@ -53,32 +53,51 @@ namespace mcs
         {
             LOG(ERROR)<<"In null construction function of Frame()! Nothing will be done."<<endl;
         }
-        Frame(vector<StereoMatPtrPair> pLRImgs);
+        Frame(shared_ptr<vector<StereoMatPtrPair> > pLRImgs)
+        {
+            this->pLRImgs = pLRImgs;
+        }
         Frame(vector<shared_ptr<cvMat_T> > pOriginalImgs,vector<shared_ptr<cv::Mat>>pDepthImgs);
     
         vector<vector<p2dT> > p2d_vv;
         vector<vector<p3dT> > p3d_vv;
         vector<CamInfo> cam_info_vec;
+        vector<StereoCamConfig> cam_info_stereo_vec;
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;
         vector<shared_ptr<MapPoint> > fetchMapPoints();
+
+        shared_ptr<vector<StereoMatPtrPair> > pLRImgs;
+        shared_ptr<vector<shared_ptr<cvMat_T> > > pOriginalImgs,pDepthImgs;
+        vector<map<int,int> > map2d_to_3d_pt_vec;
+        vector<map<int,int> > map3d_to_2d_pt_vec;
+        IMU_Data_T imu_info_vec;
+        int frame_type;
+
+
+        vector<CamInfo> get_cam_info()
+        {
+            return cam_info_vec;
+        }
+        vector<StereoCamConfig> get_stereo_cam_info()
+        {
+            return cam_info_stereo_vec;
+        }
         void removeOriginalImages()
         {
             this->pLRImgs = shared_ptr<vector<StereoMatPtrPair> >(nullptr);
             this->pOriginalImgs = shared_ptr<vector<shared_ptr<cvMat_T> > >(nullptr);
         }
-        shared_ptr<vector<StereoMatPtrPair> > pLRImgs;
-        shared_ptr<vector<shared_ptr<cvMat_T> > > pOriginalImgs,pDepthImgs;
-        IMU_Data_T imu_info_vec;
         vector<shared_ptr<cvMat_T> > getMainImages()//for stereo frame: main images is the left ones of each pair;
                                                     //for depth frame: main images is the main rgb/grayscale cam.
         {
             if(this->frame_type == FRAME_TYPE_STEREO)
             {
                 vector<shared_ptr<cvMat_T> > ret_vec;
-                for(auto u:(*pLRImgs))
+                for(int i = 0;i<this->pLRImgs->size();i++)
                 {
-                    ret_vec.push_back(std::get<0>(u));
+                    ret_vec.push_back(std::get<0>((*pLRImgs)[i]));
                 }
+                LOG(INFO)<<"in getMainImages() ret_vec.size():"<<ret_vec.size()<<endl;
                 return ret_vec;
             }
             else
@@ -86,8 +105,7 @@ namespace mcs
                 LOG(ERROR)<<"not implemented yet."<<endl;
             }
         }
-    
-        int frame_type;
+
     };
 
 }

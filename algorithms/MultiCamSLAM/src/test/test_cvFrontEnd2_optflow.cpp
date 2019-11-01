@@ -32,7 +32,9 @@ int main(int argc,char** argv)
     vector<cv::Point2f> kp_output_tracked;
     vector<unsigned char> kp_output_track_success;
     bool optflow_tracking_success;
-    mcs::OptFlowForFrameWiseTracking(*prev_img,*next_img,pPWFT->kps,kp_original_tracked,kp_output_tracked,kp_output_track_success,optflow_tracking_success);
+    map<int,int> tracked_to_original_map;
+    mcs::OptFlowForFrameWiseTracking(*prev_img,*next_img,pPWFT->kps,kp_original_tracked,
+                                         kp_output_tracked,tracked_to_original_map,kp_output_track_success,optflow_tracking_success);
 
     t_2 = std::chrono::steady_clock::now();
 

@@ -32,30 +32,34 @@ int main(int argc,char** argv)
     }
     //test1.
     //shared_ptr<PointWithFeatureT>
-    std::chrono::time_point<std::chrono::steady_clock> t_start,t_start2,t_start3,t_1,t_2,t_3;
-    t_start = std::chrono::steady_clock::now();
+    //std::chrono::time_point<std::chrono::steady_clock> t_start,t_start2,t_start3,t_1,t_2,t_3;
+    //t_start = std::chrono::steady_clock::now();
+    ScopeTimer t1("keyFrame generation timer");
     shared_ptr<mcs::PointWithFeatureT> pPWFT = mcs::extractCamKeyPoints(*pimg_1,mcs::KEYPOINT_METHOD_GFTT,false);
-    t_1 = std::chrono::steady_clock::now();
-    auto cost = duration_cast<std::chrono::duration<double> >(t_1 - t_start);
-    LOG(INFO)<<"Extract 1 time cost:"<<cost.count()*1000<<"ms."<<endl;
+    t1.watch("Extract 1 time cost:");
 
-    t_start2 = std::chrono::steady_clock::now();
+    ScopeTimer t2("single thread 8 imgs extract");
     vector<shared_ptr<mcs::PointWithFeatureT> > vres1 = mcs::extractMultipleCamKeyPoints(v);
-    t_2 = std::chrono::steady_clock::now();
-    auto cost2 = duration_cast<std::chrono::duration<double> >(t_2 - t_start2);
-    LOG(INFO)<<"Extract 2 time cost:"<<cost2.count()*1000<<"ms."<<endl;
+    t2.watch("Extract 2 time cost:");
 
-    t_start3 = std::chrono::steady_clock::now();
+    ScopeTimer t3("multithread 8 img time cost:");
     vector<shared_ptr<mcs::PointWithFeatureT> > vres2 = mcs::extractMultipleCamKeyPointsMultiThread(v);
-    t_3 = std::chrono::steady_clock::now();
-    auto cost3 = duration_cast<std::chrono::duration<double> >(t_3 - t_start3);
-    LOG(INFO)<<"Extract 3 (mutlithread) time cost:"<<cost3.count()*1000<<"ms."<<endl;
+    t3.watch("Extract 3 (mutlithread) time cost:");
+    //LOG(INFO)<<"Extract 3 (mutlithread) time cost:"<<cost3.count()*1000<<"ms."<<endl;
+    ScopeTimer t4("single thread 1 img with orb descriptors:");
+    mcs::extractCamKeyPoints(*pimg_1,mcs::KEYPOINT_METHOD_GFTT,true);
+    t4.watch("with orb descriptor time cost:");
+
+    ScopeTimer t5("multithread 8 img gftt kps and orb descriptors:");
+    mcs::extractMultipleCamKeyPointsMultiThread(v,mcs::KEYPOINT_METHOD_GFTT,true);
+    t5.watch("multithread with orb feat time cost:");
  
     LOG(INFO)<<"Extract finished!"<<endl;
     //cv::Mat vis0;
     cv::Mat vis1,vis2,vis3;
     cv::Mat colored;
-    cv::cvtColor(*pimg_1,colored,cv::COLOR_GRAY2BGR);
+    //cv::cvtColor(*pimg_1,colored,cv::COLOR_GRAY2BGR);
+    colored = *pimg_1;
     cv::drawKeypoints (colored,pPWFT->kps, vis1);
     cv::drawKeypoints (colored,vres1[0]->kps,vis2);
     cv::drawKeypoints (colored,vres2[0]->kps,vis3);

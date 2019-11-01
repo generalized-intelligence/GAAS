@@ -78,7 +78,8 @@ namespace mcs
         }
         else
         {
-            pfeat->detectAndCompute(Img,mask,pResult->kps,pResult->desp);
+            pfeat->detect(Img,pResult->kps,mask);
+            orb->compute(Img,pResult->kps,pResult->desp);// calc orb feat.
         }
         return pResult;
     }
@@ -157,9 +158,10 @@ namespace mcs
     void OptFlowForFrameWiseTracking(vector<shared_ptr<cvMat_T> > prev_imgs,vector<shared_ptr<cvMat_T> > next_imgs,vector<vector<KeyPoint> >& priorior_kps_vec,vector<vector<KeyPoint> >& output_kps_vec,vector<vector<unsigned char> >& v_track_success_vec,vector<bool&> output_track_success_vec);
 
     */
-    void OptFlowForFrameWiseTracking(cvMat_T& prev_img,cvMat_T& next_img,vector<KeyPoint>& priorior_kps,vector<Point2f>& output_original_p2f, vector<Point2f>& output_tracked_p2f,vector<unsigned char>& v_track_success,bool& output_track_success)
+    void OptFlowForFrameWiseTracking(cvMat_T& prev_img,cvMat_T& next_img,vector<KeyPoint>& priorior_kps,vector<Point2f>& output_original_p2f, vector<Point2f>& output_tracked_p2f,map<int,int>& tracked_point_index_to_prev_kps_index,vector<unsigned char>& v_track_success,bool& output_track_success)
     {
         output_track_success = false;
+        tracked_point_index_to_prev_kps_index.clear();
         vector<float> err;
         vector<Point2f>& origin_pts_success = output_original_p2f;
         vector<Point2f>& tracked_pts_success = output_tracked_p2f;
@@ -173,6 +175,7 @@ namespace mcs
         {
             if(v_track_success[i])
             {
+                tracked_point_index_to_prev_kps_index[i] = origin_pts_success.size();
                 origin_pts_success.push_back(origin_p2f[i]);
                 tracked_pts_success.push_back(tracked_p2f[i]);
             }
@@ -186,6 +189,10 @@ namespace mcs
             {
                 goodMatches_count += 1;
             }
+            else
+            {
+                tracked_point_index_to_prev_kps_index[i] = -1;
+            }
         }
         LOG(INFO)<<"Good match count/Total match count:"<<goodMatches_count<<"/"<<match_success.size()<<", Fundamental Mat:\n"<<fundMat<<endl;
         if(goodMatches_count>=10)
@@ -195,6 +202,9 @@ namespace mcs
         }
     }
 
+
+
+    //---------
 
     inline bool check_stereo_match(Point2f& p1,Point2f& p2)
     {
@@ -209,7 +219,7 @@ namespace mcs
             return true;
         }
     }
-    void createStereoMatchViaOptFlowMatching(cvMat_T& l,cvMat_T& r,StereoCamConfig& cam_info,shared_ptr<vector<p2dT> >& p2d_output,shared_ptr<vector<p3dT> >& p3d_output,bool& output_create_success)//for this is a multi-thread usage function, we let it return void.
+    void createStereoMatchViaOptFlowMatching(cvMat_T& l,cvMat_T& r,StereoCamConfig& cam_info,vector<p2dT>& p2d_output,vector<p3dT>& p3d_output,map<int,int>& map_2d_to_3d_pts,map<int,int>& map_3d_to_2d_pts,bool& output_create_success)//for this is a multi-thread usage function, we let it return void.
     {
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:extracting features."<<endl;
         shared_ptr<mcs::PointWithFeatureT> pPWFT_l_img = mcs::extractCamKeyPoints(l,mcs::KEYPOINT_METHOD_GFTT,false);
@@ -224,17 +234,16 @@ namespace mcs
                                  cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01)
                                  );
          
-        p2d_output = shared_ptr<vector<p2dT> >(new vector<p2dT>);
-        p3d_output = shared_ptr<vector<p3dT> >(new vector<p3dT>);
-        vector<Point2f>& checked_l = *p2d_output;
+        //p2d_output = shared_ptr<vector<p2dT> >(new vector<p2dT>);
+        //p3d_output = shared_ptr<vector<p3dT> >(new vector<p3dT>);
+        vector<Point2f>& checked_l = p2d_output;
         vector<Point2f> checked_r;
         LOG(INFO)<<"checking vtrack_success"<<endl;
         for(int i = 0;i<v_track_success.size();i++)
         {
-            if(v_track_success[i] && check_stereo_match(l_p2fs_original[i],tracked_unchecked[i]))// check v.diff(v) shall be smaller than 2
+            if(v_track_success[i] && check_stereo_match(l_p2fs_original[i],tracked_unchecked[i]))// check v.diff(v) shall be smaller than 4
             {
                 //LOG(INFO)<<"track success,dealing with 3d reconstruction."<<endl;
-
                 checked_l.push_back(l_p2fs_original[i]);
                 checked_r.push_back(tracked_unchecked[i]);
                 float disparity = tracked_unchecked[i].x - l_p2fs_original[i].x;
@@ -259,7 +268,9 @@ namespace mcs
                 x = matp1.at<float>(0,0);
                 y = matp1.at<float>(1,0);
                 z = matp1.at<float>(2,0);
-                p3d_output->push_back(Point3f(x,y,z));
+                map_2d_to_3d_pts[i] = p3d_output.size();
+                map_3d_to_2d_pts[p3d_output.size()] = i;
+                p3d_output.push_back(Point3f(x,y,z));
             }
         }
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:points matched success num:"<<checked_l.size()<<endl;
@@ -276,18 +287,29 @@ namespace mcs
     {
 
         //method<1> single thread.
-        shared_ptr<Frame> pF_ret(new Frame);
+        shared_ptr<Frame> pF_ret(new Frame(stereo_pair_imgs_vec));
+        pF_ret->frame_type = FRAME_TYPE_STEREO;
+        pF_ret->cam_info_stereo_vec = cam_distribution_info_vec;
+        pF_ret->p2d_vv.resize(stereo_pair_imgs_vec->size());
+        pF_ret->p3d_vv.resize(stereo_pair_imgs_vec->size());
+        for(int ci_index=0;ci_index<cam_distribution_info_vec.size();ci_index++)
+        {
+            pF_ret->cam_info_vec.push_back(static_cast<CamInfo&>(cam_distribution_info_vec[ci_index]));
+        }
         for(int i = 0;i<stereo_pair_imgs_vec->size();i++ )
         {
              auto& p =  (*stereo_pair_imgs_vec)[i];
              cvMat_T& l = *(std::get<0>(p));
              cvMat_T& r = *(std::get<1>(p));
-             shared_ptr<vector<p2dT> > p2d_output_;
-             shared_ptr<vector<p3dT> > p3d_output_;
+             //shared_ptr<vector<p2dT> > p2d_output_;
+             //shared_ptr<vector<p3dT> > p3d_output_;
              bool create_stereo_successs = false;
              if(create_key_frame)
              {
-                 createStereoMatchViaOptFlowMatching(l,r,cam_distribution_info_vec[i],p2d_output_,p3d_output_,create_stereo_successs);
+                 map<int,int> kps_2d_to_3d,kps_3d_to_2d;
+                 createStereoMatchViaOptFlowMatching(l,r,cam_distribution_info_vec[i],pF_ret->p2d_vv[i],pF_ret->p3d_vv[i],kps_2d_to_3d,kps_3d_to_2d,create_stereo_successs);
+                 pF_ret->map2d_to_3d_pt_vec.push_back(kps_2d_to_3d);
+                 pF_ret->map3d_to_2d_pt_vec.push_back(kps_3d_to_2d);
                  if(!create_stereo_successs)
                  {
                      create_Frame_success = false;
@@ -295,18 +317,26 @@ namespace mcs
              }
              else
              {//maybe detect gftt for optflow check is needed.TODO.
-
+                 LOG(ERROR)<<"TODO:"<<endl;
              }
         }
-        //method<2> multiple thread.
-        //
-        // createStereoMatchViaOptFlowMatching(stereo_pair_imgs_vec);
-        //不要打乱p2dT,p3dT的顺序!这里可能未来有一个摄像机整体信息的丢弃处理.
-        LOG(ERROR)<<"TODO:"<<endl;
-        //pF_ret->p2d_vv = 
-        
+        return pF_ret;
+
+
+
         
     }
+    //void createFrameStereos(shared_ptr<vector<StereoMatPtrPair> >stereo_pair_imgs_vec,
+    //                        vector<StereoCamConfig>& cam_distribution_info_vec,
+    //                        bool& create_Frame_success,
+    //                        bool create_key_frame = true)
+    //{
+    //method<2> multiple thread.
+    //
+    // createStereoMatchViaOptFlowMatching(stereo_pair_imgs_vec);
+    //不要打乱p2dT,p3dT的顺序!这里可能未来有一个摄像机整体信息的丢弃处理.
+
+    //pF_ret->p2d_vv =
     shared_ptr<Frame> createFrameDepth(vector<shared_ptr<cv::Mat> > pOriginalImgs,
                                       vector<shared_ptr<cv::Mat>>pDepthImgs,
                                       vector<CamInfo>& cam_distribution_info_vec,
