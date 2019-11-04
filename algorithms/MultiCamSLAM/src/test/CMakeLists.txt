@@ -20,3 +20,9 @@ target_link_libraries(test_FrameManager4_trackLocalFrame
     FrameManager
     ${REQUIRED_LIBRARIES}
     )
+add_executable(test_VO test_VO.cpp)
+target_link_libraries(test_VO
+    FeatureFrontEndCV
+    FrameManager
+    ${REQUIRED_LIBRARIES}
+    )

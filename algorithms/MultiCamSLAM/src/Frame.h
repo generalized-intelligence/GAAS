@@ -17,6 +17,8 @@ namespace mcs
 {
     using namespace std;
     using Eigen::Vector2f;
+    using Eigen::Vector3d;
+    using Eigen::Matrix3d;
 
     typedef cv::Point2f p2dT;
     typedef cv::Point3f p3dT;
@@ -72,6 +74,9 @@ namespace mcs
         vector<map<int,int> > map3d_to_2d_pt_vec;
         IMU_Data_T imu_info_vec;
         int frame_type;
+
+        Matrix3d rotation;
+        Vector3d position;
 
 
         vector<CamInfo> get_cam_info()

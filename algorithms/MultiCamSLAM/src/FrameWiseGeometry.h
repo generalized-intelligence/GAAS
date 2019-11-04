@@ -1,5 +1,6 @@
 #include "Frame.h"
 #include "FeatureFrontEndCV.h"
+#include "Timer.h"
 
 
 
@@ -13,6 +14,7 @@ namespace mcs
     void doPnPRansacMultiCam_Using_BA(Frame& f1,Frame& f2,cv::Mat& output_r_mat,cv::Mat& output_t_vec,bool& output_optimize_success,vector<float>& residual_of_2dkps);
     void trackAndDoSolvePnPRansacMultiCam(Frame& f1,Frame& f2,cv::Mat& output_r_mat,cv::Mat& output_t_vec,bool& output_frame_pnp_ransac_success,vector<bool>& output_cam_match_success)
     {
+        ScopeTimer t1("trackAndDoSolvePnPRansacMultiCam() timer");
         bool isStereoMode = f1.frame_type==FRAME_TYPE_STEREO;
         if(isStereoMode)
         {
