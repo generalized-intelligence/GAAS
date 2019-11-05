@@ -14,7 +14,7 @@
 [<img width="280" src = "https://s2.ax1x.com/2019/06/20/Vvmy6A.png" >](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvmsld.png"/>](https://bit.ly/2Ky8VbV)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvm6OI.png"/>](https://discord.gg/cUxYsRc)
 <img src="https://s2.ax1x.com/2019/09/20/nXrXjK.png">
 
-GAAS v0.7 Release (使用systemback安装)
+GAAS v0.7 Release (使用 systemback 安装)
 
 链接：https://pan.baidu.com/s/1HDu9Jmk1h1XCsnnfIdNl1w
 
