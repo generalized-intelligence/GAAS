@@ -13,6 +13,10 @@
 
 <img src = "https://s2.ax1x.com/2019/09/20/nXrXjK.png">
 
+GAAS v0.7 Release (使用systemback安装)
+链接：https://pan.baidu.com/s/1HDu9Jmk1h1XCsnnfIdNl1w 
+提取码：dz5u 
+
 - [GAAS 是什么？](#gaas-是什么)
   * [使用教程：](#使用教程)
   * [安装](#安装)
