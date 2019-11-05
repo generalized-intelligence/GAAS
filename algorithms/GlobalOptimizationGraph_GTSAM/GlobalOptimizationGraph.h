@@ -125,9 +125,8 @@ public:
     void addSLAM_edgeprv(const geometry_msgs::PoseStamped& SLAM_msg);
     void DebugPrintWholeGraphValue();
     bool doOptimization();
-    void resetOptimizationGraph()
-    {
-    }
+    void resetOptimizationGraph(){};
+
     void initBuffers(CallbackBufferBlock<geometry_msgs::PoseStamped> & SLAMbuf,
                      CallbackBufferBlock<sensor_msgs::NavSatFix>& GPSbuf,
                      CallbackBufferBlock<nav_msgs::Odometry>& AHRSbuf,
@@ -213,9 +212,10 @@ private:
     GPSExpand GPS_coord;
 
     bool allow_gps_usage = true;//can be configured by config.yaml
-    double gps_init_longitude,gps_init_latitude,gps_init_altitude;
 
-    double gps_init_lon_variance,gps_init_lat_variance,gps_init_alt_variance;
+    double gps_init_longitude, gps_init_latitude, gps_init_altitude;
+    double gps_init_lon_variance, gps_init_lat_variance, gps_init_alt_variance;
+
     std::vector<sensor_msgs::NavSatFix> gps_info_buffer;
     //time for calc speed vertex
     double last_slam_msg_time;
@@ -225,6 +225,7 @@ private:
     std::mutex state_mutex;
 
     ofstream mInputSlamFile;
+    ofstream mGPSPathFile;
 };
 
 GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
@@ -247,8 +248,8 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     double relinearizeThres = this->fSettings["RELINEARIZE_THRES"];
     isam2_params_.relinearizeThreshold = relinearizeThres; //0.01;
     int relinearizeSkip_num = this->fSettings["RELINEARIZE_SKIP_NUM"];
-    isam2_params_.relinearizeSkip = relinearizeSkip_num;//1;//多少个变量之后,relinearize.
-    isam2_params_.enableRelinearization = enable_relinearize;//false;//禁止relinearize.
+    isam2_params_.relinearizeSkip = relinearizeSkip_num; // after what number of params, do relinearization
+    isam2_params_.enableRelinearization = enable_relinearize;//false; //禁止relinearize.
 
     int online_mode_i = fSettings["ONLINE_MODE"];
     if(online_mode_i)
@@ -262,6 +263,7 @@ GlobalOptimizationGraph::GlobalOptimizationGraph(int argc,char** argv)
     }
 
     mInputSlamFile.open("./results/slam_position.txt");
+    mGPSPathFile.open("./results/gps_position.txt");
 }
 
 bool gps_msg_is_valid(const sensor_msgs::NavSatFix& gps)
@@ -278,7 +280,6 @@ bool gps_msg_is_valid(const sensor_msgs::NavSatFix& gps)
 
 void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::NavSatFix& GPS_msg)
 {
-
     int enable_gps = this->fSettings["ENABLE_GPS"];
     if (enable_gps == 0) 
     {
@@ -300,9 +301,10 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
         return;
     }
 
-    if (last_gps_vertex_index< 0 && !gps_expand_ever_init)//初始化GPS.
+    //initialize GPS at current GPS position, it sets current long, lat and altitude.
+    if (last_gps_vertex_index< 0 && !gps_expand_ever_init)
     {
-        GPS_coord.expandAt(GPS_msg.longitude, GPS_msg.latitude, GPS_msg.altitude); //这里已经初始化了altitude.
+        GPS_coord.expandAt(GPS_msg.longitude, GPS_msg.latitude, GPS_msg.altitude);
         LOG(INFO)<<"Initializing GPS expand at:"<<GPS_msg.longitude<<","<<GPS_msg.latitude<<","<<GPS_msg.altitude<<endl;
         cout <<"Initializing GPS block in Optimization Graph!"<<endl;
         gps_expand_ever_init = true;
@@ -319,12 +321,11 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
 //        return;
 //    }
 
-    //新的方法.
     bool add_match_success = this->p_gps_slam_matcher->addMatch(slam_vertex_index-1, msg_index);
     LOG(INFO)<<"Add match result:"<<add_match_success<<endl;
 
     bool inGPSLoopMode_out = false;
-    int newestState = this->p_state_tranfer_manager->updateState(add_match_success,inGPSLoopMode_out);
+    int newestState = this->p_state_tranfer_manager->updateState(add_match_success, inGPSLoopMode_out);
 
     if(newestState == this->p_state_tranfer_manager->STATE_NO_GPS)
     { // no valid GPS received.
@@ -463,16 +464,25 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             LOG(INFO) <<"setting gps measurement!"<<endl;
             LOG(INFO) <<"slam_vertex_index:"<<slam_vertex_index<<endl;
 
-            Vector3d gps_measurement_vec3d(delta_lon*1000*GPS_coord.vari_km_per_lon_deg(),
-                                           delta_lat*1000*GPS_coord.vari_km_per_lat_deg(),
-                                            delta_alt);
+            float gps_x = delta_lon*1000*GPS_coord.vari_km_per_lon_deg();
+            float gps_y = delta_lat*1000*GPS_coord.vari_km_per_lat_deg();
+            float gps_z = delta_alt;
+
+            Vector3d gps_measurement_vec3d(gps_x, gps_y, gps_z);
+
+//            bool covariance_valid = (GPS_msg.position_covariance_type >=2);
+//            double dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) - gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //project to gog coordinate.
+//            double dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
+//            double dh = gps_measurement_vec3d[2];
 
             bool covariance_valid = (GPS_msg.position_covariance_type >=2);
+            yaw_init_to_gps = 1.5708;
             double dx = gps_measurement_vec3d[0]*cos(yaw_init_to_gps) - gps_measurement_vec3d[1]*sin(yaw_init_to_gps); //project to gog coordinate.
             double dy = gps_measurement_vec3d[1]*cos(yaw_init_to_gps) + gps_measurement_vec3d[0]*sin(yaw_init_to_gps);
             double dh = gps_measurement_vec3d[2];
 
-            noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
+            mGPSPathFile <<dx<<","<<dy<<","<<dh<<endl;
+            //mGPSPathFile <<gps_x<<","<<gps_y<<","<<gps_z<<endl;
 
             {//debug only.
                 auto ps__ = pSLAM_Buffer->at(slam_vertex_index-1).pose.position;
@@ -481,44 +491,60 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             LOG(INFO) << "Adding gps measurement:"<<gps_measurement_vec3d[0]<<","<<gps_measurement_vec3d[1]<<endl<<"yaw:init to gps"<<yaw_init_to_gps<<endl;
 
             //TODO potential bug here
-            if(!init_yaw_valid_)
-            {
-                LOG(WARNING)<<"init yaw not valid.can not add gps measurement"<<endl;
-                return;
-            }
+//            if(!init_yaw_valid_)
+//            {
+//                LOG(WARNING)<<"init yaw not valid. Can not add gps measurement"<<endl;
+//                return;
+//            }
 
+            // x y and height
+//            noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
+//            graph.add(GPSPose2Factor(Symbol('x', slam_vertex_index-1), Point2(dx, dy), gpsModel));
+//            noiseModel::Diagonal::shared_ptr gps_altitude_model = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[8], 0.0));//2nd parameter is not used, picked arbitrarily
+//            graph.add(GPSAltitudeFactor(Symbol('h',slam_vertex_index-1), Point2(dh,0.0), gps_altitude_model)); //GPS height relative change
+            noiseModel::Diagonal::shared_ptr gpsModel = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[0], GPS_msg.position_covariance[4]));
             graph.add(GPSPose2Factor(Symbol('x', slam_vertex_index-1), Point2(dx, dy), gpsModel));
-            noiseModel::Diagonal::shared_ptr gps_altitude_model = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[8],0.0));//2nd parameter is not used, picked arbitrarily
-            graph.add(GPSAltitudeFactor(Symbol('h',slam_vertex_index-1), Point2(dh,0.0), gps_altitude_model)); //GPS height relative change
+            noiseModel::Diagonal::shared_ptr gps_altitude_model = noiseModel::Diagonal::Sigmas(gtsam::Vector2(GPS_msg.position_covariance[8], 0.0));//2nd parameter is not used, picked arbitrarily
+            graph.add(GPSAltitudeFactor(Symbol('h', slam_vertex_index-1), Point2(dh,0.0), gps_altitude_model)); //GPS height relative change
 
-            //插入优化器:(可能需要新建Edge类型)
+
+            // yaw
             const double loop_variance_deg = 1; //TODO:move into config file.
 //            noiseModel::Diagonal::shared_ptr model_yaw_fix = noiseModel::Diagonal::Sigmas(gtsam::Vector3(GPS_msg.position_covariance[0],
 //                                                                                                         GPS_msg.position_covariance[4],
 //                                                                                                         0.01744*loop_variance_deg));
             noiseModel::Diagonal::shared_ptr model_yaw_fix = noiseModel::Diagonal::Sigmas(gtsam::Vector3(GPS_msg.position_covariance[0] / 10.0,
                                                                                                          GPS_msg.position_covariance[4] / 10.0,
-                                                                                                         0.01744*loop_variance_deg));
+                                                                                                         1));
 
             double yaw_slam_diff = get_yaw_from_slam_msg(pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(this->p_gps_slam_matcher->at(0).slam_index));
             graph.emplace_shared<BetweenFactor<Pose2>>(Symbol('x', this->p_gps_slam_matcher->at(0).slam_index),
                                                        Symbol('x', slam_vertex_index-1),
-                                                       Pose2(dx, dy, yaw_slam_diff - this->current_yaw_slam_drift),
+                                                       Pose2(dx, dy, get_yaw_from_slam_msg(pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(pSLAM_Buffer->at(0))),
                                                        model_yaw_fix);
+
+            float deg = (get_yaw_from_slam_msg(pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(pSLAM_Buffer->at(this->p_gps_slam_matcher->at(0).slam_index))) * 180 / 3.1415926;
+            LOG(INFO)<<"get_yaw_from_slam_msg(pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(pSLAM_Buffer->at(0)): "<<deg<<endl;
+
+//            double yaw_slam_diff = get_yaw_from_slam_msg(pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(this->p_gps_slam_matcher->at(0).slam_index));
+//            graph.emplace_shared<BetweenFactor<Pose2>>(Symbol('x', this->p_gps_slam_matcher->at(0).slam_index),
+//                                                       Symbol('x', slam_vertex_index-1),
+//                                                       Pose2(dx, dy, yaw_slam_diff - this->current_yaw_slam_drift),
+//                                                       model_yaw_fix);
 
             //calc YAW correction.
             bool should_update_yaw_correction = p_state_tranfer_manager->get_should_update_yaw_correction(this->slam_vertex_index-1); //检查是否建议更新yaw.
             if(should_update_yaw_correction)
             {
+                LOG(INFO)<<"yaw correction update is required!"<<endl;
                 int last_slam_id_out,last_match_id_out;//这两个是上一次纠正的最后id.
                 this->p_state_tranfer_manager->get_last_yaw_correction_slam_id(last_slam_id_out,last_match_id_out);//从这一点开始匹配.
                 //尝试进行GPS-SLAM 匹配.如果成功:更新.否则反复尝试.
                 bool update_success_output= false;
                 int last_match_stored_in_matcher_id = this->p_gps_slam_matcher->matchLen()-1;
                 double new_deg_output,new_deg_output_variance;
-                this->p_gps_slam_matcher->check2IndexAndCalcDeltaDeg(last_match_id_out,last_match_stored_in_matcher_id,//id
-                                                       GPS_coord,update_success_output,new_deg_output,new_deg_output_variance
-                                                         );//尝试计算yaw.
+                this->p_gps_slam_matcher->check2IndexAndCalcDeltaDeg(last_match_id_out, last_match_stored_in_matcher_id,
+                                                                     GPS_coord,update_success_output,new_deg_output,new_deg_output_variance);//尝试计算yaw.
                 if(update_success_output)
                 {
                     double _rad = new_deg_output*180/3.1415926535;
@@ -540,10 +566,9 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)//(const sensor_msgs::Na
             cout <<"slam buffer size():"<<pSLAM_Buffer->size()<<endl;
             cout <<"graph.size()"<<graph.size()<<endl;
             last_gps_vertex_index = slam_vertex_index-1;
-            cout<<"[GPS_INFO]GPS_relative_pos:"<<
-                gps_measurement_vec3d[0]<<","<<
-                gps_measurement_vec3d[1]<<","<<
-                delta_alt<<endl;
+            cout<<"[GPS_INFO]GPS_relative_pos:"<<gps_measurement_vec3d[0]<<","<<
+                                                 gps_measurement_vec3d[1]<<","<<
+                                                 delta_alt<<endl;
         }
     }
 }
@@ -759,7 +784,7 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)
                 auto p__ = SLAM_msg.pose.position;
                 noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(gtsam::Vector3(0.1,0.1,0.01744*10)); //0.1m, 10度.
                 //noiseModel::Diagonal::shared_ptr priorNoise_Absolute = noiseModel::Diagonal::Sigmas(gtsam::Vector3(0.5, 0.5, 0.1)); //0.1m, 10度.
-                graph.emplace_shared<PriorFactor<Pose2> >(Symbol('x',slam_vertex_index),Pose2(p__.x,p__.y,get_yaw_from_slam_msg(SLAM_msg)),priorNoise_Absolute);//位置和朝向角都初始化成0.
+                graph.emplace_shared<PriorFactor<Pose2> >(Symbol('x',slam_vertex_index),Pose2(p__.x,p__.y,get_yaw_from_slam_msg(SLAM_msg)), priorNoise_Absolute);//位置和朝向角都初始化成0.
                 //noiseModel::Diagonal::shared_ptr priorNoise_Height = noiseModel::Diagonal::Sigmas(gtsam::Vector2(1.0,0.0)); //高度方差:1.
                 noiseModel::Diagonal::shared_ptr priorNoise_Height = noiseModel::Diagonal::Sigmas(gtsam::Vector2(0.1,0.0)); //高度方差:1.
                 graph.emplace_shared<PriorFactor<Point2> >(Symbol('h',slam_vertex_index),Point2(p__.z,0),priorNoise_Height);//高度初始化成0
@@ -770,7 +795,18 @@ void GlobalOptimizationGraph::addBlockSLAM(int msg_index)
         slam_vertex_index++;
         if(online_mode)
         {
-            p_isam->update(graph, initialEstimate);
+
+            // TODO: properly handle underconstrained problem
+            try {
+                p_isam->update(graph, initialEstimate);
+                p_isam->update();
+            }
+            catch (gtsam::IndeterminantLinearSystemException){
+                LOG(ERROR)<<"gtsam::IndeterminantLinearSystemException encountered!"<<endl;
+                graph.resize(0);
+                initialEstimate.clear();
+                return;
+            }
     
             // FEJ
             // ISAM2Params params_;

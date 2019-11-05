@@ -27,11 +27,14 @@ if __name__ == '__main__':
 
     slam_x, slam_y, slam_z = readfile("slam_position.txt")
 
+    gps_x, gps_y, gps_z = readfile("gps_position.txt")
+
     result_x, result_y, result_z = readfile("fused_position.txt")
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.scatter(slam_x, slam_y, slam_z, c='r', marker='o')
+    ax.scatter(gps_x, gps_y, gps_z, c='g', marker='v')
     ax.scatter(result_x, result_y, result_z, c='b', marker='^')
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')

@@ -1,4 +1,3 @@
-
 #include "CallbacksBufferBlock.h"
 #include "GlobalOptimizationGraph.h"
 #include "ROS_IO_Manager.h"
@@ -14,9 +13,6 @@ void signalHandler( int signum )
     cout << "Interrupt signal (" << signum << ") received.\n";
     exit(signum);
 }
-
-
-
 
 bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pGOG,
             int argc,char** argv)

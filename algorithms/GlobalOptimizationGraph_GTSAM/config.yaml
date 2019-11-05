@@ -67,9 +67,9 @@ INVERT_SLAM_Z: 0
 GPS_RECATCH_PATIENCE: 30
 
 #----
+
 #optimization relinearize options:
 ONLINE_MODE : 1
-
 
 #these params controls online isam only.
 ENABLE_RELINEARIZE: 0
