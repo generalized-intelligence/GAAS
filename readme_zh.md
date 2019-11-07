@@ -8,7 +8,9 @@
 
 [![Join the chat at https://gitter.im/GAAStalk/community](https://badges.gitter.im/GAAStalk/community.svg)](https://gitter.im/GAAStalk/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
   [![Join Facebook Group at https://www.facebook.com/groups/300340454189266/?ref=bookmarks](https://img.shields.io/badge/Group-Facebook-blue.svg)](https://www.facebook.com/groups/300340454189266/?ref=bookmarks) [![twitter](https://img.shields.io/twitter/follow/GAAS_ooo.svg?style=social)](https://twitter.com/GAAS_ooo)   [![Follow Medium at https://medium.com/generalized-intelligence](https://img.shields.io/badge/Medium-Blogs-black.svg)](https://medium.com/generalized-intelligence)
-  
+
+[<img src = "https://s2.ax1x.com/2019/11/07/MkwXCR.png">](https://github.com/generalized-intelligence/GAAS/releases/tag/v0.7) 
+---
 [<img src = "https://s2.ax1x.com/2019/09/16/nW76Bj.png">](https://gaas.gitbook.io/guide/handy-tools/gaastx2-jing-xiang)
 
 <img src = "https://s2.ax1x.com/2019/09/20/nXrXjK.png">
@@ -66,7 +68,7 @@ GAAS v0.7 Release (使用systemback安装)
 我们所用的硬件清单在 ```GAAS/hardware```
 
 <p align="center">
-<img src="https://s2.ax1x.com/2019/05/17/EqXAdx.png"/>
+<img src="https://s2.ax1x.com/2019/11/07/MkB8Te.png"/>
 </p>
 
 ## 相关硬件
