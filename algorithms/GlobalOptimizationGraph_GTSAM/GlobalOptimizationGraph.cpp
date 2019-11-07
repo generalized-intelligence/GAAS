@@ -280,8 +280,8 @@ void GlobalOptimizationGraph::addBlockGPS(int msg_index)
             graph.add(GPSAltitudeFactor(Symbol('h', slam_vertex_index-1), Point2(dh, 0.0), gps_altitude_model)); //GPS height relative change
 
             // yaw
-            noiseModel::Diagonal::shared_ptr model_yaw_fix = noiseModel::Diagonal::Sigmas(gtsam::Vector3(GPS_msg.position_covariance[0] / 5.0,
-                                                                                                         GPS_msg.position_covariance[4] / 5.0,
+            noiseModel::Diagonal::shared_ptr model_yaw_fix = noiseModel::Diagonal::Sigmas(gtsam::Vector3(GPS_msg.position_covariance[0] / 10.0,
+                                                                                                         GPS_msg.position_covariance[4] / 10.0,
                                                                                                          1));
 
             double yaw_slam_diff = get_yaw_from_slam_msg(pSLAM_Buffer->at(slam_vertex_index-1)) - get_yaw_from_slam_msg(this->pSLAM_Buffer->at(this->p_gps_slam_matcher->at(0).slam_index));
