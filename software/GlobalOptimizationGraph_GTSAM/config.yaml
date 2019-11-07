@@ -1,0 +1,94 @@
+%YAML:1.0
+
+#---
+INIT_SPIN_TIMES : 10000
+INIT_MAX_TIME_us : 10000000 # 10s.
+#---
+
+#AHRS NOT AVAIL NOW.
+AHRS_topic_name : "/GAAS/AHRS/attitude"
+AHRS_AVAIL_MINIMUM : 5
+#---
+ENABLE_GPS : 1  # 1 for true, 0 for false
+GPS_AVAIL_MINIMUM : 1 #10
+
+#GPS_AHRS_MAX_TIME_DIFF_s : 0.08
+GPS_AHRS_MAX_TIME_DIFF_s : 0.8 # not avail now.
+
+
+GPS_INIT_VARIANCE_THRESHOLD_m : 4.0 #2.0
+GPS_INIT_ALT_VARIANCE_THRESHOLD_m : 20.0 #1.0
+GPS_MIN_VARIANCE_LONLAT_m : 0.5 # minimum variance allowed.
+GPS_MIN_VARIANCE_ALT_m : 0.8
+GPS_topic_name : "/mavros/global_position/global"
+GPS_MAX_DELAY_SEC : 0.5
+
+SLAM_AVAIL_MINIMUM : 5 #20
+
+
+#SLAM_AHRS_MAX_TIME_DIFF_s : 0.08
+SLAM_AHRS_MAX_TIME_DIFF_s : 0.8
+SLAM_T_INFO_WEIGHT : 0.5
+
+SCENE_RETREVE_GPS_AVAIL : false # use scene model gps info?do not recommend.
+
+AHRS_loss_thres : 10.0
+GPS_loss_thres : 5.0
+VISION_loss_thres : 0.5
+SCENE_RETREVE_loss_thres : 0.3
+
+
+
+#for SLAM-GPS yaw match only:
+SLAM_GPS_DELAY_THRESHOLD : 0.5
+GPS_POS_THRES_m : 50
+
+
+
+OPTIMIZATION_GRAPH_KF_WIND_LEN : 10
+
+SLAM_ROTATION_MAT: !!opencv-matrix
+    rows: 3
+    cols: 3
+    dt: d
+    #data: [1,0,0,0,1,0,0,0,1] #mat Eye(). z downward.
+    data: [0,0,1,1,0,0,0,1,0]
+
+SLAM_RT_TRANS_MAT: !!opencv-matrix
+#for both rotation and translation.
+    rows: 3
+    cols: 3
+    dt: d
+    data: [0,1,0,0,0,1,1,0,0]
+INVERT_SLAM_Z: 0
+
+
+
+GPS_RECATCH_PATIENCE: 30
+
+#----
+
+#optimization relinearize options:
+ONLINE_MODE : 1
+
+#these params controls online isam only.
+ENABLE_RELINEARIZE: 0
+RELINEARIZE_THRES: 1
+RELINEARIZE_SKIP_NUM: 10
+#----
+SLAM_RELATIVE_XY_VARIANCE_m: 0.05  # 10 mm/frame.
+SLAM_RELATIVE_YAW_VARIANCE_deg: 1.5 #1.5 deg/frame
+SLAM_RELATIVE_HEIGHT_VARIANCE_m: 0.01  #10 mm/frame
+
+#----
+
+
+USE_BAROMETER: 1  #0 for disable
+
+
+
+
+
+
+
+
