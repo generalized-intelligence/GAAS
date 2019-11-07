@@ -16,7 +16,7 @@ The blue line (the top one), is the output of GOG, which trys to fuse informatio
     
 The drone is controlled to fly a rectangle, which can be represented by the green intermittent GPS path. The bottom red line is the output of SLAM, and you can find it has deviated from the GPS path greatly, but the output of GOG(the top line) choose to believe GPS more (because it has a lower covariance), and it is also capable of "filling the gap" when GPS is lost.
 
-You can choose to create your own test bag using a script provided in ./scripts/create_bag.py, and while recording, you need to turn on a SLAM and GPS. Remember the frame of GPS should be in ENU.
+You can choose to create your own test bag using a script provided in ./scripts/create_bag.py, and while recording, you need to turn on a SLAM and GPS. Remember the frame of SLAM should be in ENU.
     
 <img src = "https://s2.ax1x.com/2019/11/07/MF5HgO.png">
 
