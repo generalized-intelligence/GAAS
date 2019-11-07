@@ -1,17 +1,43 @@
-Do global optimization of position and attitude.Keep these info inside a structure,so that when SLAM or FlightController Reset its state,still do we have a stable estimation of drone.
-Raw data will be input from mavros/ros SLAM node;Compile this with catkin.
-Combine visual slam info,external AHRS info,flight controller attitude info,GPS info,scene retriever info and magnet info.
-May be useful when dealing with flight sessions.
-Still an immature thought,though.
+### Global Optimization Graph: A Loosely-Coupled Sensor Fusion Framework Based On GTSAM
 
-全局优化飞行器的位置和姿态.保存这些信息以便在飞控或SLAM状态重置/重启动时仍然有稳定的位置估计.
-原始信息从不同的ros node中发送(如mavros node,SLAM node等).只要实现这一消息发送即可,也可以从外部传感器中来.
-编译这个包需要依赖catkin.
+1. Constant GPS + SLAM fusion
 
-这里使用视觉SLAM消息,外部AHRS消息,飞控估计姿态消息,GPS消息(如果有),场景重定位消息(如果有),磁力计信息.
-
-这个模块对创建飞行会话(一段连续任务,如一连串定位关系紧密相关的航点,或一次流畅的精准降落)会很有用.
-虽然仍然是一个未成熟的想法.想法和代码都有待补充.
+    The SLAM and GPS are both constant at all time, so GOG will try to fusion the pose information from these two sources.
+    
+<img src = "https://s2.ax1x.com/2019/11/07/MF5Ru4.png">
 
 
+2. Intermittent GPS + SLAM fusion
 
+The SLAM is assumed to be constant at all time, while GPS is intermittent, being available for 5 seconds of a 10 seconds cycle.  The red number, being 1 or 0, represents whether GPS is available, 1 represents GPS is lost while 0 means 
+GPS is not lost. 
+
+The blue line (the top one), is the output of GOG, which trys to fuse information from GPS and SLAM. When GPS is lost, GOG will continue to give estimation of the state, but as soon as GPS comes back, it updates the state to the corresponding pose provided by the GPS(the gap is the error of wrong SLAM estimation while GPS is lost).
+    
+The drone is controlled to fly a rectangle, which can be represented by the green intermittent GPS path. The bottom red line is the output of SLAM, and you can find it has deviated from the GPS path greatly, but the output of GOG(the top line) choose to believe GPS more (because it has a lower covariance), and it is also capable of "filling the gap" when GPS is lost.
+
+You can choose to create your own test bag using a script provided in ./scripts/create_bag.py, and while recording, you need to turn on a SLAM and GPS. Remember the frame of GPS should be in ENU.
+    
+<img src = "https://s2.ax1x.com/2019/11/07/MF5HgO.png">
+
+
+
+## How To USE
+    
+This project is based on GTSAM, Eigen, Opencv, so you will need to have them installed and built. After installation of these packages, in a terminal:
+    
+    mkdir build
+    cd build
+    cmake ..
+    make
+    cd ..
+    ./bin/GlobalOptimizationGraph_main config.yaml
+    
+In another terminal, you can play a bag containing the topic of a SLAM and the topic of GPS.
+Modify line 205 and 206 in ROS_IO_MANAGER.h to change SLAM and GPS topics, we will move them to a config file later.
+    
+ ## Extra Words
+ 
+     This work remains to be broadly tested.
+    
+    
