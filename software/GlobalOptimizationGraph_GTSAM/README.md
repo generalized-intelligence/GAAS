@@ -1,13 +1,13 @@
-### Global Optimization Graph: A Loosely-Coupled Sensor Fusion Framework Based On GTSAM
+# Global Optimization Graph: A Loosely-Coupled Sensor Fusion Framework Based On GTSAM
 
-1. Constant GPS + SLAM fusion
+### Constant GPS + SLAM fusion
 
     The SLAM and GPS are both constant at all time, so GOG will try to fusion the pose information from these two sources.
     
 <img src = "https://s2.ax1x.com/2019/11/07/MF5Ru4.png">
 
 
-2. Intermittent GPS + SLAM fusion
+### Intermittent GPS + SLAM fusion
 
 The SLAM is assumed to be constant at all time, while GPS is intermittent, being available for 5 seconds of a 10 seconds cycle.  The red number, being 1 or 0, represents whether GPS is available, 1 represents GPS is lost while 0 means 
 GPS is not lost. 
@@ -35,7 +35,9 @@ This project is based on GTSAM, Eigen, Opencv, so you will need to have them ins
     
 In another terminal, you can play a bag containing the topic of a SLAM and the topic of GPS.
 Modify line 205 and 206 in ROS_IO_MANAGER.h to change SLAM and GPS topics, we will move them to a config file later.
-    
+
+The output of SLAM, GPS and GOG results are saved to files in folder ./results, use visualize.py to visualize the results.
+
  ## Extra Words
  
      This work remains to be broadly tested.
