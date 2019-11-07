@@ -321,8 +321,11 @@ void StateTransferManager::checkMatcherToInitGPSYaw(bool& init_success, double& 
         double deg, deg_variance;
         int match_index = pgps_slam_matcher->matchLen()-1;
         LOG(INFO)<<"checkMatcherToInitGPSYaw."<<endl;
-        pgps_slam_matcher->check2IndexAndCalcDeltaDegInit(0, match_index,*pGPS_coord,
-                                                          yaw_calc_result_valid,deg,deg_variance);//尝试计算yaw.
+//        pgps_slam_matcher->check2IndexAndCalcDeltaDegInit(0, match_index,*pGPS_coord,
+//                                                          yaw_calc_result_valid,deg,deg_variance);
+
+        pgps_slam_matcher->check2IndexAndCalcDeltaDeg(0, match_index,*pGPS_coord,
+                                                          yaw_calc_result_valid,deg,deg_variance);
 
         //if variance is small than a threshold, we think it succeeded.
         if(yaw_calc_result_valid && deg_variance < 20)//TODO:换成配置文件里的值.
