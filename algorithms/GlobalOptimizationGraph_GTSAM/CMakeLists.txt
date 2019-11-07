@@ -12,6 +12,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(GTSAM REQUIRED)
+find_package(GTSAM_UNSTABLE REQUIRED)
 find_package(OpenCV 3.4.5 REQUIRED)
 
 find_package(Boost COMPONENTS serialization wserialization system REQUIRED)
@@ -27,12 +28,12 @@ find_package(catkin REQUIRED COMPONENTS
 
 
 include_directories(${PROJECT_SOURCE_DIR}
-        ${PROJECT_SOURCE_DIR}/ygz_common_headers
-	${EIGEN3_INCLUDE_DIR}
-        ${catkin_INCLUDE_DIRS}
-        ${GTSAM_INCLUDE_DIR}
+                    ${PROJECT_SOURCE_DIR}/ygz_common_headers
+	                ${EIGEN3_INCLUDE_DIR}
+                    ${catkin_INCLUDE_DIRS}
+                    ${GTSAM_INCLUDE_DIR}
+		            ${GTSAM_UNSTABLE_INCLUDE_DIR})
 
-	)
 set (THIRD_PARTY_LIBS
 	${EIGEN3_LIBS}
 	${OpenCV_LIBS}
@@ -46,7 +47,8 @@ add_library(GlobalOptimizationGraph GlobalOptimizationGraph.cpp)
 target_link_libraries(GlobalOptimizationGraph
         gtsam
         ${Boost_PROGRAM_OPTIONS_LIBRARY}
-	${THIRD_PARTY_LIBS})
+	    ${THIRD_PARTY_LIBS}
+		gtsam_unstable)
 
 add_executable(GlobalOptimizationGraph_main main.cpp)
 target_link_libraries(GlobalOptimizationGraph_main

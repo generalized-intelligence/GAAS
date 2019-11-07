@@ -8,25 +8,31 @@
 #include <iostream>
 #include <glog/logging.h>
 using namespace std;
+
 template <typename T>
 class CallbackBufferBlock
 {
+
 public:
-    CallbackBufferBlock<T>()
-    {
-	    ;
-    }
+
+    CallbackBufferBlock<T>(){;}
+
     void onCallbackBlock(const T& msg);
+
     double queryLastMessageTime();
+
     T getLastMessage();
+
     void clear()
     {
         this->msgBuffer.clear();
     }
+
     inline int size()
     {
         return this->msgBuffer.size();
     }
+
     std::vector<T> getCopyVec()
     {
         std::vector<T> vec;
@@ -37,10 +43,12 @@ public:
         }
         return vec;
     }
+
     T operator[](int index)
     {
         return this->msgBuffer[index];
     }
+
     T at(int index)
     {
         if(index >= msgBuffer.size())
@@ -50,11 +58,9 @@ public:
         }
         return this->msgBuffer[index];
     }
-    /*inline std::deque<T>& getBuffer()//NOT recommended!
-    {
-        return this->msgBuffer;
-    }*/
+
 private:
+
     //std::queue<T> msgBuffer;
     std::deque<T> msgBuffer;
     //const int buffer_size = 100;

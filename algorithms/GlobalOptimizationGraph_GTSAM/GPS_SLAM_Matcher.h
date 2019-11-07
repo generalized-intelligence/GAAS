@@ -192,10 +192,10 @@ public:
         LOG(INFO)<<"In check2IndexAndCalcDeltaDeg(): matchindex:"<<matchindex1<<","<<matchindex2<<";"<<endl;
         LOG(INFO)<<"		GPS index:"<<match_vec[matchindex1].gps_index<<","<<match_vec[matchindex2].gps_index<<";"<<endl;
         LOG(INFO)<<"		SLAM index:"<<match_vec[matchindex1].slam_index<<","<<match_vec[matchindex2].slam_index<<";"<<endl;
-        
+
         double p1_variance = calc_gps_covariance(pgps_pos_buf->at(match_vec[matchindex1].gps_index));
         double p2_variance = calc_gps_covariance(pgps_pos_buf->at(match_vec[matchindex2].gps_index));
-        
+
         //calc_gps_covariance(matchindex1.gps_index,....)
         valid = false;
         deg_variance = -1;

@@ -14,7 +14,7 @@ void signalHandler( int signum )
     exit(signum);
 }
 
-bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pGOG,
+bool init(shared_ptr<ROS_IO_Manager> pRIM, shared_ptr<GlobalOptimizationGraph> pGOG,
             int argc,char** argv)
 {
     //to start global optimization,first check all input topics.
@@ -26,7 +26,7 @@ bool init(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pG
     return pRIM->initOptimizationGraph();
 }
 
-void loop(shared_ptr<ROS_IO_Manager> pRIM,shared_ptr<GlobalOptimizationGraph> pGOG)
+void loop(shared_ptr<ROS_IO_Manager> pRIM, shared_ptr<GlobalOptimizationGraph> pGOG)
 {
     int count = 0;
     while(ros::ok())

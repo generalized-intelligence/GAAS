@@ -1,0 +1,40 @@
+/home/shr/Downloads/clion-2019.2.1/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/shr/software/GAAS_master_dev/GAAS/algorithms/GlobalOptimizationGraph_GTSAM
+-- Boost version: 1.58.0
+-- Found the following Boost libraries:
+--   serialization
+--   system
+--   filesystem
+--   thread
+--   program_options
+--   date_time
+--   timer
+--   chrono
+--   regex
+--   atomic
+-- GTSAM include directory:  /usr/local/lib/cmake/GTSAM/../../../include
+-- Found GTSAM_UNSTABLE: /usr/local/lib/libgtsam_unstable.so  
+-- Boost version: 1.58.0
+-- Found the following Boost libraries:
+--   serialization
+--   wserialization
+--   system
+CMake Error at CMakeLists.txt:20 (find_package):
+  By not providing "Findcatkin.cmake" in CMAKE_MODULE_PATH this project has
+  asked CMake to find a package configuration file provided by "catkin", but
+  CMake did not find one.
+
+  Could not find a package configuration file provided by "catkin" with any
+  of the following names:
+
+    catkinConfig.cmake
+    catkin-config.cmake
+
+  Add the installation prefix of "catkin" to CMAKE_PREFIX_PATH or set
+  "catkin_DIR" to a directory containing one of the above files.  If "catkin"
+  provides a separate development package or SDK, be sure it has been
+  installed.
+
+
+-- Configuring incomplete, errors occurred!
+See also "/home/shr/software/GAAS_master_dev/GAAS/algorithms/GlobalOptimizationGraph_GTSAM/cmake-build-debug/CMakeFiles/CMakeOutput.log".
+See also "/home/shr/software/GAAS_master_dev/GAAS/algorithms/GlobalOptimizationGraph_GTSAM/cmake-build-debug/CMakeFiles/CMakeError.log".

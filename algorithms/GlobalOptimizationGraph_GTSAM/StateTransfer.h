@@ -61,6 +61,11 @@ public:
         LOG(INFO)<<"StateTransferManager Initiated!"<<endl;
     }
 
+    void resetState()
+    {
+        this->currentState = STATE_NO_GPS;
+    }
+
     void getNewestYawAndVarianceRad(double& newestRad_out,double& newestCoariance_out)
     {
         newestRad_out = this->segment_yaw_slam_to_gps_initial.back()
@@ -230,10 +235,12 @@ public:
             graph.emplace_back(match_id.slam_id,match_id.gps_id,Pose2(xxx,xxx,xxx));
         }
     }*/
+
     inline int getLastGPSSLAMMatchID()
     {
         return this->lastGPSSLAMMatchID;
     }
+
     inline void set_last_slam_yaw_correction_id(int newest_yaw_correction_slam_frame_id, int newest_match_id)
     //在Global Optimization Graph中更新成功后,手动更新下这两个东西.
     {
@@ -245,6 +252,7 @@ public:
         this->last_yaw_correction_slam_frame_id = newest_yaw_correction_slam_frame_id;
         this->last_correction_GPS_SLAM_MATCH_ID = newest_match_id;
     }
+
     inline void get_last_yaw_correction_slam_id(int& last_slam_id_out,int& last_match_id_out)
     {
         last_slam_id_out = this->last_yaw_correction_slam_frame_id;

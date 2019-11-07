@@ -9,7 +9,7 @@ import time
 bag = rosbag.Bag('test.bag', 'w')
 
 gps_starting_time = None
-gps_available_duration = 5 # out of cycle_duration
+gps_available_duration = 8 # out of cycle_duration
 cycle_duration = 10 # assume a cycle to be 10 secs
 
 gps_sub_topic = 'mavros/global_position/raw/fix'
