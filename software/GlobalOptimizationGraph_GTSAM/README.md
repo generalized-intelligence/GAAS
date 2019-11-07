@@ -9,7 +9,7 @@ The SLAM and GPS are both constant at all time, so GOG will try to fusion the po
 
 ### Intermittent GPS + SLAM fusion
 
-The SLAM is assumed to be constant at all time, while GPS is intermittent, being available for 5 seconds of a 10 seconds cycle.  The red number, being 1 or 0, represents whether GPS is available, 1 represents GPS is lost while 0 means 
+The SLAM is assumed to be constant at all time, while GPS is intermittent, being available for 5 seconds of a 10 seconds cycle.  The red number, 1 or 0, represents whether GPS is available, 1 represents GPS is lost while 0 means 
 GPS is not lost. 
 
 The blue line (the top one), is the output of GOG, which trys to fuse information from GPS and SLAM. When GPS is lost, GOG will continue to give estimation of the state, but as soon as GPS comes back, it updates the state to the corresponding pose provided by the GPS(the gap is the error of wrong SLAM estimation while GPS is lost).
