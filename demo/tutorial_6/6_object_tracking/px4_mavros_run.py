@@ -140,7 +140,6 @@ class Px4Controller:
         self.local_enu_position = msg
 
 
-
     def mavros_state_callback(self, msg):
         self.mavros_state = msg.mode
 
@@ -157,17 +156,7 @@ class Px4Controller:
     def gps_callback(self, msg):
         self.gps = msg
 
-
-    def body2enu(self, body_target_x, body_target_y, body_target_z):
-
-        ENU_x = body_target_y
-        ENU_y = - body_target_x
-        ENU_z = body_target_z
-
-        return ENU_x, ENU_y, ENU_z
-
-
-    def BodyOffsetENU2FLU(self, msg):
+    def FLU2ENU(self, msg):
 
         FLU_x = msg.pose.position.x * math.cos(self.current_heading) - msg.pose.position.y * math.sin(self.current_heading)
         FLU_y = msg.pose.position.x * math.sin(self.current_heading) + msg.pose.position.y * math.cos(self.current_heading)
@@ -181,7 +170,7 @@ class Px4Controller:
 
         if msg.header.frame_id == 'base_link':
             '''
-            BODY_OFFSET_ENU
+            BODY_FLU
             '''
             # For Body frame, we will use FLU (Forward, Left and Up)
             #           +Z     +X
@@ -194,15 +183,15 @@ class Px4Controller:
 
             print("body FLU frame")
 
-            FLU_x, FLU_y, FLU_z = self.BodyOffsetENU2FLU(msg)
+            ENU_X, ENU_Y, ENU_Z = self.FLU2ENU(msg)
 
-            body_x = FLU_x + self.local_pose.pose.position.x
-            body_y = FLU_y + self.local_pose.pose.position.y
-            body_z = FLU_z + self.local_pose.pose.position.z
+            ENU_X = ENU_X + self.local_pose.pose.position.x
+            ENU_Y = ENU_Y + self.local_pose.pose.position.y
+            ENU_Z = ENU_Z + self.local_pose.pose.position.z
 
-            self.cur_target_pose = self.construct_target(body_x,
-                                                         body_y,
-                                                         body_z,
+            self.cur_target_pose = self.construct_target(ENU_X,
+                                                         ENU_Y,
+                                                         ENU_Z,
                                                          self.current_heading)
 
 
@@ -220,11 +209,9 @@ class Px4Controller:
             self.frame = "LOCAL_ENU"
             print("local ENU frame")
 
-            ENU_x, ENU_y, ENU_z = self.body2enu(msg.pose.position.x, msg.pose.position.y, msg.pose.position.z)
-
-            self.cur_target_pose = self.construct_target(ENU_x,
-                                                         ENU_y,
-                                                         ENU_z,
+            self.cur_target_pose = self.construct_target(msg.pose.position.x,
+                                                         msg.pose.position.y,
+                                                         msg.pose.position.z,
                                                          self.current_heading)
 
     '''

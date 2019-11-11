@@ -12,7 +12,9 @@ import config
 
 class SetInit:
     def __init__(self, init_rect_img_topic='/gi/simulation/left/image_raw'):
+        print("Wait Service...")
         rospy.wait_for_service('init_rect')
+        print("Done.")
         self.init_rect_service = rospy.ServiceProxy('init_rect', InitRect)
         self.x1 = None
         self.y1 = None
