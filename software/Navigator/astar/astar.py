@@ -237,6 +237,10 @@ class A_star(object):
                  item[1]+pt[1],
                  item[2]+pt[2])
             )
+            if item[2]+pt[2] <= 0:
+                return False
+        
+        
 
         aircraft_indexed = set(aircraft_points)
         #import pdb;pdb.set_trace()

@@ -73,8 +73,8 @@ fullDP: 0
 
 # useful param
 UseRadiusOutlierRemoval: 1
-Radius: 0.05 # meter
-MinNeighbor: 30
+Radius: 0.1 # meter
+MinNeighbor: 100
 
 # use PCL filtering? be carefull with this option!
 UsePCLfiltering: 0

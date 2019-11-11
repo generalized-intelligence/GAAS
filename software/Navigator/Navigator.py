@@ -100,6 +100,7 @@ class Navigator:
         self.local_pose = None
         t1 = threading.Thread(target=self.ros_thread)
         t1.start()
+        
         self.navigator_status_pub = rospy.Publisher('/gi/navigator_status', String, queue_size=10)
         self.path_plan_pub = rospy.Publisher('/gi/navi_path_plan',MarkerArray,queue_size=10)
         #t2 = thread.start_new_thread(self.Dstar_thread, ())
@@ -108,6 +109,7 @@ class Navigator:
 
         self.path = []
         self.path_prune = PathPruning(obstacle_distance=8)
+        time.sleep(2)
 
 
     '''
@@ -189,6 +191,7 @@ class Navigator:
                                         next_pos[2] - current_pos[2])
                         print ('next_move : ', next_move)
                         print ("relative_move : ", relative_pos)
+                        print ("next_pose: ", next_pos)
                         if not self.driver.algo.is_valid(next_pos, self.driver.get_obstacles_around()):
                             print ('Path not valid!')
                             break
@@ -290,12 +293,15 @@ class Navigator:
         #TODO
         pass
 
-
+    def do_hover(self):
+        #TODO
+        pass
 
 
     def set_target_postion(self, target_position):
         self.found_path = True
-        self.cur_target_position = target_position
+        self.cur_target_position = self.dg.continuous_to_discrete(target_position)
+        print("Current target position in grid: ", self.cur_target_position)
         #print("Set Current Position to: ", target_position[0], target_position[1], target_position[2])
 
     def get_latest_target(self):
@@ -432,7 +438,8 @@ class Navigator:
 if __name__ == '__main__':
     nav = Navigator()
 
-    nav.set_target_postion((80, 0, 2))
+    #FLU meters.
+    nav.set_target_postion((10, 0, 2.5))
     nav.keep_navigating()
 
 
