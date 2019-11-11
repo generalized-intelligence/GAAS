@@ -439,7 +439,7 @@ if __name__ == '__main__':
     nav = Navigator()
 
     #FLU meters.
-    nav.set_target_postion((10, 0, 2))
+    nav.set_target_postion((10, 0, 2.5))
     nav.keep_navigating()
 
 

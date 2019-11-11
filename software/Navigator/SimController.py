@@ -44,7 +44,7 @@ class Controller:
 
     def mav_move(self, x, y, z, yaw=None, abs_mode=True):
 
-        x, y, z = self.ned2enu(x, y, z)
+        # x, y, z = self.ned2enu(x, y, z)
 
         if abs_mode:
             self._takeoff_ned_xyz_abs(x, y, z)
