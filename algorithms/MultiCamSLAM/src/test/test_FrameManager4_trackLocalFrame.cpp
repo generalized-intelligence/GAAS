@@ -61,8 +61,8 @@ int main(int argc,char** argv)
     bool pnp_ransac_success_output;
     vector<bool> cam_match_success;
 
-
-    trackAndDoSolvePnPRansacMultiCam(*pframe1,*pframe2,R_,t_,pnp_ransac_success_output,cam_match_success);
+    int success_tracked_points_count;
+    trackAndDoSolvePnPRansacMultiCam(*pframe1,*pframe2,R_,t_,pnp_ransac_success_output,cam_match_success,&success_tracked_points_count);
     LOG(INFO)<<"pnp_ransac success:"<<pnp_ransac_success_output<<endl;
     for(int i = 0;i<cam_match_success.size();i++)
     {

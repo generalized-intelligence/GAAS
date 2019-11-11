@@ -24,11 +24,15 @@ namespace mcs
     typedef cv::Point3f p3dT;
     typedef std::pair<shared_ptr<cvMat_T>,shared_ptr<cvMat_T> > StereoMatPtrPair;
     typedef cv::Mat Feature;
+
+    const static int MAP_POINT_STATE_IMMATURE = 0;
+    const static int MAP_POINT_STATE_MATURE = 1;
     struct MapPoint
     {
         Feature feat;
         cv::Point3d pos;
-        bool state;
+        int state;
+        //int createdByFrameID = -1;
     };
     struct FeaturePoint {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
@@ -66,7 +70,9 @@ namespace mcs
         vector<CamInfo> cam_info_vec;
         vector<StereoCamConfig> cam_info_stereo_vec;
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;
-        vector<shared_ptr<MapPoint> > fetchMapPoints();
+        vector<vector<shared_ptr<MapPoint> > map_points;
+        vector<shared_ptr<MapPoint> > fetchMapPoints(){return map_points;}
+
 
         shared_ptr<vector<StereoMatPtrPair> > pLRImgs;
         shared_ptr<vector<shared_ptr<cvMat_T> > > pOriginalImgs,pDepthImgs;
@@ -74,7 +80,7 @@ namespace mcs
         vector<map<int,int> > map3d_to_2d_pt_vec;
         IMU_Data_T imu_info_vec;
         int frame_type;
-
+        bool isKeyFrame = false;
         Matrix3d rotation;
         Vector3d position;
 

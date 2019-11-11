@@ -12,8 +12,10 @@ namespace mcs
     //void doFindEssentialMatrix(Frame& f_prev,Frame& f_next);
     void doFindFundamentalMatrix();
     void doPnPRansacMultiCam_Using_BA(Frame& f1,Frame& f2,cv::Mat& output_r_mat,cv::Mat& output_t_vec,bool& output_optimize_success,vector<float>& residual_of_2dkps);
-    void trackAndDoSolvePnPRansacMultiCam(Frame& f1,Frame& f2,cv::Mat& output_r_mat,cv::Mat& output_t_vec,bool& output_frame_pnp_ransac_success,vector<bool>& output_cam_match_success)
+    void trackAndDoSolvePnPRansacMultiCam(Frame& f1,Frame& f2,cv::Mat& output_r_mat,cv::Mat& output_t_vec,
+                                bool& output_frame_pnp_ransac_success,vector<bool>& output_cam_match_success,int* ptotal_tracked_points_count = nullptr)
     {
+        int total_success_tracked_point_count = 0;
         ScopeTimer t1("trackAndDoSolvePnPRansacMultiCam() timer");
         bool isStereoMode = f1.frame_type==FRAME_TYPE_STEREO;
         if(isStereoMode)
@@ -90,7 +92,7 @@ namespace mcs
             cv::Rodrigues(output_r_mat,R_output);
             LOG(INFO)<<"in doSolvePnPRansacMultiCam stage6,output R_mat:\n"<<R_output<<"\n output t vec"<<output_t_vec<<endl;
             output_cam_match_success[i] = success;
-            if(success)
+            if(success)//一组摄像头成功
             {
                 int pnpransac_success_count = 0;
                 for(int j = 0;j<match_success.size();j++)
@@ -98,6 +100,7 @@ namespace mcs
                     if(match_success[j])
                     {
                         pnpransac_success_count+=1;
+                        total_success_tracked_point_count+=1; //只计算整组成功以后的成功点个数.失败的摄像头组整组都不算了.
                     }
                 }
                 LOG(INFO)<<"pnp_ransac_match_success!!matched:"<< pnpransac_success_count<<"/"<<pnp_ransac_input_p2d.size()<<endl;
@@ -112,6 +115,11 @@ namespace mcs
         if(success_count>=3)
         {
             output_frame_pnp_ransac_success = true;
+        }
+        LOG(INFO)<<"For all cams:total tracked points count:"<<total_success_tracked_point_count;
+        if(ptotal_tracked_points_count != nullptr)
+        {
+            *ptotal_tracked_points_count = total_success_tracked_point_count;
         }
         return;
 

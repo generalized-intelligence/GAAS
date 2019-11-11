@@ -63,7 +63,10 @@ public:
     {
         return this->pLastKF;
     }
-    shared_ptr<mcs::Frame> getLastFrame(){return this->pLastF;}
+    shared_ptr<mcs::Frame> getLastFrame()
+    {
+        return this->pLastF;
+    }
     void iterateWith4Imgs(shared_ptr<cv::Mat> img1,shared_ptr<cv::Mat> img2,shared_ptr<cv::Mat> img3,shared_ptr<cv::Mat> img4)
     {
         shared_ptr<mcs::Frame> pNewF;
@@ -75,9 +78,7 @@ public:
         {
             bool needNewKF = true;
             bool create_frame_success;
-
             pNewF = mcs::createFrameStereos(pvInputs,this->cam_config,create_frame_success,needNewKF);
-
             if(!ever_init)
             {
                 LOG(INFO)<<"init VO!"<<endl;//初始化VO.
@@ -117,7 +118,7 @@ public:
         }
         else
         {
-            bool needNewKF = false;
+            bool needNewKF =false;
             bool create_frame_success;
             last_frame_update_t = std::chrono::high_resolution_clock::now();
             pNewF = mcs::createFrameStereos(pvInputs,this->cam_config,create_frame_success,needNewKF);
@@ -158,9 +159,30 @@ private:
 
 };
 
+VO_simple* pVO;
 void FetchImageCallback(const sensor_msgs::ImageConstPtr& img1,const sensor_msgs::ImageConstPtr& img2,const sensor_msgs::ImageConstPtr& img3,const sensor_msgs::ImageConstPtr& img4)
 {
-
+    cv_bridge::CvImageConstPtr p1,p2,p3,p4;
+    shared_ptr<cv::Mat> m1,m2,m3,m4;
+    try
+    {
+        p1 = cv_bridge::toCvShare(img1);
+        p2 = cv_bridge::toCvShare(img2);
+        p3 = cv_bridge::toCvShare(img3);
+        p4 = cv_bridge::toCvShare(img4);
+        m1 = shared_ptr<cv::Mat> (new cv::Mat(p1->image));
+        m2 = shared_ptr<cv::Mat> (new cv::Mat(p2->image));
+        m3 = shared_ptr<cv::Mat> (new cv::Mat(p3->image));
+        m4 = shared_ptr<cv::Mat> (new cv::Mat(p4->image));
+    }
+    catch (cv_bridge::Exception& e)
+    {
+        LOG(ERROR)<<"cv_bridge exception: %s"<<e.what()<<endl;
+        ROS_ERROR("cv_bridge exception: %s", e.what());
+        return;
+    }
+    LOG(INFO)<<"Images caught!"<<endl;
+    pVO->iterateWith4Imgs(m1,m2,m3,m4);
 }
 
 
@@ -179,6 +201,8 @@ int main(int argc,char** argv)
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), front_left_sub, front_right_sub,down_left_sub,down_right_sub);
     sync.setMaxIntervalDuration(ros::Duration(0.01));
     sync.registerCallback(boost::bind(FetchImageCallback, _1, _2,_3,_4));
+    pVO = new VO_simple(argc,argv);
+    ros::spin();
 }
 
 

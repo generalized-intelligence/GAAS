@@ -160,6 +160,25 @@ namespace mcs
     */
     void OptFlowForFrameWiseTracking(cvMat_T& prev_img,cvMat_T& next_img,vector<KeyPoint>& priorior_kps,vector<Point2f>& output_original_p2f, vector<Point2f>& output_tracked_p2f,map<int,int>& tracked_point_index_to_prev_kps_index,vector<unsigned char>& v_track_success,bool& output_track_success)
     {
+
+//正反向光流验证参考.
+//        p0 = np.float32([tr[-1] for tr in self.tracks]).reshape(-1, 1, 2)
+//        p1, _st, _err = cv.calcOpticalFlowPyrLK(img0, img1, p0, None, **lk_params)//先正向,再反向.
+//        p0r, _st, _err = cv.calcOpticalFlowPyrLK(img1, img0, p1, None, **lk_params)
+//        d = abs(p0-p0r).reshape(-1, 2).max(-1)
+//        good = d < 1
+//        new_tracks = []
+//        for tr, (x, y), good_flag in zip(self.tracks, p1.reshape(-1, 2), good):
+//            if not good_flag:
+//                continue
+//            tr.append((x, y))
+//            if len(tr) > self.track_len:
+//                del tr[0]
+//            new_tracks.append(tr)
+//            cv.circle(vis, (x, y), 2, (0, 255, 0), -1)
+//        self.tracks = new_tracks
+//        cv.polylines(vis, [np.int32(tr) for tr in self.tracks], False, (0, 255, 0))
+
         output_track_success = false;
         tracked_point_index_to_prev_kps_index.clear();
         vector<float> err;
@@ -280,6 +299,32 @@ namespace mcs
         }
     }
     void createStereoMatchViaOptFlowMatching_MultiThread();//TODO
+    vector<vector<shared_ptr<MapPoint> > > createMapPointForKeyFrame(shared_ptr<Frame> pFrame)
+    {
+        vector<vector<shared_ptr<MapPoint> > > ret_;
+        for(int cam_index = 0;cam_index<pFrame->map2d_to_3d_pt_vec.size();cam_index++)
+        {
+            vector<shared_ptr <MapPoint> > cam_mps;
+            for(int i = 0;i<pFrame->p2d_vv.size();i++)//对每个2d点创建.
+            {
+                shared_ptr<MapPoint> pPoint(new MapPoint());
+                pPoint->feat = cv::Mat();//mat为空,暂时不提取特征.
+                if(pFrame->map2d_to_3d_pt_vec[cam_index].find(i)!=pFrame->map2d_to_3d_pt_vec[cam_index].end())
+                {
+
+                    Point3f P3fMapPoint= pFrame->p3d_vv.at(cam_index).at(pFrame->map2d_to_3d_pt_vec[cam_index].at(i) );
+                    pPoint->pos = Point3d(P3fMapPoint.x,P3fMapPoint.y,P3fMapPoint.z);//相对创建帧的位置.
+                    pPoint->state = MAP_POINT_STATE_MATURE;
+                }
+                else//点尚未被三角化.
+                {
+                    pPoint->state = MAP_POINT_STATE_IMMATURE;
+                }
+                cam_mps.push_back(pPoint);
+            }
+            ret_.push_back(cam_mps);
+        }
+    }
     shared_ptr<Frame> createFrameStereos(shared_ptr<vector<StereoMatPtrPair> >stereo_pair_imgs_vec,
                                       vector<StereoCamConfig>& cam_distribution_info_vec,
                                       bool& create_Frame_success,
@@ -306,17 +351,19 @@ namespace mcs
              bool create_stereo_successs = false;
              if(create_key_frame)
              {
+                 pF_ret->isKeyFrame = true;
                  map<int,int> kps_2d_to_3d,kps_3d_to_2d;
                  createStereoMatchViaOptFlowMatching(l,r,cam_distribution_info_vec[i],pF_ret->p2d_vv[i],pF_ret->p3d_vv[i],kps_2d_to_3d,kps_3d_to_2d,create_stereo_successs);
                  pF_ret->map2d_to_3d_pt_vec.push_back(kps_2d_to_3d);
                  pF_ret->map3d_to_2d_pt_vec.push_back(kps_3d_to_2d);
+                 pF_ret->map_points =  createMapPointForKeyFrame(pF_ret);
                  if(!create_stereo_successs)
                  {
                      create_Frame_success = false;
                  }
              }
              else
-             {//maybe detect gftt for optflow check is needed.TODO.
+             {//maybe detect gftt for optflow check is needed for opt check.TODO.
                  LOG(ERROR)<<"TODO:"<<endl;
              }
         }

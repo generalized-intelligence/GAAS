@@ -6,7 +6,7 @@
 
 #include "Frame.h"
 #include "FrameWiseGeometry.h"
-#include "SLAMOptimizationGraph.h"
+//#include "SLAMOptimizationGraph.h"
 
 
 using namespace std;
