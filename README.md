@@ -28,12 +28,6 @@
   * [Special Thanks](#special-thanks)
   * [中文 readme.md](https://github.com/generalized-intelligence/GAAS/blob/master/readme_zh.md)
 
-GAAS v0.7 Release (使用 systemback 安装)
-
-链接：https://pan.baidu.com/s/1HDu9Jmk1h1XCsnnfIdNl1w
-
-提取码：dz5u
-
 # What is GAAS?
 
 <img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" align="right" width="300px" alt="hardware">
