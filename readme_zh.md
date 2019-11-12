@@ -11,7 +11,7 @@
 
 [<img src = "https://s2.ax1x.com/2019/11/07/MkwXCR.png">](https://github.com/generalized-intelligence/GAAS/releases/tag/v0.7) 
 ---
-[<img src = "https://s2.ax1x.com/2019/09/16/nW76Bj.png">](https://gaas.gitbook.io/guide/handy-tools/gaastx2-jing-xiang)
+[<img src = "https://s2.ax1x.com/2019/11/12/M1FrVA.png">](https://www.julyedu.com/course/getDetail/196/0/1)
 
 <img src = "https://s2.ax1x.com/2019/09/20/nXrXjK.png">
 
