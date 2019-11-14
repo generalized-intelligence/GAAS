@@ -1,8 +1,8 @@
-### Scene Retrieving
+# Scene Retrieving
 
 Enabling the drone to recover its pose in a predefined map. By recovering its pose in a map, the drone can eliminate its acculated pose error. At the same time, the drone is capable of flying to a selected target in RVIZ.
 
-## How To Use
+### How To Use
 
 1. in ygz_slam, after building:
    
