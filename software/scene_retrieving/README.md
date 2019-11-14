@@ -32,18 +32,9 @@ If you open up an RVIZ window, if you built the package successfully, you can fi
 
 NOTE: The building corner selecting process should follow the number:
 
-  3 ___________ 4
-    |         |
-    |         |
-    |         |
-  2 _ _ _ _ _ _ 1
+<img src = "https://s2.ax1x.com/2019/11/14/MtxKuF.png">
   
   and do not forget to select the position of the door.
 
-  3 ___________ 4
-    |         |
-    |         |
-    |         |
-  2 _ _  5 _ _ 1
 
 
