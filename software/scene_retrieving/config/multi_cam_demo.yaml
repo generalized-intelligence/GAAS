@@ -1,0 +1,70 @@
+%YAML:1.0
+
+cams:  
+   -Mode: "stereo"
+    camMat1:  !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data: []
+    camMat2:  !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data: []
+    
+    camRTMat:  !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data: []
+    QMat:  !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data: [   1.        ,    0.        ,    0.        , -376.        ,
+                0.        ,    1.        ,    0.        , -376.        ,
+              0.        ,    0.        ,    0.        ,  376.        ,
+              0.        ,    0.        ,   -9.43396226,    0.        ]  # -9.43 if x_right > x_left
+    
+   #----
+   -Mode: "stereo"
+    camMat1:  !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data: []
+    camMat2:  !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data:  []
+    camRTMat:  !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data:  []
+    QMat:  !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data: [   1.        ,    0.        ,    0.        , -376.        ,
+                0.        ,    1.        ,    0.        , -376.        ,
+              0.        ,    0.        ,    0.        ,  376.        ,
+              0.        ,    0.        ,   -9.43396226,    0.        ]  # -9.43 if x_right > x_left
+   #---
+   -Mode: "mono"
+    camMat:  !!opencv-matrix
+        rows: 3
+        cols: 3
+        dt: d
+        data: []
+    camRTMat:  !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: d
+        data: []
+  
+
+
+
