@@ -1,0 +1,10 @@
+%YAML:1.0
+MODE: "stereo"
+VOC_FILE_PATH: "/home/gi/xxxx.voc"
+
+
+Q_mat:  !!opencv-matrix
+   rows: 4
+   cols: 4
+   dt: d
+   data: [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
