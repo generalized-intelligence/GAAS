@@ -1,42 +1,29 @@
-Retrieving a scene means to find a similar scene from a 3d model or map by loop closing algorithm.
-Once similar 2d images has been retrieved,a 3d point mapping and scale solving task shall be done; finally the pos and attitude of camera can be resolved.
+### Scene Retrieving
 
-Required External Modules:
+Enabling the drone to recover its pose in a predefined map. By recovering its pose in a map, the drone can eliminate its acculated pose error. At the same time, the drone is capable of flying to a selected target in RVIZ.
 
-1.OpenSfM.(a little change has been introduced for feature file output.) located under /algorithms/sfm
+## How To Use
 
-    To get ready for usage:
-        pip install -r requirements.txt
-        python setup.py install
-
-2.nlohmann json.
-    
-    No need for configuring.
-
-3.Loop Closing. located under /algorithms/loop\_closing.
-    
-    mkdir build && cd build&&cmake ..&&make -j4
-
-4.roseus.  sudo apt install ros-xxx-roseus
-
-
-"场景重定位"功能可以支持通过视觉特征,重新在已知场景中通过回环检测等方法定位摄像机的位置.
-相似的图像被检索到之后,将会启动一次三维匹配.最终相机的姿态和位置将会被求解.
-依赖外部模块:
-
-1.OpenSfM(特征文件输出方式稍有更改.) 在 /algorithms/sfm目录下.
+1. in ygz_slam, after building:
    
-    配置方法为在该目录下依次执行:
-        pip install -r requirements.txt
-        python setup.py install
+   sh makescene.sh
+   
+   at the same time, use controller to control the drone to fly aroung an environment, and by doing this, the environment, consisting of points and key poses, can be serialized in a file ended with ".scene", copy generated folder "image" to the root of
+scene_retriving. Then continue to the next step.
 
-2.nlohmann json.
+2. in a terminal:
     
-    直接编译scene_retreving模块即可.
+    sh generate.sh
+    
+3. clone and build the following package for selecting building corners:
 
-3.Loop Closing. 在algorithms/loop\_closing目录.
+    https://github.com/Doodle1106/visualization_tutorials
     
-    mkdir build && cd build&&cmake ..&&make -j4
+4. after building:
+    
+    sh point_and_fly.sh
+    
+4. at the same time, open a RVIZ window, use plantFlag to select 4 building corners and door position to provide a prior for path finding problem( Working in Progress), then takeoff the drone, and select a position using "2D NAV Goal".
 
 
 
