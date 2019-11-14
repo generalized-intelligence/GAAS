@@ -19,11 +19,31 @@ scene_retriving. Then continue to the next step.
 
     https://github.com/Doodle1106/visualization_tutorials
     
+If you open up an RVIZ window, if you built the package successfully, you can find the "Plant Flag" button as shown in the image.
+
+<img src = "https://s2.ax1x.com/2019/11/14/MtjydA.png">
+
+    
 4. after building:
     
     sh point_and_fly.sh
     
-4. at the same time, open a RVIZ window, use plantFlag to select 4 building corners and door position to provide a prior for path finding problem( Working in Progress), then takeoff the drone, and select a position using "2D NAV Goal".
+4. at the same time, open a RVIZ window, use "Plant Flag" to select 4 building corners and door position to provide a prior for path finding problem( Working in Progress), then takeoff the drone, and select a position using "2D NAV Goal". The drone will fly to the selected target, and the green marker appeared in RVIZ are the recovered pose.
 
+NOTE: The building corner selecting process should follow the number:
+
+  3 ___________ 4
+    |         |
+    |         |
+    |         |
+  2 _ _ _ _ _ _ 1
+  
+  and do not forget to select the position of the door.
+
+  3 ___________ 4
+    |         |
+    |         |
+    |         |
+  2 _ _  5 _ _ 1
 
 
