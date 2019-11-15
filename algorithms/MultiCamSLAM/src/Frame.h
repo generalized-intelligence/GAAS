@@ -27,12 +27,17 @@ namespace mcs
 
     const static int MAP_POINT_STATE_IMMATURE = 0;
     const static int MAP_POINT_STATE_MATURE = 1;
+    struct Frame;
+    struct MapPoint;
+    struct FeaturePoint;
     struct MapPoint
     {
         Feature feat;
         cv::Point3d pos;
         int state;
         //int createdByFrameID = -1;
+        weak_ptr<Frame> pCreatedFrame;
+        int optimization_graph_index = -1;//在优化图中的index.
     };
     struct FeaturePoint {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
@@ -72,6 +77,29 @@ namespace mcs
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;
         vector<vector<shared_ptr<MapPoint> > map_points;
         vector<shared_ptr<MapPoint> > fetchMapPoints(){return map_points;}
+        map<int,int> map_p3d_point_id_to_optimization_graph_3dpoint_id; //对应表.
+        int get_p3dindex_to_landmark_index(int p3d_index)
+        {
+            if(map_p3d_point_id_to_optimization_graph_3dpoint_id.find(p3d_index)!=map_p3d_point_id_to_optimization_graph_3dpoint_id.end())
+            {
+                return map_p3d_point_id_to_optimization_graph_3dpoint_id;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        void set_p3d_landmark_index(int p3d_index,int landmark_index)
+        {
+            if(map_p3d_point_id_to_optimization_graph_3dpoint_id.find(p3d_index)!=map_p3d_point_id_to_optimization_graph_3dpoint_id.end())
+            {
+                LOG(ERROR)<<"ERROR in set_p3d_landmark_index:already exist!"<<endl;
+            }
+            else
+            {
+                map_p3d_point_id_to_optimization_graph_3dpoint_id[p3d_index]=landmark_index;
+            }
+        }
 
 
         shared_ptr<vector<StereoMatPtrPair> > pLRImgs;
@@ -83,6 +111,7 @@ namespace mcs
         bool isKeyFrame = false;
         Matrix3d rotation;
         Vector3d position;
+        int frame_id = -1;
 
 
         vector<CamInfo> get_cam_info()
@@ -92,6 +121,22 @@ namespace mcs
         vector<StereoCamConfig> get_stereo_cam_info()
         {
             return cam_info_stereo_vec;
+        }
+        int get_cam_num()
+        {
+            if(this->frame_type == FRAME_TYPE_STEREO)
+            {
+                return cam_info_stereo_vec.size();
+            }
+            else if(this->frame_type == FRAME_TYPE_DEPTH)
+            {
+                return cam_info_vec.size()
+            }
+            else
+            {
+                LOG(ERROR)<<"Unsupported cam type in Frame::get_cam_num()."<<endl;
+                return -1;
+            }
         }
         void removeOriginalImages()
         {

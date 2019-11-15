@@ -115,6 +115,7 @@ namespace mcs
         }
     private:
         FrameSlidingWindow sliding_wind;
+        //track_status;
     };
     
     

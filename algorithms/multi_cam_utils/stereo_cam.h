@@ -34,6 +34,38 @@ public:
     {
         return (this->rt_mat);
     }
+    virtual cv::Mat get_RMat()
+    {
+        return this->rt_mat.colRange(0,3).rowRange(0,3);
+    }
+    virtual void get_tMat(float& x,float& y,float& z)
+    {
+        //return this->rt_mat.colRange(3,4).rowRange(0,3);
+        x = this->rt_mat.at<float>(3,0);
+        y = this->rt_mat.at<float>(3,1);
+        z = this->rt_mat.at<float>(3,2);
+    }
+    void getLCamMatFxFyCxCy(float& fx,float& fy,float& cx,float& cy)
+    {
+        auto k = this->camera1_mat;
+        fx = k.at<float>(0,0);
+        fy = k.at<float>(1,1);
+        cx = k.at<float>(0,2);
+        cy = k.at<float>(1,2);
+    }
+    void getRCamMatFxFyCxCy(float& fx,float& fy,float& cx,float& cy)
+    {
+        auto k = this->camera2_mat;
+        fx = k.at<float>(0,0);
+        fy = k.at<float>(1,1);
+        cx = k.at<float>(0,2);
+        cy = k.at<float>(1,2);
+    }
+    double getBaseLine()
+    {
+        LOG(ERROR)<<"in StereoCamConfig::getBaseLine():Maybe incorrect!"<<endl;
+        return (1.0/(this->q_mat.at<float>(2,3)* (double)1.0))/this->camera1_mat.at<float>(0,0); //q[2,3] is camera bf.
+    }
     cv::Mat getQMat()
     {
         return this->q_mat;

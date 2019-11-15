@@ -14,27 +14,6 @@ namespace mcs
 {
     using namespace std;
     using namespace cv;
-    /*
-    //part0 typedefs.
-    typedef std::vector<Vector2f, Eigen::aligned_allocator<Vector2f> > VecVector2f;
-
-
-    #if USE_UMAT_AS_TYPE == 1
-    typedef cv::UMat cvMat_T; // use UMat to enable Transparent API and OpenCL acceleration.
-    #else
-    typedef cv::Mat cvMat_T;
-    #endif
-    typedef struct
-    {
-        std::vector<KeyPoint> kps;
-        cvMat_T desp;
-    }PointWithFeatureT;
-    const static int KEYPOINT_METHOD_GFTT = 0;
-    const static int KEYPOINT_METHOD_ORB = 1;
-
-    const static int OPT_FLOW_FARNE_BACK = 0;
-    const static int OPT_FLOW_PYRLK = 1;
-    */
     const static cv::Ptr<cv::ORB> orb = cv::ORB::create(1000);
     //const static auto brief = cv::xfeatures2d::BriefDescriptorExtractor::create();
     const static auto gftt = cv::GFTTDetector::create(500,  // maximum number of corners to be returned
@@ -289,7 +268,7 @@ namespace mcs
                 z = matp1.at<float>(2,0);
                 map_2d_to_3d_pts[i] = p3d_output.size();
                 map_3d_to_2d_pts[p3d_output.size()] = i;
-                p3d_output.push_back(Point3f(x,y,z));
+                p3d_output.push_back(p3dT(x,y,z));
             }
         }
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:points matched success num:"<<checked_l.size()<<endl;
@@ -339,7 +318,8 @@ namespace mcs
         pF_ret->p3d_vv.resize(stereo_pair_imgs_vec->size());
         for(int ci_index=0;ci_index<cam_distribution_info_vec.size();ci_index++)
         {
-            pF_ret->cam_info_vec.push_back(static_cast<CamInfo&>(cam_distribution_info_vec[ci_index]));
+            //pF_ret->cam_info_vec.push_back(static_cast<CamInfo&>(cam_distribution_info_vec[ci_index]));
+            pF_ret->cam_info_stereo_vec.push_back(cam_distribution_info_vec[ci_index]);
         }
         for(int i = 0;i<stereo_pair_imgs_vec->size();i++ )
         {

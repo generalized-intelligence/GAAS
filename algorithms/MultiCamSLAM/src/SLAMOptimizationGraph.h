@@ -19,6 +19,12 @@
 #include <gtsam/nonlinear/ISAM2.h>
 #include <gtsam/nonlinear/ISAM2Params.h>
 #include <gtsam/slam/SmartFactorParams.h> //like chi2 outlier select.
+#include <gtsam/slam/GeneralSFMFactor.h>
+
+#include <gtsam/geometry/Cal3_S2Stereo.h>
+#include <gtsam/slam/StereoFactor.h>
+#include <gtsam_unstable/slam/SmartStereoProjectionPoseFactor.h>
+
 
 #include <gtsam/slam/ProjectionFactor.h>
 #include <gtsam/slam/PoseTranslationPrior.h>
@@ -38,6 +44,17 @@ using namespace std;
 
 namespace mcs
 {
+    struct landmark_properties;
+
+
+    struct landmark_properties
+    {
+        int landmark_reference_time = 0;
+        weak_ptr<Frame> pCreatedByFrame;
+        weak_ptr<Frame> pLastObservedByFrame;
+        shared_ptr<SmartStereoProjectionPoseFactor> pRelativeStereoSmartFactor;//目前还没实现处理无穷远.
+
+    }
     class SLAMOptimizationGraph
     {
     private:
@@ -46,6 +63,16 @@ namespace mcs
         ISAM2 isam;//(parameters);
         NonlinearFactorGraph graph;
         Values initialEstimate;
+        cv::FileStorage* pfSettings;
+        vector<StereoCamConfig> stereo_config;
+        vector<CamInfo> rgbd_config;
+        int landmark_id = 0;
+        vector<landmark_properties> vlandmark_properties;//暂时用不到.用到时候可以直接拿.
+        int frame_id = 0;
+        vector<Cal3_S2> v_cams_gtsam_config_stereo_left;
+        vector<Cal3_S2Stereo> v_cams_gtsam_config_stereo;
+        vector<Cal3_S2> v_cams_gtsam_config_depth;
+
 
 
 
@@ -55,14 +82,44 @@ namespace mcs
             //...
         }
 
-        void initCams();
+        void initCamsStereo(vector<StereoCamConfig>& cams)
+        {
+            for(auto c:cams)
+            {
+                float fx,fy,cx,cy;
+                c.getLCamMatFxFyCxCy(fx,fy,cx,cy);
+                Cal3_S2 k_l(fx,fy,0,cx,cy);//这种形式的相机标定是可以优化的.如果需要,可以后续在重投影过程中附加进行一个内参优化.
+                //noiseModel::Diagonal::shared_ptr calNoise = noiseModel::Diagonal::Sigmas((Vector(5) << 500, 500, 0.1, 100, 100).finished());
+                //就像这样.具体参考examples/SelfCalibrationExample.cpp
+                v_cams_gtsam_config_stereo_left.push_back(k_l);//先建立主视觉的K.
+
+                //double fx, double fy, double s, double u0, double v0, double b//这要求双目rectify之后共享一组fx,fy cx,cy且必须旋转也对齐.需要预处理.
+                double b = c.getBaseLine();
+                Cal3_S2Stereo k_stereo(fx,fy,0,cx,cy,b);
+                this->v_cams_gtsam_config_stereo.push_back(k_stereo);
+            }
+        }
+        void initCamsDepth(vector<CamInfo>& cams)
+        {
+            for(auto c:cams)
+            {
+                float fx,fy,cx,cy;
+                c.getCamMatFxFyCxCy(fx,fy,cx,cy);
+                Cal3_S2 k_(fx,fy,0,cx,cy);
+                v_cams_gtsam_config_depth.push_back(k_);
+            }
+        }
         shared_ptr<Frame> getLastKF();
         void addSingleCamObservationFactor(Matrix3d camR,Vector3d camt,vector<p2dT> observation2d,vector<shared_ptr<MapPoint> > coresponding_map_pts);
         void generateMapPointsCorespondingToStereoKFObservation(Matrix3d camR,Vector3d camt,
                                                                 vector<p3dT> observation3d,vector<p2dT> observation2d,
                                                                 vector<shared_ptr<MapPoint> > &output_map_points);//根据关键帧观测的p2d,p3d生成对应的Map.
 
-        void addOrdinaryStereoFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,bool useSmartFactor = false)
+        const int METHOD_SIMPLE_MONOCULAR_REPROJECTION_ERROR = 0;
+        const int METHOD_SIMPLE_STEREO_REPROJECTION_ERROR = 1;
+        const int METHOD_SMARTFACTOR_MONOCULAR_REPROJECTION_ERROR = 2;
+        const int METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR = 3;//可以做位操作.
+        void addOrdinaryStereoFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int method = METHOD_SIMPLE_MONOCULAR_REPROJECTION_ERROR)
         {
             int total_success_tracked_point_count = 0;
             ScopeTimer t1("addOrdinaryStereoFrameToBackend() timer");
@@ -74,10 +131,52 @@ namespace mcs
             LOG(INFO)<<"in addOrdinaryStereoFrameToBackend() stage3"<<endl;
 
             auto p3ds_vv = pKeyFrameReference->p3d_vv;
-            auto pts_vv = pFrame->p2d_vv;
+            //auto pts_vv = pFrame->p2d_vv;
             //pts_vv = OptFlowForFrameWiseTracking(*pframe2);//track frame2 获取对应位置的点...
-            LOG(INFO)<<"in OptFlowForFrameWiseTracking stage4"<<endl;
-            for(int i = 0;i < imgs_prev.size();i++)
+
+            if(pFrame->frame_id != -1)
+            {
+                LOG(ERROR)<<"ERROR: in addOrdinaryStereoFrameToBackendAndOptimize():frame id exists!"<<endl;
+                return;
+            }
+            pFrame->frame_id = frame_id;
+            LOG(INFO)<<"In addOrdinaryStereoFrameToBackendAndOptimize(): step<1> create pose for each camera."<<endl;
+            int cam_count = pFrame->get_cam_num();
+            for(int i = 0;i < cam_count;i++)//对每个相机,先创建它的Pose3优化节点.
+            {
+                if(frame_id ==0 )//第一个frame.
+                {
+                    Eigen::Matrix4d cam_to_body_rt_mat,final_rt_mat;
+                    cv2eigen(pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_body_rt_mat);
+                    final_rt_mat = cam_to_body_rt_mat;
+                    final_rot = cam_to_body_rot;
+                    initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(final_rot));
+                    //添加初始绝对位置约束.Rotation可变(重力对齐),translation不可变(绝对坐标系创建的点).
+                    if(i == 0)//就算是这种情况,也只对第一组摄像头定绝对位置.
+                    {
+                        gtsam::noiseModel::Diagonal::shared_ptr priorFrame_Cam0_noisemodel = gtsam::noiseModel::Diagonal::Variances (
+                                    ( gtsam::Vector ( 6 ) <<0.1, 0.1, 0.1, 1e-6, 1e-6, 1e-6 ).finished()
+                                );
+                        graph.emplace_shared<PriorFactor<Pose3> > (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel);
+                    }
+                }
+                else
+                {
+                    const Pose3* p_last = &(currentEstimate.at(Symbol('x',(frame_id - 1)*cam_count + i).cast<Pose3>());
+                    initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(*p_last)); // 用上一帧的对应相机优化结果作为初始估计.
+                }
+                //加入相机位置约束.
+                if(i != 0)
+                {
+                    noiseModel::Diagonal::shared_ptr noise_model_between_cams = gtsam::noiseModel::Diagonal::Variances (
+                                ( gtsam::Vector ( 6 ) <<1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6 ).finished()); //1mm,0.1度.
+                    Eigen::Matrix4d cam_to_cam0_rt_mat;
+                    cv2eigen(pFrame->cam_info_stereo_vec[0].getRTMat().inv()* cam_info_stereo_vec[i].getRTMat(),cam_to_cam0_rt_mat);
+                    graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('x',frame_id*cam_count)),Symbol(frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
+                                                                  noise_model_between_cams);//用非常紧的约束来限制相机间位置关系.
+                }
+            }
+            for(int i = 0;i < cam_count;i++)
             {
                 LOG(INFO)<<"Ref keyframe p3ds_vv.size():"<<p3ds_vv.size()<<";new frame p2ds_vv.size():"<<pts_vv.size()<<endl;
 
@@ -85,11 +184,11 @@ namespace mcs
                 cv::Mat camMat;
                 if(isStereoMode)
                 {
-                    camMat = f2.get_stereo_cam_info()[i].getCamMat();
+                    camMat = pKeyFrameReference->get_stereo_cam_info()[i].getCamMat();
                 }
                 else
                 {
-                    camMat = f2.get_cam_info()[i].getCamMat();
+                    camMat = pKeyFrameReference->get_cam_info()[i].getCamMat();
                 }
                 LOG(INFO)<<"in OptFlowForFrameWiseTracking stage4.2"<<endl;
                 output_r_mat = cv::Mat();
@@ -98,30 +197,97 @@ namespace mcs
                 //TODO:multi_thread implementation.
                 vector<p3dT> input_p3d_to_optimize;
                 vector<p2dT> input_p2d_to_optimize;
-                {//step<1>.track 2d pts.
+                {//step<1> form optimization problem.
                     vector<p3dT> vp3d_pts = p3ds_vv[i];
-                    vector<p2dT> vp2d_pts;
+                    vector<p2dT> vp2d_pts;//要追踪的参考帧 kps.
                     for(int index_p3d=0;index_p3d<vp3d_pts.size();index_p3d++)
                     {
-                        vp2d_pts.push_back(f1.p2d_vv[i][f1.map3d_to_2d_pt_vec[i][index_p3d] ]);
+                        vp2d_pts.push_back(pKeyFrameReference->p2d_vv[i][pKeyFrameReference->map3d_to_2d_pt_vec[i][index_p3d] ]);//查找对应关键帧的p2d.只追踪成功三角化的点.
                     }
                     vector<cv::KeyPoint> toTrack_2dpts;
-                    cv::KeyPoint::convert(vp2d_pts,toTrack_2dpts);
-                    vector<Point2f> original_remaining_2dpts,tracked_nextimg_2dpts;
+                    cv::KeyPoint::convert(vp2d_pts,toTrack_2dpts);//要跟踪的点.
+                    vector<Point2f> original_remaining_2dpts,tracked_nextimg_2dpts;//原始关键帧跟踪成功的点,在当前帧跟踪得到的下一个点.
                     vector<unsigned char> v_pt_track_success;
                     bool output_track_success;
-                    map<int,int> tracked_kps_to_original_kps_map_output;
+                    map<int,int> tracked_kps_to_original_kps_map_output;//跟踪到的2d点到原始2d点的id to id map.
                     //step <1>. do opt flow.
                     OptFlowForFrameWiseTracking(*(imgs_prev[i]),*(imgs_next[i]),toTrack_2dpts,original_remaining_2dpts,tracked_nextimg_2dpts,tracked_kps_to_original_kps_map_output,v_pt_track_success,output_track_success);
-
-
                     for(int index_p3d = 0;index_p3d<vp3d_pts.size();index_p3d++)
                     {
-                        int p2d_index = tracked_kps_to_original_kps_map_output[index_p3d];
+                        int p2d_index = tracked_kps_to_original_kps_map_output[index_p3d];//原始关键帧要追踪的2d点的index(同时也是p3d的真实index)失败是-1.
                         if(p2d_index>=0)//a match has been found.
                         {
-                            input_p2d_to_optimize.push_back(vp2d_pts[p2d_index]);
-                            input_p3d_to_optimize.push_back(vp3d_pts[p2d_index]);
+                            //TODO:
+                            //1.检查这个map_point是否有这个对应的landmark;没有就先创建点.
+                            int map_point_relavent_landmark_id = pKeyFrameReference->get_p3dindex_to_landmark_id(p2d_index);//获取对应Landmark的id.失败返回-1.
+                            if(map_point_relavent_landmark_id == -1) // 第一次被另一个帧观测.
+                            {
+
+
+                                int reference_kf_id = pKeyFrameReference->frame_id;
+                                const Pose3* p_kf_pose3 = &(currentEstimate.at(Symbol('x',reference_kf_id*cam_count + i).cast<Pose3>());
+                                Matrix3d kf_rot = p_kf_pose3->rotation().matrix();
+                                Vector3d kf_trans = p_kf_pose3->translation().vector();
+                                Vector3d p3d_relative_to_cam;
+                                Vector2d reprojected_p2d;
+                                cv2eigen(vp3d_pts.at(p2d_index),p3d_relative_to_cam);
+                                cv2eigen(vp2d_pts.at(p2d_index),reprojected_p2d);
+
+                                Vector3d point_pos_initial_guess = kf_rot*p3d_relative_to_cam + kf_trans; //TODO:通过对应关键帧计算其初始位置估计,所有都变换到一个坐标系下面.
+                                //创建待优化点.
+                                initialEstimate.insert(Symbol('L',landmark_id),
+                                                       gtsam::Point3(point_pos_initial_guess)
+                                                       );//landmark.
+
+                                //
+                                pKeyFrameReference->set_p3d_landmark_id(p2d_index,landmark_id);  //绑定对应关系.
+                                map_point_relavent_landmark_id = landmark_id;
+                                //创建在参考关键帧的投影约束.注意:这里没有,也不应该对'L'[landmark_id]进行任何的prior约束!
+
+                                //这个不行.这个没有引入尺度信息,仅仅靠摄像机间的尺度信息和初始位置估计太不可靠了,必须有约束.
+                                //这里应该是只能选是否用smart factor,factor的类型必须是Cal3_S2Stereo,而不能是GenericProjectionFactor<...,...,Cal3_S2>.
+                                //method<1> 最普通的投影误差,没有任何技巧.
+                                //graph.emplace_shared<GenericProjectionFactor<Pose3, Point3, Cal3_S2> >(
+                                //            measurement, measurementNoise, Symbol('X',reference_kf_id*cam_count + i), Symbol('L', map_point_relavent_landmark_id), this->v_cams_gtsam_config_stereo_left[i]);
+                                //method<2>.GenericStereoFactor
+                                graph.emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(520,//左目的u
+                                                                                                      480,//右目的u
+                                                                                                      440),//观测的v.
+                                                                                         model,
+                                                                                         Symbol('X',reference_kf_id*cam_count + i),
+                                                                                         Symbol('L', map_point_relavent_landmark_id),
+                                                                                         this->v_cams_gtsam_config_stereo[i]);//创建双目观测约束.
+                                //method<4>.SmartFactor of GenericStereoFactor
+
+                                //这种情况下,smartFactor本身就是landmark,无需额外在创建了
+                                auto smart_stereo_factor = SmartStereoProjectionPoseFactor::shared_ptr(
+                                                                new SmartStereoProjectionPoseFactor(gaussian, params));
+                                graph.push_back(smart_stereo_factor);
+                                smart_stereo_factor->add(StereoPoint2(xl, xr, y),Symbol('X',reference_kf_id*cam_count + i),this->v_cams_gtsam_config_stereo[i]);
+                                landmark_properties lp_;
+                                //TODO:填上其他属性.这个lp_如果不用smart factor的话现在看来不一定要用.
+                                lp_.pRelativeStereoSmartFactor = smart_stereo_factor;
+                                vlandmark_properties.push_back(lp_);
+                                landmark_id++;
+                            }
+                            //2.不管是不是第一次被观测,都要创建在当前帧map_point对应的landmark 与 2d投影点 的gtsam factor约束.
+                            //smartFactors.at(map_point_relavent_landmark_id)->add(StereoPoint2(xl, xr, y), X(frame), K);//使用SmartStereo的方法.这里使用Mono(参考ISAM2Example_SmartFactor.cpp).
+                            //method <1> 创建最普通的投影误差.
+                            if(method == 0)
+                            {
+                                graph.emplace_shared<GenericProjectionFactor<Pose3, Point3, Cal3_S2> >(
+                                      measurement, measurementNoise, Symbol('X',reference_kf_id*cam_count + i), Symbol('L', map_point_relavent_landmark_id), this->v_cams_gtsam_config_stereo_left[i]);
+                            }
+                            //method <2> 创建smart stereo factor上面的约束.
+                            if(method == 1)
+                            {
+                                smart_factor_ = this->vlandmark_properties[map_point_relavent_landmark_id];
+                                smart_factor_.add();//模仿上面的.TODO.这种的缺点是没法再用mono约束这个点了,视野会比较窄...
+                                //可能对不同的点需要做不同的方式处理.需要一个判断逻辑.
+                            }
+                            //TODO:处理其他类型...
+                            //input_p2d_to_optimize.push_back(vp2d_pts[p2d_index]);
+                            //input_p3d_to_optimize.push_back(vp3d_pts[p2d_index]);
                         }
                     }
                 }
@@ -147,7 +313,7 @@ namespace mcs
                 //{
                 //    for(each_2d_3d_track)
                 //    {
-                //        if(useSmartFactor)
+                //        if(method == ....)//TODO.
                 //        {...}
                 //        else
                 //        {...}
@@ -190,6 +356,7 @@ namespace mcs
             {
                 *ptotal_tracked_points_count = total_success_tracked_point_count;
             }
+            frame_id++;//记录这是第几个frame.
             return;
 /*
  *
@@ -223,14 +390,14 @@ namespace mcs
             // *3. check with pnp ransac.
 */
         }
-        void addStereoKeyFrameToBackEndAndOptimize(shared_ptr<Frame> pKeyFrame,bool useSmartFactor = false)
+        void addStereoKeyFrameToBackEndAndOptimize(shared_ptr<Frame> pKeyFrame,int method = METHOD_SIMPLE_MONOCULAR_REPROJECTION_ERROR)
         {
             if(!pKeyFrame->isKeyFrame)
             {
                 LOG(ERROR)<<"ERROR:In insertKeyFrameToBackEnd: frame is not keyframe!"<<endl;
                 return;
             }
-            this->addOrdinaryStereoFrameToBackendAndOptimize(pKeyFrame,getLastKF(),useSmartFactor);//先像处理普通帧一样,处理跟踪和定位问题.
+            this->addOrdinaryStereoFrameToBackendAndOptimize(pKeyFrame,getLastKF(),method);//先像处理普通帧一样,处理跟踪和定位问题.
             //从这里开始,这一帧的位置已经被初步优化.
             pKeyFrame->map_points = generateMapPointsCorespondingToStereoKFObservation();//创建新地图点.
 
@@ -254,7 +421,7 @@ namespace mcs
                 for(p2dT& p2d_:vP2ds)
                 {
                     //add relative perspective factor
-                    if(useSmartFactor)
+                    if(method == METHOD_SIMPLE_MONOCULAR_REPROJECTION_ERROR) //....处理对应方法...TODO.
                     {
                         if (smartFactors.count(landmark_id) == 0) {//只能对已经观测一次,这里又观测一次的点做优化.只有一次观测会引发异常.
                           auto gaussian_reprojection_error = noiseModel::Isotropic::Sigma(3, 1.0);
@@ -304,10 +471,7 @@ namespace mcs
         //{
         //    graph.emplace_shared(GeneralICPFactor<Pose3,Point3>(Symbol('c',cam_index + cam_num*frame_index),p3d,Noise ....));//bind with relative camera.
         //}
-    private:
-        cv::FileStorage* pfSettings;
-        vector<StereoCamConfig> stereo_config;
-        vector<CamInfo> rgbd_config;
+
     };
     /*
         void initCams();
