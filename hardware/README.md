@@ -8,47 +8,47 @@ This is a list of hardware that we used for testing. You may use the same hardwa
 
 <img src="https://s2.ax1x.com/2019/02/20/k2Jruj.jpg" align="right" width="400px" alt="GA">
 
-Frame and power:
+### Frame and Power:
 
-  Frame: JMRRC GF360
+  Frame: JMRRC GF360 - One Unit
   
-  Motor: T-Motor AIR GEAR 350
+  Motor: T-Motor AIR GEAR 350 - One Unit
   
-  Propeller: T-Motor T9545-AB
+  ESC: hobywing mini 20A - Four Units
   
-  ESC: hobywing XRotor micro 20A BLHeli 3-4S
+  Battery: 4s 5300 25c - Two Units
   
-Flight control and Sensor:
+  Charger: ISDT Q6 PRO + power switch - One Unit
+  
+### Flight control and Sensor:
 
-  Flight control: Micro Pix
+  Flight control: Micro Pix + Ammeter - One Unit
   
-  GPS: U-blox neo M8N + hmc5883l
-  
-  Ampmeter: Shenyang Yingfeng Technology 3-6S 60A
+  GPS: U-blox neo M8N + hmc5883l - One Unit
   
   Laser: LIDAR Lite V3 （Optional）
   
-  Optic Flow: PX4 FLOW
+  Optic Flow: PX4 FLOW - One Unit
   
-Communication equipment:
-
-  Radio: CUAV LINK 900mhz 250mw
+  Computational unit: Intel up2 CPU N4200 8G+128G - One Unit
   
-  Receiver: Frsky XM+
+  Camera: Occipital Structure Core 3D - One Unit or more
   
-  Battray: ACE 3S 5300mah 30C This configuration can fly for about 14 minutes at an outdoor temperature of 0-5 °C. It is believed that better outdoor performance will be achieved under better outdoor conditions.
+### Communication equipment:
+
+  Radio: 900Mhz 100mw - One Unit
   
-Hardware Blueprint:
+  Receiver: Frsky XM+ - One Unit
+  
+  Controller: Frsky X9D+ - One Unit
+  
+### Miscellaneous
+  I2C
+  XT60
+  Anti-vibration plate: CC3D 
+  5V10A DC-DC 
 
-  1. Test the stability of each brand of binocular camera.
-   
-  2. Design a 3D printing (CNC) housing for the TX2 + TX2 base + two sets of binoculars.
-
-  3. Optimize the power supply for the TX2 master.
-
-  4. Optimize power configuration and PID based on existing tester configurations to provide a more efficient flight platform.
-
-Related parameter settings for PX4:
+### Related parameter settings for PX4:
 
 EKF2_AID_MASK   Attitude control sensor fusion 
 
@@ -78,55 +78,48 @@ hardware 目录放置推荐的硬件配置，方便使用者购买相应的元�
 
 https://item.taobao.com/item.htm?id=591140560551
 
-下面是我们使用的测试设备明细：
+### 我们使用的测试设备明细：
 
 为了方便室内测试和日常维护，我们并没有选取过大或者过小的机型，优秀的性能和便于维护性是我们选配这架无人机的初衷。
 
-机架动力：
+机架 猛禽360机架	1	套
 
-   机架：猛禽 360轴距 碳纤维机架 
+好赢 乐天 mini 20A	4	个
 
-   电机：T-Motor AIR GEAR 350 电机
+T MOTOR Air 350 (不含电调)	1	套
 
-   螺旋桨： T-Motor T9545-AB
+飞控 micro Pix + 电流计	1	套
 
-   电子调速器： hobywing XRotor micro 20A BLHeli 3-4S
+GPS u blox - M8N    	1	个
 
-飞行控制设备及传感器：
- 
-   飞行控制器： 沈阳迎风科技  Micro Pix
+数传 900Mhz 100mw	1	对
 
-   GPS ：U-blox neo M8N + hmc5883l
-   
-   电流计：沈阳迎风科技 3-6S 60A电流计
-   
-   激光：LIDAR Lite V3
-   
-   光流：PX4 FLOW
-   
-通讯设备：
-    
-   电台：CUAV LINK 900mhz 250mw
-   
-   接收机：Frsky XM+
-   
-电池： 格瑞普（格式） ACE 3S 5300mah 30C
+光流 权盛光流	1	套
 
-   该配置在室外气温0-5℃可以飞行约 14 分钟，相信在更好的室外条件下会获得更好的续航表现。 
-   
-   
-当前计划：   
-   
-1.测试各品牌双目相机的稳定性。
-   
-2.为 TX2 + TX2 底版 + 两组双目设计 3D 打印（CNC）外壳。 
+intel up2 CPU N4200 8G+128G	1	套
 
-3.为 TX2 底版做供电优化。
+Occipital Structure Core 3D	1	套
 
-4.在现有的测试机配置基础上优化动力配置及 PID，提供更高效的飞行平台。
+5V10A DCDC	1	个
+
+3D 打印摄像头支架	1	个
+
+CC3D 减震	1	套
+
+I2C 分线板	1	套
+
+XT60公母头	4	对
+
+接收机 frsky XM+	1	个
+
+遥控器 Frsky X9D+	1	套
+
+电池 4s 5300 25c	2	块
+
+充电器 ISDT Q6 PRO + 开关电源	1	套
 
 
-PX4 相关参数设定：
+### PX4 相关参数设定：
 
 EKF2_AID_MASK   姿态控制传感器融合  
 
