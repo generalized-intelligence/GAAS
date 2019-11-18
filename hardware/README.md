@@ -2,7 +2,7 @@
 
 In order to facilitate indoor testing and daily maintenance, we did not select models that are too large or too small. Excellent performance and easy maintenance are our original intention to build this drone.
 
-If you wish, we could help you buy all of this hardware and send it to you. Or we can send you the links if you could use taobao.com. Please contact us for more details at hi@gaas.dev.
+If you wish, we could help you buy all of this hardware and send it to you. Or we can send you the links if you could use taobao.com. Please contact us for more details at nina.rong@gaas.dev.
 
 This is a list of hardware that we used for testing. You may use the same hardware for your prototype:
 
