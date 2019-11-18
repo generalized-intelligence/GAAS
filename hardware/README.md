@@ -44,8 +44,11 @@ This is a list of hardware that we used for testing. You may use the same hardwa
   
 ### Miscellaneous
   I2C
+  
   XT60
+  
   Anti-vibration plate: CC3D 
+  
   5V10A DC-DC 
 
 ### Related parameter settings for PX4:
