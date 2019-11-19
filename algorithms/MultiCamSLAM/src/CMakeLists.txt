@@ -12,6 +12,11 @@ target_link_libraries(FrameManager
 #target_link_libraries(FrameWiseGeometry 
 #${REQUIRED_LIBRARIES}
 #)
-
+add_library(SLAMOptimizationGraph SLAMOptimizationGraph.cpp)
+target_link_libraries(SLAMOptimizationGraph
+${REQUIRED_LIBRARIES}
+FeatureFrontEndCV
+FrameManager
+)
 
 add_subdirectory(test)

@@ -63,7 +63,7 @@ public:
     }
     double getBaseLine()
     {
-        LOG(ERROR)<<"in StereoCamConfig::getBaseLine():Maybe incorrect!"<<endl;
+        LOG(ERROR)<<"in StereoCamConfig::getBaseLine():Maybe incorrect!"<<std::endl;
         return (1.0/(this->q_mat.at<float>(2,3)* (double)1.0))/this->camera1_mat.at<float>(0,0); //q[2,3] is camera bf.
     }
     cv::Mat getQMat()

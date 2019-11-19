@@ -17,6 +17,7 @@ namespace mcs
 {
     using namespace std;
     using Eigen::Vector2f;
+    using Eigen::Vector2d;
     using Eigen::Vector3d;
     using Eigen::Matrix3d;
 
@@ -75,14 +76,14 @@ namespace mcs
         vector<CamInfo> cam_info_vec;
         vector<StereoCamConfig> cam_info_stereo_vec;
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;
-        vector<vector<shared_ptr<MapPoint> > map_points;
-        vector<shared_ptr<MapPoint> > fetchMapPoints(){return map_points;}
+        vector<vector<shared_ptr<MapPoint> > > map_points;
+        vector<vector<shared_ptr<MapPoint> > >fetchMapPoints(){return map_points;}
         map<int,int> map_p3d_point_id_to_optimization_graph_3dpoint_id; //对应表.
         int get_p3dindex_to_landmark_index(int p3d_index)
         {
-            if(map_p3d_point_id_to_optimization_graph_3dpoint_id.find(p3d_index)!=map_p3d_point_id_to_optimization_graph_3dpoint_id.end())
+            if(map_p3d_point_id_to_optimization_graph_3dpoint_id.count(p3d_index))
             {
-                return map_p3d_point_id_to_optimization_graph_3dpoint_id;
+                return map_p3d_point_id_to_optimization_graph_3dpoint_id.at(p3d_index);
             }
             else
             {
@@ -130,7 +131,7 @@ namespace mcs
             }
             else if(this->frame_type == FRAME_TYPE_DEPTH)
             {
-                return cam_info_vec.size()
+                return cam_info_vec.size();
             }
             else
             {
@@ -159,6 +160,24 @@ namespace mcs
             else
             {
                 LOG(ERROR)<<"not implemented yet."<<endl;
+            }
+        }
+        vector<shared_ptr<cvMat_T> > getSecondaryImages()
+        {
+            if(this->frame_type!=FRAME_TYPE_STEREO)
+            {
+                vector<shared_ptr<cvMat_T> > ret_vec;
+                for(int i = 0;i<this->pLRImgs->size();i++)
+                {
+                    ret_vec.push_back(std::get<1>((*pLRImgs)[i]));
+                }
+                LOG(INFO)<<"in getSecondaryImages() ret_vec.size():"<<ret_vec.size()<<endl;
+                return ret_vec;
+            }
+            else
+            {
+                LOG(ERROR)<<"ERROR:depth frame has no secondary image to get!"<<endl;
+                throw "no secondary image!";
             }
         }
 
