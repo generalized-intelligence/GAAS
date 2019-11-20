@@ -1,3 +1,5 @@
+#ifndef FRAMEWISE_GEOMETRY_H
+#define FRAMEWISE_GEOMETRY_H
 #include "Frame.h"
 #include "FeatureFrontEndCV.h"
 #include "Timer.h"
@@ -139,3 +141,4 @@ namespace mcs
 
 
 }
+#endif

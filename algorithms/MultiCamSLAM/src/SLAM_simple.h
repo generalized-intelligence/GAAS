@@ -21,12 +21,14 @@ private:
     std::chrono::high_resolution_clock::time_point last_frame_update_t;
     bool ever_init = false;
 
-    mcs::SLAMOptimizationGraph graph;
+    shared_ptr<mcs::SLAMOptimizationGraph> pGraph;
 
 public:
     SLAM_simple(int argc,char** argv)
     {
         begin_t = std::chrono::high_resolution_clock::now();
+        cv::FileStorage settings;
+        pGraph = shared_ptr<mcs::SLAMOptimizationGraph>(new mcs::SLAMOptimizationGraph(settings));
     }
     bool needNewKeyFrame()
     {
@@ -71,7 +73,7 @@ public:
             {
                 LOG(INFO)<<"SLAM initiated.Add new kf to optimization graph and do optimize()."<<endl;
                 bool track_localframe_success;
-                graph.addStereoKeyFrameToBackEndAndOptimize(...)//TODO.
+                pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr);//TODO.
 
                 if(track_localframe_success)
                 {
@@ -107,7 +109,7 @@ public:
             //TODO:
             bool track_and_pnp_ransac_success;
             //mcs::trackAndDoSolvePnPRansacMultiCam(pNewF); //frame_wise tracking....
-            graph.addOrdinaryStereoFrameToBackendAndOptimize(...);
+            pGraph->addOrdinaryStereoFrameToBackendAndOptimize(pNewF,pLastKF);
 
             if(track_and_pnp_ransac_success)
             {
@@ -118,6 +120,7 @@ public:
                 //pNewF->rotation = ...
                 //pNewF->translation = ...
             }
+            pLastF = pNewF;
         }
     }
 

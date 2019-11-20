@@ -136,6 +136,26 @@ namespace mcs
         vector<boost::shared_ptr<Cal3_S2Stereo> > v_pcams_gtsam_config_stereo;
         vector<Cal3_S2> v_cams_gtsam_config_depth;
 
+//这里参考Kimera删除节点的实现.
+//        // State.
+//        gtsam::Values state_;  //!< current state of the system.
+
+//        // GTSAM:
+//        std::shared_ptr<Smoother> smoother_;
+
+//        // Values
+//        gtsam::Values new_values_;  //!< new states to be added
+
+//        // Factors.
+//        gtsam::NonlinearFactorGraph
+//            new_imu_prior_and_other_factors_;  //!< new factors to be added
+//        LandmarkIdSmartFactorMap
+//            new_smart_factors_;  //!< landmarkId -> {SmartFactorPtr}
+//        SmartFactorMap
+//            old_smart_factors_;  //!< landmarkId -> {SmartFactorPtr, SlotIndex}
+//        // if SlotIndex is -1, means that the factor has not been inserted yet in the
+//        // graph
+
 
 
 
@@ -194,14 +214,9 @@ namespace mcs
             int total_success_tracked_point_count = 0;
             ScopeTimer t1("addOrdinaryStereoFrameToBackend() timer");
             int success_count = 0;//TODO:加入一个策略,完成多摄像头之间的筛选.
-            //doSolvePnPRansac
-            LOG(INFO)<<"in addOrdinaryStereoFrameToBackend() stage2"<<endl;
-            auto imgs_prev = pKeyFrameReference->getMainImages();
-            auto imgs_next = pFrame->getMainImages();
-            auto imgs_next_right = pFrame->getSecondaryImages();
-            LOG(INFO)<<"in addOrdinaryStereoFrameToBackend() stage3"<<endl;
 
-            auto p3ds_vv = pKeyFrameReference->p3d_vv;
+            LOG(INFO)<<"in addOrdinaryStereoFrameToBackend() stage2"<<endl;
+
             //auto pts_vv = pFrame->p2d_vv;
             //pts_vv = OptFlowForFrameWiseTracking(*pframe2);//track frame2 获取对应位置的点...
 
@@ -245,6 +260,18 @@ namespace mcs
                                                                   noise_model_between_cams);//用非常紧的约束来限制相机间位置关系.
                 }
             }
+            if(frame_id == 0)
+            {
+                LOG(INFO)<<"initializing!"<<endl;
+                frame_id++;//记录这是第几个frame.
+                return;
+            }
+            auto imgs_prev = pKeyFrameReference->getMainImages();
+            auto imgs_next = pFrame->getMainImages();
+            auto imgs_next_right = pFrame->getSecondaryImages();
+            LOG(INFO)<<"in addOrdinaryStereoFrameToBackend() stage3"<<endl;
+
+            auto p3ds_vv = pKeyFrameReference->p3d_vv;
 //            for(int i = 0;i < cam_count;i++)//TODO:多线程化处理这一块.
 //            {
 //                LOG(INFO)<<"Ref keyframe p3ds_vv.size():"<<p3ds_vv.size()<<";new frame p2ds_vv.size():"<<pts_vv.size()<<endl;
@@ -307,16 +334,15 @@ namespace mcs
                     auto lp2fv = left_p2f_vv.at(cam_index);auto rp2fv = right_p2f_vv.at(cam_index);
                     auto map__ = p2f_to_p3d_maps.at(cam_index);
                     auto tracked_p2d = output_to_track_kf_p2d_vv.at(cam_index);
-                    //char res_;
-                    //bool* res_ = &(track_success_vcams[cam_index]);
-                    //threads_frontend.push_back(std::thread(
-                    //            doFrontEndTrackingForOrdinaryFrames,std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
-                    //                                            std::ref(lp2fv),std::ref(rp2fv),
-                    //                                            std::ref(map__),std::ref(tracked_p2d),track_success_vcams[cam_index],0
-                    //        ));
-                    doFrontEndTrackingForOrdinaryFrames(std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
-                                                                                    std::ref(lp2fv),std::ref(rp2fv),
-                                                                                    std::ref(map__),std::ref(tracked_p2d),&(track_success_vcams[cam_index]),0);
+
+                    threads_frontend.push_back(std::thread(
+                                doFrontEndTrackingForOrdinaryFrames,std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
+                                                                std::ref(lp2fv),std::ref(rp2fv),
+                                                                std::ref(map__),std::ref(tracked_p2d),&(track_success_vcams[cam_index]),0
+                            ));
+                    //doFrontEndTrackingForOrdinaryFrames(std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
+                    //                                                                std::ref(lp2fv),std::ref(rp2fv),
+                    //                                                                std::ref(map__),std::ref(tracked_p2d),&(track_success_vcams[cam_index]),0);
 
                 }
                 //for(auto& thread_:threads_frontend)
@@ -542,16 +568,21 @@ namespace mcs
             // *3. check with pnp ransac.
 */
         }
-        /*
-        void addStereoKeyFrameToBackEndAndOptimize(shared_ptr<Frame> pKeyFrame,int method = METHOD_SIMPLE_MONOCULAR_REPROJECTION_ERROR)
+
+        void addStereoKeyFrameToBackEndAndOptimize(shared_ptr<Frame> pKeyFrame,shared_ptr<Frame> pReferenceKeyFrame,int method = METHOD_SIMPLE_MONOCULAR_REPROJECTION_ERROR)
         {
             if(!pKeyFrame->isKeyFrame)
             {
                 LOG(ERROR)<<"ERROR:In insertKeyFrameToBackEnd: frame is not keyframe!"<<endl;
                 return;
             }
-            this->addOrdinaryStereoFrameToBackendAndOptimize(pKeyFrame,getLastKF(),method);//先像处理普通帧一样,处理跟踪和定位问题.
+            this->addOrdinaryStereoFrameToBackendAndOptimize(pKeyFrame,pReferenceKeyFrame,method);//先像处理普通帧一样,处理跟踪和定位问题.
+            if(pReferenceKeyFrame == nullptr)
+            {
+                LOG(INFO)<<"Reference frame is null.Initializing."<<endl;
+            }
             //从这里开始,这一帧的位置已经被初步优化.
+            /*
             pKeyFrame->map_points = generateMapPointsCorespondingToStereoKFObservation();//创建新地图点.
 
             //add vertex for frame.
@@ -612,7 +643,9 @@ namespace mcs
             //...
             //
             //isam.update(graph, initialEstimate);
-        }*/
+            */
+            //TODO:加入marginalize策略.
+        }
 
         void addPose();
         void addPoint3d();

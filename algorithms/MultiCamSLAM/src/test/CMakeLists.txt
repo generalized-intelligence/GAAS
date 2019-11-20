@@ -26,3 +26,10 @@ target_link_libraries(test_VO
     FrameManager
     ${REQUIRED_LIBRARIES}
     )
+add_executable(test_SLAM_simple test_SLAM_simple.cpp)
+target_link_libraries(test_SLAM_simple
+FeatureFrontEndCV
+FrameManager
+${REQUIRED_LIBRARIES}
+SLAMOptimizationGraph
+)

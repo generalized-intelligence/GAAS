@@ -17,6 +17,14 @@ target_link_libraries(SLAMOptimizationGraph
 ${REQUIRED_LIBRARIES}
 FeatureFrontEndCV
 FrameManager
+
 )
 
+add_executable(SLAM_simple SLAM_simple.cpp)
+target_link_libraries(SLAM_simple
+${REQUIRED_LIBRARIES}
+FeatureFrontEndCV
+FrameManager
+SLAMOptimizationGraph
+)
 add_subdirectory(test)
