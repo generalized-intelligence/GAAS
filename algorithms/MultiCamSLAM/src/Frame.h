@@ -73,6 +73,7 @@ namespace mcs
     
         vector<vector<p2dT> > p2d_vv;
         vector<vector<p3dT> > p3d_vv;
+        vector<vector<double> > disps_vv;//与p3d一一对应.
         vector<CamInfo> cam_info_vec;
         vector<StereoCamConfig> cam_info_stereo_vec;
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;

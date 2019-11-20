@@ -60,11 +60,11 @@ namespace mcs
     };
     void doFrontEndTrackingForOrdinaryFrames(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
                                              vector<Point2f>& output_tracked_pts_left,vector<Point2f>& output_tracked_pts_right,
-                                             map<int,int>& map_point2f_to_kf_p3ds,vector<p2dT>& output_to_track_kf_p2d,bool& output_track_success,int method = 0)
+                                             map<int,int>& map_point2f_to_kf_p3ds,vector<p2dT>& output_to_track_kf_p2d,char* p_output_track_success,int method = 0)
     {//这个函数要支持多线程.
         //step<1> 追踪左目.
         const int& i = cam_index;
-        output_track_success = false;
+        *p_output_track_success = false;
         auto p_origin_img = pKeyFrameReference->getMainImages().at(i);
         auto p_left = pFrame->getMainImages().at(i);
         auto p_right= pFrame->getSecondaryImages().at(i);
@@ -113,7 +113,7 @@ namespace mcs
             if(success_stereo_tracked_count>15)
             {
                 LOG(INFO)<<"stereo track success!"<<endl;
-                output_track_success = true;
+                *p_output_track_success = true;
             }
         }
     }
@@ -132,8 +132,8 @@ namespace mcs
         int landmark_id = 0;
         vector<landmark_properties> vlandmark_properties;//暂时用不到.用到时候可以直接拿.
         int frame_id = 0;
-        vector<Cal3_S2> v_cams_gtsam_config_stereo_left;
-        vector<Cal3_S2Stereo> v_cams_gtsam_config_stereo;
+        vector<boost::shared_ptr<Cal3_S2> > v_pcams_gtsam_config_stereo_left;
+        vector<boost::shared_ptr<Cal3_S2Stereo> > v_pcams_gtsam_config_stereo;
         vector<Cal3_S2> v_cams_gtsam_config_depth;
 
 
@@ -151,15 +151,16 @@ namespace mcs
             {
                 float fx,fy,cx,cy;
                 c.getLCamMatFxFyCxCy(fx,fy,cx,cy);
-                Cal3_S2 k_l(fx,fy,0,cx,cy);//这种形式的相机标定是可以优化的.如果需要,可以后续在重投影过程中附加进行一个内参优化.
+                auto k_l = boost::shared_ptr<Cal3_S2>(new Cal3_S2(fx,fy,0,cx,cy));//这种形式的相机标定是可以优化的.如果需要,可以后续在重投影过程中附加进行一个内参优化.
                 //noiseModel::Diagonal::shared_ptr calNoise = noiseModel::Diagonal::Sigmas((Vector(5) << 500, 500, 0.1, 100, 100).finished());
                 //就像这样.具体参考examples/SelfCalibrationExample.cpp
-                v_cams_gtsam_config_stereo_left.push_back(k_l);//先建立主视觉的K.
+                v_pcams_gtsam_config_stereo_left.push_back(k_l);//先建立主视觉的K.
 
                 //double fx, double fy, double s, double u0, double v0, double b//这要求双目rectify之后共享一组fx,fy cx,cy且必须旋转也对齐.需要预处理.
                 double b = c.getBaseLine();
-                Cal3_S2Stereo k_stereo(fx,fy,0,cx,cy,b);
-                this->v_cams_gtsam_config_stereo.push_back(k_stereo);
+
+                auto k_stereo = boost::shared_ptr<Cal3_S2Stereo>(new Cal3_S2Stereo(fx,fy,0,cx,cy,b));
+                this->v_pcams_gtsam_config_stereo.push_back(k_stereo);
             }
         }
         void initCamsDepth(vector<CamInfo>& cams)
@@ -296,7 +297,7 @@ namespace mcs
                 vector<std::thread> threads_frontend;
                 vector<vector<Point2f> > left_p2f_vv,right_p2f_vv,output_to_track_kf_p2d_vv;
                 vector<map<int,int> > p2f_to_p3d_maps;
-                vector<bool> track_success_vcams;
+                vector<char> track_success_vcams;
                 track_success_vcams.resize(cam_count);
                 left_p2f_vv.resize(cam_count);right_p2f_vv.resize(cam_count);output_to_track_kf_p2d_vv.resize(cam_count);
                 p2f_to_p3d_maps.resize(cam_count);track_success_vcams.resize(cam_count);
@@ -306,18 +307,22 @@ namespace mcs
                     auto lp2fv = left_p2f_vv.at(cam_index);auto rp2fv = right_p2f_vv.at(cam_index);
                     auto map__ = p2f_to_p3d_maps.at(cam_index);
                     auto tracked_p2d = output_to_track_kf_p2d_vv.at(cam_index);
+                    //char res_;
                     //bool* res_ = &(track_success_vcams[cam_index]);
-                    threads_frontend.push_back(std::thread(
-                                doFrontEndTrackingForOrdinaryFrames,std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
-                                                                std::ref(lp2fv),std::ref(rp2fv),
-                                                                std::ref(map__),std::ref(tracked_p2d),track_success_vcams[cam_index],0
-                            ));
+                    //threads_frontend.push_back(std::thread(
+                    //            doFrontEndTrackingForOrdinaryFrames,std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
+                    //                                            std::ref(lp2fv),std::ref(rp2fv),
+                    //                                            std::ref(map__),std::ref(tracked_p2d),track_success_vcams[cam_index],0
+                    //        ));
+                    doFrontEndTrackingForOrdinaryFrames(std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
+                                                                                    std::ref(lp2fv),std::ref(rp2fv),
+                                                                                    std::ref(map__),std::ref(tracked_p2d),&(track_success_vcams[cam_index]),0);
 
                 }
-                for(auto& thread_:threads_frontend)
-                {
-                    thread_.join();
-                }
+                //for(auto& thread_:threads_frontend)
+                //{
+                //    thread_.join();
+                //}
                 //分成两个部分.上一部分是前端操作.下一部分是后端操作.
                 auto mono_reprojection_noise_model = noiseModel::Isotropic::Sigma(2, 1.0);  // one pixel in u and v
                 auto stereo_reprojection_noise_model = noiseModel::Isotropic::Sigma(2, 1.0);  // one pixel in u and v
@@ -325,7 +330,7 @@ namespace mcs
 
                 for(int i = 0;i < cam_count;i++)
                 {
-                    map<int,int> tracked_kps_to_original_kps_map_output;
+                    map<int,int> tracked_kps_to_original_kps_map_output;//关键帧的p3d到追踪到的p2d的关系
                     vector<p3dT> vp3d_pts = p3ds_vv.at(i);
                     auto& vp2d_pts = output_to_track_kf_p2d_vv.at(i);
                     for(auto iter = p2f_to_p3d_maps.at(i).begin(); iter != p2f_to_p3d_maps.at(i).end(); ++iter)
@@ -339,7 +344,7 @@ namespace mcs
                         int p2d_index = -1;
                         if(tracked_kps_to_original_kps_map_output.count(index_p3d))
                         {
-                            p2d_index = tracked_kps_to_original_kps_map_output[index_p3d];//原始关键帧要追踪的2d点的index(同时也是p3d的真实index)失败是-1.
+                            p2d_index = tracked_kps_to_original_kps_map_output[index_p3d];//原始关键帧要追踪的2d点的index(同时也是KeyFrame p3d的真实index)失败是-1.
                         }
                         //int p2d_index = tracked_kps_to_original_kps_map_output[index_p3d];
                         //注意:下面这段代码不可重入.
@@ -377,17 +382,22 @@ namespace mcs
                                 //除非把每组双目认为是两个相机,两个相机之间再用prior约束一次,有点太鸡肋了,误差也不好控制.
                                 //method<1> 最普通的投影误差,没有任何技巧.
                                 //graph.emplace_shared<GenericProjectionFactor<Pose3, Point3, Cal3_S2> >(
-                                //            measurement, measurementNoise, Symbol('X',reference_kf_id*cam_count + i), Symbol('L', map_point_relavent_landmark_id), this->v_cams_gtsam_config_stereo_left[i]);
+                                //            measurement, measurementNoise, Symbol('X',reference_kf_id*cam_count + i), Symbol('L', map_point_relavent_landmark_id), this->v_pcams_gtsam_config_stereo_left[i]);
                                 //method<2>.GenericStereoFactor
+                                p2dT point_at_kf_left = pKeyFrameReference->p2d_vv.at(i).at(pKeyFrameReference->map3d_to_2d_pt_vec.at(i).at(p2d_index));
+                                double xl_ = point_at_kf_left.x;double y_ = point_at_kf_left.y;
+                                double disp = pKeyFrameReference->disps_vv.at(i).at(p2d_index);
+                                double xr_ = xl_+disp;
+
                                 if(method == 0)
                                 {//加入在关键帧上面的观测.
-                                    graph.emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(left_p2f_vv.at(i).at(p2d_index).x,//左目的u
-                                                                                                      right_p2f_vv.at(i).at(p2d_index).x,//右目的u
-                                                                                                      left_p2f_vv.at(i).at(p2d_index).y),//观测的v.
+                                    graph.emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(xl_,//左目的u
+                                                                                                      xr_,//右目的u
+                                                                                                      y_),//观测的v.
                                                                                          stereo_reprojection_noise_model,
                                                                                          Symbol('X',reference_kf_id*cam_count + i),
                                                                                          Symbol('L', map_point_relavent_landmark_id),
-                                                                                         this->v_cams_gtsam_config_stereo[i]);//创建双目观测约束.
+                                                                                         this->v_pcams_gtsam_config_stereo[i]);//创建双目观测约束.
                                 }
                                 //method<4>.SmartFactor of GenericStereoFactor
 
@@ -399,9 +409,8 @@ namespace mcs
                                     auto smart_stereo_factor = SmartStereoProjectionPoseFactor::shared_ptr(
                                                                 new SmartStereoProjectionPoseFactor(gaussian, params));
                                     graph.push_back(smart_stereo_factor);
-                                    double xl = left_p2f_vv.at(i).at(p2d_index).x , xr = right_p2f_vv.at(i).at(p2d_index).x , y = left_p2f_vv.at(i).at(p2d_index).y;
-                                    smart_stereo_factor->add(StereoPoint2(xl, xr, y),Symbol('X',reference_kf_id*cam_count + i),this->v_cams_gtsam_config_stereo[i]);
-
+                                    //第一次使用smart factor::add(),加入关键帧处的观测约束.
+                                    smart_stereo_factor->add(StereoPoint2(xl_, xr_, y_),Symbol('X',reference_kf_id*cam_count + i),this->v_pcams_gtsam_config_stereo[i]);
                                     landmark_properties lp_;
                                     //TODO:填上其他属性.这个lp_如果不用smart factor的话现在看来不一定要用.
                                     lp_.pRelativeStereoSmartFactor = smart_stereo_factor;
@@ -415,13 +424,18 @@ namespace mcs
                             if(method == 0)
                             {
                                 //graph.emplace_shared<GenericProjectionFactor<Pose3, Point3, Cal3_S2> >(
-                                //      Point2(...), mono_reprojection_noise_model, Symbol('X',reference_kf_id*cam_count + i), Symbol('L', map_point_relavent_landmark_id), this->v_cams_gtsam_config_stereo_left[i]);
+                                //      Point2(...), mono_reprojection_noise_model, Symbol('X',frame_id*cam_count + i), Symbol('L', map_point_relavent_landmark_id), this->v_pcams_gtsam_config_stereo_left[i]);
                             }
                             //method <2> 创建smart stereo factor上面的约束.
                             else if(method == 1)
                             {
-                                auto smart_factor_ = this->vlandmark_properties[map_point_relavent_landmark_id];
-                                smart_factor_.add(StereoPoint2()
+                                auto smart_factor_ = this->vlandmark_properties[map_point_relavent_landmark_id].pRelativeStereoSmartFactor;
+                                smart_factor_->add(StereoPoint2(left_p2f_vv.at(i).at(p2d_index).x,//左目的u
+                                                                right_p2f_vv.at(i).at(p2d_index).x,//右目的u
+                                                                left_p2f_vv.at(i).at(p2d_index).y),
+                                                   Symbol('X',frame_id*cam_count+i),//
+                                                   //Symbol('L',map_point_relavent_landmark_id),
+                                                   this->v_pcams_gtsam_config_stereo[i]
                                                   );//模仿上面的.TODO.这种的缺点是没法再用mono约束这个点了,视野会比较窄...而且还需要在非关键帧上再进行一次opt track.
                                 //可能对不同的点需要做不同的方式处理.需要一个判断逻辑.
                             }
