@@ -1,4 +1,4 @@
-#ifndef FEATURE_FRONTEND_CV_H
+    #ifndef FEATURE_FRONTEND_CV_H
 #define FEATURE_FRONTEND_CV_H
 
 #include "TypeDefs.h"
@@ -27,8 +27,18 @@ namespace mcs
     vector<shared_ptr<PointWithFeatureT> > extractMultipleCamKeyPointsMultiThread(vector<shared_ptr<cvMat_T> > pImgsL,int method = KEYPOINT_METHOD_GFTT,bool compute_feature = false); // extract left images of all cam-pairs.
 
 
+    shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature);
+
+    const bool do_img_split = true;
+    //const bool do_img_split = false;
     shared_ptr<PointWithFeatureT> extractCamKeyPoints(cvMat_T& Img,int method,bool compute_feature)
     {//TODO:add kps distribution check.
+        if(do_img_split)
+        {
+            return extractCamKeyPoints_splited(Img,method,compute_feature);
+        }
+
+
         LOG(INFO)<<"method:"<<method<<";compute_feature:"<<compute_feature<<endl;
         cvMat_T mask;
         //auto pframeinfo = shared_ptr<FrameInfo>(new FrameInfo);
@@ -42,7 +52,7 @@ namespace mcs
         }
         else if(method == KEYPOINT_METHOD_ORB)
         {
-            pfeat = orb;
+            ;//pfeat = orb;
             //orb->detectAndCompute(image, mask, pframeinfo->keypoints, pframeinfo->descriptors);
         }
 
@@ -59,9 +69,93 @@ namespace mcs
         {
             pfeat->detect(Img,pResult->kps,mask);
             orb->compute(Img,pResult->kps,pResult->desp);// calc orb feat.
+            LOG(INFO)<<"feats.size():"<<pResult->desp.rows<<","<<pResult->desp.cols<<endl;
         }
         return pResult;
     }
+
+    shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature)
+    {
+        //LOG(INFO)<<"in extractCamKeyPoints_splited(),method and compute_feat:"<<method<<","<<compute_feature<<endl;
+        cv::Feature2D* pfeat = gftt;//cv::GFTTDetector::create(400,  // maximum number of corners to be returned
+                               //                        0.01, // quality level
+              //10);
+        //auto orb_ex= orb;cv::ORB::create(1000);
+        auto orb_ex = orb;
+        //LOG(INFO)<<"feat2d ptr created."<<endl;
+        if(method == KEYPOINT_METHOD_GFTT)
+        {
+            ;//feat = *gftt;
+        }
+        else if(method == KEYPOINT_METHOD_ORB)
+        {
+            ;//pfeat = orb_ex;
+        }
+        const int rows_count = 2;
+        const int cols_count = 2;
+        const int img_size_v = Img.rows;
+        const int img_size_u = Img.cols;
+        shared_ptr<PointWithFeatureT> pResult(new PointWithFeatureT);
+        vector<KeyPoint> out_kps;
+        cvMat_T out_feats;
+        vector<cvMat_T> desps_vec;
+        //LOG(INFO)<<"input image size:"<<Img.cols<<","<<Img.rows<<endl;
+        for(int v_ = 0;v_ < rows_count;v_++)
+        {
+            for(int u_ = 0; u_ < cols_count;u_++)
+            {
+                //LOG(INFO)<<"        creating img crops.u,v:"<<u_<<","<<v_<<endl;
+                auto img_part = Img.colRange(u_*(img_size_u/cols_count),((u_+1)*(img_size_u/cols_count))>(img_size_u-1)?(img_size_u-1):(u_+1)*(img_size_u/cols_count)
+                                             ).rowRange(
+                                             v_*(img_size_v/rows_count),((v_+1)*(img_size_v/rows_count))>(img_size_v-1)?(img_size_v-1):(v_+1)*(img_size_v/rows_count)
+                                            );
+                vector<KeyPoint> kps;
+                cvMat_T feats;
+                cvMat_T mask;
+                //LOG(INFO)<<"        input_size:"<<img_part.cols<<","<<img_part.rows<<endl;
+                //LOG(INFO)<<"        detect kps."<<endl;
+                pfeat->detect(img_part,kps,mask);
+                //LOG(INFO)<<"        kps.size:"<<kps.size()<<endl;
+                if(compute_feature&&kps.size()>0)
+                {
+                    //LOG(INFO)<<"        compute desps."<<endl;
+                    orb_ex->compute(img_part,kps,feats);
+                }
+                for(auto& kp:kps)
+                {
+                    //LOG(INFO)<<"original_pos_x"<<kp.pt.x<<endl;
+                    kp.pt.x += u_*(img_size_u/cols_count);
+                    kp.pt.y += v_*(img_size_v/rows_count);
+                    //LOG(INFO)<<"transformed_pos_x"<<kp.pt.x<<endl;
+                    out_kps.push_back(kp);
+                }
+                //extend cvmat feature:
+                //LOG(INFO)<<"in extractCamKeyPoints_splited:u="<<u_<<" v="<<v_<<"input_size:"<<img_part.cols<<","<<img_part.rows<<";kps.size():"<<kps.size()<<",feats.size():"<<feats.cols<<","<<feats.rows<<endl;
+                //cv::Mat feat_tmp;
+                //cv::vconcat(out_feats,feats,feat_tmp);//TODO:vconcat()还是hconcat()?
+                //out_feats = feat_tmp;
+
+
+                //if(!feats.empty())
+                //{
+                //    //desps_vec.push_back(feats);
+                //    cv::Mat feat_tmp;
+                //    cv::vconcat(out_feats,feats,feat_tmp);
+                //    out_feats = feat_tmp.clone();
+                //}
+                if(!feats.empty())
+                {
+                    desps_vec.push_back(feats);
+                }
+            }
+        }
+        cv::vconcat(desps_vec,out_feats);
+        //LOG(INFO)<<"output_feats.size():"<<out_feats.cols<<","<<out_feats.rows<<";kps.size():"<<out_kps.size()<<endl;
+        pResult->kps = out_kps;
+        pResult->desp= out_feats;
+        return pResult;
+    }
+
     
     inline void extractCamKeyPoints_(cvMat_T& Img,shared_ptr<PointWithFeatureT>* feat ,int method,bool compute_feature)//for parallel
     {

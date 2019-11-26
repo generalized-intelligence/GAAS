@@ -28,7 +28,7 @@ int main(int argc,char** argv)
     //v.push_back(ptr);
     for(int i = 0;i<8;i++)
     {
-        v.push_back(ptr);
+        v.push_back(shared_ptr<cvMat_T>(new cv::Mat(ptr->clone()) ) );//为了测试需要deep copy一次,避免出现同一个图像同一个图像块不同线程crop好几次;
     }
     //test1.
     //shared_ptr<PointWithFeatureT>

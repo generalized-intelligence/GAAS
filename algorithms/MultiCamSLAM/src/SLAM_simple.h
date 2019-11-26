@@ -57,6 +57,7 @@ public:
         shared_ptr < vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > > > pvInputs( new vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > >());
         pvInputs->push_back(std::make_pair(img1,img2));
         pvInputs->push_back(std::make_pair(img3,img4));
+        int tracked_pts_count_out;
         if(needNewKeyFrame())
         {//关键帧处理.
             bool needNewKF = true;
@@ -73,7 +74,8 @@ public:
             {
                 LOG(INFO)<<"SLAM initiated.Add new kf to optimization graph and do optimize()."<<endl;
                 bool track_localframe_success;
-                pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr);//TODO.
+
+                pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr,tracked_pts_count_out);//TODO.
 
                 if(track_localframe_success)
                 {
@@ -109,7 +111,7 @@ public:
             //TODO:
             bool track_and_pnp_ransac_success;
             //mcs::trackAndDoSolvePnPRansacMultiCam(pNewF); //frame_wise tracking....
-            pGraph->addOrdinaryStereoFrameToBackendAndOptimize(pNewF,pLastKF);
+            pGraph->addOrdinaryStereoFrameToBackendAndOptimize(pNewF,pLastKF,tracked_pts_count_out);
 
             if(track_and_pnp_ransac_success)
             {
