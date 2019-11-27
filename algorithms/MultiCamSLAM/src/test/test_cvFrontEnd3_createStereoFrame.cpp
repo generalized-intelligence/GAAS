@@ -45,7 +45,8 @@ int main(int argc,char** argv)
     vector<StereoCamConfig> cams_conf;
     cams_conf.push_back(conf);
     bool create_frame_success_output;
-    createFrameStereos(pVecStereo,cams_conf,create_frame_success_output,true);
+    auto f = createFrameStereos(pVecStereo,cams_conf,create_frame_success_output,true);
+    LOG(INFO)<<"f.ptr:"<<f.get()<<endl;
 
     t1.watch("create_frame time cost:");
     LOG(INFO)<<"create frame success:"<<create_frame_success_output<<endl;

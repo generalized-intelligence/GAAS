@@ -77,22 +77,24 @@ namespace mcs
     shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature)
     {
         //LOG(INFO)<<"in extractCamKeyPoints_splited(),method and compute_feat:"<<method<<","<<compute_feature<<endl;
-        cv::Feature2D* pfeat = gftt;//cv::GFTTDetector::create(400,  // maximum number of corners to be returned
-                               //                        0.01, // quality level
-              //10);
-        //auto orb_ex= orb;cv::ORB::create(1000);
-        auto orb_ex = orb;
+        //cv::Feature2D* pfeat = gftt;
+        auto gftt = cv::GFTTDetector::create(25,  // maximum number of corners to be returned
+                                                       0.01, // quality level
+              10);
+        auto orb_ex= orb;cv::ORB::create(1000);
+        cv::Feature2D* pfeat;
+        //auto orb_ex = orb;
         //LOG(INFO)<<"feat2d ptr created."<<endl;
         if(method == KEYPOINT_METHOD_GFTT)
         {
-            ;//feat = *gftt;
+            pfeat = gftt;
         }
         else if(method == KEYPOINT_METHOD_ORB)
         {
-            ;//pfeat = orb_ex;
+            pfeat = orb_ex;
         }
-        const int rows_count = 2;
-        const int cols_count = 2;
+        const int rows_count = 5;
+        const int cols_count = 5;
         const int img_size_v = Img.rows;
         const int img_size_u = Img.cols;
         shared_ptr<PointWithFeatureT> pResult(new PointWithFeatureT);
@@ -407,7 +409,7 @@ namespace mcs
                                       bool& create_Frame_success,
                                       bool create_key_frame = true)
     {
-
+        create_Frame_success = false;
         //method<1> single thread.
         shared_ptr<Frame> pF_ret(new Frame(stereo_pair_imgs_vec));
         pF_ret->frame_type = FRAME_TYPE_STEREO;
@@ -433,13 +435,19 @@ namespace mcs
                  pF_ret->isKeyFrame = true;
                  map<int,int> kps_2d_to_3d,kps_3d_to_2d;
                  vector<double>& disps = pF_ret->disps_vv.at(i);
+                 LOG(INFO)<<"will create kf_stereo:"<<endl;
                  createStereoMatchViaOptFlowMatching(l,r,cam_distribution_info_vec[i],pF_ret->p2d_vv[i],pF_ret->p3d_vv[i],kps_2d_to_3d,kps_3d_to_2d,disps,create_stereo_successs);
+                 LOG(INFO)<<"create kf_stereo finished."<<endl;
                  pF_ret->map2d_to_3d_pt_vec.push_back(kps_2d_to_3d);
                  pF_ret->map3d_to_2d_pt_vec.push_back(kps_3d_to_2d);
                  pF_ret->map_points =  createMapPointForKeyFrame(pF_ret);
                  if(!create_stereo_successs)
                  {
                      create_Frame_success = false;
+                 }
+                 else
+                 {
+                     create_Frame_success = true;
                  }
              }
              else

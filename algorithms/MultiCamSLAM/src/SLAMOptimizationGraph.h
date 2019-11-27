@@ -175,10 +175,10 @@ namespace mcs
 
 
     public:
-        SLAMOptimizationGraph(cv::FileStorage fSettings)
-        {
+        SLAMOptimizationGraph(cv::FileStorage& fSettings)
+        {//填充初始化函数.
             fixedlagSmoother = BatchFixedLagSmoother(fixed_lag_val_sec);
-            //...TODO:配置fSettings里面的的设置.
+            this->pfSettings = &fSettings;//现用现取.
         }
 
         void initCamsStereo(vector<StereoCamConfig>& cams)
