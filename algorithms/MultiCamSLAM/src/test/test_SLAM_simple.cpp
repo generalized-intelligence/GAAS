@@ -45,6 +45,7 @@ using namespace std;
 SLAM_simple* pSLAM;
 void FetchImageCallback(const sensor_msgs::ImageConstPtr& img1,const sensor_msgs::ImageConstPtr& img2,const sensor_msgs::ImageConstPtr& img3,const sensor_msgs::ImageConstPtr& img4)
 {
+    LOG(INFO)<<"In Fetch Image Callback:"<<endl;
     cv_bridge::CvImageConstPtr p1,p2,p3,p4;
     shared_ptr<cv::Mat> m1,m2,m3,m4;
     try
@@ -64,21 +65,23 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& img1,const sensor_msgs
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
     }
-    LOG(INFO)<<"Images caught!"<<endl;
+    LOG(INFO)<<"Images caught! Will call iterateWith4Imgs."<<endl;
     pSLAM->iterateWith4Imgs(m1,m2,m3,m4);
+    LOG(INFO)<<"iterateWith4Imgs() finished."<<endl;
 }
 
 
 int main(int argc,char** argv)
 {
+    google::InitGoogleLogging(argv[0]);
     ros::init(argc,argv,"test_VO_node");
     ros::NodeHandle nh;
-    std::string front_left_topic,front_right_topic,down_left_topic,down_right_topic;
+    std::string front_left_topic("/gi/forward/left/image_raw"),front_right_topic("/gi/forward/right/image_raw"),left_left_topic("/gi/leftward/left/image_raw"),left_right_topic("/gi/leftward/left/image_raw");
 
     message_filters::Subscriber<sensor_msgs::Image> front_left_sub(nh, front_left_topic, 10);
     message_filters::Subscriber<sensor_msgs::Image> front_right_sub(nh, front_right_topic, 10);
-    message_filters::Subscriber<sensor_msgs::Image> down_left_sub(nh, down_left_topic, 10);
-    message_filters::Subscriber<sensor_msgs::Image> down_right_sub(nh, down_right_topic, 10);
+    message_filters::Subscriber<sensor_msgs::Image> down_left_sub(nh, left_left_topic, 10);
+    message_filters::Subscriber<sensor_msgs::Image> down_right_sub(nh, left_right_topic, 10);
 
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image,sensor_msgs::Image,sensor_msgs::Image> sync_pol;
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), front_left_sub, front_right_sub,down_left_sub,down_right_sub);

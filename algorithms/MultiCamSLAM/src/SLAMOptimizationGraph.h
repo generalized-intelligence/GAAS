@@ -67,24 +67,87 @@ namespace mcs
                                              map<int,int>& map_point2f_to_kf_p3ds,vector<p2dT>& output_to_track_kf_p2d,char* p_output_track_success,int method = 0)
     {//这个函数要支持多线程.
         //step<1> 追踪左目.
+        if(pKeyFrameReference == nullptr)
+        {
+            cout<<"ERROR:in doFrontEndTrackingForOrdinaryFrames():pKeyFrameReference is nullptr!!!!"<<endl;
+        }
+
+        cout<<"in doFrontEndTracking For ordinary frame:stage<1>.current frame id:"<<pFrame->frame_id<<",referring frame id:"<<pKeyFrameReference->frame_id<<endl;
         const int& i = cam_index;
         *p_output_track_success = false;
         auto p_origin_img = pKeyFrameReference->getMainImages().at(i);
+        cout<<"in doFrontEndTracking For ordinary frame:stage<2>."<<endl;
         auto p_left = pFrame->getMainImages().at(i);
+        cout<<"in doFrontEndTracking For ordinary frame:stage<3>."<<endl;
         auto p_right= pFrame->getSecondaryImages().at(i);
+        cout<<"in doFrontEndTracking For ordinary frame:stage<4>."<<endl;
         vector<p3dT> vp3d_pts = pKeyFrameReference->p3d_vv.at(i);
-        vector<p2dT>& to_track_vp2d_pts = output_to_track_kf_p2d;//要追踪的参考帧 kps.
+        cout<<"in doFrontEndTracking For ordinary frame:stage<5>."<<endl;
+        //vector<p2dT>& to_track_vp2d_pts = output_to_track_kf_p2d;//要追踪的参考帧 kps.
+        vector<p2dT> to_track_vp2d_pts;//不去改这个,回头直接赋值试试.
         to_track_vp2d_pts.clear();
+        cout<<"    cam index:"<<cam_index<<",p2d_vv[i].size():"<<pKeyFrameReference->p2d_vv.at(i).size()<<endl;
+
+        cout<<"map_3d_to_2d_pts_vec.size():"<< pKeyFrameReference->map3d_to_2d_pt_vec.size()<<";acessing index:"<<i<<endl;
+        auto map3d_to_2d_pt_vec__ = pKeyFrameReference->map3d_to_2d_pt_vec.at(i);
+        cout<<"     copy of map in stack."<<endl;
+        //错误就在这个里面.
         for(int index_p3d=0;index_p3d<vp3d_pts.size();index_p3d++)
         {
-            to_track_vp2d_pts.push_back(pKeyFrameReference->p2d_vv[i][pKeyFrameReference->map3d_to_2d_pt_vec[i][index_p3d] ]);//查找对应关键帧的p2d.只追踪成功三角化的点.
+            cout<<"     querying index_p3d:"<<index_p3d<<endl;
+            if(map3d_to_2d_pt_vec__.count(index_p3d) == 0)
+            {
+                cout<<"ERROR: no such p3d."<<endl;
+            }
+            else
+            {
+                cout<<"     p3d_matching p2d_index:"<<map3d_to_2d_pt_vec__.at(index_p3d)<<endl;
+            }
+            if(pKeyFrameReference-> p2d_vv.at(i).size()<= map3d_to_2d_pt_vec__.at(index_p3d))
+            {
+                cout<<"ERROR:mapping index overflow!"<<map3d_to_2d_pt_vec__.at(index_p3d)<<endl;
+            }
+            else
+            {
+                cout<<"     pKeyFrameReference->map3d_to_2d_pt_vec.at(i).at(index_p3d):"<<map3d_to_2d_pt_vec__.at(index_p3d)<<endl;
+
+            }
+            to_track_vp2d_pts.push_back(pKeyFrameReference->p2d_vv.at(i).at(map3d_to_2d_pt_vec__.at(index_p3d) ));//查找对应关键帧的p2d.只追踪成功三角化的点.
         }
+
+        //{//DEBUG ONLY!
+        //    to_track_vp2d_pts.push_back(pKeyFrameReference->p2d_vv.at(i).at(0));
+        //}
+        //在这里之前就会产生内存错误.
+        cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
+        cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
+        cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
+        cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
+        cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
+
         vector<unsigned char> left_track_success;
         vector<Point2f> left_tracked_pts;
         {//call cv::OptFlow for left img.
+            cout<<"in doFrontEndTracking For ordinary frame:stage<7>."<<endl;
             vector<float> err;
-            cv::calcOpticalFlowPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err,cv::Size(21, 21), 3,
-                                     cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
+            try
+            {
+                cout<<"before cv opt flow pyrlk:p origin img:"<<p_origin_img<<",p_left:"<<p_left<<endl;
+                auto m_origin = *p_origin_img;
+                cout <<"p_origin_img->cols"<<p_origin_img->cols<<"rows:"<<p_origin_img->rows<<endl;
+                cout<<"deref p_origin finished!"<<endl;
+                auto m_left = *p_left;
+                cout<<"pleft_size:"<<p_left->cols<<","<<p_left->rows<<endl;
+                cout<<"deref p_left finished!"<<endl;
+                cout<<"to track p2f count:"<<to_track_vp2d_pts.size()<<endl;
+                cv::calcOpticalFlowPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);//,cv::Size(21, 21), 3,
+                                     //cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
+            }
+            catch(...)//DEBUG ONLY!
+            {
+                cout<<"in cv:: opt flow pyr lk error caught!"<<endl;
+            }
+            cout<<"in doFrontEndTracking For ordinary frame:stage<8>."<<endl;
         }
 
         //if(method == 0)
@@ -96,9 +159,11 @@ namespace mcs
             vector<unsigned char> right_track_success;
             vector<Point2f> right_tracked_pts;
             vector<float> err2;
+            cout<<"DEBUG: in doFrontEndTrackingForOrdinaryFrames() before pyrlk: p_left:"<<p_left<<",p_right:"<<p_right<<",left_tracked_pts.size():"<<left_tracked_pts.size()<<",right_tracked_pts.size()"<<right_tracked_pts.size()<<endl;
             cv::calcOpticalFlowPyrLK(*p_left,*p_right,left_tracked_pts,right_tracked_pts,err2,right_track_success,cv::Size(21,21),3,
                                      cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
             //step<2> 筛选关键帧和左侧能匹配,且左侧和右侧能匹配的.
+            cout<<"after calcOptflow pyrlk:"<<endl;
             for(int pt_index = 0;pt_index<left_tracked_pts.size();pt_index++)
             {
                 //step<3> 生成最终结果并产生map.
@@ -116,7 +181,7 @@ namespace mcs
             int success_stereo_tracked_count = output_tracked_pts_left.size();
             if(success_stereo_tracked_count>15)
             {
-                LOG(INFO)<<"stereo track success!"<<endl;
+                cout<<"stereo track success!"<<endl;
                 *p_output_track_success = true;
             }
         }
@@ -180,7 +245,10 @@ namespace mcs
             fixedlagSmoother = BatchFixedLagSmoother(fixed_lag_val_sec);
             this->pfSettings = &fSettings;//现用现取.
         }
-
+        int getFrameID()
+        {
+            return this->frame_id;
+        }
         void initCamsStereo(vector<StereoCamConfig>& cams)
         {
             for(auto c:cams)
@@ -234,9 +302,15 @@ namespace mcs
         void addOrdinaryDepthFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int& pts_tracked_output);
         void addOrdinaryStereoFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int& optimization_pts_tracked,int method = METHOD_SIMPLE_MONOCULAR_REPROJECTION_ERROR)
         {
+            if(pKeyFrameReference == nullptr)
+            {
+                cout<<"in addOrdinaryStereoFrameToBackendAndOptimize():pKeyRef == nullptr!!!"<<endl;
+            }
+
+
             optimization_pts_tracked = 0;
             ScopeTimer t1("addOrdinaryStereoFrameToBackend() timer");
-            LOG(INFO)<<"in addOrdinaryStereoFrameToBackend() stage2"<<endl;
+            cout<<"in addOrdinaryStereoFrameToBackend() stage2"<<endl;
 
             //auto pts_vv = pFrame->p2d_vv;
             //pts_vv = OptFlowForFrameWiseTracking(*pframe2);//track frame2 获取对应位置的点...
@@ -247,15 +321,18 @@ namespace mcs
                 return;
             }
             pFrame->frame_id = frame_id;
-            LOG(INFO)<<"In addOrdinaryStereoFrameToBackendAndOptimize(): step<1> create pose for each camera."<<endl;
+            cout<<"In addOrdinaryStereoFrameToBackendAndOptimize(): step<1> create pose for each camera.frame_id:"<<frame_id<<endl;
             int cam_count = pFrame->get_cam_num();
             for(int i = 0;i < cam_count;i++)//对每个相机,先创建它的Pose3优化节点.
             {
                 if(frame_id ==0 )//第一个frame.
                 {
+                    cout<<"initializing optimization graph for the first frame,insert X0-Xn."<<endl;
                     Eigen::Matrix4d cam_to_body_rt_mat;
                     cv2eigen(pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_body_rt_mat);
+
                     initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(cam_to_body_rt_mat));
+                    //graph.add(Symbol('X',frame_id*cam_count + i),Pose3(cam_to_body_rt_mat));
                     if(i == 0)//就算是这种情况,也只对第一组摄像头定绝对位置.
                     {
                         gtsam::noiseModel::Diagonal::shared_ptr priorFrame_Cam0_noisemodel = gtsam::noiseModel::Diagonal::Variances (
@@ -263,11 +340,16 @@ namespace mcs
                                 );
                         //添加初始绝对位置约束.Rotation可变(重力对齐),translation不可变(绝对坐标系创建的点).
                         graph.emplace_shared<PriorFactor<Pose3> > (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel);
+                        //graph.add(PriorFactor<Pose3>  (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel));
                     }
                 }
                 else
                 {
-                    const Pose3* p_last = &(currentEstimate.at(Symbol('x',(frame_id - 1)*cam_count + i)).cast<Pose3>());
+                    cout<<"creating cam node X:frame id:"<<frame_id<<",cam_count:"<<cam_count<<",current_i:"<<i<<endl;
+                    //currentEstimate = isam.calculateEstimate();
+                    currentEstimate.print();
+                    const Pose3* p_last = &(currentEstimate.at(Symbol('X',(frame_id - 1)*cam_count + i)).cast<Pose3>());
+                    cout<<"last pose:"<<p_last->translation()<<endl;
                     initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(*p_last)); // 用上一帧的对应相机优化结果作为初始估计.
                 }
                 //加入相机位置约束.
@@ -277,20 +359,27 @@ namespace mcs
                                 ( gtsam::Vector ( 6 ) <<1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6 ).finished()); //1mm,0.1度.
                     Eigen::Matrix4d cam_to_cam0_rt_mat;
                     cv2eigen(pFrame->cam_info_stereo_vec[0].getRTMat().inv()* pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_cam0_rt_mat);
-                    graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('x',frame_id*cam_count),Symbol(frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
+                    graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('X',frame_id*cam_count),Symbol('X',frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
                                                                   noise_model_between_cams);//用非常紧的约束来限制相机间位置关系.
                 }
             }
             if(frame_id == 0)
             {
-                LOG(INFO)<<"initializing!"<<endl;
+                cout<<"initialized the 1st frame successfully!"<<endl;
                 frame_id++;//记录这是第几个frame.
+                cout<<"Before calling isam2 update:"<<endl;
+                initialEstimate.print("initial estimate:(not optimized)");
+                isam.update(graph, initialEstimate);//优化.
+                this->currentEstimate = isam.calculateEstimate();
+                currentEstimate.print("before resize,values:");
+                graph.resize(0);
+                initialEstimate.clear();
                 return;
             }
             auto imgs_prev = pKeyFrameReference->getMainImages();
             auto imgs_next = pFrame->getMainImages();
             auto imgs_next_right = pFrame->getSecondaryImages();
-            LOG(INFO)<<"in addOrdinaryStereoFrameToBackend() stage3"<<endl;
+            cout<<"in addOrdinaryStereoFrameToBackend() stage3"<<endl;
 
             auto p3ds_vv = pKeyFrameReference->p3d_vv;
             //多线程实现
@@ -306,14 +395,20 @@ namespace mcs
             {
                 int cam_index = i;
                 auto lp2fv = left_p2f_vv.at(cam_index);auto rp2fv = right_p2f_vv.at(cam_index);
-                auto map__ = p2f_to_p3d_maps.at(cam_index);
+                auto& map__ = p2f_to_p3d_maps.at(cam_index);
                 auto tracked_p2d = output_to_track_kf_p2d_vv.at(cam_index);
 
-                threads_frontend.push_back(std::thread(
-                                               doFrontEndTrackingForOrdinaryFrames,std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
-                                               std::ref(lp2fv),std::ref(rp2fv),
-                                               std::ref(map__),std::ref(tracked_p2d),&(track_success_vcams[cam_index]),0
-                                               ));
+                //threads_frontend.push_back(std::thread(
+                //                               doFrontEndTrackingForOrdinaryFrames,std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
+                //                               std::ref(lp2fv),std::ref(rp2fv),
+                //                               std::ref(map__),std::ref(tracked_p2d),&(track_success_vcams[cam_index]),0
+                //                               ));
+
+                cout<<"before calling doFrontEndTrackingForOrd:  pFrame:"<<pFrame<<",pFrameRef:"<<pKeyFrameReference<<",cam_index:"<<cam_index<<",lp2fv.size():"<<lp2fv.size()<<endl;
+                doFrontEndTrackingForOrdinaryFrames(pFrame,pKeyFrameReference,cam_index,
+                lp2fv,rp2fv,
+                map__,tracked_p2d,&(track_success_vcams[cam_index]),0);
+
                 //doFrontEndTrackingForOrdinaryFrames(std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
                 //                                                                std::ref(lp2fv),std::ref(rp2fv),
                 //                                                                std::ref(map__),std::ref(tracked_p2d),&(track_success_vcams[cam_index]),0);
@@ -355,7 +450,7 @@ namespace mcs
                         if(map_point_relavent_landmark_id == -1) // 第一次被另一个帧观测.
                         {
                             int reference_kf_id = pKeyFrameReference->frame_id;
-                            const Pose3* p_kf_pose3 = &(currentEstimate.at(Symbol('x',reference_kf_id*cam_count + i)).cast<Pose3>());
+                            const Pose3* p_kf_pose3 = &(currentEstimate.at(Symbol('X',reference_kf_id*cam_count + i)).cast<Pose3>());
                             Matrix3d kf_rot = p_kf_pose3->rotation().matrix();
                             Vector3d kf_trans = p_kf_pose3->translation().vector();
                             Vector3d p3d_relative_to_cam;
@@ -446,32 +541,37 @@ namespace mcs
             }
             //step<2>.process result.
             //TODO:记录跟踪点.
+            cout<<"Before calling isam2 update:"<<endl;
             isam.update(graph, initialEstimate);//优化.
             this->currentEstimate = isam.calculateEstimate();
+            graph.resize(0);
+            initialEstimate.clear();
 
-            LOG(INFO)<<"in OptFlowForFrameWiseTracking stage7"<<endl;
+
+            cout<<"in OptFlowForFrameWiseTracking stage7"<<endl;
             //TODO:处理每个摄像头的状态.
             //if(success_count>=3)
             //{
             //    output_frame_pnp_ransac_success = true;
             //}
-            //LOG(INFO)<<"For all cams:total tracked points count:"<<total_success_tracked_point_count;
+            //cout<<"For all cams:total tracked points count:"<<total_success_tracked_point_count;
             frame_id++;//记录这是第几个frame.
             return;
         }
 
         void addStereoKeyFrameToBackEndAndOptimize(shared_ptr<Frame> pKeyFrame,shared_ptr<Frame> pReferenceKeyFrame,int& optimization_pts_tracked,int method = METHOD_SIMPLE_MONOCULAR_REPROJECTION_ERROR)
         {
+            if(pReferenceKeyFrame == nullptr)
+            {
+                cout<<"Reference frame is null.Initializing."<<endl;
+            }
             if(!pKeyFrame->isKeyFrame)
             {
                 LOG(ERROR)<<"ERROR:In insertKeyFrameToBackEnd: frame is not keyframe!"<<endl;
                 return;
             }
             this->addOrdinaryStereoFrameToBackendAndOptimize(pKeyFrame,pReferenceKeyFrame,optimization_pts_tracked,method);//先像处理普通帧一样,处理跟踪和定位问题.
-            if(pReferenceKeyFrame == nullptr)
-            {
-                LOG(INFO)<<"Reference frame is null.Initializing."<<endl;
-            }
+
             //从这里开始,这一帧的位置已经被初步优化.
             /*
             pKeyFrame->map_points = generateMapPointsCorespondingToStereoKFObservation();//创建新地图点.

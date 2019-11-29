@@ -3,6 +3,7 @@
 
 
 #include <chrono>
+#include <glog/logging.h>
 //using namespace chrono;
 
 struct ScopeTimer
@@ -32,7 +33,7 @@ struct ScopeTimer
             case MSEC:fact=1e6;str="ms";break;
             case SEC:fact=1e9;str="s";break;
             };  
-            std::cout << "Time ("<<info_desc<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
+            LOG(INFO) << "Time ("<<info_desc<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
         }
     }
     ~ScopeTimer()
@@ -48,7 +49,7 @@ struct ScopeTimer
             case SEC:fact=1e9;str="s";break;
             };
 
-            std::cout << "Time ("<<name<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
+            LOG(INFO) << "Time ("<<name<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
         }   
     }   
 };

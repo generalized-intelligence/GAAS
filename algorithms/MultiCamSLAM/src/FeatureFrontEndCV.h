@@ -1,4 +1,4 @@
-    #ifndef FEATURE_FRONTEND_CV_H
+#ifndef FEATURE_FRONTEND_CV_H
 #define FEATURE_FRONTEND_CV_H
 
 #include "TypeDefs.h"
@@ -9,6 +9,7 @@
 #include "opencv2/xfeatures2d.hpp"
 #include "opencv2/video/tracking.hpp"
 #include "opencv2/calib3d.hpp"
+#include "utils/Timer.h"
 
 namespace mcs
 {
@@ -29,8 +30,8 @@ namespace mcs
 
     shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature);
 
-    const bool do_img_split = true;
-    //const bool do_img_split = false;
+    //const bool do_img_split = true;
+    const bool do_img_split = false;
     shared_ptr<PointWithFeatureT> extractCamKeyPoints(cvMat_T& Img,int method,bool compute_feature)
     {//TODO:add kps distribution check.
         if(do_img_split)
@@ -335,12 +336,12 @@ namespace mcs
         //p3d_output = shared_ptr<vector<p3dT> >(new vector<p3dT>);
         vector<Point2f>& checked_l = p2d_output;
         vector<Point2f> checked_r;
-        LOG(INFO)<<"checking vtrack_success"<<endl;
+        LOG(INFO)<<"checking vtrack_success,l_p2fs_original.size:"<<l_p2fs_original.size()<<",tracked_unchecked.size:"<<tracked_unchecked.size() <<endl;
         for(int i = 0;i<v_track_success.size();i++)
         {
             if(v_track_success[i] && check_stereo_match(l_p2fs_original[i],tracked_unchecked[i]))// check v.diff(v) shall be smaller than 4
             {
-                //LOG(INFO)<<"track success,dealing with 3d reconstruction."<<endl;
+                LOG(INFO)<<"        track success,dealing with 3d reconstruction."<<endl;
                 checked_l.push_back(l_p2fs_original[i]);
                 checked_r.push_back(tracked_unchecked[i]);
                 float disparity = tracked_unchecked[i].x - l_p2fs_original[i].x;
@@ -349,6 +350,8 @@ namespace mcs
                 const auto &QMat = cam_info.getQMat();
                 //LOG(INFO)<<"Q_mat:\n"<<QMat<<endl;
                 //LOG(INFO)<<"Q_mat dtype:"<<QMat.type()<<";cv_32f is:"<<CV_32F<<"cv_64f is:"<<CV_64F<<endl;
+                LOG(INFO)<<"        disp,q_32,q_33:"<<disparity<<","<<QMat.at<float>(3,2)<<","<<QMat.at<float>(3,3)<<endl;
+
                 scale = 1.0/(disparity*QMat.at<float>(3,2)+QMat.at<float>(3,3));
                 x = (l_p2fs_original[i].x + QMat.at<float>(0,3))*scale;
                 y = (l_p2fs_original[i].y + QMat.at<float>(1,3))*scale;
@@ -359,14 +362,15 @@ namespace mcs
                 matp1.at<float>(1,0)= y;
                 matp1.at<float>(2,0)= z;
                 matp1.at<float>(3,0)= 1.0;
-                //LOG(INFO)<<"RT_mat:\n"<<cam_info.getRTMat()<<endl;
+                //LOG(INFO)<<"        RT_mat:\n"<<cam_info.getRTMat()<<endl;
                 matp1 = cam_info.getRTMat()*matp1;
                 //Transformation of rt mat.
                 x = matp1.at<float>(0,0);
                 y = matp1.at<float>(1,0);
                 z = matp1.at<float>(2,0);
-                map_2d_to_3d_pts[i] = p3d_output.size();
-                map_3d_to_2d_pts[p3d_output.size()] = i;
+                //fixed overflow.
+                map_2d_to_3d_pts[checked_l.size()-1] = p3d_output.size();
+                map_3d_to_2d_pts[p3d_output.size()] = checked_l.size()-1;
                 p3d_disparity.push_back((double)disparity);
                 p3d_output.push_back(p3dT(x,y,z));
             }
@@ -409,6 +413,12 @@ namespace mcs
                                       bool& create_Frame_success,
                                       bool create_key_frame = true)
     {
+        ScopeTimer t_("createFrameStereos()");
+        LOG(INFO)<<"in createFrameStereos():create_key_frame = "<<create_key_frame<<endl;
+        if(cam_distribution_info_vec.size()!= stereo_pair_imgs_vec->size())
+        {
+            throw "in createFrameStereos:size of cam conf and image pairs differs!";
+        }
         create_Frame_success = false;
         //method<1> single thread.
         shared_ptr<Frame> pF_ret(new Frame(stereo_pair_imgs_vec));
@@ -417,11 +427,11 @@ namespace mcs
         pF_ret->p2d_vv.resize(stereo_pair_imgs_vec->size());
         pF_ret->p3d_vv.resize(stereo_pair_imgs_vec->size());
         pF_ret->disps_vv.resize(stereo_pair_imgs_vec->size());
-        for(int ci_index=0;ci_index<cam_distribution_info_vec.size();ci_index++)
-        {
-            //pF_ret->cam_info_vec.push_back(static_cast<CamInfo&>(cam_distribution_info_vec[ci_index]));
-            pF_ret->cam_info_stereo_vec.push_back(cam_distribution_info_vec[ci_index]);
-        }
+        //for(int ci_index=0;ci_index<cam_distribution_info_vec.size();ci_index++)
+        //{
+        //    //pF_ret->cam_info_vec.push_back(static_cast<CamInfo&>(cam_distribution_info_vec[ci_index]));
+        //    pF_ret->cam_info_stereo_vec.push_back(cam_distribution_info_vec[ci_index]);
+        //}
         for(int i = 0;i<stereo_pair_imgs_vec->size();i++ )//对每组摄像头
         {
              auto& p =  (*stereo_pair_imgs_vec)[i];
@@ -452,7 +462,8 @@ namespace mcs
              }
              else
              {//maybe detect gftt for optflow check is needed for opt check.TODO.
-                 LOG(ERROR)<<"TODO:"<<endl;
+                 //LOG(ERROR)<<"TODO:"<<endl;
+                 LOG(INFO)<<"TODO:"<<endl;
              }
         }
         return pF_ret;

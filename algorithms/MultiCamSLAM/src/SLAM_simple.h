@@ -1,4 +1,5 @@
 #include "SLAMOptimizationGraph.h"
+#include "utils/Timer.h"
 class SLAM_simple
 {
 public:
@@ -14,7 +15,7 @@ private:
     int SLAMRunningState = STATE_TRACKING_FALIED; // init.
     int unstable_tracking_patience = 0;//暂时不用.用到的时候使用它计量已经有多少个不稳定追踪.
     deque<mcs::Frame> frameQueue;
-    vector<StereoCamConfig> cam_config;
+    vector<StereoCamConfig> stereo_cam_config;
     shared_ptr<mcs::Frame> pLastKF=nullptr,pLastF=nullptr;
     std::chrono::high_resolution_clock::time_point begin_t;
     std::chrono::high_resolution_clock::time_point last_kf_update_t;
@@ -26,9 +27,18 @@ private:
 public:
     SLAM_simple(int argc,char** argv)
     {
+        if(argc < 2)
+        {
+            throw "argc < 2 terminated in SLAM_simple constructor!";
+        }
         begin_t = std::chrono::high_resolution_clock::now();
-        cv::FileStorage settings;
+        cv::FileStorage settings(argv[1],cv::FileStorage::READ);
         pGraph = shared_ptr<mcs::SLAMOptimizationGraph>(new mcs::SLAMOptimizationGraph(settings));
+        //加载cam config.
+        StereoCamConfig conf(settings["cams"][0]);
+        StereoCamConfig conf2(settings["cams"][0]);
+        this->stereo_cam_config.push_back(conf);
+        this->stereo_cam_config.push_back(conf2);
     }
     bool needNewKeyFrame()
     {
@@ -52,32 +62,41 @@ public:
     }
     void iterateWith4Imgs(shared_ptr<cv::Mat> img1,shared_ptr<cv::Mat> img2,shared_ptr<cv::Mat> img3,shared_ptr<cv::Mat> img4)
     {
+        ScopeTimer t("SLAM_simple::iterateWith4Imgs()");
         shared_ptr<mcs::Frame> pNewF;
         bool needNewKF;
         shared_ptr < vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > > > pvInputs( new vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > >());
         pvInputs->push_back(std::make_pair(img1,img2));
         pvInputs->push_back(std::make_pair(img3,img4));
         int tracked_pts_count_out;
-        if(needNewKeyFrame())
+
+
+
+        //if(needNewKeyFrame())
+
+        //if(pGraph->getFrameID() ==  0)//DEBUG ONLY.
+        if(!ever_init)//DEBUG ONLY!
         {//关键帧处理.
             bool needNewKF = true;
             bool create_frame_success;
-            pNewF = mcs::createFrameStereos(pvInputs,this->cam_config,create_frame_success,needNewKF);
+            pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF);
             if(!ever_init)
             {
                 LOG(INFO)<<"init SLAM_simple!"<<endl;//初始化SLAM simple.
                 pNewF->rotation = Eigen::Matrix3d::Identity();
                 pNewF->position = Eigen::Vector3d(0,0,0);
                 ever_init = true;
+                pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr,tracked_pts_count_out);//TODO.
             }
             else
             {
                 LOG(INFO)<<"SLAM initiated.Add new kf to optimization graph and do optimize()."<<endl;
-                bool track_localframe_success;
+                //bool track_localframe_success;
 
-                pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr,tracked_pts_count_out);//TODO.
+                pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,pLastKF,tracked_pts_count_out);//TODO.
 
-                if(track_localframe_success)
+                //if(track_localframe_success)//TODO:fix the logic.
+                if(true) //DEBUG ONLY!
                 {
                     //pNewF->rotation = ...
                     //pNewF->position =
@@ -107,10 +126,11 @@ public:
             bool needNewKF =false;
             bool create_frame_success;
             last_frame_update_t = std::chrono::high_resolution_clock::now();
-            pNewF = mcs::createFrameStereos(pvInputs,this->cam_config,create_frame_success,needNewKF);
+            pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF);
             //TODO:
             bool track_and_pnp_ransac_success;
             //mcs::trackAndDoSolvePnPRansacMultiCam(pNewF); //frame_wise tracking....
+            cout<<"in iterateWith4Imgs: track ordinary frame:referring frame id:"<<pLastKF->frame_id<<endl;
             pGraph->addOrdinaryStereoFrameToBackendAndOptimize(pNewF,pLastKF,tracked_pts_count_out);
 
             if(track_and_pnp_ransac_success)

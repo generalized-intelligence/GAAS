@@ -165,7 +165,7 @@ namespace mcs
         }
         vector<shared_ptr<cvMat_T> > getSecondaryImages()
         {
-            if(this->frame_type!=FRAME_TYPE_STEREO)
+            if(this->frame_type == FRAME_TYPE_STEREO)
             {
                 vector<shared_ptr<cvMat_T> > ret_vec;
                 for(int i = 0;i<this->pLRImgs->size();i++)

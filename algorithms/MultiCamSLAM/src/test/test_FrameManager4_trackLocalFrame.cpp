@@ -12,6 +12,7 @@ using namespace std;
 
 int main(int argc,char** argv)
 {
+    google::InitGoogleLogging(argv[0]);
     LOG(INFO)<<"reading imgs..."<<endl;
     shared_ptr<cvMat_T> pL(new cvMat_T(mcs::IMREAD("data/left_400.png") ));
     shared_ptr<cvMat_T> pR(new cvMat_T(mcs::IMREAD("data/right_400.png") ));
