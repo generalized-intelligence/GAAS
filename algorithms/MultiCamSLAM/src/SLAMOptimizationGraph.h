@@ -38,6 +38,10 @@
 
 #include <opencv2/core/persistence.hpp>
 #include <opencv2/core/eigen.hpp>
+#include "opencv2/features2d.hpp"
+#include "opencv2/xfeatures2d.hpp"
+#include "opencv2/video/tracking.hpp"
+#include "opencv2/calib3d.hpp"
 
 
 #include "Frame.h"
@@ -66,6 +70,9 @@ namespace mcs
                                              vector<Point2f>& output_tracked_pts_left,vector<Point2f>& output_tracked_pts_right,
                                              map<int,int>& map_point2f_to_kf_p3ds,vector<p2dT>& output_to_track_kf_p2d,char* p_output_track_success,int method = 0)
     {//这个函数要支持多线程.
+        cout<<"in doFrontEndTrackingForOrdinaryFrames():check frame_1,2 integrity."<<endl;
+        pFrame->checkFrameIntegrity_debug();
+        pKeyFrameReference->checkFrameIntegrity_debug();
         //step<1> 追踪左目.
         if(pKeyFrameReference == nullptr)
         {
@@ -90,6 +97,7 @@ namespace mcs
 
         cout<<"map_3d_to_2d_pts_vec.size():"<< pKeyFrameReference->map3d_to_2d_pt_vec.size()<<";acessing index:"<<i<<endl;
         auto map3d_to_2d_pt_vec__ = pKeyFrameReference->map3d_to_2d_pt_vec.at(i);
+        cout<<"map_info:size:"<<map3d_to_2d_pt_vec__.size()<<endl;//有时这个map大小为0,引发异常.
         cout<<"     copy of map in stack."<<endl;
         //错误就在这个里面.
         for(int index_p3d=0;index_p3d<vp3d_pts.size();index_p3d++)
@@ -114,7 +122,10 @@ namespace mcs
             }
             to_track_vp2d_pts.push_back(pKeyFrameReference->p2d_vv.at(i).at(map3d_to_2d_pt_vec__.at(index_p3d) ));//查找对应关键帧的p2d.只追踪成功三角化的点.
         }
-
+        if(to_track_vp2d_pts.size() == 0)
+        {
+            throw "to track vp2d empty.error.";//DEBUG ONLY
+        }
         //{//DEBUG ONLY!
         //    to_track_vp2d_pts.push_back(pKeyFrameReference->p2d_vv.at(i).at(0));
         //}
@@ -132,20 +143,24 @@ namespace mcs
             vector<float> err;
             try
             {
-                cout<<"before cv opt flow pyrlk:p origin img:"<<p_origin_img<<",p_left:"<<p_left<<endl;
+                cout<<"before cv opt flow pyrlk, count shared_ptr usage:p origin img:"<<p_origin_img.use_count()<<",p_left:"<<p_left.use_count()<<endl;
                 auto m_origin = *p_origin_img;
                 cout <<"p_origin_img->cols"<<p_origin_img->cols<<"rows:"<<p_origin_img->rows<<endl;
                 cout<<"deref p_origin finished!"<<endl;
                 auto m_left = *p_left;
                 cout<<"pleft_size:"<<p_left->cols<<","<<p_left->rows<<endl;
                 cout<<"deref p_left finished!"<<endl;
-                cout<<"to track p2f count:"<<to_track_vp2d_pts.size()<<endl;
-                cv::calcOpticalFlowPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);//,cv::Size(21, 21), 3,
+                cout<<"to track p2f count:"<<to_track_vp2d_pts.size()<<";left_tracked_pts.size:"<<left_tracked_pts.size()<<endl;
+                cout<<"img channels:img1:"<<p_origin_img->channels()<<";img2:"<<p_left->channels()<<endl;
+
+                do_cvPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);
+
+                //cv::calcOpticalFlowPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);//,cv::Size(21, 21), 3,
                                      //cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
             }
-            catch(...)//DEBUG ONLY!
+            catch(Exception e)//DEBUG ONLY!
             {
-                cout<<"in cv:: opt flow pyr lk error caught!"<<endl;
+                cout<<"in cv:: opt flow pyr lk error caught! info:"<<e.what()<<endl;
             }
             cout<<"in doFrontEndTracking For ordinary frame:stage<8>."<<endl;
         }
@@ -160,8 +175,9 @@ namespace mcs
             vector<Point2f> right_tracked_pts;
             vector<float> err2;
             cout<<"DEBUG: in doFrontEndTrackingForOrdinaryFrames() before pyrlk: p_left:"<<p_left<<",p_right:"<<p_right<<",left_tracked_pts.size():"<<left_tracked_pts.size()<<",right_tracked_pts.size()"<<right_tracked_pts.size()<<endl;
-            cv::calcOpticalFlowPyrLK(*p_left,*p_right,left_tracked_pts,right_tracked_pts,err2,right_track_success,cv::Size(21,21),3,
-                                     cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
+            //cv::calcOpticalFlowPyrLK(*p_left,*p_right,left_tracked_pts,right_tracked_pts,right_track_success,err2,cv::Size(21,21),3,
+            //                         cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
+            do_cvPyrLK(*p_left,*p_right,left_tracked_pts,right_tracked_pts,right_track_success,err2);
             //step<2> 筛选关键帧和左侧能匹配,且左侧和右侧能匹配的.
             cout<<"after calcOptflow pyrlk:"<<endl;
             for(int pt_index = 0;pt_index<left_tracked_pts.size();pt_index++)

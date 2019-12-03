@@ -39,7 +39,6 @@ namespace mcs
             return extractCamKeyPoints_splited(Img,method,compute_feature);
         }
 
-
         LOG(INFO)<<"method:"<<method<<";compute_feature:"<<compute_feature<<endl;
         cvMat_T mask;
         //auto pframeinfo = shared_ptr<FrameInfo>(new FrameInfo);
@@ -308,11 +307,14 @@ namespace mcs
         //const diff_u_max = 100;//TODO:
         if  (
               abs(p1.y - p2.y) < diff_v_max
+             &&  p1.x<p2.x
+             &&  p2.x-p1.x > 2.0 // minimum disparity :2 //TODO:set into config file.
                 // && p1.x-p2.x <
             )
         {
             return true;
         }
+        return false;
     }
     void createStereoMatchViaOptFlowMatching(cvMat_T& l,cvMat_T& r,StereoCamConfig& cam_info,vector<p2dT>& p2d_output,
                                              vector<p3dT>& p3d_output,map<int,int>& map_2d_to_3d_pts,
@@ -339,12 +341,12 @@ namespace mcs
         LOG(INFO)<<"checking vtrack_success,l_p2fs_original.size:"<<l_p2fs_original.size()<<",tracked_unchecked.size:"<<tracked_unchecked.size() <<endl;
         for(int i = 0;i<v_track_success.size();i++)
         {
-            if(v_track_success[i] && check_stereo_match(l_p2fs_original[i],tracked_unchecked[i]))// check v.diff(v) shall be smaller than 4
+            if(v_track_success[i] && check_stereo_match(tracked_unchecked[i],l_p2fs_original[i]))// check v.diff(v) shall be smaller than 4
             {
                 LOG(INFO)<<"        track success,dealing with 3d reconstruction."<<endl;
-                checked_l.push_back(l_p2fs_original[i]);
-                checked_r.push_back(tracked_unchecked[i]);
-                float disparity = tracked_unchecked[i].x - l_p2fs_original[i].x;
+                checked_l.push_back(l_p2fs_original.at(i));
+                checked_r.push_back(tracked_unchecked.at(i));
+                float disparity = l_p2fs_original.at(i).x - tracked_unchecked.at(i).x;
                 float x,y,z,scale;
                 //calc p3d.
                 const auto &QMat = cam_info.getQMat();
@@ -353,8 +355,8 @@ namespace mcs
                 LOG(INFO)<<"        disp,q_32,q_33:"<<disparity<<","<<QMat.at<float>(3,2)<<","<<QMat.at<float>(3,3)<<endl;
 
                 scale = 1.0/(disparity*QMat.at<float>(3,2)+QMat.at<float>(3,3));
-                x = (l_p2fs_original[i].x + QMat.at<float>(0,3))*scale;
-                y = (l_p2fs_original[i].y + QMat.at<float>(1,3))*scale;
+                x = (l_p2fs_original.at(i).x + QMat.at<float>(0,3))*scale;
+                y = (l_p2fs_original.at(i).y + QMat.at<float>(1,3))*scale;
                 z = QMat.at<float>(2, 3)*scale;
                 //Point3f p3f_prev(x,y,z);
                 cv::Mat matp1(4,1,CV_32F);
@@ -369,11 +371,17 @@ namespace mcs
                 y = matp1.at<float>(1,0);
                 z = matp1.at<float>(2,0);
                 //fixed overflow.
-                map_2d_to_3d_pts[checked_l.size()-1] = p3d_output.size();
-                map_3d_to_2d_pts[p3d_output.size()] = checked_l.size()-1;
+                //map_2d_to_3d_pts.at(checked_l.size()-1) = p3d_output.size();
+                map_2d_to_3d_pts.insert(std::pair<int,int>(checked_l.size()-1,p3d_output.size()));
+                //map_3d_to_2d_pts.at(p3d_output.size()) = checked_l.size()-1;
+                map_3d_to_2d_pts.insert(std::pair<int,int>(p3d_output.size(),checked_l.size()-1));
                 p3d_disparity.push_back((double)disparity);
                 p3d_output.push_back(p3dT(x,y,z));
             }
+        }
+        if(p3d_disparity.size()==0)
+        {
+            LOG(ERROR)<<"p3d is empty. check your condition of p3d calc!"<<endl;
         }
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:points matched success num:"<<checked_l.size()<<endl;
         if(checked_l.size()>15)
@@ -392,10 +400,11 @@ namespace mcs
             {
                 shared_ptr<MapPoint> pPoint(new MapPoint());
                 pPoint->feat = cv::Mat();//mat为空,暂时不提取特征.
-                if(pFrame->map2d_to_3d_pt_vec[cam_index].find(i)!=pFrame->map2d_to_3d_pt_vec[cam_index].end())
+                //if(pFrame->map2d_to_3d_pt_vec[cam_index].find(i) != pFrame->map2d_to_3d_pt_vec[cam_index].end())
+                if(pFrame->map2d_to_3d_pt_vec.at(cam_index).count(i))
                 {
 
-                    Point3f P3fMapPoint= pFrame->p3d_vv.at(cam_index).at(pFrame->map2d_to_3d_pt_vec[cam_index].at(i) );
+                    Point3f P3fMapPoint= pFrame->p3d_vv.at(cam_index).at(pFrame->map2d_to_3d_pt_vec.at(cam_index).at(i) );
                     pPoint->pos = Point3d(P3fMapPoint.x,P3fMapPoint.y,P3fMapPoint.z);//相对创建帧的位置.
                     pPoint->state = MAP_POINT_STATE_MATURE;
                 }
@@ -407,6 +416,7 @@ namespace mcs
             }
             ret_.push_back(cam_mps);
         }
+        return ret_;
     }
     shared_ptr<Frame> createFrameStereos(shared_ptr<vector<StereoMatPtrPair> >stereo_pair_imgs_vec,
                                       vector<StereoCamConfig>& cam_distribution_info_vec,
@@ -432,7 +442,7 @@ namespace mcs
         //    //pF_ret->cam_info_vec.push_back(static_cast<CamInfo&>(cam_distribution_info_vec[ci_index]));
         //    pF_ret->cam_info_stereo_vec.push_back(cam_distribution_info_vec[ci_index]);
         //}
-        for(int i = 0;i<stereo_pair_imgs_vec->size();i++ )//对每组摄像头
+        for(int i = 0;i<stereo_pair_imgs_vec->size();i++ )//对每组摄像头//TODO:改成多线程.
         {
              auto& p =  (*stereo_pair_imgs_vec)[i];
              cvMat_T& l = *(std::get<0>(p));
@@ -488,7 +498,11 @@ namespace mcs
                                       vector<CamInfo>& cam_distribution_info_vec,
                                       bool create_Frame_success = false,
                                       bool create_key_frame = true);
-
+    void do_cvPyrLK(InputOutputArray prev,InputOutputArray next,vector<Point2f>& p2d_v_prev,vector<Point2f>& p2d_v_next,vector<unsigned char>& track_success_v,vector<float>& err)
+    {
+        cv::calcOpticalFlowPyrLK(prev,next,p2d_v_prev,p2d_v_next,track_success_v,err,cv::Size(21, 21), 3,
+                                  cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
+    }
 }
 
 

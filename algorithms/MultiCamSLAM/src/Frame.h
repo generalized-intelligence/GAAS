@@ -11,6 +11,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>  
 #include <Eigen/StdVector>
+#include <cmath>
 
 #include "stereo_cam.h"
 namespace mcs
@@ -115,6 +116,49 @@ namespace mcs
         Vector3d position;
         int frame_id = -1;
 
+        void checkFrameIntegrity_debug()
+        {
+            cout<<"FOR FRAME_ID:"<<frame_id<<endl;
+            if(pLRImgs->size()>0)
+            {
+                for(auto pair_im : *pLRImgs)
+                {
+                    if(!std::get<0>(pair_im)->empty() && !std::get<1>(pair_im)->empty())
+                    {
+                        cout<<"     FRAME_HAS_IMG_CONTENT"<<endl;
+                    }
+                }
+            }
+            else
+            {
+                cout<<" FRAME HAS NO IMG!"<<endl;
+            }
+            int map_2_3_size = map2d_to_3d_pt_vec.size();
+            int map_3_2_size = map3d_to_2d_pt_vec.size();
+            cout<<"map2d_to_3d_pts_vec.size:"<<map_2_3_size<<endl;
+            cout<<"map3d_to_2d_pts_vec.size:"<<map_3_2_size<<endl;
+            //验证p2d到p3d
+            for(int i = 0;i<map_2_3_size;i++)
+            {
+                cout<<" check integrity of map2d_to_3d_pts_.at:"<<i<<endl;//第一个问题在generate stereo keyframe里面 查找p2d,p3d id的时候,不能有匹配错误.
+                cout<<" p2d at i.size:"<<p2d_vv.at(i).size()<<",p3d at i.size:"<<p3d_vv.at(i).size()<<endl;
+                for(auto iter = map2d_to_3d_pt_vec.at(i).begin();iter!=map2d_to_3d_pt_vec.at(i).end();++iter)
+                {
+                    cout<<"         first:"<<iter->first<<",second:"<<iter->second<<endl;
+                    cout<<"         p2d:"<<this->p2d_vv.at(i).at(iter->first)<<",p3d:"<<this->p3d_vv.at(i).at(iter->second)<<endl;
+                    auto p3d_ = this->p3d_vv.at(i).at(iter->second);
+                    if(isnan(p3d_.x)||isnan(p3d_.y)||isnan(p3d_.z))
+                    {
+                        LOG(ERROR)<<"p3d at i:"<<i<<","<<"second:"<<iter->second<<" has NAN inside!Disparity:"<<
+                                    this->disps_vv.at(i).at(iter->second)<<endl;
+                    }
+                }
+            }
+            //反向验证.
+
+
+        }
+
 
         vector<CamInfo> get_cam_info()
         {
@@ -160,8 +204,11 @@ namespace mcs
             }
             else
             {
-                LOG(ERROR)<<"not implemented yet."<<endl;
+                LOG(ERROR)<<"no implementation"<<endl;
+                throw "error:no implementation.";
+                return vector<shared_ptr<cvMat_T>>();
             }
+
         }
         vector<shared_ptr<cvMat_T> > getSecondaryImages()
         {

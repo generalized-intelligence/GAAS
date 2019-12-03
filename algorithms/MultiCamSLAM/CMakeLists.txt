@@ -54,6 +54,9 @@ find_package(PCL REQUIRED)
 
 find_package (DBoW3 REQUIRED PATH ../loop_closing/DBow3/)
 find_package (Glog REQUIRED)
+set (OpenCV_LIB_DIR "/home/gi/Downloads/opencv-3.4.5/build/lib")
+find_package(OpenCV 3.4.5 REQUIRED)
+
 IF(USE_CONTRIB)
 add_definitions(-DUSE_CONTRIB)
 ENDIF()
@@ -70,12 +73,12 @@ include_directories(${OpenCV_INCLUDE_DIRS}
                         ./src/
                         ./src/utils/
             ${GTSAM_INCLUDE_DIR}
+            ${GLOG_INCLUDE_DIRS}
                         )
 
 MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES} -lpthread gtsam gtsam_unstable;${Boost_PROGRAM_OPTIONS_LIBRARY})
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES} -lpthread gtsam gtsam_unstable;${Boost_PROGRAM_OPTIONS_LIBRARY} glog::glog)
 
-find_package(OpenCV 3.4.5 REQUIRED)
 
 # ----------------------------------------------------------------------------
 #   PROJECT CONFIGURATION
@@ -107,6 +110,7 @@ set(EXTRA_EXE_LINKER_FLAGS "")
 set(EXTRA_EXE_LINKER_FLAGS_RELEASE "")
 set(EXTRA_EXE_LINKER_FLAGS_DEBUG "")
 
+#set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wall -Wextra -Wno-sign-compare")
 IF(CMAKE_COMPILER_IS_GNUCXX OR MINGW)
     set(ENABLE_PROFILING 		OFF CACHE BOOL "Enable profiling in the GCC compiler (Add flags: -g -pg)")
     set(USE_OMIT_FRAME_POINTER 	ON CACHE BOOL "Enable -fomit-frame-pointer for GCC")
@@ -135,13 +139,12 @@ IF(CMAKE_COMPILER_IS_GNUCXX OR MINGW)
         set(USE_SSE3 OFF CACHE BOOL "Enable SSE3 for GCC")
     endif ()
 
-    set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wall")
 
     if(WARNINGS_ARE_ERRORS)
         set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Werror")
     endif()
 
-    # The -Wno-long-long is required in 64bit systems when including sytem headers.
+    # The -Wno-long-long is required in 64bit systems when including system headers.
     if(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64* OR ${CMAKE_SYSTEM_PROCESSOR} MATCHES amd64*)
                 set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS} -Wno-long-long")
     endif()
@@ -190,7 +193,7 @@ IF(CMAKE_COMPILER_IS_GNUCXX OR MINGW)
 
 
     set(EXTRA_C_FLAGS_RELEASE "${EXTRA_C_FLAGS_RELEASE} -DNDEBUG   ")
-    set(EXTRA_C_FLAGS_DEBUG "-g3 -O0 -DDEBUG -D_DEBUG -W -Wextra -Wno-return-type   ")
+    set(EXTRA_C_FLAGS_DEBUG "-g3 -O0 -DDEBUG -D_DEBUG -Wall -Wextra -Wno-sign-compare")
 
     MESSAGE( STATUS "-------------------------------------------------------------------------------" )
     message( STATUS "GNU COMPILER")
