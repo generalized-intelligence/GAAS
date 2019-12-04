@@ -437,6 +437,8 @@ namespace mcs
         pF_ret->p2d_vv.resize(stereo_pair_imgs_vec->size());
         pF_ret->p3d_vv.resize(stereo_pair_imgs_vec->size());
         pF_ret->disps_vv.resize(stereo_pair_imgs_vec->size());
+        pF_ret->map2d_to_3d_pt_vec.resize(stereo_pair_imgs_vec->size());
+        pF_ret->map3d_to_2d_pt_vec.resize(stereo_pair_imgs_vec->size());
         //for(int ci_index=0;ci_index<cam_distribution_info_vec.size();ci_index++)
         //{
         //    //pF_ret->cam_info_vec.push_back(static_cast<CamInfo&>(cam_distribution_info_vec[ci_index]));
@@ -444,7 +446,7 @@ namespace mcs
         //}
         for(int i = 0;i<stereo_pair_imgs_vec->size();i++ )//对每组摄像头//TODO:改成多线程.
         {
-             auto& p =  (*stereo_pair_imgs_vec)[i];
+             auto& p =  stereo_pair_imgs_vec->at(i);
              cvMat_T& l = *(std::get<0>(p));
              cvMat_T& r = *(std::get<1>(p));
              //shared_ptr<vector<p2dT> > p2d_output_;
@@ -453,13 +455,14 @@ namespace mcs
              if(create_key_frame)
              {
                  pF_ret->isKeyFrame = true;
-                 map<int,int> kps_2d_to_3d,kps_3d_to_2d;
+                 map<int,int>& kps_2d_to_3d = pF_ret->map2d_to_3d_pt_vec.at(i);
+                 map<int,int>& kps_3d_to_2d = pF_ret->map3d_to_2d_pt_vec.at(i);
                  vector<double>& disps = pF_ret->disps_vv.at(i);
-                 LOG(INFO)<<"will create kf_stereo:"<<endl;
-                 createStereoMatchViaOptFlowMatching(l,r,cam_distribution_info_vec[i],pF_ret->p2d_vv[i],pF_ret->p3d_vv[i],kps_2d_to_3d,kps_3d_to_2d,disps,create_stereo_successs);
-                 LOG(INFO)<<"create kf_stereo finished."<<endl;
-                 pF_ret->map2d_to_3d_pt_vec.push_back(kps_2d_to_3d);
-                 pF_ret->map3d_to_2d_pt_vec.push_back(kps_3d_to_2d);
+                 LOG(INFO)<<"will create kf_stereo :"<<i<<endl;
+                 createStereoMatchViaOptFlowMatching(l,r,cam_distribution_info_vec[i],pF_ret->p2d_vv.at(i),pF_ret->p3d_vv.at(i),kps_2d_to_3d,kps_3d_to_2d,disps,create_stereo_successs);
+
+                 LOG(INFO)<<"create kf_stereo "<<i<<" finished;p2d_size:"<<pF_ret->p2d_vv.at(i).size()<<endl;
+
                  pF_ret->map_points =  createMapPointForKeyFrame(pF_ret);
                  if(!create_stereo_successs)
                  {

@@ -39,6 +39,7 @@ public:
         StereoCamConfig conf2(settings["cams"][0]);
         this->stereo_cam_config.push_back(conf);
         this->stereo_cam_config.push_back(conf2);
+        pGraph->initCamsStereo(this->stereo_cam_config);
     }
     bool needNewKeyFrame()
     {

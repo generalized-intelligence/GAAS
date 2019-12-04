@@ -54,10 +54,10 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& img1,const sensor_msgs
         p2 = cv_bridge::toCvShare(img2);
         p3 = cv_bridge::toCvShare(img3);
         p4 = cv_bridge::toCvShare(img4);
-        m1 = shared_ptr<cv::Mat> (new cv::Mat(p1->image));
-        m2 = shared_ptr<cv::Mat> (new cv::Mat(p2->image));
-        m3 = shared_ptr<cv::Mat> (new cv::Mat(p3->image));
-        m4 = shared_ptr<cv::Mat> (new cv::Mat(p4->image));
+        m1 = shared_ptr<cv::Mat> (new cv::Mat(p1->image.clone()));
+        m2 = shared_ptr<cv::Mat> (new cv::Mat(p2->image.clone()));
+        m3 = shared_ptr<cv::Mat> (new cv::Mat(p3->image.clone()));
+        m4 = shared_ptr<cv::Mat> (new cv::Mat(p4->image.clone()));
     }
     catch (cv_bridge::Exception& e)
     {
@@ -76,7 +76,7 @@ int main(int argc,char** argv)
     google::InitGoogleLogging(argv[0]);
     ros::init(argc,argv,"test_VO_node");
     ros::NodeHandle nh;
-    std::string front_left_topic("/gi/forward/left/image_raw"),front_right_topic("/gi/forward/right/image_raw"),left_left_topic("/gi/leftward/left/image_raw"),left_right_topic("/gi/leftward/left/image_raw");
+    std::string front_left_topic("/gi/forward/left/image_raw"),front_right_topic("/gi/forward/right/image_raw"),left_left_topic("/gi/leftward/left/image_raw"),left_right_topic("/gi/leftward/right/image_raw");
 
     message_filters::Subscriber<sensor_msgs::Image> front_left_sub(nh, front_left_topic, 10);
     message_filters::Subscriber<sensor_msgs::Image> front_right_sub(nh, front_right_topic, 10);

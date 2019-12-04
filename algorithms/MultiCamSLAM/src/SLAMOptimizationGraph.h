@@ -90,14 +90,21 @@ namespace mcs
         cout<<"in doFrontEndTracking For ordinary frame:stage<4>."<<endl;
         vector<p3dT> vp3d_pts = pKeyFrameReference->p3d_vv.at(i);
         cout<<"in doFrontEndTracking For ordinary frame:stage<5>."<<endl;
-        //vector<p2dT>& to_track_vp2d_pts = output_to_track_kf_p2d;//要追踪的参考帧 kps.
-        vector<p2dT> to_track_vp2d_pts;//不去改这个,回头直接赋值试试.
+        vector<p2dT>& to_track_vp2d_pts = output_to_track_kf_p2d;//要追踪的参考帧 kps.
+
         to_track_vp2d_pts.clear();
         cout<<"    cam index:"<<cam_index<<",p2d_vv[i].size():"<<pKeyFrameReference->p2d_vv.at(i).size()<<endl;
 
         cout<<"map_3d_to_2d_pts_vec.size():"<< pKeyFrameReference->map3d_to_2d_pt_vec.size()<<";acessing index:"<<i<<endl;
         auto map3d_to_2d_pt_vec__ = pKeyFrameReference->map3d_to_2d_pt_vec.at(i);
         cout<<"map_info:size:"<<map3d_to_2d_pt_vec__.size()<<endl;//有时这个map大小为0,引发异常.
+        if(map3d_to_2d_pt_vec__.size()==0)
+        {
+            for(auto& map__ :pKeyFrameReference->map3d_to_2d_pt_vec)
+            {
+                cout<<"map 3_2 at pKeyFrameRef size:"<<map__.size()<<endl;
+            }
+        }
         cout<<"     copy of map in stack."<<endl;
         //错误就在这个里面.
         for(int index_p3d=0;index_p3d<vp3d_pts.size();index_p3d++)
@@ -152,7 +159,11 @@ namespace mcs
                 cout<<"deref p_left finished!"<<endl;
                 cout<<"to track p2f count:"<<to_track_vp2d_pts.size()<<";left_tracked_pts.size:"<<left_tracked_pts.size()<<endl;
                 cout<<"img channels:img1:"<<p_origin_img->channels()<<";img2:"<<p_left->channels()<<endl;
-
+                cout<<"writing img..."<<endl;
+                cv::imwrite("origin.jpg",*p_origin_img);
+                cv::imwrite("left.jpg",*p_left);
+                cv::imwrite("right.jpg",*p_right);
+                cout<<"img saved!"<<endl;
                 do_cvPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);
 
                 //cv::calcOpticalFlowPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);//,cv::Size(21, 21), 3,
@@ -316,7 +327,7 @@ namespace mcs
 
         }
         void addOrdinaryDepthFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int& pts_tracked_output);
-        void addOrdinaryStereoFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int& optimization_pts_tracked,int method = METHOD_SIMPLE_MONOCULAR_REPROJECTION_ERROR)
+        void addOrdinaryStereoFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int& optimization_pts_tracked,int method = METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
         {
             if(pKeyFrameReference == nullptr)
             {
@@ -410,9 +421,9 @@ namespace mcs
             for(int i = 0;i<cam_count;i++)
             {
                 int cam_index = i;
-                auto lp2fv = left_p2f_vv.at(cam_index);auto rp2fv = right_p2f_vv.at(cam_index);
+                auto& lp2fv = left_p2f_vv.at(cam_index);auto& rp2fv = right_p2f_vv.at(cam_index);
                 auto& map__ = p2f_to_p3d_maps.at(cam_index);
-                auto tracked_p2d = output_to_track_kf_p2d_vv.at(cam_index);
+                auto& tracked_p2d = output_to_track_kf_p2d_vv.at(cam_index);
 
                 //threads_frontend.push_back(std::thread(
                 //                               doFrontEndTrackingForOrdinaryFrames,std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
@@ -474,6 +485,7 @@ namespace mcs
                             //cv2eigen(vp3d_pts.at(p2d_index),p3d_relative_to_cam);
                             //cv2eigen(vp2d_pts.at(p2d_index),reprojected_p2d);
                             p3d_relative_to_cam = Vector3d(vp3d_pts.at(p2d_index).x,vp3d_pts.at(p2d_index).y,vp3d_pts.at(p2d_index).z);
+                            cout<<"DEBUG:backend vp2d_pts.size():"<<vp2d_pts.size()<<endl;
                             reprojected_p2d = Vector2d(vp2d_pts.at(p2d_index).x,vp2d_pts.at(p2d_index).y);
 
                             Vector3d point_pos_initial_guess = kf_rot*p3d_relative_to_cam + kf_trans; //TODO:通过对应关键帧计算其初始位置估计,所有都变换到一个坐标系下面.
@@ -512,7 +524,7 @@ namespace mcs
                             //method<4>.SmartFactor of GenericStereoFactor
 
                             //这种情况下,smartFactor本身就是landmark,无需额外在创建了
-                            else if(method == 1)
+                            else if(method == METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
                             {
                                 auto gaussian = noiseModel::Isotropic::Sigma(3, 1.0);
                                 SmartProjectionParams params(HESSIAN, ZERO_ON_DEGENERACY);
@@ -520,7 +532,7 @@ namespace mcs
                                             new SmartStereoProjectionPoseFactor(gaussian, params));
                                 graph.push_back(smart_stereo_factor);
                                 //第一次使用smart factor::add(),加入关键帧处的观测约束.
-                                smart_stereo_factor->add(StereoPoint2(xl_, xr_, y_),Symbol('X',reference_kf_id*cam_count + i),this->v_pcams_gtsam_config_stereo[i]);
+                                smart_stereo_factor->add(StereoPoint2(xl_, xr_, y_),Symbol('X',reference_kf_id*cam_count + i),this->v_pcams_gtsam_config_stereo[i]);//这个v_pcams里面是空的...
                                 landmark_properties lp_;
                                 //TODO:填上其他属性.这个lp_如果不用smart factor的话现在看来不一定要用.
                                 lp_.pRelativeStereoSmartFactor = smart_stereo_factor;
@@ -537,7 +549,7 @@ namespace mcs
                             //      Point2(...), mono_reprojection_noise_model, Symbol('X',frame_id*cam_count + i), Symbol('L', map_point_relavent_landmark_id), this->v_pcams_gtsam_config_stereo_left[i]);
                         }
                         //method <2> 创建smart stereo factor上面的约束.
-                        else if(method == 1)
+                        else if(method == METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
                         {
                             auto smart_factor_ = this->vlandmark_properties[map_point_relavent_landmark_id].pRelativeStereoSmartFactor;
                             smart_factor_->add(StereoPoint2(left_p2f_vv.at(i).at(p2d_index).x,//左目的u
