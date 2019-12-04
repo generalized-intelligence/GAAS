@@ -15,6 +15,8 @@
 #include <gtsam/nonlinear/Values.h>
 #include <gtsam/inference/Symbol.h>
 #include <gtsam/nonlinear/NonlinearISAM.h>
+#include <gtsam/nonlinear/NonlinearEquality.h>
+
 #include <gtsam/slam/dataset.h> 
 #include <gtsam/nonlinear/ISAM2.h>
 #include <gtsam/nonlinear/ISAM2Params.h>
@@ -71,8 +73,8 @@ namespace mcs
                                              map<int,int>& map_point2f_to_kf_p3ds,vector<p2dT>& output_to_track_kf_p2d,char* p_output_track_success,int method = 0)
     {//这个函数要支持多线程.
         cout<<"in doFrontEndTrackingForOrdinaryFrames():check frame_1,2 integrity."<<endl;
-        pFrame->checkFrameIntegrity_debug();
-        pKeyFrameReference->checkFrameIntegrity_debug();
+        //pFrame->checkFrameIntegrity_debug();
+        //pKeyFrameReference->checkFrameIntegrity_debug();
         //step<1> 追踪左目.
         if(pKeyFrameReference == nullptr)
         {
@@ -361,23 +363,38 @@ namespace mcs
                     initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(cam_to_body_rt_mat));
                     //graph.add(Symbol('X',frame_id*cam_count + i),Pose3(cam_to_body_rt_mat));
                     if(i == 0)//就算是这种情况,也只对第一组摄像头定绝对位置.
-                    {
+                    {//对初始所有摄像头定位置.
                         gtsam::noiseModel::Diagonal::shared_ptr priorFrame_Cam0_noisemodel = gtsam::noiseModel::Diagonal::Variances (
                                     ( gtsam::Vector ( 6 ) <<0.1, 0.1, 0.1, 1e-6, 1e-6, 1e-6 ).finished()
                                 );
                         //添加初始绝对位置约束.Rotation可变(重力对齐),translation不可变(绝对坐标系创建的点).
-                        graph.emplace_shared<PriorFactor<Pose3> > (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel);
+                        //graph.emplace_shared<PriorFactor<Pose3> > (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel);
+
+                        Pose3 first_pose = initialEstimate.at<Pose3>(Symbol('X',i));
+                        //constrain the first pose such that it cannot change from its original value during optimization
+                        // NOTE: NonlinearEquality forces the optimizer to use QR rather than Cholesky
+                        // QR is much slower than Cholesky, but numerically more stable
+                        graph.emplace_shared<NonlinearEquality<Pose3> >(Symbol('X',i),first_pose);
+
                         //graph.add(PriorFactor<Pose3>  (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel));
                     }
                 }
                 else
                 {
-                    cout<<"creating cam node X:frame id:"<<frame_id<<",cam_count:"<<cam_count<<",current_i:"<<i<<endl;
-                    //currentEstimate = isam.calculateEstimate();
-                    currentEstimate.print();
-                    const Pose3* p_last = &(currentEstimate.at(Symbol('X',(frame_id - 1)*cam_count + i)).cast<Pose3>());
-                    cout<<"last pose:"<<p_last->translation()<<endl;
-                    initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(*p_last)); // 用上一帧的对应相机优化结果作为初始估计.
+                    if(frame_id > 1)//第二个frame没法看第一个的值.
+                    {
+                        cout<<"creating cam node X:frame id:"<<frame_id<<",cam_count:"<<cam_count<<",current_i:"<<i<<endl;
+                        //currentEstimate = isam.calculateEstimate();
+                        currentEstimate.print();
+                        const Pose3* p_last = &(currentEstimate.at(Symbol('X',(frame_id - 1)*cam_count + i)).cast<Pose3>());
+                        cout<<"last pose:"<<p_last->translation()<<endl;
+                        initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(*p_last)); // 用上一帧的对应相机优化结果作为初始估计.
+                    }
+                    else
+                    {//test.
+                        const Pose3* p_last = &(currentEstimate.at(Symbol('X',(frame_id - 1)*cam_count + i)).cast<Pose3>());
+                        initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(*p_last)); // 用上一帧的对应相机优化结果作为初始估计.
+                    }
                 }
                 //加入相机位置约束.
                 if(i != 0)
@@ -396,11 +413,12 @@ namespace mcs
                 frame_id++;//记录这是第几个frame.
                 cout<<"Before calling isam2 update:"<<endl;
                 initialEstimate.print("initial estimate:(not optimized)");
-                isam.update(graph, initialEstimate);//优化.
-                this->currentEstimate = isam.calculateEstimate();
-                currentEstimate.print("before resize,values:");
-                graph.resize(0);
-                initialEstimate.clear();
+                this->currentEstimate = this-> initialEstimate;
+                //isam.update(graph, initialEstimate);//优化.
+                //this->currentEstimate = isam.calculateEstimate();
+                //currentEstimate.print("before resize,values:");
+                //graph.resize(0);
+                //initialEstimate.clear();//这里不能做任何操作.否则引起indetermined linear system exception.
                 return;
             }
             auto imgs_prev = pKeyFrameReference->getMainImages();
@@ -567,13 +585,36 @@ namespace mcs
                     }
                 }
             }
+//            if(frame_id == 0)//不对,这个还不能放这里,会导致pKeyFrameRef是空.
+//            {
+//                cout<<"initialized the 1st frame successfully!"<<endl;
+//                frame_id++;//记录这是第几个frame.
+//                cout<<"Before calling isam2 update:"<<endl;
+//                initialEstimate.print("initial estimate:(not optimized)");
+//                this->currentEstimate = this-> initialEstimate;
+//                //isam.update(graph, initialEstimate);//优化.
+//                //this->currentEstimate = isam.calculateEstimate();
+//                //currentEstimate.print("before resize,values:");
+//                //graph.resize(0);
+//                //initialEstimate.clear();//这里不能做任何操作.否则引起indetermined linear system exception.
+//                return;
+//            }
             //step<2>.process result.
             //TODO:记录跟踪点.
-            cout<<"Before calling isam2 update:"<<endl;
-            isam.update(graph, initialEstimate);//优化.
-            this->currentEstimate = isam.calculateEstimate();
-            graph.resize(0);
-            initialEstimate.clear();
+            if(frame_id>=2)
+            {
+                cout<<"Before calling isam2 update, print initialEstimate:"<<endl;
+                initialEstimate.print();
+                cout<<"will call isam2::update()"<<endl;
+                isam.update(graph, initialEstimate);//优化.
+                this->currentEstimate = isam.calculateEstimate();
+                graph.resize(0);
+                initialEstimate.clear();
+            }
+            if(frame_id == 1)
+            {
+                currentEstimate = initialEstimate;
+            }
 
 
             cout<<"in OptFlowForFrameWiseTracking stage7"<<endl;
