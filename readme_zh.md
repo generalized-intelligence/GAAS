@@ -74,6 +74,8 @@ GAAS v0.7 Release (使用systemback安装)
 ## 相关硬件
 我们的项目完全开源，你可以用任何你希望使用的开发方式来开发 GAAS。
 
+这是我们团队使用的[硬件清单](https://github.com/generalized-intelligence/GAAS/tree/master/hardware)
+
 但如果你希望快速上手，直接开始写代码的话，你也可以通过邮件联系我们购买 GAAS 团队内部自己使用的开发套件：nina.rong@gaas.dev
 
 
