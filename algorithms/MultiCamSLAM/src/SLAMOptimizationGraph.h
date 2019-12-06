@@ -574,7 +574,11 @@ namespace mcs
                                 //initialEstimate.insert(Symbol('L',landmark_id),
                                 //                       gtsam::Point3(point_pos_initial_guess)
                                 //                       );//landmark.
-                                initialEstimate.insert(Symbol('L',map_point_relavent_landmark_id),Point3(0,0,0));
+                                auto p3__ = pKeyFrameReference->p3d_vv.at(i).at(p2d_index);
+                                initialEstimate.insert(Symbol('L',map_point_relavent_landmark_id),//Point3(0,0,0)
+
+                                                       initialEstimate.at(Symbol('X',reference_kf_id*cam_count + i)).cast<Pose3>().transformFrom(Point3(p3__.x,p3__.y,p3__.z))
+                                                       );
                                 graph.emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(xl_,//左目的u
                                                                                                       xr_,//右目的u
                                                                                                       y_),//观测的v.
@@ -671,7 +675,7 @@ namespace mcs
 
                 if(DEBUG_USE_LM ==1)
                 {
-                  if(this->frame_id%10 == 0)
+                  if(this->frame_id%3 == 0)
                   {
                       cout<<"debug:call lm optimizer!"<<endl;
                       LevenbergMarquardtParams params;
@@ -688,9 +692,15 @@ namespace mcs
                       result.print();
                       std::string output_file_name = "info_graph_g2o";
                       stringstream ss;
-                      ss<<output_file_name<<(frame_id/10)<<".g2o";
+                      ss<<output_file_name<<(frame_id/3)<<".g2o";
                       cout<<"saving g2o file:"<<ss.str()<<"."<<endl;
-                      //graph.saveGraph(ss,result);
+                      stringstream ss2;
+                      ss2<<"Pose2SLAMExample"<<(frame_id/3)<<".dot";
+                      ofstream os(ss2.str());
+                      //if(frame_id == 20)
+                      //{
+                      graph.saveGraph(os,result);
+                      //}
                       writeG2o(graph, result, ss.str());
                       cout<<"g2o file saved!"<<endl;
 
