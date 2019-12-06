@@ -55,6 +55,10 @@ using namespace gtsam;
 using namespace std;
 using namespace cv;
 
+
+
+const int DEBUG_USE_LM = 1;
+
 namespace mcs
 {
     struct landmark_properties;
@@ -111,14 +115,14 @@ namespace mcs
         //错误就在这个里面.
         for(int index_p3d=0;index_p3d<vp3d_pts.size();index_p3d++)
         {
-            cout<<"     querying index_p3d:"<<index_p3d<<endl;
+            //cout<<"     querying index_p3d:"<<index_p3d<<endl;
             if(map3d_to_2d_pt_vec__.count(index_p3d) == 0)
             {
                 cout<<"ERROR: no such p3d."<<endl;
             }
             else
             {
-                cout<<"     p3d_matching p2d_index:"<<map3d_to_2d_pt_vec__.at(index_p3d)<<endl;
+                //cout<<"     p3d_matching p2d_index:"<<map3d_to_2d_pt_vec__.at(index_p3d)<<endl;
             }
             if(pKeyFrameReference-> p2d_vv.at(i).size()<= map3d_to_2d_pt_vec__.at(index_p3d))
             {
@@ -126,7 +130,7 @@ namespace mcs
             }
             else
             {
-                cout<<"     pKeyFrameReference->map3d_to_2d_pt_vec.at(i).at(index_p3d):"<<map3d_to_2d_pt_vec__.at(index_p3d)<<endl;
+                //cout<<"     pKeyFrameReference->map3d_to_2d_pt_vec.at(i).at(index_p3d):"<<map3d_to_2d_pt_vec__.at(index_p3d)<<endl;
 
             }
             to_track_vp2d_pts.push_back(pKeyFrameReference->p2d_vv.at(i).at(map3d_to_2d_pt_vec__.at(index_p3d) ));//查找对应关键帧的p2d.只追踪成功三角化的点.
@@ -161,11 +165,11 @@ namespace mcs
                 cout<<"deref p_left finished!"<<endl;
                 cout<<"to track p2f count:"<<to_track_vp2d_pts.size()<<";left_tracked_pts.size:"<<left_tracked_pts.size()<<endl;
                 cout<<"img channels:img1:"<<p_origin_img->channels()<<";img2:"<<p_left->channels()<<endl;
-                cout<<"writing img..."<<endl;
-                cv::imwrite("origin.jpg",*p_origin_img);
-                cv::imwrite("left.jpg",*p_left);
-                cv::imwrite("right.jpg",*p_right);
-                cout<<"img saved!"<<endl;
+                //cout<<"writing img..."<<endl;
+                //cv::imwrite("origin.jpg",*p_origin_img);
+                //cv::imwrite("left.jpg",*p_left);
+                //cv::imwrite("right.jpg",*p_right);
+                //cout<<"img saved!"<<endl;
                 do_cvPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);
 
                 //cv::calcOpticalFlowPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);//,cv::Size(21, 21), 3,
@@ -244,7 +248,7 @@ namespace mcs
         vector<StereoCamConfig> stereo_config;
         vector<CamInfo> rgbd_config;
         int landmark_id = 0;
-        vector<landmark_properties> vlandmark_properties;//暂时用不到.用到时候可以直接拿.
+        vector<landmark_properties> vlandmark_properties;//路标点的管理.
         int frame_id = 0;
         vector<boost::shared_ptr<Cal3_S2> > v_pcams_gtsam_config_stereo_left;
         vector<boost::shared_ptr<Cal3_S2Stereo> > v_pcams_gtsam_config_stereo;
@@ -273,6 +277,14 @@ namespace mcs
         {//填充初始化函数.
             fixedlagSmoother = BatchFixedLagSmoother(fixed_lag_val_sec);
             this->pfSettings = &fSettings;//现用现取.
+            parameters.relinearizeSkip = 0;
+            //parameters.relinearizeThreshold = 0.01;
+            //parameters.relinearizeSkip = 1;
+            parameters.cacheLinearizedFactors = false;
+            parameters.enableDetailedResults = true;
+            parameters.setEnableRelinearization(false);
+
+            this->isam = ISAM2(parameters);
         }
         int getFrameID()
         {
@@ -360,7 +372,7 @@ namespace mcs
                     Eigen::Matrix4d cam_to_body_rt_mat;
                     cv2eigen(pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_body_rt_mat);
 
-                    initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(cam_to_body_rt_mat));
+                    initialEstimate.insert(Symbol('X',i),Pose3(cam_to_body_rt_mat));
                     //graph.add(Symbol('X',frame_id*cam_count + i),Pose3(cam_to_body_rt_mat));
                     if(i == 0)//就算是这种情况,也只对第一组摄像头定绝对位置.
                     {//对初始所有摄像头定位置.
@@ -375,9 +387,10 @@ namespace mcs
                         // NOTE: NonlinearEquality forces the optimizer to use QR rather than Cholesky
                         // QR is much slower than Cholesky, but numerically more stable
                         graph.emplace_shared<NonlinearEquality<Pose3> >(Symbol('X',i),first_pose);
-
+                        LOG(INFO)<<"NonlinearEquality Constrained symbol X"<<i<<" at first pose:"<<first_pose.matrix()<<endl;
                         //graph.add(PriorFactor<Pose3>  (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel));
                     }
+                    LOG(INFO)<<"Cam "<<i<<" initiated at first pose:"<<initialEstimate.at<Pose3>(Symbol('X',i)).matrix()<<endl;
                 }
                 else
                 {
@@ -385,7 +398,7 @@ namespace mcs
                     {
                         cout<<"creating cam node X:frame id:"<<frame_id<<",cam_count:"<<cam_count<<",current_i:"<<i<<endl;
                         //currentEstimate = isam.calculateEstimate();
-                        currentEstimate.print();
+                        //currentEstimate.print();
                         const Pose3* p_last = &(currentEstimate.at(Symbol('X',(frame_id - 1)*cam_count + i)).cast<Pose3>());
                         cout<<"last pose:"<<p_last->translation()<<endl;
                         initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(*p_last)); // 用上一帧的对应相机优化结果作为初始估计.
@@ -400,7 +413,7 @@ namespace mcs
                 if(i != 0)
                 {
                     noiseModel::Diagonal::shared_ptr noise_model_between_cams = gtsam::noiseModel::Diagonal::Variances (
-                                ( gtsam::Vector ( 6 ) <<1e-4, 1e-4, 1e-4, 1e-6, 1e-6, 1e-6 ).finished()); //1mm,0.1度.
+                                ( gtsam::Vector ( 6 ) <<0.01, 0.01, 0.01, 0.01, 0.01, 0.01 ).finished()); //1mm,0.1度.//放松一些
                     Eigen::Matrix4d cam_to_cam0_rt_mat;
                     cv2eigen(pFrame->cam_info_stereo_vec[0].getRTMat().inv()* pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_cam0_rt_mat);
                     graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('X',frame_id*cam_count),Symbol('X',frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
@@ -414,6 +427,22 @@ namespace mcs
                 cout<<"Before calling isam2 update:"<<endl;
                 initialEstimate.print("initial estimate:(not optimized)");
                 this->currentEstimate = this-> initialEstimate;
+
+                if(DEBUG_USE_LM == 1)
+                {
+                    cout<<"Debug:For frame 1, call lm optimizer!"<<endl;
+                    LevenbergMarquardtParams params;
+                    params.verbosityLM = LevenbergMarquardtParams::TRYLAMBDA;
+                    params.verbosity = NonlinearOptimizerParams::ERROR;
+
+                    cout << "Optimizing" << endl;
+                    //create Levenberg-Marquardt optimizer to optimize the factor graph
+                    LevenbergMarquardtOptimizer optimizer(graph, initialEstimate, params);
+                    Values result = optimizer.optimize();
+                    cout<<"optimized result:"<<endl;
+                    result.print();
+                }
+
                 //isam.update(graph, initialEstimate);//优化.
                 //this->currentEstimate = isam.calculateEstimate();
                 //currentEstimate.print("before resize,values:");
@@ -491,8 +520,8 @@ namespace mcs
                     {
                         //TODO:
                         //1.检查这个map_point是否有这个对应的landmark;没有就先创建点.
-                        int map_point_relavent_landmark_id = pKeyFrameReference->get_p3dindex_to_landmark_index(p2d_index);//获取对应Landmark的id.失败返回-1.
-                        if(map_point_relavent_landmark_id == -1) // 第一次被另一个帧观测.
+                        int map_point_relavent_landmark_id = pKeyFrameReference->get_p3dindex_to_landmark_index(p2d_index,i);//获取对应Landmark的id.失败返回-1.
+                        if(map_point_relavent_landmark_id == -1) // 第一次被另一个帧观测,添加到vLandmark记录中.
                         {
                             int reference_kf_id = pKeyFrameReference->frame_id;
                             const Pose3* p_kf_pose3 = &(currentEstimate.at(Symbol('X',reference_kf_id*cam_count + i)).cast<Pose3>());
@@ -507,13 +536,7 @@ namespace mcs
                             reprojected_p2d = Vector2d(vp2d_pts.at(p2d_index).x,vp2d_pts.at(p2d_index).y);
 
                             Vector3d point_pos_initial_guess = kf_rot*p3d_relative_to_cam + kf_trans; //TODO:通过对应关键帧计算其初始位置估计,所有都变换到一个坐标系下面.
-                            //创建待优化点.
-                            initialEstimate.insert(Symbol('L',landmark_id),
-                                                   gtsam::Point3(point_pos_initial_guess)
-                                                   );//landmark.
-
-                            //
-                            pKeyFrameReference->set_p3d_landmark_index(p2d_index,landmark_id);  //绑定对应关系.
+                            pKeyFrameReference->set_p3d_landmark_index(p2d_index,landmark_id,i);  //绑定对应关系.
                             map_point_relavent_landmark_id = landmark_id;
                             //创建在参考关键帧的投影约束.注意:这里没有,也不应该对'L'[landmark_id]进行任何的prior约束!
 
@@ -531,6 +554,10 @@ namespace mcs
 
                             if(method == 0)
                             {//加入在关键帧上面的观测.
+                                //创建待优化点.这个不要了.只用SmartFactor.
+                                //initialEstimate.insert(Symbol('L',landmark_id),
+                                //                       gtsam::Point3(point_pos_initial_guess)
+                                //                       );//landmark.
                                 graph.emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(xl_,//左目的u
                                                                                                       xr_,//右目的u
                                                                                                       y_),//观测的v.
@@ -544,17 +571,28 @@ namespace mcs
                             //这种情况下,smartFactor本身就是landmark,无需额外在创建了
                             else if(method == METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
                             {
-                                auto gaussian = noiseModel::Isotropic::Sigma(3, 1.0);
+                                auto gaussian__ = noiseModel::Isotropic::Sigma(3, 1.0);
+                                //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Cauchy::Create(15), gaussian__); //robust
+                                //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Huber::Create(1.345), gaussian__); //robust
+                                gtsam::SharedNoiseModel robust_kernel = gtsam::noiseModel::Robust::Create(
+                                                                    gtsam::noiseModel::mEstimator::Huber::Create(
+                                                                    1.345,
+                                                                    gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                                                                // Block
+                                                                    gaussian__);
+
                                 SmartProjectionParams params(HESSIAN, ZERO_ON_DEGENERACY);
                                 auto smart_stereo_factor = SmartStereoProjectionPoseFactor::shared_ptr(
-                                            new SmartStereoProjectionPoseFactor(gaussian, params));
+                                            new SmartStereoProjectionPoseFactor(robust_kernel, params));
                                 graph.push_back(smart_stereo_factor);
                                 //第一次使用smart factor::add(),加入关键帧处的观测约束.
+
                                 smart_stereo_factor->add(StereoPoint2(xl_, xr_, y_),Symbol('X',reference_kf_id*cam_count + i),this->v_pcams_gtsam_config_stereo[i]);//这个v_pcams里面是空的...
                                 landmark_properties lp_;
                                 //TODO:填上其他属性.这个lp_如果不用smart factor的话现在看来不一定要用.
                                 lp_.pRelativeStereoSmartFactor = smart_stereo_factor;
                                 vlandmark_properties.push_back(lp_);
+                                LOG(INFO)<<"KeyFrame: cam_id"<<i<<",create landmark and link between Landmark L"<<landmark_id<<" and KeyFrame X"<<reference_kf_id*cam_count + i<<endl;
                             }
                             landmark_id++;
                         }
@@ -569,7 +607,7 @@ namespace mcs
                         //method <2> 创建smart stereo factor上面的约束.
                         else if(method == METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
                         {
-                            auto smart_factor_ = this->vlandmark_properties[map_point_relavent_landmark_id].pRelativeStereoSmartFactor;
+                            auto smart_factor_ = this->vlandmark_properties[map_point_relavent_landmark_id].pRelativeStereoSmartFactor;//查找老的点.
                             smart_factor_->add(StereoPoint2(left_p2f_vv.at(i).at(p2d_index).x,//左目的u
                                                             right_p2f_vv.at(i).at(p2d_index).x,//右目的u
                                                             left_p2f_vv.at(i).at(p2d_index).y),
@@ -578,6 +616,7 @@ namespace mcs
                                                this->v_pcams_gtsam_config_stereo[i]
                                                );//模仿上面的.TODO.这种的缺点是没法再用mono约束这个点了,视野会比较窄...而且还需要在非关键帧上再进行一次opt track.
                             //可能对不同的点需要做不同的方式处理.需要一个判断逻辑.
+                            LOG(INFO)<<"OrdinaryFrame: cam_id:"<<i<<",create link between Landmark L"<<map_point_relavent_landmark_id<<" and X"<<frame_id*cam_count+i<<endl;
                         }
                         //TODO:处理其他类型...
                         //input_p2d_to_optimize.push_back(vp2d_pts[p2d_index]);
@@ -603,13 +642,46 @@ namespace mcs
             //TODO:记录跟踪点.
             if(frame_id>=2)
             {
-                cout<<"Before calling isam2 update, print initialEstimate:"<<endl;
-                initialEstimate.print();
-                cout<<"will call isam2::update()"<<endl;
-                isam.update(graph, initialEstimate);//优化.
-                this->currentEstimate = isam.calculateEstimate();
-                graph.resize(0);
-                initialEstimate.clear();
+                //cout<<"Before calling isam2 update, print initialEstimate:"<<endl;
+                //initialEstimate.print();
+
+                if(DEBUG_USE_LM ==1)
+                {
+                  if(this->frame_id%2 == 0)
+                  {
+                      cout<<"debug:call lm optimizer!"<<endl;
+                      LevenbergMarquardtParams params;
+                      params.verbosityLM = LevenbergMarquardtParams::TRYLAMBDA;
+                      params.verbosity = NonlinearOptimizerParams::ERROR;
+
+                      cout << "Optimizing" << endl;
+                      //create Levenberg-Marquardt optimizer to optimize the factor graph
+                      LevenbergMarquardtOptimizer optimizer(graph, initialEstimate, params);
+                      Values result = optimizer.optimize();
+                      cout<<"optimized result:"<<endl;
+                      result.print();
+                  }
+                  currentEstimate = initialEstimate;
+                }
+                else
+                {
+                    cout<<"will call isam2::update()"<<endl;
+                    isam.update(graph, initialEstimate);//优化.
+                    this->currentEstimate = isam.calculateEstimate();
+                    graph.resize(0);
+                    initialEstimate.clear();
+                }
+                for(int sf_id = 0;sf_id<this->vlandmark_properties.size();sf_id++)
+                {
+                    cout<<"for landmark "<<sf_id<<" ";
+                    auto u = this->vlandmark_properties.at(sf_id);
+                    auto is_valid = u.pRelativeStereoSmartFactor->isValid();
+                    auto is_outl = u.pRelativeStereoSmartFactor->isOutlier();
+                    auto is_farpoint = u.pRelativeStereoSmartFactor->isFarPoint();
+                    auto is_degenerate = u.pRelativeStereoSmartFactor->isDegenerate();
+                    auto is_behindcam = u.pRelativeStereoSmartFactor->isPointBehindCamera();
+                    cout<<" is valid:"<<is_valid<<" ,is outlier:"<<is_outl<<" ,is far point:"<<is_farpoint<<" ,is degen:"<<is_degenerate<<" ,is behind cam:"<<is_behindcam<<"."<<endl;
+                }
             }
             if(frame_id == 1)
             {

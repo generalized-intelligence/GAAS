@@ -36,7 +36,7 @@ public:
         pGraph = shared_ptr<mcs::SLAMOptimizationGraph>(new mcs::SLAMOptimizationGraph(settings));
         //加载cam config.
         StereoCamConfig conf(settings["cams"][0]);
-        StereoCamConfig conf2(settings["cams"][0]);
+        StereoCamConfig conf2(settings["cams"][1]);
         this->stereo_cam_config.push_back(conf);
         this->stereo_cam_config.push_back(conf2);
         pGraph->initCamsStereo(this->stereo_cam_config);

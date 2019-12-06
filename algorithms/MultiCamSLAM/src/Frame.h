@@ -69,6 +69,7 @@ namespace mcs
         Frame(shared_ptr<vector<StereoMatPtrPair> > pLRImgs)
         {
             this->pLRImgs = pLRImgs;
+            v_map_p3d_point_id_to_optimization_graph_3dpoint_id.resize(pLRImgs->size());
         }
         Frame(vector<shared_ptr<cvMat_T> > pOriginalImgs,vector<shared_ptr<cv::Mat>>pDepthImgs);
     
@@ -80,27 +81,27 @@ namespace mcs
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;
         vector<vector<shared_ptr<MapPoint> > > map_points;
         vector<vector<shared_ptr<MapPoint> > >fetchMapPoints(){return map_points;}
-        map<int,int> map_p3d_point_id_to_optimization_graph_3dpoint_id; //对应表.
-        int get_p3dindex_to_landmark_index(int p3d_index)
+        vector<map<int,int> > v_map_p3d_point_id_to_optimization_graph_3dpoint_id; //对应表.
+        int get_p3dindex_to_landmark_index(int p3d_index,int cam_id)//这里应该有对应的摄像机id.因为不一定只有一组
         {
-            if(map_p3d_point_id_to_optimization_graph_3dpoint_id.count(p3d_index))
+            if(v_map_p3d_point_id_to_optimization_graph_3dpoint_id.at(cam_id).count(p3d_index))
             {
-                return map_p3d_point_id_to_optimization_graph_3dpoint_id.at(p3d_index);
+                return v_map_p3d_point_id_to_optimization_graph_3dpoint_id.at(cam_id).at(p3d_index);
             }
             else
             {
                 return -1;
             }
         }
-        void set_p3d_landmark_index(int p3d_index,int landmark_index)
+        void set_p3d_landmark_index(int p3d_index,int landmark_index,int cam_id)
         {
-            if(map_p3d_point_id_to_optimization_graph_3dpoint_id.find(p3d_index)!=map_p3d_point_id_to_optimization_graph_3dpoint_id.end())
+            if(v_map_p3d_point_id_to_optimization_graph_3dpoint_id.at(cam_id).find(p3d_index)!=v_map_p3d_point_id_to_optimization_graph_3dpoint_id.at(cam_id).end())
             {
                 LOG(ERROR)<<"ERROR in set_p3d_landmark_index:already exist!"<<endl;
             }
             else
             {
-                map_p3d_point_id_to_optimization_graph_3dpoint_id[p3d_index]=landmark_index;
+                v_map_p3d_point_id_to_optimization_graph_3dpoint_id.at(cam_id)[p3d_index]=landmark_index;
             }
         }
 
