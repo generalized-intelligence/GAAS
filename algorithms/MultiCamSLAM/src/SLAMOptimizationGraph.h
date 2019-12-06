@@ -50,7 +50,7 @@
 #include "FrameManager.h"
 #include <thread>
 #include <opencv2/core/eigen.hpp>
-
+#include <iostream>
 using namespace gtsam;
 using namespace std;
 using namespace cv;
@@ -303,7 +303,9 @@ namespace mcs
 
                 //double fx, double fy, double s, double u0, double v0, double b//这要求双目rectify之后共享一组fx,fy cx,cy且必须旋转也对齐.需要预处理.
                 double b = c.getBaseLine();
-
+                LOG(ERROR)<<"DEBUG ONLY!!!!"<<endl;
+                b = 0.12;
+                cout<<"setting baseline:"<<b<<endl;
                 auto k_stereo = boost::shared_ptr<Cal3_S2Stereo>(new Cal3_S2Stereo(fx,fy,0,cx,cy,b));
                 this->v_pcams_gtsam_config_stereo.push_back(k_stereo);
             }
@@ -341,7 +343,7 @@ namespace mcs
 
         }
         void addOrdinaryDepthFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int& pts_tracked_output);
-        void addOrdinaryStereoFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int& optimization_pts_tracked,int method = METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
+        void addOrdinaryStereoFrameToBackendAndOptimize(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int& optimization_pts_tracked,int method = METHOD_SIMPLE_STEREO_REPROJECTION_ERROR)
         {
             if(pKeyFrameReference == nullptr)
             {
@@ -372,9 +374,8 @@ namespace mcs
                     Eigen::Matrix4d cam_to_body_rt_mat;
                     cv2eigen(pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_body_rt_mat);
 
-                    initialEstimate.insert(Symbol('X',i),Pose3(cam_to_body_rt_mat));
                     //graph.add(Symbol('X',frame_id*cam_count + i),Pose3(cam_to_body_rt_mat));
-                    if(i == 0)//就算是这种情况,也只对第一组摄像头定绝对位置.
+                    //if(i == 0)//就算是这种情况,也只对第一组摄像头定绝对位置.
                     {//对初始所有摄像头定位置.
                         gtsam::noiseModel::Diagonal::shared_ptr priorFrame_Cam0_noisemodel = gtsam::noiseModel::Diagonal::Variances (
                                     ( gtsam::Vector ( 6 ) <<0.1, 0.1, 0.1, 1e-6, 1e-6, 1e-6 ).finished()
@@ -382,14 +383,17 @@ namespace mcs
                         //添加初始绝对位置约束.Rotation可变(重力对齐),translation不可变(绝对坐标系创建的点).
                         //graph.emplace_shared<PriorFactor<Pose3> > (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel);
 
-                        Pose3 first_pose = initialEstimate.at<Pose3>(Symbol('X',i));
+                        //Pose3 first_pose = initialEstimate.at<Pose3>(Symbol('X',i));
+                        Pose3 first_pose(cam_to_body_rt_mat);
                         //constrain the first pose such that it cannot change from its original value during optimization
                         // NOTE: NonlinearEquality forces the optimizer to use QR rather than Cholesky
                         // QR is much slower than Cholesky, but numerically more stable
-                        graph.emplace_shared<NonlinearEquality<Pose3> >(Symbol('X',i),first_pose);
+                        //graph.emplace_shared<NonlinearEquality<Pose3> >(Symbol('X',i),first_pose);
                         LOG(INFO)<<"NonlinearEquality Constrained symbol X"<<i<<" at first pose:"<<first_pose.matrix()<<endl;
-                        //graph.add(PriorFactor<Pose3>  (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel));
+                        initialEstimate.insert(Symbol('X',i),first_pose);
+                        graph.add(PriorFactor<Pose3>  (Symbol('X',i), first_pose,priorFrame_Cam0_noisemodel));
                     }
+
                     LOG(INFO)<<"Cam "<<i<<" initiated at first pose:"<<initialEstimate.at<Pose3>(Symbol('X',i)).matrix()<<endl;
                 }
                 else
@@ -416,17 +420,19 @@ namespace mcs
                                 ( gtsam::Vector ( 6 ) <<0.01, 0.01, 0.01, 0.01, 0.01, 0.01 ).finished()); //1mm,0.1度.//放松一些
                     Eigen::Matrix4d cam_to_cam0_rt_mat;
                     cv2eigen(pFrame->cam_info_stereo_vec[0].getRTMat().inv()* pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_cam0_rt_mat);
-                    graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('X',frame_id*cam_count),Symbol('X',frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
-                                                                  noise_model_between_cams);//用非常紧的约束来限制相机间位置关系.
+                    //graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('X',frame_id*cam_count),Symbol('X',frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
+                    //                                              noise_model_between_cams);//用非常紧的约束来限制相机间位置关系.
                 }
             }
-            if(frame_id == 0)
+            if(frame_id == 0)//&& method==METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
             {
                 cout<<"initialized the 1st frame successfully!"<<endl;
                 frame_id++;//记录这是第几个frame.
                 cout<<"Before calling isam2 update:"<<endl;
                 initialEstimate.print("initial estimate:(not optimized)");
                 this->currentEstimate = this-> initialEstimate;
+
+                /*
 
                 if(DEBUG_USE_LM == 1)
                 {
@@ -441,7 +447,7 @@ namespace mcs
                     Values result = optimizer.optimize();
                     cout<<"optimized result:"<<endl;
                     result.print();
-                }
+                }*/
 
                 //isam.update(graph, initialEstimate);//优化.
                 //this->currentEstimate = isam.calculateEstimate();
@@ -496,6 +502,16 @@ namespace mcs
             auto mono_reprojection_noise_model = noiseModel::Isotropic::Sigma(2, 1.0);  // one pixel in u and v
             auto stereo_reprojection_noise_model = noiseModel::Isotropic::Sigma(2, 1.0);  // one pixel in u and v
 
+            auto gaussian__ = noiseModel::Isotropic::Sigma(3, 1.0);
+            //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Cauchy::Create(15), gaussian__); //robust
+            //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Huber::Create(1.345), gaussian__); //robust
+
+            gtsam::SharedNoiseModel robust_kernel = gtsam::noiseModel::Robust::Create(
+                                                        gtsam::noiseModel::mEstimator::Huber::Create(
+                                                        1.345*4,
+                                                        gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                                            // Block
+                                                        gaussian__);
             for(int i = 0;i < cam_count;i++)
             {
                 map<int,int> tracked_kps_to_original_kps_map_output;//关键帧的p3d到追踪到的p2d的关系
@@ -552,41 +568,32 @@ namespace mcs
                             double disp = pKeyFrameReference->disps_vv.at(i).at(p2d_index);
                             double xr_ = xl_+disp;
 
-                            if(method == 0)
+                            if(method == METHOD_SIMPLE_STEREO_REPROJECTION_ERROR)
                             {//加入在关键帧上面的观测.
                                 //创建待优化点.这个不要了.只用SmartFactor.
                                 //initialEstimate.insert(Symbol('L',landmark_id),
                                 //                       gtsam::Point3(point_pos_initial_guess)
                                 //                       );//landmark.
+                                initialEstimate.insert(Symbol('L',map_point_relavent_landmark_id),Point3(0,0,0));
                                 graph.emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(xl_,//左目的u
                                                                                                       xr_,//右目的u
                                                                                                       y_),//观测的v.
-                                                                                         stereo_reprojection_noise_model,
+                                                                                         robust_kernel,
                                                                                          Symbol('X',reference_kf_id*cam_count + i),
                                                                                          Symbol('L', map_point_relavent_landmark_id),
                                                                                          this->v_pcams_gtsam_config_stereo[i]);//创建双目观测约束.
+                                LOG(INFO)<<"KeyFrame: cam_id"<<i<<",create landmark and link between Landmark L"<<landmark_id<<" and KeyFrame X"<<reference_kf_id*cam_count + i<<endl;
                             }
                             //method<4>.SmartFactor of GenericStereoFactor
 
                             //这种情况下,smartFactor本身就是landmark,无需额外在创建了
                             else if(method == METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
                             {
-                                auto gaussian__ = noiseModel::Isotropic::Sigma(3, 1.0);
-                                //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Cauchy::Create(15), gaussian__); //robust
-                                //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Huber::Create(1.345), gaussian__); //robust
-                                gtsam::SharedNoiseModel robust_kernel = gtsam::noiseModel::Robust::Create(
-                                                                    gtsam::noiseModel::mEstimator::Huber::Create(
-                                                                    1.345,
-                                                                    gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
-                                                                                                // Block
-                                                                    gaussian__);
-
                                 SmartProjectionParams params(HESSIAN, ZERO_ON_DEGENERACY);
                                 auto smart_stereo_factor = SmartStereoProjectionPoseFactor::shared_ptr(
                                             new SmartStereoProjectionPoseFactor(robust_kernel, params));
                                 graph.push_back(smart_stereo_factor);
                                 //第一次使用smart factor::add(),加入关键帧处的观测约束.
-
                                 smart_stereo_factor->add(StereoPoint2(xl_, xr_, y_),Symbol('X',reference_kf_id*cam_count + i),this->v_pcams_gtsam_config_stereo[i]);//这个v_pcams里面是空的...
                                 landmark_properties lp_;
                                 //TODO:填上其他属性.这个lp_如果不用smart factor的话现在看来不一定要用.
@@ -599,10 +606,27 @@ namespace mcs
                         //2.不管是不是第一次被观测,都要创建在当前帧map_point对应的landmark 与 2d投影点 的gtsam factor约束.
                         //smartFactors.at(map_point_relavent_landmark_id)->add(StereoPoint2(xl, xr, y), X(frame), K);//使用SmartStereo的方法.这里使用Mono(参考ISAM2Example_SmartFactor.cpp).
                         //method <1> 创建最普通的投影误差.
-                        if(method == 0)
+                        if(method == METHOD_SIMPLE_STEREO_REPROJECTION_ERROR)
                         {
                             //graph.emplace_shared<GenericProjectionFactor<Pose3, Point3, Cal3_S2> >(
-                            //      Point2(...), mono_reprojection_noise_model, Symbol('X',frame_id*cam_count + i), Symbol('L', map_point_relavent_landmark_id), this->v_pcams_gtsam_config_stereo_left[i]);
+                            //      Point2(...), mono_reprojection_noise_model, Symbol('X',frame_id*cam_count + i), Symbol('L', map_point_relavent_landmark_id),
+                            //      this->v_pcams_gtsam_config_stereo_left[i]);
+                            Eigen::Matrix4d cam_to_body;
+                            cv2eigen(pFrame->cam_info_stereo_vec.at(i).getRTMat().inv(),cam_to_body);
+                            graph.emplace_shared<GenericStereoFactor<Pose3,Point3> >(
+                                        //1.stereo point
+                                            StereoPoint2(left_p2f_vv.at(i).at(p2d_index).x,//左目的u
+                                                            right_p2f_vv.at(i).at(p2d_index).x,//右目的u
+                                                            left_p2f_vv.at(i).at(p2d_index).y),
+                                        //2.stereo noise.
+                                            robust_kernel,
+                                            Symbol('X',frame_id*cam_count+i),
+                                            Symbol('L',map_point_relavent_landmark_id),
+                                            this->v_pcams_gtsam_config_stereo.at(i)//,
+                                            //false,true,
+                                            //cam_to_body
+                                        );
+                            LOG(INFO)<<"OrdinaryFrame: cam_id:"<<i<<",create link between Landmark L"<<map_point_relavent_landmark_id<<" and X"<<frame_id*cam_count+i<<",disparity:"<< right_p2f_vv.at(i).at(p2d_index).x-left_p2f_vv.at(i).at(p2d_index).x<<endl;
                         }
                         //method <2> 创建smart stereo factor上面的约束.
                         else if(method == METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
@@ -611,9 +635,9 @@ namespace mcs
                             smart_factor_->add(StereoPoint2(left_p2f_vv.at(i).at(p2d_index).x,//左目的u
                                                             right_p2f_vv.at(i).at(p2d_index).x,//右目的u
                                                             left_p2f_vv.at(i).at(p2d_index).y),
-                                               Symbol('X',frame_id*cam_count+i),//
-                                               //Symbol('L',map_point_relavent_landmark_id),
-                                               this->v_pcams_gtsam_config_stereo[i]
+                                                    Symbol('X',frame_id*cam_count+i),//
+                                                    //Symbol('L',map_point_relavent_landmark_id),
+                                                    this->v_pcams_gtsam_config_stereo[i]
                                                );//模仿上面的.TODO.这种的缺点是没法再用mono约束这个点了,视野会比较窄...而且还需要在非关键帧上再进行一次opt track.
                             //可能对不同的点需要做不同的方式处理.需要一个判断逻辑.
                             LOG(INFO)<<"OrdinaryFrame: cam_id:"<<i<<",create link between Landmark L"<<map_point_relavent_landmark_id<<" and X"<<frame_id*cam_count+i<<endl;
@@ -640,26 +664,36 @@ namespace mcs
 //            }
             //step<2>.process result.
             //TODO:记录跟踪点.
-            if(frame_id>=2)
+            if(frame_id>=2)//||method == )
             {
                 //cout<<"Before calling isam2 update, print initialEstimate:"<<endl;
                 //initialEstimate.print();
 
                 if(DEBUG_USE_LM ==1)
                 {
-                  if(this->frame_id%2 == 0)
+                  if(this->frame_id%10 == 0)
                   {
                       cout<<"debug:call lm optimizer!"<<endl;
                       LevenbergMarquardtParams params;
                       params.verbosityLM = LevenbergMarquardtParams::TRYLAMBDA;
                       params.verbosity = NonlinearOptimizerParams::ERROR;
+                      params.setMaxIterations(1000);
 
                       cout << "Optimizing" << endl;
                       //create Levenberg-Marquardt optimizer to optimize the factor graph
                       LevenbergMarquardtOptimizer optimizer(graph, initialEstimate, params);
                       Values result = optimizer.optimize();
+                      //initialEstimate.
                       cout<<"optimized result:"<<endl;
                       result.print();
+                      std::string output_file_name = "info_graph_g2o";
+                      stringstream ss;
+                      ss<<output_file_name<<(frame_id/10)<<".g2o";
+                      cout<<"saving g2o file:"<<ss.str()<<"."<<endl;
+                      //graph.saveGraph(ss,result);
+                      writeG2o(graph, result, ss.str());
+                      cout<<"g2o file saved!"<<endl;
+
                   }
                   currentEstimate = initialEstimate;
                 }
