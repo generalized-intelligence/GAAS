@@ -30,8 +30,8 @@ namespace mcs
 
     shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature);
 
-    //const bool do_img_split = true;
-    const bool do_img_split = false;
+    const bool do_img_split = true;
+    //const bool do_img_split = false;
     shared_ptr<PointWithFeatureT> extractCamKeyPoints(cvMat_T& Img,int method,bool compute_feature)
     {//TODO:add kps distribution check.
         if(do_img_split)
@@ -76,9 +76,9 @@ namespace mcs
 
     shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature)
     {
-        //LOG(INFO)<<"in extractCamKeyPoints_splited(),method and compute_feat:"<<method<<","<<compute_feature<<endl;
+        LOG(INFO)<<"in extractCamKeyPoints_splited(),method and compute_feat:"<<method<<","<<compute_feature<<endl;
         //cv::Feature2D* pfeat = gftt;
-        auto gftt = cv::GFTTDetector::create(25,  // maximum number of corners to be returned
+        auto gftt = cv::GFTTDetector::create(50,  // maximum number of corners to be returned
                                                        0.01, // quality level
               10);
         auto orb_ex= orb;cv::ORB::create(1000);
@@ -93,8 +93,10 @@ namespace mcs
         {
             pfeat = orb_ex;
         }
-        const int rows_count = 5;
-        const int cols_count = 5;
+        //const int rows_count = 5;
+        //const int cols_count = 5;
+        const int rows_count = 2;
+        const int cols_count = 2;
         const int img_size_v = Img.rows;
         const int img_size_u = Img.cols;
         shared_ptr<PointWithFeatureT> pResult(new PointWithFeatureT);
@@ -152,7 +154,7 @@ namespace mcs
             }
         }
         cv::vconcat(desps_vec,out_feats);
-        //LOG(INFO)<<"output_feats.size():"<<out_feats.cols<<","<<out_feats.rows<<";kps.size():"<<out_kps.size()<<endl;
+        LOG(INFO)<<"output_feats.size():"<<out_feats.cols<<","<<out_feats.rows<<";kps.size():"<<out_kps.size()<<endl;
         pResult->kps = out_kps;
         pResult->desp= out_feats;
         return pResult;
@@ -303,12 +305,12 @@ namespace mcs
     inline bool check_stereo_match(Point2f& p1,Point2f& p2)
     {
         //const float diff_v_max = 2.0;
-        const float diff_v_max = 4.0;
+        const float diff_v_max = 2.0;
         //const diff_u_max = 100;//TODO:
         if  (
               abs(p1.y - p2.y) < diff_v_max
              &&  p1.x<p2.x
-             &&  p2.x-p1.x > 2.0 // minimum disparity :2 //TODO:set into config file.
+             &&  p2.x-p1.x > 10.0 // minimum disparity :2 //TODO:set into config file.20 太大....10试试?
                 // && p1.x-p2.x <
             )
         {
@@ -369,7 +371,7 @@ namespace mcs
                 //Transformation of rt mat.
                 x = matp1.at<float>(0,0);
                 y = matp1.at<float>(1,0);
-                z = matp1.at<float>(2,0);
+                z = -1* matp1.at<float>(2,0);
                 //fixed overflow.
                 //map_2d_to_3d_pts.at(checked_l.size()-1) = p3d_output.size();
                 map_2d_to_3d_pts.insert(std::pair<int,int>(checked_l.size()-1,p3d_output.size()));

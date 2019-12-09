@@ -68,8 +68,9 @@ namespace mcs
     {
         int landmark_reference_time = 0;
         weak_ptr<Frame> pCreatedByFrame;
-        weak_ptr<Frame> pLastObservedByFrame;
+        //weak_ptr<Frame> pLastObservedByFrame;
         boost::shared_ptr<SmartStereoProjectionPoseFactor> pRelativeStereoSmartFactor;//目前还没实现处理无穷远.
+        std::vector<weak_ptr <Frame> > observed_by_frames;
 
     };
     void doFrontEndTrackingForOrdinaryFrames(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
@@ -512,6 +513,7 @@ namespace mcs
                                                         gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
                                                                             // Block
                                                         gaussian__);
+            //auto robust_kernel = gaussian__;//DEBUG ONLY!
             for(int i = 0;i < cam_count;i++)
             {
                 map<int,int> tracked_kps_to_original_kps_map_output;//关键帧的p3d到追踪到的p2d的关系
@@ -566,7 +568,8 @@ namespace mcs
                             p2dT point_at_kf_left = pKeyFrameReference->p2d_vv.at(i).at(pKeyFrameReference->map3d_to_2d_pt_vec.at(i).at(p2d_index));
                             double xl_ = point_at_kf_left.x;double y_ = point_at_kf_left.y;
                             double disp = pKeyFrameReference->disps_vv.at(i).at(p2d_index);
-                            double xr_ = xl_+disp;
+                            double xr_ = xl_-disp;//Take care:xr_ shall be smaller than xl_!!!
+                            LOG(INFO)<<"xl,xr,disp:"<<xl_<<","<<xr_<<","<<disp<<endl;
 
                             if(method == METHOD_SIMPLE_STEREO_REPROJECTION_ERROR)
                             {//加入在关键帧上面的观测.
@@ -586,7 +589,13 @@ namespace mcs
                                                                                          Symbol('X',reference_kf_id*cam_count + i),
                                                                                          Symbol('L', map_point_relavent_landmark_id),
                                                                                          this->v_pcams_gtsam_config_stereo[i]);//创建双目观测约束.
-                                LOG(INFO)<<"KeyFrame: cam_id"<<i<<",create landmark and link between Landmark L"<<landmark_id<<" and KeyFrame X"<<reference_kf_id*cam_count + i<<endl;
+                                landmark_properties lp_;
+                                lp_.pRelativeStereoSmartFactor = nullptr;
+                                lp_.pCreatedByFrame = weak_ptr<Frame>(pKeyFrameReference);
+                                lp_.observed_by_frames.push_back(weak_ptr<Frame>(pKeyFrameReference));
+                                this->vlandmark_properties.push_back(lp_);
+                                LOG(INFO)<<"KeyFrame: cam_id"<<i<<",create landmark and link between Landmark L"<<landmark_id<<" at "<<p3__.x<<","<<p3__.y<<","<<p3__.z<<" and KeyFrame X"<<reference_kf_id*cam_count + i<<endl;
+
                             }
                             //method<4>.SmartFactor of GenericStereoFactor
 
@@ -630,6 +639,10 @@ namespace mcs
                                             //false,true,
                                             //cam_to_body
                                         );
+                            auto& lp_ = this->vlandmark_properties.at(map_point_relavent_landmark_id);
+                            lp_.observed_by_frames.push_back(weak_ptr<Frame>(pKeyFrameReference));
+                            cout<<"landmark L"<<map_point_relavent_landmark_id<<"at"<<left_p2f_vv.at(i).at(p2d_index).x<<","<<right_p2f_vv.at(i).at(p2d_index).x
+                                                            <<" observed by "<<lp_.observed_by_frames.size()<<" frames at image pair "<<i<<"!"<<endl;
                             LOG(INFO)<<"OrdinaryFrame: cam_id:"<<i<<",create link between Landmark L"<<map_point_relavent_landmark_id<<" and X"<<frame_id*cam_count+i<<",disparity:"<< right_p2f_vv.at(i).at(p2d_index).x-left_p2f_vv.at(i).at(p2d_index).x<<endl;
                         }
                         //method <2> 创建smart stereo factor上面的约束.
@@ -690,6 +703,7 @@ namespace mcs
                       //initialEstimate.
                       cout<<"optimized result:"<<endl;
                       result.print();
+                      graph.printErrors(result);
                       std::string output_file_name = "info_graph_g2o";
                       stringstream ss;
                       ss<<output_file_name<<(frame_id/3)<<".g2o";
@@ -703,7 +717,6 @@ namespace mcs
                       //}
                       writeG2o(graph, result, ss.str());
                       cout<<"g2o file saved!"<<endl;
-
                   }
                   currentEstimate = initialEstimate;
                 }
@@ -715,16 +728,19 @@ namespace mcs
                     graph.resize(0);
                     initialEstimate.clear();
                 }
-                for(int sf_id = 0;sf_id<this->vlandmark_properties.size();sf_id++)
+                if(method == METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
                 {
-                    cout<<"for landmark "<<sf_id<<" ";
-                    auto u = this->vlandmark_properties.at(sf_id);
-                    auto is_valid = u.pRelativeStereoSmartFactor->isValid();
-                    auto is_outl = u.pRelativeStereoSmartFactor->isOutlier();
-                    auto is_farpoint = u.pRelativeStereoSmartFactor->isFarPoint();
-                    auto is_degenerate = u.pRelativeStereoSmartFactor->isDegenerate();
-                    auto is_behindcam = u.pRelativeStereoSmartFactor->isPointBehindCamera();
-                    cout<<" is valid:"<<is_valid<<" ,is outlier:"<<is_outl<<" ,is far point:"<<is_farpoint<<" ,is degen:"<<is_degenerate<<" ,is behind cam:"<<is_behindcam<<"."<<endl;
+                    for(int sf_id = 0;sf_id<this->vlandmark_properties.size();sf_id++)
+                    {
+                        cout<<"for landmark "<<sf_id<<" ";
+                        auto u = this->vlandmark_properties.at(sf_id);
+                        auto is_valid = u.pRelativeStereoSmartFactor->isValid();
+                        auto is_outl = u.pRelativeStereoSmartFactor->isOutlier();
+                        auto is_farpoint = u.pRelativeStereoSmartFactor->isFarPoint();
+                        auto is_degenerate = u.pRelativeStereoSmartFactor->isDegenerate();
+                        auto is_behindcam = u.pRelativeStereoSmartFactor->isPointBehindCamera();
+                        cout<<" is valid:"<<is_valid<<" ,is outlier:"<<is_outl<<" ,is far point:"<<is_farpoint<<" ,is degen:"<<is_degenerate<<" ,is behind cam:"<<is_behindcam<<"."<<endl;
+                    }
                 }
             }
             if(frame_id == 1)
