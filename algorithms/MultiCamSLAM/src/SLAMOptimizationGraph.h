@@ -75,7 +75,7 @@ namespace mcs
     };
     void doFrontEndTrackingForOrdinaryFrames(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
                                              vector<Point2f>& output_tracked_pts_left,vector<Point2f>& output_tracked_pts_right,
-                                             map<int,int>& map_point2f_to_kf_p3ds,vector<p2dT>& output_to_track_kf_p2d,char* p_output_track_success,int method = 0)
+                                             map<int,int>& map_point2f_to_kf_p3ds,vector<p2dT>& output_to_track_kf_p2d,char* p_output_track_success,int* success_tracked_stereo_pts_count,int method = 0)
     {//这个函数要支持多线程.
         cout<<"in doFrontEndTrackingForOrdinaryFrames():check frame_1,2 integrity."<<endl;
         //pFrame->checkFrameIntegrity_debug();
@@ -138,7 +138,14 @@ namespace mcs
         }
         if(to_track_vp2d_pts.size() == 0)
         {
-            throw "to track vp2d empty.error.";//DEBUG ONLY
+            cv::imwrite("error_img.jpg",*pKeyFrameReference->getMainImages().at(i));
+            cout<<"caught img p2d empty error.error_img.jpg saved!"<<endl;
+
+
+            *p_output_track_success = false;
+            *success_tracked_stereo_pts_count = 0;
+            return;
+            //throw "to track vp2d empty.error.";//DEBUG ONLY
         }
         //{//DEBUG ONLY!
         //    to_track_vp2d_pts.push_back(pKeyFrameReference->p2d_vv.at(i).at(0));
@@ -213,6 +220,7 @@ namespace mcs
                 }
             }
             int success_stereo_tracked_count = output_tracked_pts_left.size();
+            *success_tracked_stereo_pts_count = success_stereo_tracked_count;//output.
             if(success_stereo_tracked_count>15)
             {
                 cout<<"stereo track success!"<<endl;
@@ -472,9 +480,10 @@ namespace mcs
             vector<vector<Point2f> > left_p2f_vv,right_p2f_vv,output_to_track_kf_p2d_vv;
             vector<map<int,int> > p2f_to_p3d_maps;
             vector<char> track_success_vcams;
+            vector<int> success_track_pts_count_vec;
             track_success_vcams.resize(cam_count);
             left_p2f_vv.resize(cam_count);right_p2f_vv.resize(cam_count);output_to_track_kf_p2d_vv.resize(cam_count);
-            p2f_to_p3d_maps.resize(cam_count);track_success_vcams.resize(cam_count);
+            p2f_to_p3d_maps.resize(cam_count);track_success_vcams.resize(cam_count);success_track_pts_count_vec.resize(cam_count);
             for(int i = 0;i<cam_count;i++)
             {
                 int cam_index = i;
@@ -491,7 +500,7 @@ namespace mcs
                 cout<<"before calling doFrontEndTrackingForOrd:  pFrame:"<<pFrame<<",pFrameRef:"<<pKeyFrameReference<<",cam_index:"<<cam_index<<",lp2fv.size():"<<lp2fv.size()<<endl;
                 doFrontEndTrackingForOrdinaryFrames(pFrame,pKeyFrameReference,cam_index,
                 lp2fv,rp2fv,
-                map__,tracked_p2d,&(track_success_vcams[cam_index]),0);
+                map__,tracked_p2d,&(track_success_vcams[cam_index]),&(success_track_pts_count_vec[cam_index]),0);
 
                 //doFrontEndTrackingForOrdinaryFrames(std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
                 //                                                                std::ref(lp2fv),std::ref(rp2fv),
@@ -527,6 +536,11 @@ namespace mcs
                     auto key = iter->first;
                     auto val = iter->second;
                     tracked_kps_to_original_kps_map_output[val] = key;
+                }
+                if(success_track_pts_count_vec.at(i) == 0) // 在这组摄像机未能成功追踪任何点
+                {
+                    LOG(WARNING)<<"No stereo point tracked at cam_index:"<<i<<",frame_id:"<<frame_id<<"!"<<endl;
+                    continue;
                 }
                 for(int index_p3d = 0;index_p3d<vp3d_pts.size();index_p3d++)
                 {
@@ -614,6 +628,8 @@ namespace mcs
                                 landmark_properties lp_;
                                 //TODO:填上其他属性.这个lp_如果不用smart factor的话现在看来不一定要用.
                                 lp_.pRelativeStereoSmartFactor = smart_stereo_factor;
+                                lp_.pCreatedByFrame = weak_ptr<Frame>(pKeyFrameReference);
+                                lp_.observed_by_frames.push_back(weak_ptr<Frame>(pKeyFrameReference));
                                 vlandmark_properties.push_back(lp_);
                                 LOG(INFO)<<"KeyFrame: cam_id"<<i<<",create landmark and link between Landmark L"<<landmark_id<<" and KeyFrame X"<<reference_kf_id*cam_count + i<<endl;
                             }
@@ -651,7 +667,8 @@ namespace mcs
                         //method <2> 创建smart stereo factor上面的约束.
                         else if(method == METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
                         {
-                            auto smart_factor_ = this->vlandmark_properties[map_point_relavent_landmark_id].pRelativeStereoSmartFactor;//查找老的点.
+                            auto &lp_ = this->vlandmark_properties.at(map_point_relavent_landmark_id);
+                            auto smart_factor_ = lp_.pRelativeStereoSmartFactor;//查找老的点.
                             smart_factor_->add(StereoPoint2(left_p2f_vv.at(i).at(p2d_index).x,//左目的u
                                                             right_p2f_vv.at(i).at(p2d_index).x,//右目的u
                                                             left_p2f_vv.at(i).at(p2d_index).y),
@@ -661,6 +678,10 @@ namespace mcs
                                                );//模仿上面的.TODO.这种的缺点是没法再用mono约束这个点了,视野会比较窄...而且还需要在非关键帧上再进行一次opt track.
                             //可能对不同的点需要做不同的方式处理.需要一个判断逻辑.
                             LOG(INFO)<<"OrdinaryFrame: cam_id:"<<i<<",create link between Landmark L"<<map_point_relavent_landmark_id<<" and X"<<frame_id*cam_count+i<<endl;
+                            lp_.observed_by_frames.push_back(weak_ptr<Frame>(pKeyFrameReference));
+                            cout<<"landmark L"<<map_point_relavent_landmark_id<<"at"<<left_p2f_vv.at(i).at(p2d_index).x<<","<<right_p2f_vv.at(i).at(p2d_index).x
+                                                            <<" observed by "<<lp_.observed_by_frames.size()<<" frames at image pair "<<i<<"!"<<endl;
+                            LOG(INFO)<<"OrdinaryFrame: cam_id:"<<i<<",create link between Landmark L"<<map_point_relavent_landmark_id<<" and X"<<frame_id*cam_count+i<<",disparity:"<< right_p2f_vv.at(i).at(p2d_index).x-left_p2f_vv.at(i).at(p2d_index).x<<endl;
                         }
                         //TODO:处理其他类型...
                         //input_p2d_to_optimize.push_back(vp2d_pts[p2d_index]);
