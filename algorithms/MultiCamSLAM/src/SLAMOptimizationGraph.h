@@ -350,7 +350,10 @@ namespace mcs
             {
                 cout<<"in addOrdinaryStereoFrameToBackendAndOptimize():pKeyRef == nullptr!!!"<<endl;
             }
-
+            else
+            {
+                LOG(INFO)<<"tracking frame:"<<frame_id<<",isKeyFrame?"<<pFrame->isKeyFrame<<"."<<endl;
+            }
 
             optimization_pts_tracked = 0;
             ScopeTimer t1("addOrdinaryStereoFrameToBackend() timer");
@@ -421,8 +424,8 @@ namespace mcs
                                 ( gtsam::Vector ( 6 ) <<0.01, 0.01, 0.01, 0.01, 0.01, 0.01 ).finished()); //1mm,0.1度.//放松一些
                     Eigen::Matrix4d cam_to_cam0_rt_mat;
                     cv2eigen(pFrame->cam_info_stereo_vec[0].getRTMat().inv()* pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_cam0_rt_mat);
-                    //graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('X',frame_id*cam_count),Symbol('X',frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
-                    //                                              noise_model_between_cams);//用非常紧的约束来限制相机间位置关系.
+                    graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('X',frame_id*cam_count),Symbol('X',frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
+                                                                  noise_model_between_cams);//用非常紧的约束来限制相机间位置关系.
                 }
             }
             if(frame_id == 0)//&& method==METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)

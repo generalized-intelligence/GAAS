@@ -51,6 +51,7 @@ public:
             //ever_init = true;
             return true;
         }
+        last_frame_update_t = t_now;
         return false;
     }
     shared_ptr<mcs::Frame> getLastKF()
@@ -76,7 +77,8 @@ public:
         //if(needNewKeyFrame())
 
         //if(pGraph->getFrameID() ==  0)//DEBUG ONLY.
-        if(!ever_init)//DEBUG ONLY!
+        //if(!ever_init)//||needNewKeyFrame())//DEBUG ONLY!
+        if(needNewKeyFrame())
         {//关键帧处理.
             bool needNewKF = true;
             bool create_frame_success;
