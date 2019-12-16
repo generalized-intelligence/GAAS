@@ -19,6 +19,9 @@ FeatureFrontEndCV
 FrameManager
 
 )
+add_library(IMU_Preint_GTSAM IMU_Preint_GTSAM.cpp)
+target_link_libraries(IMU_Preint_GTSAM ${REQUIRED_LIBRARIES}
+)
 
 add_executable(SLAM_simple SLAM_simple.cpp)
 target_link_libraries(SLAM_simple

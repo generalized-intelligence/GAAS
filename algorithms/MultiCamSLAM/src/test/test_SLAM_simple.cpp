@@ -69,7 +69,11 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& img1,const sensor_msgs
     pSLAM->iterateWith4Imgs(m1,m2,m3,m4);
     LOG(INFO)<<"iterateWith4Imgs() finished."<<endl;
 }
-
+void FetchIMUCallBack(const sensor_msgs::ImuConstPtr& imu)
+{
+    sensor_msgs::Imu imu_copy = *imu;
+    pSLAM->addIMUInfo(imu_copy);
+}
 
 int main(int argc,char** argv)
 {
@@ -87,6 +91,7 @@ int main(int argc,char** argv)
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), front_left_sub, front_right_sub,down_left_sub,down_right_sub);
     sync.setMaxIntervalDuration(ros::Duration(0.01));
     sync.registerCallback(boost::bind(FetchImageCallback, _1, _2,_3,_4));
+    ros::Subscriber sub = nh.subscribe("/mavros/imu/data_raw",100,FetchIMUCallBack);
     pSLAM = new SLAM_simple(argc,argv);
     ros::spin();
 }

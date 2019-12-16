@@ -423,7 +423,7 @@ namespace mcs
     shared_ptr<Frame> createFrameStereos(shared_ptr<vector<StereoMatPtrPair> >stereo_pair_imgs_vec,
                                       vector<StereoCamConfig>& cam_distribution_info_vec,
                                       bool& create_Frame_success,
-                                      bool create_key_frame = true)
+                                      bool create_key_frame = true,vector<IMU_Data_T> *pimu_info=nullptr)
     {
         ScopeTimer t_("createFrameStereos()");
         LOG(INFO)<<"in createFrameStereos():create_key_frame = "<<create_key_frame<<endl;
@@ -480,6 +480,10 @@ namespace mcs
                  //LOG(ERROR)<<"TODO:"<<endl;
                  LOG(INFO)<<"TODO:"<<endl;
              }
+        }
+        if(pimu_info!= nullptr)
+        {
+            pF_ret->imu_info_vec = *pimu_info;
         }
         return pF_ret;
 

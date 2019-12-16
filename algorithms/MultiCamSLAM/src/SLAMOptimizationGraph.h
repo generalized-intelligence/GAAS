@@ -48,6 +48,7 @@
 
 #include "Frame.h"
 #include "FrameManager.h"
+#include "IMU_Preint_GTSAM.h"
 #include <thread>
 #include <opencv2/core/eigen.hpp>
 #include <iostream>
@@ -58,7 +59,7 @@ using namespace cv;
 
 
 const int DEBUG_USE_LM = 1;
-
+const int ENABLE_INERTIAL_MEASUREMENT = 0;
 namespace mcs
 {
     struct landmark_properties;
@@ -76,7 +77,7 @@ namespace mcs
     void doFrontEndTrackingForOrdinaryFrames(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
                                              vector<Point2f>& output_tracked_pts_left,vector<Point2f>& output_tracked_pts_right,
                                              map<int,int>& map_point2f_to_kf_p3ds,vector<p2dT>& output_to_track_kf_p2d,char* p_output_track_success,int* success_tracked_stereo_pts_count,int method = 0)
-    {//这个函数要支持多线程.
+    {//这个函数要支持多线程.//要能返回平均视差(mean disparity)用于查看关键帧之间创建的逻辑.
         cout<<"in doFrontEndTrackingForOrdinaryFrames():check frame_1,2 integrity."<<endl;
         //pFrame->checkFrameIntegrity_debug();
         //pKeyFrameReference->checkFrameIntegrity_debug();
@@ -262,6 +263,8 @@ namespace mcs
         vector<boost::shared_ptr<Cal3_S2> > v_pcams_gtsam_config_stereo_left;
         vector<boost::shared_ptr<Cal3_S2Stereo> > v_pcams_gtsam_config_stereo;
         vector<Cal3_S2> v_cams_gtsam_config_depth;
+        IMUHelper slam_imu_helper;
+
 
 //这里参考Kimera删除节点的实现.
 //        // State.
@@ -294,6 +297,7 @@ namespace mcs
             parameters.setEnableRelinearization(false);
 
             this->isam = ISAM2(parameters);
+            this->slam_imu_helper = IMUHelper();
         }
         int getFrameID()
         {
@@ -467,6 +471,11 @@ namespace mcs
                 //graph.resize(0);
                 //initialEstimate.clear();//这里不能做任何操作.否则引起indetermined linear system exception.
                 return;
+            }
+
+            if(ENABLE_INERTIAL_MEASUREMENT)
+            {
+                //TODO:加入imu preint计算的关联关系.
             }
             auto imgs_prev = pKeyFrameReference->getMainImages();
             auto imgs_next = pFrame->getMainImages();

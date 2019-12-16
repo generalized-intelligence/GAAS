@@ -1,5 +1,31 @@
 #include "SLAMOptimizationGraph.h"
 #include "utils/Timer.h"
+#include "Frame.h"
+#include <sensor_msgs/Imu.h>
+
+mcs::IMU_Data_T form_imu_data_from_msg(const sensor_msgs::Imu& msg)
+{
+    mcs::IMU_Data_T data;
+    data.ax = msg.linear_acceleration.x;
+    data.ay = msg.linear_acceleration.y;
+    data.az = msg.linear_acceleration.z;
+    data.alpha_x = msg.angular_velocity.x;
+    data.alpha_y = msg.angular_velocity.y;
+    data.alpha_z = msg.angular_velocity.z;
+    data.covariance_ax = msg.linear_acceleration_covariance.at(0);// is a 3x3 mat in ros.
+    data.covariance_ay = msg.linear_acceleration_covariance.at(4);
+    data.covariance_az = msg.linear_acceleration_covariance.at(8);
+    return data;
+}
+vector<mcs::IMU_Data_T> form_imu_data_vec_from_msg_vec(const vector<sensor_msgs::Imu>& msg_v)
+{
+    vector<mcs::IMU_Data_T> ret_vec;
+    for(int i = 0;i<msg_v.size();i++)
+    {
+        ret_vec.push_back(form_imu_data_from_msg(msg_v.at(i)));
+    }
+    return ret_vec;
+}
 class SLAM_simple
 {
 public:
@@ -15,6 +41,7 @@ private:
     int SLAMRunningState = STATE_TRACKING_FALIED; // init.
     int unstable_tracking_patience = 0;//暂时不用.用到的时候使用它计量已经有多少个不稳定追踪.
     deque<mcs::Frame> frameQueue;
+    vector<sensor_msgs::Imu> imu_vec_tmp;
     vector<StereoCamConfig> stereo_cam_config;
     shared_ptr<mcs::Frame> pLastKF=nullptr,pLastF=nullptr;
     std::chrono::high_resolution_clock::time_point begin_t;
@@ -82,7 +109,9 @@ public:
         {//关键帧处理.
             bool needNewKF = true;
             bool create_frame_success;
-            pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF);
+            auto v_imu = form_imu_data_vec_from_msg_vec(this->imu_vec_tmp);
+            pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF,&v_imu);
+            this->imu_vec_tmp.clear();
             if(!ever_init)
             {
                 LOG(INFO)<<"init SLAM_simple!"<<endl;//初始化SLAM simple.
@@ -129,7 +158,9 @@ public:
             bool needNewKF =false;
             bool create_frame_success;
             last_frame_update_t = std::chrono::high_resolution_clock::now();
-            pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF);
+            auto v_imu = form_imu_data_vec_from_msg_vec(this->imu_vec_tmp);
+            pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF,&v_imu);
+            this->imu_vec_tmp.clear();
             //TODO:
             bool track_and_pnp_ransac_success;
             //mcs::trackAndDoSolvePnPRansacMultiCam(pNewF); //frame_wise tracking....
@@ -147,6 +178,10 @@ public:
             }
             pLastF = pNewF;
         }
+    }
+    void addIMUInfo(const sensor_msgs::Imu& imu_info)
+    {
+        this->imu_vec_tmp.push_back(imu_info);
     }
 
 

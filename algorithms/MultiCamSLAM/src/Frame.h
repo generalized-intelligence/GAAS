@@ -58,7 +58,15 @@ namespace mcs
     };
     static const int FRAME_TYPE_STEREO = 0;
     static const int FRAME_TYPE_DEPTH = 1;
-    typedef vector<double> IMU_Data_T;
+    typedef struct
+    {
+        double time;
+        double ax = 0,ay = 0,az = 0;
+        double alpha_x = 0,alpha_y = 0,alpha_z = 0;
+        double covariance_ax = 0,covariance_ay = 0,covariance_az = 0;
+        double covariance_alpha_x = 0,covariance_alpha_y = 0,covariance_alpha_z = 0;
+    }IMU_Data_T;
+
     struct Frame
     {   
     public:
@@ -110,7 +118,7 @@ namespace mcs
         shared_ptr<vector<shared_ptr<cvMat_T> > > pOriginalImgs,pDepthImgs;
         vector<map<int,int> > map2d_to_3d_pt_vec;
         vector<map<int,int> > map3d_to_2d_pt_vec;
-        IMU_Data_T imu_info_vec;
+        vector<IMU_Data_T> imu_info_vec;
         int frame_type;
         bool isKeyFrame = false;
         Matrix3d rotation;
