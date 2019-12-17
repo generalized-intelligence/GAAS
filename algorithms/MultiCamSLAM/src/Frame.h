@@ -42,7 +42,7 @@ namespace mcs
         int optimization_graph_index = -1;//在优化图中的index.
     };
     struct FeaturePoint {
-        EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Vector2f mPixel = Vector2f(0, 0);        // the pixel position
         shared_ptr<MapPoint> mpPoint = nullptr;  // the corresponding map point, nullptr if not associated
         float mfInvDepth = -1;                   // inverse depth, invalid if less than zero.
@@ -70,6 +70,7 @@ namespace mcs
     struct Frame
     {   
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         Frame()
         {
             LOG(ERROR)<<"In null construction function of Frame()! Nothing will be done."<<endl;

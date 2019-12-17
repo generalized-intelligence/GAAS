@@ -48,9 +48,10 @@
 
 #include "Frame.h"
 #include "FrameManager.h"
-#include "IMU_Preint_GTSAM.h"
+
 #include <thread>
 #include <opencv2/core/eigen.hpp>
+#include "IMU_Preint_GTSAM.h"
 #include <iostream>
 using namespace gtsam;
 using namespace std;
@@ -297,7 +298,7 @@ namespace mcs
             parameters.setEnableRelinearization(false);
 
             this->isam = ISAM2(parameters);
-            this->slam_imu_helper = IMUHelper();
+            this->slam_imu_helper = IMUHelper(true);
         }
         int getFrameID()
         {

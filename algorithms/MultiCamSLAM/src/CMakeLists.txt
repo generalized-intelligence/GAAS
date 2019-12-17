@@ -29,5 +29,6 @@ ${REQUIRED_LIBRARIES}
 FeatureFrontEndCV
 FrameManager
 SLAMOptimizationGraph
+IMU_Preint_GTSAM
 )
 add_subdirectory(test)
