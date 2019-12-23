@@ -13,6 +13,8 @@
 
 namespace mcs
 {
+    void do_cvPyrLK(InputOutputArray prev,InputOutputArray next,vector<Point2f>& p2d_v_prev,vector<Point2f>& p2d_v_next,vector<unsigned char>& track_success_v,vector<float>& err);
+
     using namespace std;
     using namespace cv;
     const static cv::Ptr<cv::ORB> orb = cv::ORB::create(1000);
@@ -95,8 +97,8 @@ namespace mcs
         }
         //const int rows_count = 5;
         //const int cols_count = 5;
-        const int rows_count = 2;
-        const int cols_count = 2;
+        const int rows_count = 4;
+        const int cols_count = 4;
         const int img_size_v = Img.rows;
         const int img_size_u = Img.cols;
         shared_ptr<PointWithFeatureT> pResult(new PointWithFeatureT);
@@ -310,7 +312,8 @@ namespace mcs
         if  (
               abs(p1.y - p2.y) < diff_v_max
              &&  p1.x<p2.x
-             &&  p2.x-p1.x > 10.0 // minimum disparity :2 //TODO:set into config file.20 太大....10试试?
+             //&&  p2.x-p1.x > 10.0 // minimum disparity :2 //TODO:set into config file.20 太大....10试试?
+             &&  p2.x-p1.x > 4.0 // minimum disparity :2 //TODO:set into config file.10 有点大.4试试?
                 // && p1.x-p2.x <
             )
         {
@@ -332,10 +335,12 @@ namespace mcs
         vector<unsigned char> v_track_success;
         vector<float> err;
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:starting OptFlow."<<endl;
-        cv::calcOpticalFlowPyrLK(l,r,l_p2fs_original,tracked_unchecked,v_track_success,err,cv::Size(21, 21), 3,
-                                 cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01)
+        //cv::calcOpticalFlowPyrLK(l,r,l_p2fs_original,tracked_unchecked,v_track_success,err,cv::Size(21, 21), 3,
+        //                         cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01)
+        //                         );
+        do_cvPyrLK(l,r,l_p2fs_original,tracked_unchecked,v_track_success,err//,cv::Size(21, 21), 3,
+                                 //cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01)
                                  );
-         
         //p2d_output = shared_ptr<vector<p2dT> >(new vector<p2dT>);
         //p3d_output = shared_ptr<vector<p3dT> >(new vector<p3dT>);
         vector<Point2f>& checked_l = p2d_output;
@@ -352,14 +357,17 @@ namespace mcs
                 float x,y,z,scale;
                 //calc p3d.
                 const auto &QMat = cam_info.getQMat();
+                float camfx,camfy,camcx,camcy;
+                cam_info.getCamMatFxFyCxCy(camfx,camfy,camcx,camcy);
                 //LOG(INFO)<<"Q_mat:\n"<<QMat<<endl;
                 //LOG(INFO)<<"Q_mat dtype:"<<QMat.type()<<";cv_32f is:"<<CV_32F<<"cv_64f is:"<<CV_64F<<endl;
                 LOG(INFO)<<"        disp,q_32,q_33:"<<disparity<<","<<QMat.at<float>(3,2)<<","<<QMat.at<float>(3,3)<<endl;
-
+/*
                 scale = 1.0/(disparity*QMat.at<float>(3,2)+QMat.at<float>(3,3));
                 x = (l_p2fs_original.at(i).x + QMat.at<float>(0,3))*scale;
                 y = (l_p2fs_original.at(i).y + QMat.at<float>(1,3))*scale;
                 z = QMat.at<float>(2, 3)*scale;
+
                 //Point3f p3f_prev(x,y,z);
                 cv::Mat matp1(4,1,CV_32F);
                 matp1.at<float>(0,0)= x;
@@ -371,7 +379,27 @@ namespace mcs
                 //Transformation of rt mat.
                 x = matp1.at<float>(0,0);
                 y = matp1.at<float>(1,0);
-                z = -1* matp1.at<float>(2,0);
+                z = matp1.at<float>(2,0);
+*/
+                float b = 0.12;//DEBUG ONLY!!!
+                z = b*camfx/(disparity);
+                x = z*(l_p2fs_original.at(i).x - camcx) / camfx;
+                y = z*(l_p2fs_original.at(i).y - camcy) / camfy;
+                cv::Mat matp1(4,1,CV_32F);
+                matp1.at<float>(0,0)= x;
+                matp1.at<float>(1,0)= y;
+                matp1.at<float>(2,0)= z;
+                matp1.at<float>(3,0)= 1.0;
+                LOG(INFO)<<"original triangulated 3d pt:"<<matp1<<endl;
+                //LOG(INFO)<<"        RT_mat:\n"<<cam_info.getRTMat()<<endl;
+                matp1 = cam_info.getRTMat()*matp1;
+
+                x = matp1.at<float>(0,0);
+                y = matp1.at<float>(1,0);
+                z = matp1.at<float>(2,0);
+
+
+
                 //fixed overflow.
                 //map_2d_to_3d_pts.at(checked_l.size()-1) = p3d_output.size();
                 map_2d_to_3d_pts.insert(std::pair<int,int>(checked_l.size()-1,p3d_output.size()));
@@ -511,6 +539,32 @@ namespace mcs
     {
         cv::calcOpticalFlowPyrLK(prev,next,p2d_v_prev,p2d_v_next,track_success_v,err,cv::Size(21, 21), 3,
                                   cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
+        vector<unsigned char> final_output = track_success_v;
+        //for(int i=0;i<priorior_kps.size();i++)
+//        {
+//            if(v_track_success[i])
+//            {
+//                tracked_point_index_to_prev_kps_index[i] = origin_pts_success.size();
+//                origin_pts_success.push_back(origin_p2f[i]);
+//                tracked_pts_success.push_back(tracked_p2f[i]);
+//            }
+//        }
+        vector<unsigned char> fundamental_match_success;
+        cv::Mat fundMat = cv::findFundamentalMat(p2d_v_prev,p2d_v_next,fundamental_match_success);
+
+        int goodMatches_count = 0;
+        for(int i = 0;i<fundamental_match_success.size();i++)
+        {
+            if(fundamental_match_success[i]&&track_success_v[i])
+            {
+                final_output[i] = 1;
+            }
+            else
+            {
+                final_output[i] = 0;
+            }
+        }
+        track_success_v = final_output;
     }
 }
 

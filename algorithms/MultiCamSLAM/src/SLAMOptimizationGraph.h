@@ -53,6 +53,7 @@
 #include <opencv2/core/eigen.hpp>
 #include "IMU_Preint_GTSAM.h"
 #include <iostream>
+#include "Visualization.h"
 using namespace gtsam;
 using namespace std;
 using namespace cv;
@@ -61,6 +62,7 @@ using namespace cv;
 
 const int DEBUG_USE_LM = 1;
 const int ENABLE_INERTIAL_MEASUREMENT = 0;
+const int DEBUG_VISUALIZE = 0;
 namespace mcs
 {
     struct landmark_properties;
@@ -229,6 +231,7 @@ namespace mcs
                 *p_output_track_success = true;
             }
         }
+        visualized_tracked_p2d_and_ordinary_frame(*pFrame,output_tracked_pts_left,i);
     }
     class SLAMOptimizationGraph
     {
@@ -264,7 +267,7 @@ namespace mcs
         vector<boost::shared_ptr<Cal3_S2> > v_pcams_gtsam_config_stereo_left;
         vector<boost::shared_ptr<Cal3_S2Stereo> > v_pcams_gtsam_config_stereo;
         vector<Cal3_S2> v_cams_gtsam_config_depth;
-        IMUHelper slam_imu_helper;
+        //IMUHelper slam_imu_helper;
 
 
 //这里参考Kimera删除节点的实现.
@@ -298,7 +301,7 @@ namespace mcs
             parameters.setEnableRelinearization(false);
 
             this->isam = ISAM2(parameters);
-            this->slam_imu_helper = IMUHelper(true);
+            //this->slam_imu_helper = IMUHelper(true);
         }
         int getFrameID()
         {
@@ -406,7 +409,7 @@ namespace mcs
                         // NOTE: NonlinearEquality forces the optimizer to use QR rather than Cholesky
                         // QR is much slower than Cholesky, but numerically more stable
                         //graph.emplace_shared<NonlinearEquality<Pose3> >(Symbol('X',i),first_pose);
-                        LOG(INFO)<<"NonlinearEquality Constrained symbol X"<<i<<" at first pose:"<<first_pose.matrix()<<endl;
+                        //LOG(INFO)<<"NonlinearEquality Constrained symbol X"<<i<<" at first pose:"<<first_pose.matrix()<<endl;
                         initialEstimate.insert(Symbol('X',i),first_pose);
                         graph.add(PriorFactor<Pose3>  (Symbol('X',i), first_pose,priorFrame_Cam0_noisemodel));
                     }
@@ -449,8 +452,8 @@ namespace mcs
                 initialEstimate.print("initial estimate:(not optimized)");
                 this->currentEstimate = this-> initialEstimate;
 
-                /*
 
+                /*
                 if(DEBUG_USE_LM == 1)
                 {
                     cout<<"Debug:For frame 1, call lm optimizer!"<<endl;
@@ -531,11 +534,12 @@ namespace mcs
 
             gtsam::SharedNoiseModel robust_kernel = gtsam::noiseModel::Robust::Create(
                                                         gtsam::noiseModel::mEstimator::Huber::Create(
-                                                        1.345*4,
+                                                        1.345,//*4,
                                                         gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
                                                                             // Block
                                                         gaussian__);
             //auto robust_kernel = gaussian__;//DEBUG ONLY!
+            int cam_pair_invalid_tracking_count = 0;
             for(int i = 0;i < cam_count;i++)
             {
                 map<int,int> tracked_kps_to_original_kps_map_output;//关键帧的p3d到追踪到的p2d的关系
@@ -550,6 +554,13 @@ namespace mcs
                 if(success_track_pts_count_vec.at(i) == 0) // 在这组摄像机未能成功追踪任何点
                 {
                     LOG(WARNING)<<"No stereo point tracked at cam_index:"<<i<<",frame_id:"<<frame_id<<"!"<<endl;
+                    cam_pair_invalid_tracking_count++;
+                    if(cam_pair_invalid_tracking_count == cam_count)
+                    {
+                        LOG(ERROR)<<"[ERROR] All cams track failure!"<<endl;
+                        cout<<"[ERROR] All cams track failure!"<<endl;
+                        throw "[ERROR] All cams track failure!";
+                    }
                     continue;
                 }
                 for(int index_p3d = 0;index_p3d<vp3d_pts.size();index_p3d++)
@@ -708,7 +719,7 @@ namespace mcs
 //                this->currentEstimate = this-> initialEstimate;
 //                //isam.update(graph, initialEstimate);//优化.
 //                //this->currentEstimate = isam.calculateEstimate();
-//                //currentEstimate.print("before resize,values:");
+//                //currentEstiate.print("before resize,values:");
 //                //graph.resize(0);
 //                //initialEstimate.clear();//这里不能做任何操作.否则引起indetermined linear system exception.
 //                return;
@@ -722,37 +733,60 @@ namespace mcs
 
                 if(DEBUG_USE_LM ==1)
                 {
-                  if(this->frame_id%3 == 0)
-                  {
-                      cout<<"debug:call lm optimizer!"<<endl;
-                      LevenbergMarquardtParams params;
-                      params.verbosityLM = LevenbergMarquardtParams::TRYLAMBDA;
-                      params.verbosity = NonlinearOptimizerParams::ERROR;
-                      params.setMaxIterations(1000);
+                    //if(this->frame_id%3 == 0)
+                    if(this->frame_id%300 == 0)
+                    {
+                        cout<<"debug:call lm optimizer!"<<endl;
+                        LevenbergMarquardtParams params;
+                        params.verbosityLM = LevenbergMarquardtParams::TRYLAMBDA;
+                        params.verbosity = NonlinearOptimizerParams::ERROR;
+                        params.setMaxIterations(1000);
 
-                      cout << "Optimizing" << endl;
-                      //create Levenberg-Marquardt optimizer to optimize the factor graph
-                      LevenbergMarquardtOptimizer optimizer(graph, initialEstimate, params);
-                      Values result = optimizer.optimize();
-                      //initialEstimate.
-                      cout<<"optimized result:"<<endl;
-                      result.print();
-                      graph.printErrors(result);
-                      std::string output_file_name = "info_graph_g2o";
-                      stringstream ss;
-                      ss<<output_file_name<<(frame_id/3)<<".g2o";
-                      cout<<"saving g2o file:"<<ss.str()<<"."<<endl;
-                      stringstream ss2;
-                      ss2<<"Pose2SLAMExample"<<(frame_id/3)<<".dot";
-                      ofstream os(ss2.str());
-                      //if(frame_id == 20)
-                      //{
-                      graph.saveGraph(os,result);
-                      //}
-                      writeG2o(graph, result, ss.str());
-                      cout<<"g2o file saved!"<<endl;
-                  }
-                  currentEstimate = initialEstimate;
+                        cout << "Optimizing" << endl;
+                        //create Levenberg-Marquardt optimizer to optimize the factor graph
+                        LevenbergMarquardtOptimizer optimizer(graph, initialEstimate, params);
+                        Values result = optimizer.optimize();
+                        //initialEstimate.
+                        cout<<"optimized result:"<<endl;
+                        result.print();
+                        graph.printErrors(result);
+                        if(frame_id%300== 0 )
+                        {
+                            LOG(INFO)<<"Output result for visualization:"<<endl;
+
+                            for(int i = 0;i<frame_id;i++)
+                            {
+                                Pose3 var_x = result.at(Symbol('X',i*2)).cast<Pose3>();
+                                LOG(INFO)<<"    [OFFLINE OPTIMIZED RESULT] node_id:"<<i<<";xyz:"<<var_x.translation().x()<<","<<var_x.translation().y()<<","<<var_x.translation().z()<<endl;
+
+                            }
+                            for(int i = 0;i<landmark_id;i++)
+                            {
+                                //auto p_frame = vlandmark_properties.at(i).pCreatedByFrame.lock();
+                                //if(p_frame!=nullptr&&p_frame->frame_id%2 == 0)//只看第一个摄像头看到的点.
+                                if(true)//先不筛选摄像头.看一下大概分布.
+                                {
+                                    Point3 landmark_l = result.at(Symbol('L',i)).cast<Point3>();
+                                    LOG(INFO)<<"  [OFFLINE OPTIMIZED LANDMARK RESULT] landmark_id:"<<i<<";xyz:"<<landmark_l.x()<<","<<landmark_l.y()<<","<<landmark_l.z()<<endl;
+                                }
+                            }
+                        }
+                        std::string output_file_name = "info_graph_g2o";
+                        stringstream ss;
+                        ss<<output_file_name<<(frame_id/3)<<".g2o";
+                        cout<<"saving g2o file:"<<ss.str()<<"."<<endl;
+                        stringstream ss2;
+                        ss2<<"Pose2SLAMExample"<<(frame_id/3)<<".dot";
+                        ofstream os(ss2.str());
+                        //if(frame_id == 20)
+                        //{
+                        graph.saveGraph(os,result);
+                        //}
+                        writeG2o(graph, result, ss.str());
+                        cout<<"g2o file saved!"<<endl;
+                        exit(-1);
+                    }
+                    currentEstimate = initialEstimate;
                 }
                 else
                 {
