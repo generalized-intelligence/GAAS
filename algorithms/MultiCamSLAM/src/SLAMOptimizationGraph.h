@@ -10,7 +10,16 @@
 #include <gtsam/slam/BetweenFactor.h>
 #include <gtsam/nonlinear/NonlinearFactorGraph.h>
 #include <gtsam/nonlinear/GaussNewtonOptimizer.h>
+
+
+#include <gtsam/inference/Ordering.h>
 #include <gtsam/nonlinear/LevenbergMarquardtOptimizer.h>
+
+#include <gtsam/linear/Preconditioner.h>
+#include <gtsam/linear/PCGSolver.h>
+
+#include <gtsam/nonlinear/DoglegOptimizer.h>
+
 #include <gtsam/nonlinear/Marginals.h>
 #include <gtsam/nonlinear/Values.h>
 #include <gtsam/inference/Symbol.h>
@@ -54,6 +63,7 @@
 #include "IMU_Preint_GTSAM.h"
 #include <iostream>
 #include "Visualization.h"
+#include <mutex>
 using namespace gtsam;
 using namespace std;
 using namespace cv;
@@ -65,6 +75,7 @@ const int ENABLE_INERTIAL_MEASUREMENT = 0;
 const int DEBUG_VISUALIZE = 0;
 namespace mcs
 {
+
     struct landmark_properties;
 
 
@@ -144,8 +155,6 @@ namespace mcs
         {
             cv::imwrite("error_img.jpg",*pKeyFrameReference->getMainImages().at(i));
             cout<<"caught img p2d empty error.error_img.jpg saved!"<<endl;
-
-
             *p_output_track_success = false;
             *success_tracked_stereo_pts_count = 0;
             return;
@@ -154,11 +163,6 @@ namespace mcs
         //{//DEBUG ONLY!
         //    to_track_vp2d_pts.push_back(pKeyFrameReference->p2d_vv.at(i).at(0));
         //}
-        //在这里之前就会产生内存错误.
-        cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
-        cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
-        cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
-        cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
         cout<<"in doFrontEndTracking For ordinary frame:stage<6>."<<endl;
 
         vector<unsigned char> left_track_success;
@@ -185,11 +189,13 @@ namespace mcs
                 do_cvPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);
 
                 //cv::calcOpticalFlowPyrLK(*p_origin_img,*p_left,to_track_vp2d_pts,left_tracked_pts,left_track_success,err);//,cv::Size(21, 21), 3,
-                                     //cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
+                                     //cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, , 0.01));
             }
             catch(Exception e)//DEBUG ONLY!
             {
                 cout<<"in cv:: opt flow pyr lk error caught! info:"<<e.what()<<endl;
+                LOG(ERROR)<<"in cv:: opt flow pyr lk error caught! info:"<<e.what()<<endl;
+                throw e;
             }
             cout<<"in doFrontEndTracking For ordinary frame:stage<8>."<<endl;
         }
@@ -212,7 +218,9 @@ namespace mcs
             for(int pt_index = 0;pt_index<left_tracked_pts.size();pt_index++)
             {
                 //step<3> 生成最终结果并产生map.
-                if(left_track_success.at(pt_index) && right_track_success.at(pt_index) )
+                if(left_track_success.at(pt_index) && right_track_success.at(pt_index)
+                            &&check_stereo_match(right_tracked_pts.at(pt_index),left_tracked_pts.at(pt_index) )
+                        )
                 {//双目成功//TODO:check diff v in left and right.
                     map_point2f_to_kf_p3ds[output_tracked_pts_left.size()] = pt_index;
                     output_tracked_pts_left.push_back(left_tracked_pts.at(pt_index));
@@ -225,11 +233,13 @@ namespace mcs
             }
             int success_stereo_tracked_count = output_tracked_pts_left.size();
             *success_tracked_stereo_pts_count = success_stereo_tracked_count;//output.
+            LOG(INFO)<<"success tracked for frame:"<<pFrame->frame_id<<", cam:"<<cam_index <<",count:"<<*success_tracked_stereo_pts_count<<endl;
             if(success_stereo_tracked_count>15)
             {
                 cout<<"stereo track success!"<<endl;
                 *p_output_track_success = true;
             }
+            visualized_tracked_p2d_and_ordinary_frame_stereo(*pFrame,output_tracked_pts_left,output_tracked_pts_right,cam_index);
         }
         visualized_tracked_p2d_and_ordinary_frame(*pFrame,output_tracked_pts_left,i);
     }
@@ -263,6 +273,7 @@ namespace mcs
         vector<CamInfo> rgbd_config;
         int landmark_id = 0;
         vector<landmark_properties> vlandmark_properties;//路标点的管理.
+        std::mutex vlandmark_properties_mutex;
         int frame_id = 0;
         vector<boost::shared_ptr<Cal3_S2> > v_pcams_gtsam_config_stereo_left;
         vector<boost::shared_ptr<Cal3_S2Stereo> > v_pcams_gtsam_config_stereo;
@@ -395,7 +406,7 @@ namespace mcs
                     cv2eigen(pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_body_rt_mat);
 
                     //graph.add(Symbol('X',frame_id*cam_count + i),Pose3(cam_to_body_rt_mat));
-                    //if(i == 0)//就算是这种情况,也只对第一组摄像头定绝对位置.
+                    if(i == 0)//就算是这种情况,也只对第一组摄像头定绝对位置.
                     {//对初始所有摄像头定位置.
                         gtsam::noiseModel::Diagonal::shared_ptr priorFrame_Cam0_noisemodel = gtsam::noiseModel::Diagonal::Variances (
                                     ( gtsam::Vector ( 6 ) <<0.1, 0.1, 0.1, 1e-6, 1e-6, 1e-6 ).finished()
@@ -408,13 +419,19 @@ namespace mcs
                         //constrain the first pose such that it cannot change from its original value during optimization
                         // NOTE: NonlinearEquality forces the optimizer to use QR rather than Cholesky
                         // QR is much slower than Cholesky, but numerically more stable
-                        //graph.emplace_shared<NonlinearEquality<Pose3> >(Symbol('X',i),first_pose);
-                        //LOG(INFO)<<"NonlinearEquality Constrained symbol X"<<i<<" at first pose:"<<first_pose.matrix()<<endl;
+                        graph.emplace_shared<NonlinearEquality<Pose3> >(Symbol('X',i),first_pose);
+                        LOG(INFO)<<"NonlinearEquality Constrained symbol X"<<i<<" at first pose:"<<first_pose.matrix()<<endl;
                         initialEstimate.insert(Symbol('X',i),first_pose);
-                        graph.add(PriorFactor<Pose3>  (Symbol('X',i), first_pose,priorFrame_Cam0_noisemodel));
+                        //graph.add(PriorFactor<Pose3>  (Symbol('X',i), first_pose,priorFrame_Cam0_noisemodel));
+                    }
+                    else
+                    {
+                        Pose3 first_pose(cam_to_body_rt_mat);
+                        initialEstimate.insert(Symbol('X',i),first_pose);
                     }
 
                     LOG(INFO)<<"Cam "<<i<<" initiated at first pose:"<<initialEstimate.at<Pose3>(Symbol('X',i)).matrix()<<endl;
+                    cout<<"Cam "<<i<<" initiated at first pose:"<<initialEstimate.at<Pose3>(Symbol('X',i)).matrix()<<endl;
                 }
                 else
                 {
@@ -437,11 +454,13 @@ namespace mcs
                 if(i != 0)
                 {
                     noiseModel::Diagonal::shared_ptr noise_model_between_cams = gtsam::noiseModel::Diagonal::Variances (
-                                ( gtsam::Vector ( 6 ) <<0.01, 0.01, 0.01, 0.01, 0.01, 0.01 ).finished()); //1mm,0.1度.//放松一些
+                                ( gtsam::Vector ( 6 ) <<0.00001, 0.00001, 0.00001, 0.01, 0.01, 0.01 ).finished()); //1mm,0.1度.//放松一些
                     Eigen::Matrix4d cam_to_cam0_rt_mat;
                     cv2eigen(pFrame->cam_info_stereo_vec[0].getRTMat().inv()* pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_cam0_rt_mat);
                     graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('X',frame_id*cam_count),Symbol('X',frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
                                                                   noise_model_between_cams);//用非常紧的约束来限制相机间位置关系.
+                    LOG(INFO)<<"added constrain betweed cam "<<i<<" and cam 0,mat:"<<cam_to_cam0_rt_mat<<endl;
+                    cout<<"added constrain betweed cam "<<i<<" and cam 0,mat:"<<cam_to_cam0_rt_mat<<endl;
                 }
             }
             if(frame_id == 0)//&& method==METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
@@ -511,9 +530,18 @@ namespace mcs
                 //                               ));
 
                 cout<<"before calling doFrontEndTrackingForOrd:  pFrame:"<<pFrame<<",pFrameRef:"<<pKeyFrameReference<<",cam_index:"<<cam_index<<",lp2fv.size():"<<lp2fv.size()<<endl;
-                doFrontEndTrackingForOrdinaryFrames(pFrame,pKeyFrameReference,cam_index,
-                lp2fv,rp2fv,
-                map__,tracked_p2d,&(track_success_vcams[cam_index]),&(success_track_pts_count_vec[cam_index]),0);
+                try{
+                    doFrontEndTrackingForOrdinaryFrames(pFrame,pKeyFrameReference,cam_index,
+                        lp2fv,rp2fv,
+                        map__,tracked_p2d,&(track_success_vcams[cam_index]),&(success_track_pts_count_vec[cam_index]),0);
+                }
+                catch (Exception e)
+                {
+                    
+                    LOG(ERROR)<<"Caught error in doFrontEndTrackingForOrdinaryFrames()"<<e.what()<<endl;
+                    cout<<"Caught error in doFrontEndTrackingForOrdinaryFrames()"<<e.what()<<endl;
+                    throw e;
+                }
 
                 //doFrontEndTrackingForOrdinaryFrames(std::ref(pFrame),std::ref(pKeyFrameReference),cam_index,
                 //                                                                std::ref(lp2fv),std::ref(rp2fv),
@@ -576,9 +604,11 @@ namespace mcs
                     {
                         //TODO:
                         //1.检查这个map_point是否有这个对应的landmark;没有就先创建点.
+                        this->vlandmark_properties_mutex.lock();
                         int map_point_relavent_landmark_id = pKeyFrameReference->get_p3dindex_to_landmark_index(p2d_index,i);//获取对应Landmark的id.失败返回-1.
                         if(map_point_relavent_landmark_id == -1) // 第一次被另一个帧观测,添加到vLandmark记录中.
                         {
+
                             int reference_kf_id = pKeyFrameReference->frame_id;
                             const Pose3* p_kf_pose3 = &(currentEstimate.at(Symbol('X',reference_kf_id*cam_count + i)).cast<Pose3>());
                             Matrix3d kf_rot = p_kf_pose3->rotation().matrix();
@@ -592,8 +622,14 @@ namespace mcs
                             reprojected_p2d = Vector2d(vp2d_pts.at(p2d_index).x,vp2d_pts.at(p2d_index).y);
 
                             Vector3d point_pos_initial_guess = kf_rot*p3d_relative_to_cam + kf_trans; //TODO:通过对应关键帧计算其初始位置估计,所有都变换到一个坐标系下面.
-                            pKeyFrameReference->set_p3d_landmark_index(p2d_index,landmark_id,i);  //绑定对应关系.
-                            map_point_relavent_landmark_id = landmark_id;
+                            //pKeyFrameReference->set_p3d_landmark_index(p2d_index,landmark_id,i);  //绑定对应关系.
+                            pKeyFrameReference->set_p3d_landmark_index(p2d_index,vlandmark_properties.size(),i);
+                            map_point_relavent_landmark_id = vlandmark_properties.size();//landmark_id;
+                            //if(landmark_id != this->vlandmark_properties.size())
+                            //{
+                            //    LOG(ERROR)<<"landmark_id != vlandmark_properties.size()!Error occured!landmark_id:"<<landmark_id<<",properties.size:"<<vlandmark_properties.size()<<endl;
+                            //    throw "size not equal!";
+                            //}
                             //创建在参考关键帧的投影约束.注意:这里没有,也不应该对'L'[landmark_id]进行任何的prior约束!
 
                             //这个不行.这个没有引入尺度信息,仅仅靠摄像机间的尺度信息和初始位置估计太不可靠了,必须有约束.
@@ -616,9 +652,19 @@ namespace mcs
                                 //                       gtsam::Point3(point_pos_initial_guess)
                                 //                       );//landmark.
                                 auto p3__ = pKeyFrameReference->p3d_vv.at(i).at(p2d_index);
-                                initialEstimate.insert(Symbol('L',map_point_relavent_landmark_id),//Point3(0,0,0)
+                                Pose3 relative_cam_pose = initialEstimate.at(Symbol('X',reference_kf_id*cam_count + i)).cast<Pose3>();
+                                Vector3d position;
 
-                                                       initialEstimate.at(Symbol('X',reference_kf_id*cam_count + i)).cast<Pose3>().transformFrom(Point3(p3__.x,p3__.y,p3__.z))
+                                {
+                                    position[0] = p3__.x;position[1] = p3__.y;position[2] = p3__.z;
+                                    Eigen::Matrix3d mRotate = relative_cam_pose.rotation().matrix();
+                                    position = mRotate.inverse() * position + relative_cam_pose.translation().vector();
+                                    //Point3 initial_estimation_of_new_landmark =
+                                        //initialEstimate.at(Symbol('X',reference_kf_id*cam_count + i)).cast<Pose3>().transformFrom(Point3(p3__.x,p3__.y,p3__.z));
+                                }
+                                initialEstimate.insert(Symbol('L',map_point_relavent_landmark_id),//Point3(0,0,0)
+                                                       //initial_estimation_of_new_landmark
+                                                       Point3(position)
                                                        );
                                 graph.emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(xl_,//左目的u
                                                                                                       xr_,//右目的u
@@ -633,6 +679,8 @@ namespace mcs
                                 lp_.observed_by_frames.push_back(weak_ptr<Frame>(pKeyFrameReference));
                                 this->vlandmark_properties.push_back(lp_);
                                 LOG(INFO)<<"KeyFrame: cam_id"<<i<<",create landmark and link between Landmark L"<<landmark_id<<" at "<<p3__.x<<","<<p3__.y<<","<<p3__.z<<" and KeyFrame X"<<reference_kf_id*cam_count + i<<endl;
+                                LOG(INFO)<<"    Transformed pt 3d coordinate:"<<position[0]<<","<<position[1]
+                                            <<","<<position[2]<<endl;
 
                             }
                             //method<4>.SmartFactor of GenericStereoFactor
@@ -655,10 +703,12 @@ namespace mcs
                                 LOG(INFO)<<"KeyFrame: cam_id"<<i<<",create landmark and link between Landmark L"<<landmark_id<<" and KeyFrame X"<<reference_kf_id*cam_count + i<<endl;
                             }
                             landmark_id++;
+
                         }
                         //2.不管是不是第一次被观测,都要创建在当前帧map_point对应的landmark 与 2d投影点 的gtsam factor约束.
                         //smartFactors.at(map_point_relavent_landmark_id)->add(StereoPoint2(xl, xr, y), X(frame), K);//使用SmartStereo的方法.这里使用Mono(参考ISAM2Example_SmartFactor.cpp).
                         //method <1> 创建最普通的投影误差.
+                        this->vlandmark_properties_mutex.unlock();
                         if(method == METHOD_SIMPLE_STEREO_REPROJECTION_ERROR)
                         {
                             //graph.emplace_shared<GenericProjectionFactor<Pose3, Point3, Cal3_S2> >(
@@ -683,7 +733,7 @@ namespace mcs
                             lp_.observed_by_frames.push_back(weak_ptr<Frame>(pKeyFrameReference));
                             cout<<"landmark L"<<map_point_relavent_landmark_id<<"at"<<left_p2f_vv.at(i).at(p2d_index).x<<","<<right_p2f_vv.at(i).at(p2d_index).x
                                                             <<" observed by "<<lp_.observed_by_frames.size()<<" frames at image pair "<<i<<"!"<<endl;
-                            LOG(INFO)<<"OrdinaryFrame: cam_id:"<<i<<",create link between Landmark L"<<map_point_relavent_landmark_id<<" and X"<<frame_id*cam_count+i<<",disparity:"<< right_p2f_vv.at(i).at(p2d_index).x-left_p2f_vv.at(i).at(p2d_index).x<<endl;
+                            LOG(INFO)<<"OrdinaryFrame: cam_id:"<<i<<",create link between Landmark L"<<map_point_relavent_landmark_id<<" and X"<<frame_id*cam_count+i<<",disparity:"<<left_p2f_vv.at(i).at(p2d_index).x - right_p2f_vv.at(i).at(p2d_index).x<<endl;
                         }
                         //method <2> 创建smart stereo factor上面的约束.
                         else if(method == METHOD_SMARTFACTOR_STEREO_REPROJECTION_ERROR)
@@ -734,23 +784,35 @@ namespace mcs
                 if(DEBUG_USE_LM ==1)
                 {
                     //if(this->frame_id%3 == 0)
-                    if(this->frame_id%300 == 0)
+                    if(this->frame_id%600 == 0)
                     {
                         cout<<"debug:call lm optimizer!"<<endl;
                         LevenbergMarquardtParams params;
                         params.verbosityLM = LevenbergMarquardtParams::TRYLAMBDA;
                         params.verbosity = NonlinearOptimizerParams::ERROR;
-                        params.setMaxIterations(1000);
+
+
+                        //params.linearSolverType = NonlinearOptimizerParams::CHOLMOD;
+                        //params.absoluteErrorTol = 1e-10;
+                        //params.relativeErrorTol = 1e-10;
+                        params.ordering = Ordering::Create(Ordering::METIS, graph);
 
                         cout << "Optimizing" << endl;
                         //create Levenberg-Marquardt optimizer to optimize the factor graph
+
+
                         LevenbergMarquardtOptimizer optimizer(graph, initialEstimate, params);
                         Values result = optimizer.optimize();
+
+                        //Values result = DoglegOptimizer(graph, initialEstimate).optimize();
+
+                        //Values result = GaussNewtonOptimizer(graph,initialEstimate).optimize();
+
                         //initialEstimate.
                         cout<<"optimized result:"<<endl;
                         result.print();
                         graph.printErrors(result);
-                        if(frame_id%300== 0 )
+                        if(frame_id%600== 0 )
                         {
                             LOG(INFO)<<"Output result for visualization:"<<endl;
 
@@ -760,7 +822,7 @@ namespace mcs
                                 LOG(INFO)<<"    [OFFLINE OPTIMIZED RESULT] node_id:"<<i<<";xyz:"<<var_x.translation().x()<<","<<var_x.translation().y()<<","<<var_x.translation().z()<<endl;
 
                             }
-                            for(int i = 0;i<landmark_id;i++)
+                            for(int i = 0;i<this->vlandmark_properties.size();i++)
                             {
                                 //auto p_frame = vlandmark_properties.at(i).pCreatedByFrame.lock();
                                 //if(p_frame!=nullptr&&p_frame->frame_id%2 == 0)//只看第一个摄像头看到的点.

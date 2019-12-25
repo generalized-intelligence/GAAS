@@ -61,8 +61,9 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& img1,const sensor_msgs
     }
     catch (cv_bridge::Exception& e)
     {
-        LOG(ERROR)<<"cv_bridge exception: %s"<<e.what()<<endl;
         ROS_ERROR("cv_bridge exception: %s", e.what());
+        LOG(ERROR)<<"cv_bridge exception: %s"<<e.what()<<endl;
+        cout<<"cv_bridge exception: %s"<<e.what()<<endl;
         return;
     }
     LOG(INFO)<<"Images caught! Will call iterateWith4Imgs."<<endl;

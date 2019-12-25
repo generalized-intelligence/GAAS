@@ -13,7 +13,8 @@
 
 namespace mcs
 {
-    void do_cvPyrLK(InputOutputArray prev,InputOutputArray next,vector<Point2f>& p2d_v_prev,vector<Point2f>& p2d_v_next,vector<unsigned char>& track_success_v,vector<float>& err);
+    void do_cvPyrLK(InputOutputArray prev,InputOutputArray next,vector<Point2f>& p2d_v_prev,vector<Point2f>& p2d_v_next,
+                    vector<unsigned char>& track_success_v,vector<float>& err,bool do_backward_check = true);
 
     using namespace std;
     using namespace cv;
@@ -319,6 +320,10 @@ namespace mcs
         {
             return true;
         }
+        if(abs(p1.y - p2.y) >= diff_v_max)
+        {
+            cout<<"    diff_v:"<<abs(p1.y - p2.y)<<" larger than vmax!"<<endl;
+        }
         return false;
     }
     void createStereoMatchViaOptFlowMatching(cvMat_T& l,cvMat_T& r,StereoCamConfig& cam_info,vector<p2dT>& p2d_output,
@@ -369,7 +374,7 @@ namespace mcs
                 z = QMat.at<float>(2, 3)*scale;
 
                 //Point3f p3f_prev(x,y,z);
-                cv::Mat matp1(4,1,CV_32F);
+                 cv::Mat matp1(4,1,CV_32F);
                 matp1.at<float>(0,0)= x;
                 matp1.at<float>(1,0)= y;
                 matp1.at<float>(2,0)= z;
@@ -535,27 +540,38 @@ namespace mcs
                                       vector<CamInfo>& cam_distribution_info_vec,
                                       bool create_Frame_success = false,
                                       bool create_key_frame = true);
-    void do_cvPyrLK(InputOutputArray prev,InputOutputArray next,vector<Point2f>& p2d_v_prev,vector<Point2f>& p2d_v_next,vector<unsigned char>& track_success_v,vector<float>& err)
+
+    float pt_calc_dist(const Point2f& p1,const Point2f& p2)
+    {
+        return pow((p1.x - p2.x),2) + pow((p1.y - p2.y),2);
+    }
+
+    void do_cvPyrLK(InputOutputArray prev,InputOutputArray next,vector<Point2f>& p2d_v_prev,vector<Point2f>& p2d_v_next,vector<unsigned char>& track_success_v,vector<float>& err,bool do_backward_check)
     {
         cv::calcOpticalFlowPyrLK(prev,next,p2d_v_prev,p2d_v_next,track_success_v,err,cv::Size(21, 21), 3,
                                   cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
+        vector<unsigned char> backward_check_output = track_success_v;
         vector<unsigned char> final_output = track_success_v;
-        //for(int i=0;i<priorior_kps.size();i++)
-//        {
-//            if(v_track_success[i])
-//            {
-//                tracked_point_index_to_prev_kps_index[i] = origin_pts_success.size();
-//                origin_pts_success.push_back(origin_p2f[i]);
-//                tracked_pts_success.push_back(tracked_p2f[i]);
-//            }
-//        }
+
+
+        if(do_backward_check)
+        {
+            //进行反向光流检查,有一个阈值限制.
+            vector<Point2f> p2d_prev_backward;
+            vector<float> backward_err;
+            cv::calcOpticalFlowPyrLK(next,prev,p2d_v_next,p2d_prev_backward,backward_check_output,backward_err);
+            for(int i = 0;i<backward_check_output.size();i++)
+            {
+                backward_check_output.at(i) = backward_check_output.at(i) && (pt_calc_dist(p2d_v_prev.at(i),p2d_prev_backward.at(i))<1.0);
+            }
+        }
         vector<unsigned char> fundamental_match_success;
         cv::Mat fundMat = cv::findFundamentalMat(p2d_v_prev,p2d_v_next,fundamental_match_success);
 
         int goodMatches_count = 0;
         for(int i = 0;i<fundamental_match_success.size();i++)
         {
-            if(fundamental_match_success[i]&&track_success_v[i])
+            if(fundamental_match_success[i]&&track_success_v[i]&&backward_check_output[i])
             {
                 final_output[i] = 1;
             }
@@ -565,6 +581,7 @@ namespace mcs
             }
         }
         track_success_v = final_output;
+
     }
 }
 
