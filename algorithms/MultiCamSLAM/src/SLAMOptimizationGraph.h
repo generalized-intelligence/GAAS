@@ -45,6 +45,9 @@
 #include <gtsam/slam/PoseTranslationPrior.h>
 #include <gtsam/base/numericalDerivative.h>
 #include <gtsam/base/serializationTestHelpers.h>
+//#include <gtsam/geometry/Rot3.h>
+//#include <gtsam/geometry/Point3.h>
+//#include <gtsam/geometry/Pose3.h>
 
 
 #include <opencv2/core/persistence.hpp>
@@ -75,6 +78,28 @@ const int ENABLE_INERTIAL_MEASUREMENT = 0;
 const int DEBUG_VISUALIZE = 0;
 namespace mcs
 {
+
+//    Eigen::Matrix4d get_pose3_matrix(Pose3 pose3)
+//    {
+//        static const auto A14 = Eigen::RowVector4d(0,0,0,1);
+//        Eigen::Matrix4d mat;
+//        mat << pose3.rotation().matrix(), pose3.translation().vector(), A14;
+//        return mat;
+//    }
+
+    bool is_obvious_movement(cv::Mat rvec,cv::Mat tvec)
+    {
+        double r1 = rvec.at<double>(0),r2 = rvec.at<double>(1),r3 = rvec.at<double>(2);
+        double t1 = tvec.at<double>(0),t2 = tvec.at<double>(1),t3 = tvec.at<double>(2);
+
+        double t_len = pow(pow(t1,2)+pow(t2,2)+pow(t3,2) ,0.5);
+        double rotate_ang = (pow(pow(r1,2)+pow(r2,2)+pow(r3,2) ,0.5)/3.14)*180;
+        if ( (t_len>2 )&& (rotate_ang>90)  )
+        {
+            return true;
+        }
+        return false;
+    }
 
     struct landmark_properties;
 
@@ -320,6 +345,7 @@ namespace mcs
         }
         void initCamsStereo(vector<StereoCamConfig>& cams)
         {
+            this->stereo_config = cams;
             for(auto c:cams)
             {
                 float fx,fy,cx,cy;
@@ -408,8 +434,11 @@ namespace mcs
                     //graph.add(Symbol('X',frame_id*cam_count + i),Pose3(cam_to_body_rt_mat));
                     if(i == 0)//就算是这种情况,也只对第一组摄像头定绝对位置.
                     {//对初始所有摄像头定位置.
+//                        gtsam::noiseModel::Diagonal::shared_ptr priorFrame_Cam0_noisemodel = gtsam::noiseModel::Diagonal::Variances (
+//                                    ( gtsam::Vector ( 6 ) <<0.1, 0.1, 0.1, 1e-6, 1e-6, 1e-6 ).finished()
+//                                );
                         gtsam::noiseModel::Diagonal::shared_ptr priorFrame_Cam0_noisemodel = gtsam::noiseModel::Diagonal::Variances (
-                                    ( gtsam::Vector ( 6 ) <<0.1, 0.1, 0.1, 1e-6, 1e-6, 1e-6 ).finished()
+                                    ( gtsam::Vector ( 6 ) <<1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6 ).finished()
                                 );
                         //添加初始绝对位置约束.Rotation可变(重力对齐),translation不可变(绝对坐标系创建的点).
                         //graph.emplace_shared<PriorFactor<Pose3> > (Symbol('X',0), Pose3(Rot3(1,0,0,0),Point3(0,0,0)),priorFrame_Cam0_noisemodel);
@@ -419,10 +448,10 @@ namespace mcs
                         //constrain the first pose such that it cannot change from its original value during optimization
                         // NOTE: NonlinearEquality forces the optimizer to use QR rather than Cholesky
                         // QR is much slower than Cholesky, but numerically more stable
-                        graph.emplace_shared<NonlinearEquality<Pose3> >(Symbol('X',i),first_pose);
+                        //graph.emplace_shared<NonlinearEquality<Pose3> >(Symbol('X',i),first_pose);
                         LOG(INFO)<<"NonlinearEquality Constrained symbol X"<<i<<" at first pose:"<<first_pose.matrix()<<endl;
                         initialEstimate.insert(Symbol('X',i),first_pose);
-                        //graph.add(PriorFactor<Pose3>  (Symbol('X',i), first_pose,priorFrame_Cam0_noisemodel));
+                        graph.add(PriorFactor<Pose3>  (Symbol('X',i), first_pose,priorFrame_Cam0_noisemodel));
                     }
                     else
                     {
@@ -435,14 +464,16 @@ namespace mcs
                 }
                 else
                 {
-                    if(frame_id > 1)//第二个frame没法看第一个的值.
+                    if(frame_id >= 1)//第二个frame没法看第一个的值.
                     {
                         cout<<"creating cam node X:frame id:"<<frame_id<<",cam_count:"<<cam_count<<",current_i:"<<i<<endl;
                         //currentEstimate = isam.calculateEstimate();
                         //currentEstimate.print();
-                        const Pose3* p_last = &(currentEstimate.at(Symbol('X',(frame_id - 1)*cam_count + i)).cast<Pose3>());
-                        cout<<"last pose:"<<p_last->translation()<<endl;
-                        initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(*p_last)); // 用上一帧的对应相机优化结果作为初始估计.
+
+                        //const Pose3* p_last = &(initialEstimate.at(Symbol('X',(frame_id - 1)*cam_count + i)).cast<Pose3>());
+                        //cout<<"last pose:"<<p_last->translation()<<endl;
+
+                        //initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(*p_last)); // 用上一帧的对应相机优化结果作为初始估计.//有了ransac估计就不用这个了.
                     }
                     else
                     {//test.
@@ -454,7 +485,7 @@ namespace mcs
                 if(i != 0)
                 {
                     noiseModel::Diagonal::shared_ptr noise_model_between_cams = gtsam::noiseModel::Diagonal::Variances (
-                                ( gtsam::Vector ( 6 ) <<0.00001, 0.00001, 0.00001, 0.01, 0.01, 0.01 ).finished()); //1mm,0.1度.//放松一些
+                                ( gtsam::Vector ( 6 ) <<0.00001, 0.00001, 0.00001, 0.0001, 0.0001, 0.0001 ).finished()); //1mm,0.1度.//放松一些
                     Eigen::Matrix4d cam_to_cam0_rt_mat;
                     cv2eigen(pFrame->cam_info_stereo_vec[0].getRTMat().inv()* pFrame->cam_info_stereo_vec[i].getRTMat(),cam_to_cam0_rt_mat);
                     graph.emplace_shared<BetweenFactor<Pose3> >(Symbol('X',frame_id*cam_count),Symbol('X',frame_id*cam_count + i),Pose3(cam_to_cam0_rt_mat),
@@ -562,14 +593,20 @@ namespace mcs
 
             gtsam::SharedNoiseModel robust_kernel = gtsam::noiseModel::Robust::Create(
                                                         gtsam::noiseModel::mEstimator::Huber::Create(
-                                                        1.345,//*4,
+                                                        1.345*20,
                                                         gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
                                                                             // Block
                                                         gaussian__);
             //auto robust_kernel = gaussian__;//DEBUG ONLY!
+
+
             int cam_pair_invalid_tracking_count = 0;
             for(int i = 0;i < cam_count;i++)
             {
+                //prepare for pnp ransac. //OpenCV pnp ransac accepts vector of point3d and point2d only.
+                std::vector<cv::Point3d> p3d_pts_matched;
+                std::vector<cv::Point2d> p2d_pts_matched;
+
                 map<int,int> tracked_kps_to_original_kps_map_output;//关键帧的p3d到追踪到的p2d的关系
                 vector<p3dT> vp3d_pts = p3ds_vv.at(i);
                 auto& vp2d_pts = output_to_track_kf_p2d_vv.at(i);
@@ -589,8 +626,12 @@ namespace mcs
                         cout<<"[ERROR] All cams track failure!"<<endl;
                         throw "[ERROR] All cams track failure!";
                     }
+                    const Pose3* p_last = &(currentEstimate.at(Symbol('X',(frame_id - 1)*cam_count + i)).cast<Pose3>());
+                    cout<<"last pose:"<<p_last->translation()<<endl;
+                    initialEstimate.insert(Symbol('X',frame_id*cam_count + i),Pose3(*p_last)); // 用上一帧的对应相机优化结果作为初始估计.//有了ransac估计就不用这个了,仅在跟踪失败时使用.
                     continue;
                 }
+
                 for(int index_p3d = 0;index_p3d<vp3d_pts.size();index_p3d++)
                 {
                     int p2d_index = -1;
@@ -658,7 +699,9 @@ namespace mcs
                                 {
                                     position[0] = p3__.x;position[1] = p3__.y;position[2] = p3__.z;
                                     Eigen::Matrix3d mRotate = relative_cam_pose.rotation().matrix();
-                                    position = mRotate.inverse() * position + relative_cam_pose.translation().vector();
+//                                    position = mRotate.inverse() * position - relative_cam_pose.translation().vector();
+                                    position = mRotate * position + relative_cam_pose.translation().vector();
+
                                     //Point3 initial_estimation_of_new_landmark =
                                         //initialEstimate.at(Symbol('X',reference_kf_id*cam_count + i)).cast<Pose3>().transformFrom(Point3(p3__.x,p3__.y,p3__.z));
                                 }
@@ -709,6 +752,9 @@ namespace mcs
                         //smartFactors.at(map_point_relavent_landmark_id)->add(StereoPoint2(xl, xr, y), X(frame), K);//使用SmartStereo的方法.这里使用Mono(参考ISAM2Example_SmartFactor.cpp).
                         //method <1> 创建最普通的投影误差.
                         this->vlandmark_properties_mutex.unlock();
+                        auto p3__ = pKeyFrameReference->p3d_vv.at(i).at(p2d_index);
+                        p3d_pts_matched.push_back(cv::Point3d(p3__.x,p3__.y,p3__.z));
+                        p2d_pts_matched.push_back(cv::Point2d(left_p2f_vv.at(i).at(p2d_index).x,left_p2f_vv.at(i).at(p2d_index).y));
                         if(method == METHOD_SIMPLE_STEREO_REPROJECTION_ERROR)
                         {
                             //graph.emplace_shared<GenericProjectionFactor<Pose3, Point3, Cal3_S2> >(
@@ -759,6 +805,83 @@ namespace mcs
                         //input_p3d_to_optimize.push_back(vp3d_pts[p2d_index]);
                     }
                 }
+
+                cv::Mat pnp_R_vec,pnp_R;
+                cv::Mat pnp_t;
+
+                vector<unsigned char> pnp_ransac_is_inlier;
+                bool pnp_estimate_success = cv::solvePnPRansac(p3d_pts_matched,p2d_pts_matched,this->stereo_config.at(i).getCamMat(),cv::Mat(),pnp_R_vec,pnp_t,false,100,2.0,0.99,pnp_ransac_is_inlier);
+                int pnp_success_count = 0;
+                for (auto u:pnp_ransac_is_inlier)
+                {
+                    if(u)
+                    {
+                        pnp_success_count++;
+                    }
+                }
+                LOG(INFO)<<"pnp ransac matched pts count:"<<pnp_success_count<<endl;
+                cout<<"pnp ransac matched pts count:"<<pnp_success_count<<endl;
+                if(pnp_estimate_success && pnp_success_count>15 && !is_obvious_movement(pnp_R_vec,pnp_t) && i == 0)
+                {
+                    cv::Rodrigues(pnp_R_vec,pnp_R);
+
+
+                    Eigen::Matrix3d Rotation_;
+                    cv::cv2eigen(pnp_R,Rotation_);
+                    Eigen::Vector3d translation_(pnp_t.at<double>(0),pnp_t.at<double>(1),pnp_t.at<double>(2));
+                    //建立从关键帧到对应关系.
+                    //gtsam::Pose3 relative_pose_(
+                    //                                gtsam::Rot3(Rotation_),
+                    //                                gtsam::Point3(translation)
+                    //                            );//between pKeyFrameReference and pFrame;
+                    Rot3 r_tmp(Rotation_);
+                    Point3 t_tmp(pnp_t.at<double>(0),pnp_t.at<double>(1),pnp_t.at<double>(2));
+                    gtsam::Pose3 relative_pose_(r_tmp,t_tmp);
+
+                    Eigen::Matrix4d relative_pose_estimation;
+                    static const auto A14 = Eigen::RowVector4d(0,0,0,1);
+                    relative_pose_estimation<<relative_pose_.rotation().matrix(), relative_pose_.translation().vector(), A14;
+
+                    Eigen::Matrix4d cam_body_relative,cam_body_relative_inv;
+                    cv::cv2eigen( this->stereo_config.at(i).getRTMat(),cam_body_relative);
+                    cam_body_relative_inv = cam_body_relative.inverse();
+
+                    relative_pose_estimation = relative_pose_estimation*cam_body_relative_inv;
+                    LOG(INFO)<<"relative_pose_estimation:"<<endl<<relative_pose_estimation<<endl;
+                    cout<<"relative_pose_estimation:"<<endl<<relative_pose_estimation<<endl;
+
+
+
+
+                    //Eigen::Matrix4d
+                    auto keyframe_pose_estimation_pose3 = initialEstimate.at(Symbol('X',( pKeyFrameReference->frame_id*cam_count + i)) ).cast<Pose3>();
+                    Eigen::Matrix4d kf_pose_estimation;
+                    kf_pose_estimation<<keyframe_pose_estimation_pose3.rotation().matrix(),keyframe_pose_estimation_pose3.translation().vector(),A14;
+                    //Eigen::Matrix4d
+                    //Eigen::Matrix4d final_pose_estimation = kf_pose_estimation.inverse() * relative_pose_estimation.inverse();
+                    //Eigen::Matrix4d final_pose_estimation = kf_pose_estimation * relative_pose_estimation;
+                    Eigen::Matrix4d final_pose_estimation = relative_pose_estimation* kf_pose_estimation;
+
+                    LOG(INFO)<<"kf_pose_estimation:"<<endl<<kf_pose_estimation<<endl;
+                    cout<<"kf_pose_estimation:"<<endl<<kf_pose_estimation<<endl;
+
+                    LOG(INFO)<<"final_pose_estimation:"<<endl<<final_pose_estimation<<endl;
+                    cout<<"final_pose_estimation:"<<endl<<final_pose_estimation<<endl;
+
+                    initialEstimate.insert(Symbol('X',pFrame->frame_id*cam_count + i),Pose3(final_pose_estimation));
+                    LOG(INFO)<<"PNP ransac result: t:"<<translation_<<endl;
+
+                }
+                else
+                {
+                    Pose3 prev_pose = initialEstimate.at(Symbol('X', (pFrame->frame_id-1)*cam_count +i  ) ).cast<Pose3>();
+                    initialEstimate.insert(Symbol('X',pFrame->frame_id*cam_count + i),prev_pose);
+                    LOG(INFO)<<"pnp ransac failed;using last pose to init!"<<endl;
+                }
+
+
+
+
             }
 //            if(frame_id == 0)//不对,这个还不能放这里,会导致pKeyFrameRef是空.
 //            {
@@ -786,16 +909,25 @@ namespace mcs
                     //if(this->frame_id%3 == 0)
                     if(this->frame_id%600 == 0)
                     {
+                        for(int i = 0;i<frame_id;i++)
+                        {
+                            Pose3 var_x = initialEstimate.at(Symbol('X',i*2)).cast<Pose3>();
+                            LOG(INFO)<<"    [ESTIMATED RESULT] node_id:"<<i<<";xyz:"<<var_x.translation().x()<<","<<var_x.translation().y()<<","<<var_x.translation().z()<<endl;
+
+                        }
+                        cout<<"print initialEstimate:"<<endl;
+                        initialEstimate.print();
                         cout<<"debug:call lm optimizer!"<<endl;
                         LevenbergMarquardtParams params;
                         params.verbosityLM = LevenbergMarquardtParams::TRYLAMBDA;
                         params.verbosity = NonlinearOptimizerParams::ERROR;
 
 
-                        //params.linearSolverType = NonlinearOptimizerParams::CHOLMOD;
+                        params.linearSolverType = NonlinearOptimizerParams::MULTIFRONTAL_CHOLESKY;
+                        //params.linearSolverType = NonlinearOptimizerParams::SEQUENTIAL_QR;
                         //params.absoluteErrorTol = 1e-10;
                         //params.relativeErrorTol = 1e-10;
-                        params.ordering = Ordering::Create(Ordering::METIS, graph);
+                        //params.ordering = Ordering::Create(Ordering::METIS, graph);
 
                         cout << "Optimizing" << endl;
                         //create Levenberg-Marquardt optimizer to optimize the factor graph
