@@ -68,14 +68,14 @@ find_package(PCL REQUIRED)
 find_package( octomap REQUIRED )
 find_package(catkin REQUIRED COMPONENTS
                                 cv_bridge
-                                image_transport
+                                #image_transport
                                 roscpp
                                 sensor_msgs
 				geometry_msgs
                                 nav_msgs
                                 std_msgs
                                 octomap_msgs
-                                octomap_rviz_plugins
+                                #octomap_rviz_plugins
                                 visualization_msgs
                                 tf)
 #find_package(CUDA  REQUIRED)

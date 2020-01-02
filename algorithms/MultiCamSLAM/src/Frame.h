@@ -40,6 +40,7 @@ namespace mcs
         //int createdByFrameID = -1;
         weak_ptr<Frame> pCreatedFrame;
         int optimization_graph_index = -1;//在优化图中的index.
+        bool ever_triangulated = false; // 是否已经被三角化(已知双目观测)
     };
     struct FeaturePoint {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
