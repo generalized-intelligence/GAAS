@@ -8,7 +8,7 @@
   <!-- remap -->
   <!-- use point cloud in gazebo-->
     <remap from="/laser_cloud_surround" to="/cloud_in"/>
-    <remap from="/odom_world" to="/gi/desired_trajectory"/>
+    <remap from="/odom_world" to="/mavros/local_position/odom"/>
 
   <!-- sdf map updating -->
   <!-- TODO: Need adjust params-->
@@ -95,7 +95,7 @@
 
   <!-- trajectory server -->
   <node pkg="plan_manage" name="traj_server" type="traj_server" output="log">
-      <remap from="/odom_world" to="/gi/desired_trajectory"/>
+      <remap from="/odom_world" to="/mavros/local_position/odom"/>
       <remap from="/position_cmd" to="planning/pos_cmd"/>
   </node>
 
