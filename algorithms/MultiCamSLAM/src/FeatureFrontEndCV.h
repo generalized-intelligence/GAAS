@@ -453,6 +453,10 @@ namespace mcs
         }
         return ret_;
     }
+    void upgradeOrdinaryFrameToKeyFrameStereos(shared_ptr<Frame> pOrdinaryFrame)
+    {
+        ;//TODO.
+    }
     shared_ptr<Frame> createFrameStereos(shared_ptr<vector<StereoMatPtrPair> >stereo_pair_imgs_vec,
                                       vector<StereoCamConfig>& cam_distribution_info_vec,
                                       bool& create_Frame_success,

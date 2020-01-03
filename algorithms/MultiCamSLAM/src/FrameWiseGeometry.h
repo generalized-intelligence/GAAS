@@ -133,6 +133,101 @@ namespace mcs
                         bool& output_frame_tracking_success,vector<bool> output_framekp2d_track_success);
 
     void doTrackLocalMap(shared_ptr<Frame> pFrame);//跟踪局部还在滑窗中的地图点
+
+
+
+    const char TRACK_STEREO2STEREO = 0;
+    const char TRACK_STEREO2MONO = 1;
+    const char TRACK_MONO2STEREO = 2;
+    const char TRACK_MONO2MONO = 3;
+    void doTrackLaskKF_all2dpts(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
+                                vector<Point2f>& output_tracked_pts_left,
+                                //vector<Point2f>& output_tracked_pts_right,//不需要了.只存disparity,不再保存p2dT数值.
+                                vector<float> disps;//双目追踪失败,disp填入-1.
+                                vector<char>& output_track_type,//跟踪类型:有KFStereoCurrentMono,KFMonoCurrentStereo,KFStereoCurrentStereo,KFMonoCurrentMono.
+                                map<int,int>& map_point2f_to_kf_p2ds,//必然有.
+                                map<int,int>& map_point2f_to_kf_p3ds,//没有填写-1;
+                                char* p_output_track_success,//调用方必须检查.
+                                int* success_tracked_stereo_pts_count,int method = 0)
+    {
+        //TODO:Implementation of this function!
+        LOG(INFO)<<"in doTrackLastKF_all2dpts."<<endl;
+        if(pKeyFrameReference == nullptr)
+        {
+            LOG(ERROR)<<"reference Frame is nullptr!"<<endl;
+            exit(-1);//DEBUG ONLY.
+        }
+        LOG(INFO)<<"for frame id:"<<pFrame->frame_id<<" calling doTrackLastKF_all2dpts!Reference KFid:"<<pKeyFrameReference->frame_id<<endl;
+        const int& i = cam_index;
+        *p_output_track_success = false;
+        auto p_origin_img = pKeyFrameReference->getMainImages().at(i);
+        auto p_left =  pFrame->getMainImages().at(i);
+        auto p_right= pFrame->getSecondaryImages().at(i);
+        vector<p3dT> vp3d_pts = pKeyFrameReference->p3d_vv.at(i);
+        //vector<p2dT>& to_track_vp2d_pts = output_to_track_kf_p2d;//要追踪的参考帧 kps.
+
+        to_track_vp2d_pts.clear();
+        LOG(INFO)<<"    cam index:"<<cam_index<<",p2d_vv[i].size():"<<pKeyFrameReference->p2d_vv.at(i).size()<<endl;
+
+        if(pKeyFrameReference->p2d_vv.at(i).size() == 0)
+        {
+            return;//失败,返回.
+        }
+        vector<float> err;
+        vector<Point2f> left_tracked_pts;
+        vector<unsigned char> left_tracked_success_v;
+
+        vector<Point2f> right_tracked_pts;
+        vector<unsigned char> right_track_success_v;
+        vector<float> err_right;
+        try
+        {
+            do_cvPyrLK(*p_origin_img,*p_left,pKeyFrameReference->p2d_vv.at(i),left_tracked_pts,left_track_success_v,err);//进行追踪.
+        }
+        catch (Exception e)
+        {
+            LOG(ERROR)<<"Caught exception in doTrackLastKF_all2dpts()-->do_cvPyrLK for KF and leftImage,error is: "<<e.what()<<endl;
+            return;
+        }
+        try
+        {
+            do_cvPyrLK(*p_left,*p_right,left_tracked_pts,right_tracked_pts,right_track_success_v,err_right);
+        }
+        catch (Exception e)
+        {
+            LOG(ERROR)<<"Caught exception in doTrackLastKF_all2dpts()-->do_cvPyrLK for leftImage and rightImage,error is: "<<e.what()<<endl;
+            return;
+        }
+        //Merge the result of these 2 process.
+        int kf_stereo_output_stereo_count = 0;//都是双目追踪.
+        int kf_stereo_output_mono_count = 0;//KF双目,当前单目.
+        int kf_mono_output_stereo_count = 0;//KF单目,当前双目.
+
+        for(int pt_index = 0;pt_index<left_tracked_pts.size();pt_index++)
+        {//检查是否追踪成功.
+            if(left_tracked_success_v.at(pt_index)&&right_track_success_v.at(pt_index)&&check_stereo_match(right_tracked_pts.at(pt_index),left_tracked_pts.at(pt_index)))
+            {
+                int output_id = output_tracked_pts_left.size();
+                output_tracked_pts_left.push_back(left_tracked_pts.at(pt_index));
+                output_tracked_pts_right.push_back(right_tracked_pts.at(pt_index));
+                map_point2f_to_kf_p2ds[output_id] = pt_index;
+                //填充当前帧到参考关键帧p3d的index,无对应p3d填-1;
+                if(pKeyFrameReference->map2d_to_3d_pt_vec.at(i).count(pt_index)&&pKeyFrameReference->map2d_to_3d_pt_vec.at(i).at(pt_index)!=-1)
+                {
+                    map_point2f_to_kf_p3ds[output_id] = pKeyFrameReference->map2d_to_3d_pt_vec.at(i).at(pt_index);
+                    kf_stereo_output_stereo_count++;
+                }
+                else
+                {
+                    kf_mono_output_stereo_count++;
+                }
+                //TODO:维护TrackType和右侧追踪记录修改为disp.
+            }
+
+
+        }
+        *success_tracked_stereo_pts_count = output_tracked_pts_left.size();
+    }
     void doTrackLastKF(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
                                              vector<Point2f>& output_tracked_pts_left,vector<Point2f>& output_tracked_pts_right,
                                              map<int,int>& map_point2f_to_kf_p3ds,vector<p2dT>& output_to_track_kf_p2d,char* p_output_track_success,int* success_tracked_stereo_pts_count,int method = 0)
