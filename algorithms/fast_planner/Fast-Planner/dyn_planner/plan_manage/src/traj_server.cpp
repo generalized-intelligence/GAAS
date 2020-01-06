@@ -5,14 +5,18 @@
 #include "quadrotor_msgs/PositionCommand.h"
 #include "std_msgs/Empty.h"
 #include "visualization_msgs/Marker.h"
+#include "std_msgs/String.h"
+#include <sstream>
 
 using namespace dyn_planner;
 
-ros::Publisher state_pub, pos_cmd_pub, traj_pub;
+ros::Publisher state_pub, pos_cmd_pub, traj_pub, mavros_control_pub;
 
 nav_msgs::Odometry odom;
 
 quadrotor_msgs::PositionCommand cmd;
+
+std_msgs::String mavros_cmd;
 // double pos_gain[3] = {5.7, 5.7, 6.2};
 // double vel_gain[3] = {3.4, 3.4, 4.0};
 double pos_gain[3] = {5.7, 5.7, 6.2};
@@ -119,6 +123,8 @@ void bsplineCallback(plan_manage::BsplineConstPtr msg) {
   traj.push_back(bspline);
   traj.push_back(traj[0].getDerivative());
   traj.push_back(traj[1].getDerivative());
+  traj.push_back(traj[2].getDerivative());
+  // traj.push_back(traj[3].getDerivative());
 
   traj[0].getTimeSpan(t_cmd_start, t_cmd_end);
   traj_duration = t_cmd_end - t_cmd_start;
@@ -161,12 +167,13 @@ void cmdCallback(const ros::TimerEvent& e) {
   ros::Time time_now = ros::Time::now();
   double t_cur = (time_now - time_traj_start).toSec();
 
-  Eigen::Vector3d pos, vel, acc;
-
+  Eigen::Vector3d pos, vel, acc, jerk, snap;
   if (t_cur < traj_duration && t_cur >= 0.0) {
     pos = traj[0].evaluateDeBoor(t_cmd_start + t_cur);
     vel = traj[1].evaluateDeBoor(t_cmd_start + t_cur);
     acc = traj[2].evaluateDeBoor(t_cmd_start + t_cur);
+    jerk = traj[3].evaluateDeBoor(t_cmd_start + t_cur);
+    // snap = traj[4].evaluateDeBoor(t_cmd_start + t_cur);
   } else if (t_cur >= traj_duration) {
     /* hover when finish traj */
     pos = traj[0].evaluateDeBoor(t_cmd_end);
@@ -199,6 +206,18 @@ void cmdCallback(const ros::TimerEvent& e) {
   drawState(pos, vel, 0, Eigen::Vector4d(0, 1, 0, 1));
   drawState(pos, acc, 1, Eigen::Vector4d(0, 0, 1, 1));
 
+  std::stringstream ss;
+  ss << "position:" << pos(0) << "," << pos(1) << "," << pos(2) << "." << 
+          "velocity:" << vel(0) << "," << vel(1) << "," << vel(2) << "." << 
+          "acceleration:" << acc(0) << "," << acc(1) << "," << acc(2) << "." << 
+          "jerk:" << jerk(0) << "," << jerk(1) << "," << jerk(2) << "." << 
+          "snap:" << 0 << "," << 0 << "," << 0;
+
+  mavros_cmd.data = ss.str();
+  ROS_INFO("[=mavros=]: %s", mavros_cmd.data.c_str());
+  mavros_control_pub.publish(mavros_cmd);
+
+
   traj_cmd.push_back(pos);
   if (pos.size() > 10000)
     traj_cmd.erase(traj_cmd.begin(), traj_cmd.begin() + 1000);
@@ -223,6 +242,8 @@ int main(int argc, char** argv) {
 
   ros::Timer vis_timer = node.createTimer(ros::Duration(0.5), visCallback);
   traj_pub = node.advertise<visualization_msgs::Marker>("planning/traj", 10);
+
+  mavros_control_pub = node.advertise<std_msgs::String>("gi/desired_state/string", 10);
 
   /* control parameter */
   cmd.kx[0] = pos_gain[0];

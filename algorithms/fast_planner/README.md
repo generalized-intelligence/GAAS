@@ -7,5 +7,5 @@
 
 ## Done
 * Pointcloud to esdf and voxel.
-* Generate trajectory.
+* Generate trajectory(trajectroy, vel, acc).
 
