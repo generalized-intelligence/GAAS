@@ -4,7 +4,7 @@
 #include <memory>
 #include <mutex>
 #include "Frame.h"
-#include "FrameWiseGeometry.h"
+
 
 #include <glog/logging.h>
 
@@ -69,6 +69,7 @@
 #include <thread>
 #include <opencv2/core/eigen.hpp>
 #include "IMU_Preint_GTSAM.h"
+#include "FrameWiseGeometry.h"
 #include <iostream>
 #include "Visualization.h"
 #include "ReprojectionInfoDatabase.h"
@@ -93,30 +94,49 @@ private:
     //map<int,LandmarkProperties> KF_landmark_extension_map;
     ReprojectionInfoDatabase reproj_db;
     const int max_kf_count = 5;
-
+    deque<int> KF_id_queue;
 
 public:
     SlidingWindow()
     {
     }
+    shared_ptr<Frame> getFrameByID(int frame_id)
+    {
+        return this->reproj_db.frameTable.query(frame_id);
+    }
     inline shared_ptr<Frame> getLastKF()
     {
-        //return KF_queue.end();
+        return getFrameByID(KF_id_queue.end());
+    }
+    vector<int> getKFidQueue()
+    {
+        return this->KF_id_queue;
     }
     shared_ptr<Values> optimizeFactorGraph(shared_ptr<NonlinearFactorGraph> pGraph,shared_ptr<Values> pInitialEstimate)
     {
+        ScopeTimer timer_optimizer("optimizeFactorGraph()");
         //初始化一个Levenburg-Marquardt优化器,解优化图.返回估计值.
+        LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
+        Values *pResult = new Values();
+        *pResult = optimizer.optimize();
+        cout<<"optimized result:"<<endl;
+        pResult->print();
+        return shared_ptr<Values>(pResult);
     }
     void trackAndKeepReprojectionDBForFrame(shared_ptr<Frame> pFrame)//这是普通帧和关键帧公用的.
     {
         for(const int& ref_kf_id:this->getInWindKFidVec())//对当前帧,追踪仍在窗口内的关键帧.
         {
             //第一步 跟踪特征点,创建关联关系.
+            auto pRefKF = getFrameByID(ref_kf_id);
             const int cam_count = pFrame->get_cam_num();
-            vector<vector<Point2f> > vvLeftp2d,vvRightp2d;
-            vvLeftp2d.resize(cam_count);vvRightp2d.resize(cam_count);
-            vector<map<int,int> > v_p2d_to_kf_p3d_index;
-            v_p2d_to_kf_p3d_index.resize(cam_count);
+            vector<vector<Point2f> > vvLeftp2d;//,vvRightp2d;
+            vector<vector<float> > vv_disps;//移除vvRightp2d.
+            vector<vector<char> > vv_track_type;//跟踪成功与否,跟踪的结果.
+
+            vvLeftp2d.resize(cam_count);vv_disps.resize(cam_count);vv_track_type.resize(cam_count);//vvRightp2d.resize(cam_count);
+            vector<map<int,int> > v_p2d_to_kf_p3d_index,v_p2d_to_kf_p2d_index;
+            v_p2d_to_kf_p3d_index.resize(cam_count);v_p2d_to_kf_p2d_index.resize(cam_count);
             vector<vector<Point2f> >  v_originalKFP2d_relative;//对应的关键帧p2d.
             v_originalKFP2d_relative.resize(cam_count);
             vector<char> v_track_success;
@@ -126,12 +146,21 @@ public:
             for(int i = 0;i<cam_count;i++)//这里可以多线程.暂时不用.
             {
                 //doTrackLastKF(pFrame,getLastKF(),i,vvLeftp2d.at(i),vvRightp2d.at(i),v_p2d_to_kf_p3d_index.at(i),v_originalKFP2d_relative.at(i),&v_track_success.at(i),&v_track_success_count.at(i));
-                doTrackLastKF(...);//跟踪窗口里的所有kf.处理所有情况(mono2mono,mono2stereo,stereo2mono,stereo2stereo.)
+                //doTrackLastKF(...);//跟踪窗口里的所有kf.处理所有情况(mono2mono,mono2stereo,stereo2mono,stereo2stereo.)
+                //TODO:start a thread rather than invoke doTrackLastKF_all2dpts() directly.
+                doTrackLaskKF_all2dpts(pFrame,getFrameByID(ref_kf_id),i,
+                                       this->getFrameByID(ref_kf_id).p2d_vv.at(i),
+                                       vv_disps.at(i),vv_track_type.at(i),v_p2d_to_kf_p2d_index.at(i),v_p2d_to_kf_p3d_index.at(i),
+                                       v_track_success.at(i),v_track_success_count.at(i)
+                                       );
             }
             //threads.join();//合并结果集.
 
-            pFrame->reproj_map.at(ref_kf_id) = reprojectionRecordT();
+            pFrame->reproj_map.at(ref_kf_id) = ReprojectionRecordT();
             pFrame->reproj_map.at(ref_kf_id).resize(cam_count);
+            //改Frame之间引用关系.
+            //是不是上一帧?
+            pFrame->setReferringID(ref_kf_id);//最后一个是上一个.
 
             //第二步 建立地图点跟踪关系 根据结果集维护数据库.
             for(int i = 0 ;i<cam_count,i++)//这是一个不可重入过程.数据库本身访问暂时没有锁.暂时估计应该不需要.
@@ -139,12 +168,45 @@ public:
                 if(v_track_success.at(i))
                 {
                     //反复查表,改数据库.
-                    pFrame->reproj_map.at(ref_kf_id).at(i).push_back();
-                            this->reproj_db->table_xxx.insert(...);
+                    //pFrame->reproj_map.at(ref_kf_id).at(i).push_back();
+                    //        this->reproj_db.
+                    //step<1>.改frame和相应ReprojectionInfo结构
+                    for(int current_frame_p2d_index = 0;current_frame_p2d_index<vvLeftp2d.at(i).size();current_frame_p2d_index++)
+                    {
+                        SingleProjectionT proj_;
+                        proj_.current_frame_p2d = vvLeftp2d.at(i).at(current_frame_p2d_index);
+                        proj_.disp = vv_disps.at(i).at(current_frame_p2d_index);
+                        proj_.ref_p2d_id = v_p2d_to_kf_p2d_index.at(i).at(current_frame_p2d_index);
+                        proj_.tracking_state = vv_track_type.at(i).at(current_frame_p2d_index);
+                        pFrame->reproj_map.at(ref_kf_id).at(i).at(current_frame_p2d_index) = proj_;
+                        //查询是否存在对应的 landmark结构.如果不存在,创建一个.
+                        if(proj_.tracking_state == || proj_.tracking_state == )
+                        {
+                            if(pRefKF->kf_p2d_to_landmark_id.at(i).count(proj_.ref_p2d_id) == 0)
+                            {//创建landmark
+                                shared_ptr<LandmarkProperties> pLandmark(new LandmarkProperties());
+                                pLandmark->cam_id;
+                                pLandmark->created_by_kf_id;
+                                pLandmark->landmark_reference_time;
+                                pLandmark->relative_kf_p2d_id;
+//                                ObservationInfo obs_info;
+//                                obs_info.observed_by_frame_id = pFrame->frame_id;
+//                                obs_info.relative_p2d_index = ;//TODO:这块逻辑整理下?
+
+//                                pLandmark->vObservationInfo.push_back();
+                                this->reproj_db.landmarkTable.insertLandmark(pLandmark);//维护索引.
+                            }
+                            else
+                            {//维护landmark.
+                                //ObservationInfo obs_info;....//这块用到的时候设计一下.
+                            }
+                        }
+                    }
+                    //* 可选 加入RelationTable,并更新对应的索引关系.
                 }
                 else
                 {//防止出现空结构无法访问.
-
+                    //TODO.
                 }
             }
         }
@@ -180,12 +242,26 @@ public:
         //第六步 第二次优化.
 
         //第七步 进行Marginalize,分析优化图并选择要舍弃的关键帧和附属的普通帧,抛弃相应的信息.
-        shared_ptr<Frame> pToMarginalizeKF = this->proposalMarginalizationKF();
+        int toMargKFID = this->proposalMarginalizationKF();
+        shared_ptr<Frame> pToMarginalizeKF = this->getFrameByID(toMargKFID);
         if(pToMarginalize!= nullptr)
         {
             removeKeyFrameAndItsProperties(pToMarginalizeKF);
             removeOrdinaryFrame(pToMarginalizeKF);
             //TODO:对它的每一个从属OrdinaryFrame进行递归删除.
+            if(this->toMargKFID == this->KF_id_queue.back())
+            {
+                this->KF_id_queue.pop_back();
+            }
+            else if(this->toMargKFID == this->KF_id_queue.front())
+            {
+                this->KF_id_queue.pop_front();
+            }
+            else
+            {
+                LOG(ERROR)<<"error in proposalMarginalizationKF()"<<endl;
+                exit(-1);
+            }
         }
     }
 
@@ -198,7 +274,6 @@ public:
         //第三步 创建局部优化图.第一次优化.
         shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pOriginaryFrame->frame_id);
 
-
     }
 
     void removeOrdinaryFrame(shared_ptr<Frame>);
@@ -206,8 +281,30 @@ public:
     inline int getOrdinaryFrameSize();
     inline int getKFSize();
     vector<int> getInWindKFidVec();
-    void proposalMarginalizationKF()//提议一个应该被marg的关键帧.
+    int proposalMarginalizationKF(int currentFrameID)//提议一个应该被marg的关键帧.
     {
+        auto pCurrentFrame = this->getFrameByID(currentFrameID);
+        deque<int> currentInWindKFList = this->getKFidQueue();
+        vector<double> v_mean_disp;
+        for(auto iter = currentInWindKFList.begin();iter!=currentInWindKFList.end();++iter)
+        {
+            int kf_id = *iter;
+            vector<shared_ptr<Frame> > v_relative_frames = this->reproj_db.frameTable.queryByRefKFID(kf_id);//查询和他有关联的帧.
+            for(auto& pF:v_relative_frames)
+            {//判断marg哪个关键帧最合适.
+                //step<1>.计算帧间平均视差.
+                double mean_disp = calcMeanDispBetween2Frames(pCurrentFrame,pF);
+            }
+            //step<2>.如果第一帧到当前帧平均视差 与 最后一帧到当前帧平均视差 比值<2.0: marg最后一个关键帧
+            //    (一直不动.就不要创建新的.否则会一直累计误差.)
+
+            //step<3>.否则,marg第一个关键帧.
+        }
+        if(v_mean_disp[0]<2* (*v_mean_disp.end()) )
+        {
+            return currentInWindKFList.begin();
+        }
+        return currentInWindKFList.end();
     }
 };
 

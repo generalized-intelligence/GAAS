@@ -77,7 +77,8 @@ find_package(catkin REQUIRED COMPONENTS
                                 octomap_msgs
                                 #octomap_rviz_plugins
                                 visualization_msgs
-                                tf)
+                                #tf
+				)
 #find_package(CUDA  REQUIRED)
 find_package(DBoW3 REQUIRED PATH Thirdparty/DBow3/build)
 #find_package(DBoW3)

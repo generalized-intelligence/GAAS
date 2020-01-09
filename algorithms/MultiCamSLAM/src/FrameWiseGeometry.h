@@ -143,7 +143,7 @@ namespace mcs
     void doTrackLaskKF_all2dpts(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
                                 vector<Point2f>& output_tracked_pts_left,
                                 //vector<Point2f>& output_tracked_pts_right,//不需要了.只存disparity,不再保存p2dT数值.
-                                vector<float> disps;//双目追踪失败,disp填入-1.
+                                vector<float> disps,//双目追踪失败,disp填入-1.这里的disps是本帧追踪产生的disps,与关键帧无关.
                                 vector<char>& output_track_type,//跟踪类型:有KFStereoCurrentMono,KFMonoCurrentStereo,KFStereoCurrentStereo,KFMonoCurrentMono.
                                 map<int,int>& map_point2f_to_kf_p2ds,//必然有.
                                 map<int,int>& map_point2f_to_kf_p3ds,//没有填写-1;
@@ -202,6 +202,8 @@ namespace mcs
         int kf_stereo_output_stereo_count = 0;//都是双目追踪.
         int kf_stereo_output_mono_count = 0;//KF双目,当前单目.
         int kf_mono_output_stereo_count = 0;//KF单目,当前双目.
+        int kf_mono_output_mono_count = 0;//都是单目.
+        //可以根据这个东西算一个评分.
 
         for(int pt_index = 0;pt_index<left_tracked_pts.size();pt_index++)
         {//检查是否追踪成功.
@@ -209,24 +211,49 @@ namespace mcs
             {
                 int output_id = output_tracked_pts_left.size();
                 output_tracked_pts_left.push_back(left_tracked_pts.at(pt_index));
-                output_tracked_pts_right.push_back(right_tracked_pts.at(pt_index));
+                //output_tracked_pts_right.push_back(right_tracked_pts.at(pt_index));//这个东西不要了.
                 map_point2f_to_kf_p2ds[output_id] = pt_index;
+                float disp_ = left_tracked_pts.at(pt_index).x - right_tracked_pts.at(pt_index).x;
+                disps.push_back(disp_);
                 //填充当前帧到参考关键帧p3d的index,无对应p3d填-1;
                 if(pKeyFrameReference->map2d_to_3d_pt_vec.at(i).count(pt_index)&&pKeyFrameReference->map2d_to_3d_pt_vec.at(i).at(pt_index)!=-1)
                 {
                     map_point2f_to_kf_p3ds[output_id] = pKeyFrameReference->map2d_to_3d_pt_vec.at(i).at(pt_index);
                     kf_stereo_output_stereo_count++;
+                    output_track_type.push_back(TRACK_STEREO2STEREO);
                 }
                 else
                 {
                     kf_mono_output_stereo_count++;
+                    output_track_type.push_back(TRACK_MONO2STEREO);//关键帧mono,当前帧stereo.
                 }
                 //TODO:维护TrackType和右侧追踪记录修改为disp.
             }
+            else if(left_tracked_success_v.at(pt_index)&&right_track_success_v.at(pt_index)&&check_stereo_v(right_tracked_pts.at(pt_index),left_tracked_pts.at(pt_index)))
+            {
+                int output_id = output_tracked_pts_left.size();
+                output_tracked_pts_left.push_back(left_tracked_pts.at(pt_index));
+                map_point2f_to_kf_p2ds[output_id] = pt_index;
 
-
+                disps.push_back(-1.0);//跟踪失败,disps.push_back(-1.0)
+                //左目追踪成功,本帧三角化不成功.
+                if(pKeyFrameReference->map2d_to_3d_pt_vec.at(i).count(pt_index)&&pKeyFrameReference->map2d_to_3d_pt_vec.at(i).at(pt_index)!=-1)
+                {
+                    output_track_type.push_back(TRACK_STEREO2MONO);
+                    kf_stereo_output_mono_count++;
+                }
+                else
+                {
+                    output_track_type.push_back(TRACK_MONO2MONO);//这种没什么用.
+                    kf_mono_output_mono_count++;
+                }
+            }
         }
         *success_tracked_stereo_pts_count = output_tracked_pts_left.size();
+        if(*success_tracked_stereo_pts_count > 15)
+        {
+            *p_output_track_success = true;
+        }
     }
     void doTrackLastKF(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
                                              vector<Point2f>& output_tracked_pts_left,vector<Point2f>& output_tracked_pts_right,

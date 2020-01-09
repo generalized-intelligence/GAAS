@@ -303,12 +303,20 @@ namespace mcs
 
 
 
+    const float diff_v_max = 2.0;
     //---------
-
+    inline bool check_stereo_v(Point2f& p1,Point2f& p2)
+    {
+        if(abs(p1.y - p2.y) < diff_v_max && p2.x-p1.x >= 0.0)
+        {
+            return true;
+        }
+        return false;
+    }
     inline bool check_stereo_match(Point2f& p1,Point2f& p2)
     {
         //const float diff_v_max = 2.0;
-        const float diff_v_max = 2.0;
+
         //const diff_u_max = 100;//TODO:
         if  (
               abs(p1.y - p2.y) < diff_v_max
@@ -454,8 +462,9 @@ namespace mcs
         return ret_;
     }
     void upgradeOrdinaryFrameToKeyFrameStereos(shared_ptr<Frame> pOrdinaryFrame)
-    {
-        ;//TODO.
+    {//升级成关键帧.补充提取gftt,并且加入左右之间的关联关系(p2d,p3d,各种Mapping.).
+        //TODO.
+        pOrdinaryFrame->isKeyFrame = true;
     }
     shared_ptr<Frame> createFrameStereos(shared_ptr<vector<StereoMatPtrPair> >stereo_pair_imgs_vec,
                                       vector<StereoCamConfig>& cam_distribution_info_vec,
@@ -478,6 +487,7 @@ namespace mcs
         pF_ret->disps_vv.resize(stereo_pair_imgs_vec->size());
         pF_ret->map2d_to_3d_pt_vec.resize(stereo_pair_imgs_vec->size());
         pF_ret->map3d_to_2d_pt_vec.resize(stereo_pair_imgs_vec->size());
+        pF_ret->kf_p2d_to_landmark_id.resize(stereo_pair_imgs_vec->size());
         //for(int ci_index=0;ci_index<cam_distribution_info_vec.size();ci_index++)
         //{
         //    //pF_ret->cam_info_vec.push_back(static_cast<CamInfo&>(cam_distribution_info_vec[ci_index]));

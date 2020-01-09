@@ -68,6 +68,17 @@ namespace mcs
         double covariance_alpha_x = 0,covariance_alpha_y = 0,covariance_alpha_z = 0;
     }IMU_Data_T;
 
+    //typedef std::tuple<int,p2dT,float,char> SingleProjectionT;
+    struct SingleProjectionT
+    {
+        int ref_p2d_id = -1;
+        p2dT current_frame_p2d;
+        float disp;
+        char tracking_state;
+        //int relativeLandmarkIndex;//查表用的.记录在这里 还是在kf的p2d对应的东西里面?
+    };
+    typedef vector<vector< SingleProjectionT > > ReprojectionRecordT;
+
     struct Frame
     {   
     public:
@@ -86,11 +97,13 @@ namespace mcs
         vector<vector<p2dT> > p2d_vv;
         vector<vector<p3dT> > p3d_vv;
 
-        typedef vector<vector< std::pair<int,p2dT> > > reprojectionRecordT;
-        map<int,reprojectionRecordT >  reproj_map;//用于普通帧与关键帧track p2d gftt后 存储在这个中;
+
+
+        map<int,ReprojectionRecordT >  reproj_map;//用于普通帧与关键帧track p2d gftt后 存储在这个中;
         //用参考帧的kfid作为索引, map[kfid][cam_id][p2d_id] == ref_p2d_id,pt.
 
         vector<vector<double> > disps_vv;//与p3d一一对应.
+        vector<map<int,int> > kf_p2d_to_landmark_id;//kf_p2d_to_landmark_id[cam_index][p2d_index];
         vector<CamInfo> cam_info_vec;
         vector<StereoCamConfig> cam_info_stereo_vec;
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;
@@ -128,9 +141,37 @@ namespace mcs
         vector<IMU_Data_T> imu_info_vec;
         int frame_type;
         bool isKeyFrame = false;
+
+
+        bool pose_estimated = false;
         Matrix3d rotation;
         Vector3d position;
+
+        void getRotationAndTranslation(Matrix3d& rot,Vector3d& pos,bool& valid)
+        {
+            valid = pose_estimated;
+            rot = this->rotation;
+            pos = this->position;
+        }
+
         int frame_id = -1;
+        vector<int> referringKFIDs;
+        vector<int> getReferringKFIDs()
+        {
+            return referringKFIDs;
+        }
+        void setReferringID(int ref_kf_id)
+        {
+            this->referringKFIDs.push_back(ref_kf_id);
+        }
+        int getLastKFID()
+        {
+            if(referringKFIDs.size() == 0)
+            {
+                LOG(ERROR)<<"KFIDs.size() == 0! Access Violation!"<<endl;
+            }
+            return referringKFIDs.end();
+        }
 
         void checkFrameIntegrity_debug()
         {
