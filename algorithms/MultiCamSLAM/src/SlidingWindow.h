@@ -125,6 +125,7 @@ public:
     }
     void trackAndKeepReprojectionDBForFrame(shared_ptr<Frame> pFrame)//这是普通帧和关键帧公用的.
     {
+        this->reproj_db.frameTable.insertFrame(pFrame);//加入frame_id;
         for(const int& ref_kf_id:this->getInWindKFidVec())//对当前帧,追踪仍在窗口内的关键帧.
         {
             //第一步 跟踪特征点,创建关联关系.
@@ -180,21 +181,44 @@ public:
                         proj_.tracking_state = vv_track_type.at(i).at(current_frame_p2d_index);
                         pFrame->reproj_map.at(ref_kf_id).at(i).at(current_frame_p2d_index) = proj_;
                         //查询是否存在对应的 landmark结构.如果不存在,创建一个.
-                        if(proj_.tracking_state == || proj_.tracking_state == )
+                        if(proj_.tracking_state == TRACK_STEREO2STEREO|| proj_.tracking_state == TRACK_STEREO2MONO||proj_.tracking_state == TRACK_MONO2STEREO
+                                //||proj_.tracking_state == TRACK_MONO2MONO // 暂时不管.
+
+                                )//如果这个点可直接三角化.
                         {
                             if(pRefKF->kf_p2d_to_landmark_id.at(i).count(proj_.ref_p2d_id) == 0)
                             {//创建landmark
                                 shared_ptr<LandmarkProperties> pLandmark(new LandmarkProperties());
-                                pLandmark->cam_id;
-                                pLandmark->created_by_kf_id;
-                                pLandmark->landmark_reference_time;
-                                pLandmark->relative_kf_p2d_id;
+                                pLandmark->cam_id = i;
+                                pLandmark->created_by_kf_id = ref_kf_id;
+                                pLandmark->landmark_reference_time = 1; //创建那一次不算.
+                                pLandmark->relative_kf_p2d_id = proj_.ref_p2d_id;
+                                this->reproj_db.landmarkTable.insertLandmark(pLandmark);//维护索引.从此以后它就有id了.
+                                if(proj_.tracking_state == TRACK_STEREO2MONO||proj_.tracking_state == TRACK_STEREO2STEREO)
+                                {
+                                    pLandmark->setEstimatedPosition(pRefKF->);//这里认为参考的关键帧位姿已经优化完毕.可以直接根据坐标变换关系计算Landmark位置初始估计.
+                                    pLandmark->setTriangulated();//三角化成功.
+                                }
+                                else if(proj_.tracking_state == TRACK_MONO2STEREO)
+                                {//这种比较特殊.暂时认为当前帧位姿 == 最后一个被优化的帧位姿,进行三角化;这种误差肯定是比上一种情况要大.
+                                    pLandmark->setEstimatedPosition(p);
+                                    pLandmark->setTriangulated();
+                                }
+                                else if(proj_.tracking_state == TRACK_MONO2MONO)//这种三角化最复杂.应该放到一个队列里去.判断是否能够三角化.实用意义不大.
+                                {
+                                    //TriangulationQueue.push_back( std::make_tuple<pLandmark->landmark_id,pFrame->frame_id,ref_kf_id)//加入队列.等待处理.
+                                    //在当前帧优化成功之后,检查对极约束是否满足,夹角是否足够三角化....
+                                    //pLandmark->setEstimatedPosition();
+                                    LOG(WARNING)<<"Track mono2mono not implemented yet!"<<endl;
+                                }
+                                pLandmark->ObservedByFrameIDSet.insert(pFrame->frame_id);//当前帧id加入观测关系.
+
+
 //                                ObservationInfo obs_info;
 //                                obs_info.observed_by_frame_id = pFrame->frame_id;
 //                                obs_info.relative_p2d_index = ;//TODO:这块逻辑整理下?
 
 //                                pLandmark->vObservationInfo.push_back();
-                                this->reproj_db.landmarkTable.insertLandmark(pLandmark);//维护索引.
                             }
                             else
                             {//维护landmark.
@@ -243,11 +267,14 @@ public:
 
         //第七步 进行Marginalize,分析优化图并选择要舍弃的关键帧和附属的普通帧,抛弃相应的信息.
         int toMargKFID = this->proposalMarginalizationKF();
+        if(toMargKFID < 0)//无需marg.
+        {
+            LOG(INFO)<<"deque not full, skip marginalization.return."<<endl;
+            return;
+        }
         shared_ptr<Frame> pToMarginalizeKF = this->getFrameByID(toMargKFID);
         if(pToMarginalize!= nullptr)
         {
-            removeKeyFrameAndItsProperties(pToMarginalizeKF);
-            removeOrdinaryFrame(pToMarginalizeKF);
             //TODO:对它的每一个从属OrdinaryFrame进行递归删除.
             if(this->toMargKFID == this->KF_id_queue.back())
             {
@@ -262,6 +289,8 @@ public:
                 LOG(ERROR)<<"error in proposalMarginalizationKF()"<<endl;
                 exit(-1);
             }
+            removeKeyFrameAndItsProperties(pToMarginalizeKF);
+            removeOrdinaryFrame(pToMarginalizeKF);
         }
     }
 
@@ -273,7 +302,6 @@ public:
         trackAndKeepReprojectionDBForFrame(pOrdinaryFrame);
         //第三步 创建局部优化图.第一次优化.
         shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pOriginaryFrame->frame_id);
-
     }
 
     void removeOrdinaryFrame(shared_ptr<Frame>);
@@ -285,6 +313,10 @@ public:
     {
         auto pCurrentFrame = this->getFrameByID(currentFrameID);
         deque<int> currentInWindKFList = this->getKFidQueue();
+        if(currentInWindKFList.size() < this->max_kf_count)
+        {
+            return -1;
+        }
         vector<double> v_mean_disp;
         for(auto iter = currentInWindKFList.begin();iter!=currentInWindKFList.end();++iter)
         {

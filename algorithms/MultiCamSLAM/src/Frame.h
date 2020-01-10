@@ -92,6 +92,14 @@ namespace mcs
             this->pLRImgs = pLRImgs;
             v_map_p3d_point_id_to_optimization_graph_3dpoint_id.resize(pLRImgs->size());
         }
+        void removeImages()
+        {//删除所有图像的引用.这样就会产生
+            for(auto& pair:(*this->pLRImgs))
+            {
+                pair.first = nullptr;
+                pair.second = nullptr;
+            }
+        }
         Frame(vector<shared_ptr<cvMat_T> > pOriginalImgs,vector<shared_ptr<cv::Mat>>pDepthImgs);
     
         vector<vector<p2dT> > p2d_vv;
@@ -104,6 +112,14 @@ namespace mcs
 
         vector<vector<double> > disps_vv;//与p3d一一对应.
         vector<map<int,int> > kf_p2d_to_landmark_id;//kf_p2d_to_landmark_id[cam_index][p2d_index];
+        int getLandmarkIDByCamIndexAndp2dIndex(int cam_index,int p2d_index)//没有是-1;
+        {
+            if(this->kf_p2d_to_landmark_id.at(cam_index).count(p2d_index) == 0)
+            {
+                return -1;
+            }
+            return this->kf_p2d_to_landmark_id.at(cam_index).at(p2d_index);
+        }
         vector<CamInfo> cam_info_vec;
         vector<StereoCamConfig> cam_info_stereo_vec;
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;
