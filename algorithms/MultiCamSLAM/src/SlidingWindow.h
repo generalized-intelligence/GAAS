@@ -121,6 +121,35 @@ public:
         *pResult = optimizer.optimize();
         cout<<"optimized result:"<<endl;
         pResult->print();
+        //修改对应Frame和Landmark的值.
+        for(auto key_value = pResult->begin(); key_value != pResult->end(); ++key_value)
+        {
+            auto key = key_value->key;
+            Symbol asSymbol(key);
+            //Symbol之间的关系:
+
+            //Xi-j 相机的位姿
+            //Fi Frame i 的位姿
+            //Xi-0 Xi-cam_count -1与Fi有位置约束.
+
+            //Lj Landmark j的位置.
+            if(asSymbol.chr() == 'F')
+            {//对所有的Frame:
+                Pose3 value = key_value->value.cast<Pose3>();
+                int x_index = asSymbol.index();
+                //查找对应的item X - x_index;
+                auto pFrame = this->getFrameByID(x_index/cam_count);
+                //TODO:这里一个Frame有6个姿态.怎么融合?取哪个?
+                pFrame->setRotationAndTranslation(value.rotation(),value.translation());
+            }
+            else if(asSymbol.chr() == 'L')
+            {
+                Point3 value = key_value->value.cast<Point3>();
+                int landmark_id = asSymbol.index();
+                auto pLandmark = this->reproj_db.landmarkTable.query(landmark_id);
+                pLandmark->setEstimatedPosition(value);
+            }
+        }
         return shared_ptr<Values>(pResult);
     }
     void trackAndKeepReprojectionDBForFrame(shared_ptr<Frame> pFrame)//这是普通帧和关键帧公用的.

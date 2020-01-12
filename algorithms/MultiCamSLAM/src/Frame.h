@@ -162,12 +162,23 @@ namespace mcs
         bool pose_estimated = false;
         Matrix3d rotation;
         Vector3d position;
+        void setRotationAndTranslation(Matrix3d rot,Vector3d pos)
+        {
+            this->rot = rot;
+            this->pos = pos;
+            this->pose_estimated = true;
+        }
 
         void getRotationAndTranslation(Matrix3d& rot,Vector3d& pos,bool& valid)
         {
             valid = pose_estimated;
             rot = this->rotation;
             pos = this->position;
+        }
+        std::pair<Pose3,vector<Pose3> > getFiAndXiArray()//直接生成需要的Fi和Xi位置.
+        {
+            assert(this->pose_estimated)
+            //TODO;
         }
 
         int frame_id = -1;

@@ -243,18 +243,74 @@ public:
 
 
     vector<shared_ptr<RelationT> > queryAllRelatedRelationsByKF(shared_ptr<Frame> pKF);//查询所有相关的点.用于创建投影关系和marginalize;
+    void insertFramePoseEstimation(int frameID,shared_ptr<NonlinearFactorGraph> pGraph,shared_ptr<Values> pInitialEstimate)
+    {//插入对应的frame Fi, Cam Xi,并创建对应的约束关系.
+
+        if(frameID > 0)
+        {
+            Rot3 rot;Point3 trans;
+            bool valid;
+
+            auto pCurrentFrame = this->frameTable.query(frameID);
+            pCurrrentFrame->getLandmarkIDByCamIndexAndp2dIndex(rot,trans,valid);
+            const int cam_count =pCurrentFrame->get_cam_num();
+            if(valid)
+            {//当前帧曾经优化过.那就直接填写老值.
+                auto Fi_XiArray = pCurrentFrame->getFiAndXiArray();
+                pInitialEstimate->insert(Symbol('F',frameID),Fi_XiArray.first);
+                for(int i = 0;i<cam_count;i++)
+                {
+                    //
+                    pInitialEstimate->insert(Symbol('X',frameID*cam_count + i),Fi_XiArray.second.at(i));
+                }
+            }
+            else
+            {//新插入的帧,没有位置估计.
+                this->frameTable.query(frameID-1)->getRotationAndTranslation(rot,trans,valid);
+                if(valid)
+                {
+                    auto Fi_XiArray = this->frameTable.query(frameID -1)->getFiAndXiArray();//查上一个老帧.
+                    pInitialEstimate_output->insert(Symbol('F',frameID),Fi_XiArray.first);
+                    for(int i = 0;i<cam_count;i++)
+                    {//对每个摄像头,创建约束关系.
+                        int x_index = frameID*cam_count + i;
+                        pInitialEstimate->insert(Symbol('X',x_index), Fi_XiArray.secont.at(i));
+                    }
+                }
+                else
+                {//这个应该是出错了才会有.
+                    LOG(ERROR)<<"last frame estimation invalid!!"<<endl;
+                    exit(-1);
+                }
+            }
+        }
+        else// frameID = 0,固定第一帧的位置.
+        {
+
+        }
+
+    }
 
     shared_ptr<NonlinearFactorGraph> generateLocalGraphByFrameID(int frameID, shared_ptr<Values>& pInitialEstimate_output)
     {//创建"局部"优化图.只参考上一关键帧,优化本帧位置.
-        //创建Xframe,Xframe+i.
-        //创建Xref,Xref+i.
-        //
+
         auto pGraph = shared_ptr<NonlinearFactorGraph>(new NonlinearFactorGraph());
         pInitialEstimate_output = shared_ptr<Values>(new Values());
 
         shared_ptr<Frame> pFrame = this->frameTable.query(frameID);
         //获取跟踪的点.
         shared_ptr<Frame> pRefKF = this->frameTable.query();
+
+        //创建Fframe,Xframe,Xframe+i.建立约束关系.
+        this->insertFramePoseEstimation(frameID,pGraph,pInitialEstimate_output);
+        const int cam_count = pFrame->get_cam_num();
+
+        //创建Xref,Xref+i.
+        //
+        //  step<1>.查询对应的Frame.//暂时只用getLastKFID();将来可以把所有track过的都加入进去.
+        //  step<2>.生成对应的Symbol.
+        this->insertFramePoseEstimation(pFrame->getLastKFID());
+
         int cam_count = pFrame->get_cam_num();
         for(int i = 0;i<cam_count;i++)
         {
