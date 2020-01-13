@@ -11,7 +11,7 @@ import math
 
 class Commander:
     def __init__(self):
-        rospy.init_node("commander_node_2")
+        rospy.init_node("commander_node")
         rate = rospy.Rate(20)
         self.position_target_pub = rospy.Publisher('gi/set_pose/position', PoseStamped, queue_size=10)
         self.yaw_target_pub = rospy.Publisher('gi/set_pose/orientation', Float32, queue_size=10)
@@ -41,13 +41,12 @@ class Commander:
         self.position_target_pub.publish(self.set_pose(0, 0, height, False))
 
 
-    def set_pose(self, x=0, y=0, z=2, BODY_OFFSET_ENU = True):
+    def set_pose(self, x=0, y=0, z=2, BODY_FLU = True):
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
 
         # ROS uses ENU internally, so we will stick to this convention
-
-        if BODY_OFFSET_ENU:
+        if BODY_FLU:
             pose.header.frame_id = 'base_link'
 
         else:
@@ -63,6 +62,7 @@ class Commander:
 if __name__ == "__main__":
     
     con = Commander()
+    time.sleep(2)
     con.move(1, 0, 0)
     time.sleep(2)
     con.turn(90)
