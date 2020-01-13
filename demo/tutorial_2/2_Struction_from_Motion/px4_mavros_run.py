@@ -301,5 +301,6 @@ class Px4Controller:
 if __name__ == '__main__':
 
     con = Px4Controller()
+    time.sleep(0.5)
     con.start()
 
