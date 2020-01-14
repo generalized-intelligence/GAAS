@@ -63,7 +63,12 @@ class Px4Controller:
 
     def start(self):
         rospy.init_node("offboard_node")
-
+        for i in range(10):
+            if self.current_heading is not None:
+                break
+            else:
+                print("Waiting for initialization.")
+                time.sleep(0.5)
         self.cur_target_pose = self.construct_target(0, 0, self.takeoff_height, self.current_heading)
 
         #print ("self.cur_target_pose:", self.cur_target_pose, type(self.cur_target_pose))
@@ -299,8 +304,6 @@ class Px4Controller:
 
 
 if __name__ == '__main__':
-
     con = Px4Controller()
-    time.sleep(0.5)
     con.start()
 
