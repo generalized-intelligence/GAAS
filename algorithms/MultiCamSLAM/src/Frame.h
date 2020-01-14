@@ -7,11 +7,16 @@
 #include <iostream>
 #include <memory>
 #include <opencv2/core/mat.hpp>
+#include <opencv2/core/eigen.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Dense>  
 #include <Eigen/StdVector>
 #include <cmath>
+
+#include <gtsam/geometry/Rot3.h>
+#include <gtsam/geometry/Point3.h>
+#include <gtsam/geometry/Pose3.h>
 
 #include "stereo_cam.h"
 namespace mcs
@@ -21,6 +26,9 @@ namespace mcs
     using Eigen::Vector2d;
     using Eigen::Vector3d;
     using Eigen::Matrix3d;
+
+    using gtsam::Pose3;
+    using gtsam::Point3;
 
     typedef cv::Point2f p2dT;
     typedef cv::Point3f p3dT;
@@ -93,7 +101,7 @@ namespace mcs
             v_map_p3d_point_id_to_optimization_graph_3dpoint_id.resize(pLRImgs->size());
         }
         void removeImages()
-        {//删除所有图像的引用.这样就会产生
+        {//删除所有图像的引用.
             for(auto& pair:(*this->pLRImgs))
             {
                 pair.first = nullptr;
@@ -177,8 +185,21 @@ namespace mcs
         }
         std::pair<Pose3,vector<Pose3> > getFiAndXiArray()//直接生成需要的Fi和Xi位置.
         {
-            assert(this->pose_estimated)
-            //TODO;
+            assert(this->pose_estimated);
+            Pose3 Fi(this->rotation,this->position);
+            vector<Pose3> cam_pose_v;
+            const int cam_count = this->get_cam_num();
+            for(int i = 0;i<cam_count;i++)
+            {
+                auto stereo_config = this->cam_info_stereo_vec.at(i);
+                Matrix3d r_mat;
+                cv::cv2eigen(stereo_config.get_RMat(),r_mat);
+                float x,y,z;
+                stereo_config.get_tMat(x,y,z);
+                Vector3d t_(x,y,z);
+                cam_pose_v.push_back(Pose3(Rot3(r_mat),Point3(t_)));
+            }
+            return std::make_pair<Pose3,vector<Pose3> > (Fi,cam_pose_v);
         }
 
         int frame_id = -1;

@@ -334,6 +334,14 @@ namespace mcs
         }
         return false;
     }
+    Eigen::Vector4d triangulatePoint(double disp,double b,double camfx,double camfy,double camcx,double camcy)
+    {
+        //b = 0.12;//DEBUG ONLY!!!
+        z = b*camfx/(disparity);
+        x = z*(l_p2fs_original.at(i).x - camcx) / camfx;
+        y = z*(l_p2fs_original.at(i).y - camcy) / camfy;
+        return Eigen::Vector4d(x,y,z,1.0);
+    }
     void createStereoMatchViaOptFlowMatching(cvMat_T& l,cvMat_T& r,StereoCamConfig& cam_info,vector<p2dT>& p2d_output,
                                              vector<p3dT>& p3d_output,map<int,int>& map_2d_to_3d_pts,
                                              map<int,int>& map_3d_to_2d_pts,vector<double>& p3d_disparity,
@@ -494,6 +502,7 @@ namespace mcs
         //    pF_ret->cam_info_stereo_vec.push_back(cam_distribution_info_vec[ci_index]);
         //}
         for(int i = 0;i<stereo_pair_imgs_vec->size();i++ )//对每组摄像头//TODO:改成多线程.
+        //TODO:追加一个策略,保留能保留的Landmark.
         {
              auto& p =  stereo_pair_imgs_vec->at(i);
              cvMat_T& l = *(std::get<0>(p));

@@ -261,7 +261,10 @@ public:
                 for(int i = 0;i<cam_count;i++)
                 {
                     //
-                    pInitialEstimate->insert(Symbol('X',frameID*cam_count + i),Fi_XiArray.second.at(i));
+                    pInitialEstimate->insert(Symbol('X',frameID*cam_count + i),
+                                                Pose3(Fi_XiArray.second.at(i).matrix()*
+                                                   pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>.matrix())
+                                                );
                 }
             }
             else
@@ -274,7 +277,25 @@ public:
                     for(int i = 0;i<cam_count;i++)
                     {//对每个摄像头,创建约束关系.
                         int x_index = frameID*cam_count + i;
-                        pInitialEstimate->insert(Symbol('X',x_index), Fi_XiArray.secont.at(i));
+                        pInitialEstimate->insert(Symbol('X',x_index),
+                                                 Pose3(Fi_XiArray.second.at(i).matrix()*
+                                                                        pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()
+                                                       )//两次变换.
+                                                 );
+                        noiseModel::Diagonal::shared_ptr noise_model_between_cams = gtsam::noiseModel::Diagonal::Variances (
+                                    ( gtsam::Vector ( 6 ) <<0.00001, 0.00001, 0.00001, 0.0001, 0.0001, 0.0001 ).finished()); //1mm,0.1度.//放松一些
+
+
+                        Matrix3d Rot;
+                        cv::cv2eigen(pCurrentFrame->cam_info_stereo_vec.at(i).get_RMat(),Rot);
+                        float tx,ty,tz;
+                        pCurrentFrame->cam_info_stereo_vec.at(i).get_tMat(tx,ty,tz);
+                        Vector3d translation(tx,ty,tz);
+                        Pose3 relative_pose(Rot3(Rot),Point3(translation));
+                        pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',frame_id),Symbol('X',x_index),
+                                                                      relative_pose,
+                                                                      noise_model_between_cams
+                                                                      );//加入约束关系.
                     }
                 }
                 else
@@ -294,12 +315,21 @@ public:
     shared_ptr<NonlinearFactorGraph> generateLocalGraphByFrameID(int frameID, shared_ptr<Values>& pInitialEstimate_output)
     {//创建"局部"优化图.只参考上一关键帧,优化本帧位置.
 
-        auto pGraph = shared_ptr<NonlinearFactorGraph>(new NonlinearFactorGraph());
+        shared_ptr<NonlinearFactorGraph> pGraph = shared_ptr<NonlinearFactorGraph>(new NonlinearFactorGraph());
         pInitialEstimate_output = shared_ptr<Values>(new Values());
+        auto gaussian__ = noiseModel::Isotropic::Sigma(3, 1.0);
+        //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Cauchy::Create(15), gaussian__); //robust
+        //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Huber::Create(1.345), gaussian__); //robust
+        gtsam::SharedNoiseModel robust_kernel = gtsam::noiseModel::Robust::Create(
+                                                    gtsam::noiseModel::mEstimator::Huber::Create(
+                                                    1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    gaussian__);
+        Cal3_S2Stereo::shared_ptr K_stereo(new Cal3_S2Stereo(1000, 1000, 0, 320, 240, 0.2));//TODO edit this.
+        Cal3_S2::shared_ptr K_mono(new Cal3_S2(50.0, 50.0, 0.0, 50.0, 50.0));
 
         shared_ptr<Frame> pFrame = this->frameTable.query(frameID);
         //获取跟踪的点.
-        shared_ptr<Frame> pRefKF = this->frameTable.query();
+        shared_ptr<Frame> pRefKF = this->frameTable.query(pFrame->getLastKFID());
 
         //创建Fframe,Xframe,Xframe+i.建立约束关系.
         this->insertFramePoseEstimation(frameID,pGraph,pInitialEstimate_output);
@@ -314,6 +344,8 @@ public:
         int cam_count = pFrame->get_cam_num();
         for(int i = 0;i<cam_count;i++)
         {
+            float camfx,camfy,camcx,camcy;
+            pFrame->cam_info_stereo_vec.at(i).getCamMatFxFyCxCy(camfx,camfy,camcx,camcy);
             auto p2d_vec = pFrame->reproj_map.at(pFrame->getLastKFID()).at(i);//仅跟踪getLastKFID()这一关键帧.
             //for(auto &tracked_pt:p2d_vec)
             for(int reprojected_p2d_index = 0;reprojected_p2d_index < p2d_vec.size();reprojected_p2d_index++)
@@ -334,14 +366,70 @@ public:
                 auto pLandmark = this->landmarkTable.query(relative_landmark_id);
                 if(tracking_state == TRACK_STEREO2MONO)
                 {
-
+                    //创建landmark并加入初始估计.
+                    if(pInitialEstimate_output->find(Symbol('L',relative_landmark_id)) == pInitialEstimate_output->end())
+                    {//没有initial Estimate.
+//                        cv::Point3f p3d_relative = pRefKF->p3d_vv.at(i).at(pRefKF->map2d_to_3d_pt_vec.at(i).at(originalKFp2dID));
+//                        Eigen::Vector4d v4d(p3d_relative.x,p3d_relative.y,p3d_relative.z,1);
+                        auto v4d = triangulatePoint(pRefKF->disps_vv.at(i).at(originalKFp2dID),0.12,//DEBUG ONLY!b=0.12
+                                         camfx,camfy,camcx,camcy
+                                         );
+                        v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                        pInitialEstimate_output->insert(Symbol('L',relative_landmark_id),Point3(v4d[0],v4d[1],v4d[2]
+                                                            ));//创建initial estimate,根据对应的那一次双目观测.
+                    }
+                    //加入关键帧位置的观测.
+                    auto kf_p2d = pRefKF->p2d_vv.at(i).at(tracked_pt.ref_p2d_id);
+                    pGraph->emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(kf_p2d.x,kf_p2d.x-pRefKF->disps_vv.at(i).at(tracked_pt.ref_p2d_id),kf_p2d.y
+                                                                                            ),robust_kernel,
+                                Symbol('X',pFrame->getLastKFID()*cam_count + i ),Symbol('L',relative_landmark_id),K_stereo);
+                    //加入当前帧的观测.
+                    pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> > (Point2(tracked_pt.current_frame_p2d.x,tracked_pt.current_frame_p2d.y),robust_kernel,
+                                Symbol('X',frameID*cam_count+i),Symbol('L',relative_landmark_id),K_mono);
                 }
                 else if(tracking_state == TRACK_MONO2STEREO)
                 {
-
+                    if(pInitialEstimate_output->find(Symbol('L',relative_landmark_id)) == pInitialEstimate_output->end())
+                    {//没有initial Estimate.
+                        //这种要根据当前帧做计算.
+                        auto v4d = triangulatePoint(tracked_pt.disp,0.12,//DEBUG ONLY.
+                                                    camfx,camfy,camcx,camcy);
+                        v4d = pInitialEstimate_output->at(Symbol('X',pFrame->frame_id*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                        pInitialEstimate_output->insert(Symbol('L',relative_landmark_id),Point3(v4d[0],v4d[1],v4d[2]
+                                                                ));//创建initial estimate,根据对应的那一次双目观测.
+                    }
+                    //加入关键帧位置的观测.
+                    auto kf_p2d = pRefKF->p2d_vv.at(i).at(tracked_pt.ref_p2d_id);
+                    pGraph->emplace_shared<GenericeProjectionFactor<Pose3,Point3,Cal3_S2> >(Point2(kf_p2d.x,kf_p2d.y),robust_kernel,
+                        Symbol('X',pFrame->getLastKFID()*cam_count + i ),Symbol('L',relative_landmark_id),K_mono);
+                    //加入当前帧的观测.
+                    pGraph->emplace_shared<GenericStereoFactor<Pose3,Point3> > (StereoPoint2(tracked_pt.current_frame_p2d.x,
+                        tracked_pt.current_frame_p2d.x - tracked_pt.disp,tracked_pt.current_frame_p2d.y),robust_kernel,
+                        Symbol('X',frameID*cam_count+i),Symbol('L',relative_landmark_id),K_stereo);
                 }
                 else if(tracking_state == TRACK_STEREO2STEREO)
                 {
+                    if(pInitialEstimate_output->find(Symbol('L',relative_landmark_id)) == pInitialEstimate_output->end())
+                    {//没有initial Estimate.
+//                        cv::Point3f p3d_relative = pRefKF->p3d_vv.at(i).at(pRefKF->map2d_to_3d_pt_vec.at(i).at(originalKFp2dID));
+//                        Eigen::Vector4d v4d(p3d_relative.x,p3d_relative.y,p3d_relative.z,1);
+                        auto v4d = triangulatePoint(pRefKF->disps_vv.at(i).at(originalKFp2dID),0.12,//DEBUG ONLY!b=0.12
+                                         camfx,camfy,camcx,camcy
+                                         );
+                        v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                        pInitialEstimate_output->insert(Symbol('L',relative_landmark_id),Point3(v4d[0],v4d[1],v4d[2]
+                                                            ));//创建initial estimate,根据对应的那一次双目观测.和stereo2mono相同.
+                    }
+
+                    //加入关键帧位置的观测.
+                    auto kf_p2d = pRefKF->p2d_vv.at(i).at(tracked_pt.ref_p2d_id);
+                    pGraph->emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(kf_p2d.x,kf_p2d.x-pRefKF->disps_vv.at(i).at(tracked_pt.ref_p2d_id),kf_p2d.y
+                                                                                            ),robust_kernel,
+                                Symbol('X',pFrame->getLastKFID()*cam_count + i ),Symbol('L',relative_landmark_id),K_stereo);
+                    //加入当前帧的观测.
+                    pGraph->emplace_shared<GenericStereoFactor<Pose3,Point3> > (StereoPoint2(tracked_pt.current_frame_p2d.x,
+                        tracked_pt.current_frame_p2d.x - tracked_pt.disp,tracked_pt.current_frame_p2d.y),robust_kernel,
+                        Symbol('X',frameID*cam_count+i),Symbol('L',relative_landmark_id),K_stereo);
 
                 }//MONO2MONO暂时不处理.
                 //创建投影关系.
@@ -388,39 +476,42 @@ public:
         const int cam_count = pLastKF->get_cam_num();
         shared_ptr<NonlinearFactorGraph> pGraph = std::make_shared<NonlinearFactorGraph>();
         pInitialEstimate_output = std::make_shared<Values>();
-
+        Cal3_S2Stereo::shared_ptr K_stereo(new Cal3_S2Stereo(1000, 1000, 0, 320, 240, 0.2));//TODO edit this.
+        Cal3_S2::shared_ptr K_mono(new Cal3_S2(50.0, 50.0, 0.0, 50.0, 50.0));
 
         set<int> landmark_index_set;//避免重复创建.
-
-
-
         //先加X.
         for(int kf_index = 0;kf_index<kf_ids.size();kf_index++)
         {
             int kfid = kf_ids.at(kf_index);
             auto pCurrent = this->frameTable.query(kfid);
             //Pose3 frame_pose;
-            Matrix3d rotation_frame_estimated;
-            Vector3d translation_frame_estimated;
-            bool pose_estimation_valid;
-            pCurrent->getRotationAndTranslation(rotation_frame_estimated,translation_frame_estimated,pose_estimation_valid);
-            if(!pose_estimation_valid)
-            {
-                LOG(ERROR)<<"Pose estimation invalid!!!Check Optimization procedure of this kf!KF_id:"<<pCurrent->frame_id<<endl;
-                exit(-1);
-            }
-            for(int i = 0;i<cam_count;i++)
-            {
-                //获取帧位姿估计.
-                Pose3 estimated_cam_pose;
-                //构造一个Pose3,并对其在estimated pose基础上根据camRT进行变换.
-                //TODO:
-                //estimated_cam_pose  = Pose3(Rot3(rotation_frame_estimated ....),Point3(translation_frame_estimated ....))
-                pGraph->emplace_shared(Symbol('X',kfid*cam_count+i), estimated_cam_pose);
-            }
+//            Matrix3d rotation_frame_estimated;
+//            Vector3d translation_frame_estimated;
+//            bool pose_estimation_valid;
+//            pCurrent->getRotationAndTranslation(rotation_frame_estimated,translation_frame_estimated,pose_estimation_valid);
+//            if(!pose_estimation_valid)
+//            {
+//                LOG(ERROR)<<"Pose estimation invalid!!!Check Optimization procedure of this kf!KF_id:"<<pCurrent->frame_id<<endl;
+//                exit(-1);
+//            }
+//            for(int i = 0;i<cam_count;i++)
+//            {
+//                //获取帧位姿估计.
+//                Pose3 estimated_cam_pose;
+//                //构造一个Pose3,并对其在estimated pose基础上根据camRT进行变换.
+//                //TODO:
+//                //estimated_cam_pose  = Pose3(Rot3(rotation_frame_estimated ....),Point3(translation_frame_estimated ....))
+//                pGraph->emplace_shared(Symbol('X',kfid*cam_count+i), estimated_cam_pose);
+//            }
+            insertFramePoseEstimation(kfid,pGraph,pInitialEstimate_output);
+        }
+        for(int kf_index = 0;kf_index<kf_ids.size();kf_index++)
+        {
+            int kfid = kf_ids.at(kf_index);
+            auto pCurrent = this->frameTable.query(kfid);
             //再加L.
-
-            for(auto iter_ = pCurrent->reproj_map.begin();iter_!=pCurrent->reproj_map.end();++iter_)//查找每个reprojection map.
+            for(auto iter_ = pCurrent->reproj_map.begin();iter_!=pCurrent->reproj_map.end();++iter_)//查找当前KF作为普通帧时,每个reprojection map.
             {
                 int referring_kfid = iter_->first;
                 ReprojectionRecordT& rec = iter_ ->second;
@@ -442,11 +533,10 @@ public:
                                 int proj_referring_landmark_id = pRefKF->getLandmarkIDByCamIndexAndp2dIndex(cam_index,proj_.ref_p2d_id);
                                 if(proj_referring_landmark_id>=0)//存在对应的landmark;不存在不处理.
                                 {
+                                    shared_ptr<LandmarkProperties> pLandmark = this->landmarkTable.query(proj_referring_landmark_id);
                                     if(!landmark_index_set.count(proj_referring_landmark_id))
-                                    {//优化图中不存在对应的landmark.先创建.
-
+                                    {//优化图中不存在对应的landmark.先创建Symbol并插入创建这一个landmark关键帧处的观测.landmark的估计之前已经做过了.
                                         //pGraph->emplace_shared<Point3>
-                                        shared_ptr<LandmarkProperties> pLandmark = this->landmarkTable.query(proj_referring_landmark_id);
                                         set<int> intersec;
                                         Intersection(relativeOrdinaryFrameIDs,pLandmark->ObservedByFrameIDSet,intersec);//小的在前,大的在后,时间复杂度有保证.
                                         if(intersec.size()<1)//窗口中观测次数,自己那次不算.
@@ -460,6 +550,19 @@ public:
                                         if(estimate_position_valid)
                                         {
                                             pInitialEstimate_output->insert(Symbol('L',proj_referring_landmark_id),p_);
+                                            //加入初始位置估计.
+                                            auto kf_p2d = pRefKF->p2d_vv.at(i).at(proj_.ref_p2d_id);
+                                            if(pRefKF->map2d_to_3d_pt_vec.at(cam_index).count(proj_.ref_p2d_id)>0)
+                                            {//在被创建的关键帧,它已经三角化成功了.
+                                                auto kf_disp__ = pRefKF->disps_vv.at(i).at(proj_.ref_p2d_id)//disp
+                                                pGraph->emplace_shared<GenericStereoFactor<Pose3,Point3> >(StereoPoint2(kf_p2d.x,kf_p2d.x - kf_disp__,kf_p2d.y),robust_kernel,
+                                                    Symbol('X',referring_kfid*cam_count + i ),Symbol('L',relative_landmark_id),K_stereo);
+                                            }
+                                            else
+                                            {
+                                                pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> > (Point2(kf_p2d.x,kf_p2d.y),robust_kernel,
+                                                    Symbol('X',frameID*cam_count+i),Symbol('L',relative_landmark_id),K_mono);
+                                            }
                                         }
                                         else
                                         {
@@ -469,7 +572,19 @@ public:
                                     }
                                     //cv::Point2f proj_.current_frame_p2d;
                                     //float proj_.disp
-                                    //TODO:分情况,创建对应的投影关系约束.
+                                    //分情况,创建对应的投影关系约束.
+                                    //只需要约束后面的观测就行了.不需要再去追加.
+                                    if(tracking_state == TRACK_STEREO2MONO)
+                                    {
+                                        pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> > (Point2(proj_.current_frame_p2d.x,proj_.current_frame_p2d.y),robust_kernel,
+                                                    Symbol('X',frameID*cam_count+i),Symbol('L',relative_landmark_id),K_mono);
+                                    }
+                                    else if(tracking_state == TRACK_MONO2STEREO||tracking_state == TRACK_STEREO2STEREO)
+                                    {
+                                        auto current_p2d = proj_.current_frame_p2d;
+                                        pGraph->emplace_shared<GenericStereoFactor<Pose3,Point3> > (StereoPoint2(current_p2d.x,current_p2d.x - proj_.disp,current_p2d.y),robust_kernel,
+                                                    Symbol('X',frameID*cam_count+i),Symbol('L',relative_landmark_id),K_stereo);
+                                    }//MONO2MONO暂时不处理.
                                 }
                             }
                         }
@@ -479,7 +594,6 @@ public:
         }
     }
     double evaluateTrackingQualityScoreOfFrame(int frame_id);//查询重投影/跟踪质量(从数据库图结构的角度),评估是否需要创建新的关键帧.
-
     double analyzeTrackQualityOfCamID(int frame_id,int cam_id);//分析某一组摄像头的投影质量.
 };
 
