@@ -334,12 +334,13 @@ namespace mcs
         }
         return false;
     }
-    Eigen::Vector4d triangulatePoint(double disp,double b,double camfx,double camfy,double camcx,double camcy)
+    Eigen::Vector4d triangulatePoint(double disp,double u,double v,double b,double camfx,double camfy,double camcx,double camcy)
     {
         //b = 0.12;//DEBUG ONLY!!!
-        z = b*camfx/(disparity);
-        x = z*(l_p2fs_original.at(i).x - camcx) / camfx;
-        y = z*(l_p2fs_original.at(i).y - camcy) / camfy;
+        double x,y,z;
+        z = b*camfx/(disp);
+        x = z*(u - camcx) / camfx;
+        y = z*(v - camcy) / camfy;
         return Eigen::Vector4d(x,y,z,1.0);
     }
     void createStereoMatchViaOptFlowMatching(cvMat_T& l,cvMat_T& r,StereoCamConfig& cam_info,vector<p2dT>& p2d_output,

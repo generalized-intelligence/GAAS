@@ -3,6 +3,7 @@
 #include "Frame.h"
 #include "FeatureFrontEndCV.h"
 #include "Timer.h"
+#include "Visualization.h"
 
 
 
@@ -166,7 +167,7 @@ namespace mcs
         vector<p3dT> vp3d_pts = pKeyFrameReference->p3d_vv.at(i);
         //vector<p2dT>& to_track_vp2d_pts = output_to_track_kf_p2d;//要追踪的参考帧 kps.
 
-        to_track_vp2d_pts.clear();
+        //to_track_vp2d_pts.clear();
         LOG(INFO)<<"    cam index:"<<cam_index<<",p2d_vv[i].size():"<<pKeyFrameReference->p2d_vv.at(i).size()<<endl;
 
         if(pKeyFrameReference->p2d_vv.at(i).size() == 0)
@@ -182,7 +183,7 @@ namespace mcs
         vector<float> err_right;
         try
         {
-            do_cvPyrLK(*p_origin_img,*p_left,pKeyFrameReference->p2d_vv.at(i),left_tracked_pts,left_track_success_v,err);//进行追踪.
+            do_cvPyrLK(*p_origin_img,*p_left,pKeyFrameReference->p2d_vv.at(i),left_tracked_pts,left_tracked_success_v,err);//进行追踪.
         }
         catch (Exception e)
         {

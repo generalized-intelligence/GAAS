@@ -22,6 +22,9 @@ FrameManager
 add_library(IMU_Preint_GTSAM IMU_Preint_GTSAM.cpp)
 target_link_libraries(IMU_Preint_GTSAM ${REQUIRED_LIBRARIES}
 )
+add_library(ReprojectionInfoDatabase ReprojectionInfoDatabase.cpp)
+target_link_libraries(ReprojectionInfoDatabase ${REQUIRED_LIBRARIES})
+
 
 add_executable(SLAM_simple SLAM_simple.cpp)
 target_link_libraries(SLAM_simple
@@ -31,4 +34,15 @@ FrameManager
 SLAMOptimizationGraph
 IMU_Preint_GTSAM
 )
+
+add_library(SlidingWindow SlidingWindow.cpp)
+target_link_libraries(SlidingWindow
+${REQUIRED_LIBRARIES}
+FeatureFrontEndCV
+FrameManager
+SLAMOptimizationGraph
+IMU_Preint_GTSAM
+ReprojectionInfoDatabase
+)
+
 add_subdirectory(test)

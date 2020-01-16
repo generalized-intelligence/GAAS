@@ -27,6 +27,7 @@ namespace mcs
     using Eigen::Vector3d;
     using Eigen::Matrix3d;
 
+    using gtsam::Rot3;
     using gtsam::Pose3;
     using gtsam::Point3;
 
@@ -172,21 +173,25 @@ namespace mcs
         Vector3d position;
         void setRotationAndTranslation(Matrix3d rot,Vector3d pos)
         {
-            this->rot = rot;
-            this->pos = pos;
+            this->rotation = rot;
+            this->position = pos;
             this->pose_estimated = true;
         }
 
-        void getRotationAndTranslation(Matrix3d& rot,Vector3d& pos,bool& valid)
+        void getRotationAndTranslation(gtsam::Rot3& r__, gtsam::Point3& t__,bool& valid)
         {
+
+            Matrix3d rot;Vector3d pos;
             valid = pose_estimated;
             rot = this->rotation;
             pos = this->position;
+            r__ = gtsam::Rot3(rot);
+            t__ = gtsam::Point3(pos);
         }
         std::pair<Pose3,vector<Pose3> > getFiAndXiArray()//直接生成需要的Fi和Xi位置.
         {
             assert(this->pose_estimated);
-            Pose3 Fi(this->rotation,this->position);
+            Pose3 Fi(Rot3(this->rotation),Point3(this->position));
             vector<Pose3> cam_pose_v;
             const int cam_count = this->get_cam_num();
             for(int i = 0;i<cam_count;i++)
@@ -199,7 +204,11 @@ namespace mcs
                 Vector3d t_(x,y,z);
                 cam_pose_v.push_back(Pose3(Rot3(r_mat),Point3(t_)));
             }
-            return std::make_pair<Pose3,vector<Pose3> > (Fi,cam_pose_v);
+            std::pair<Pose3,vector<Pose3> > retval;
+            retval.first = Fi;
+            retval.second = cam_pose_v;
+            return retval;
+            //return std::make_pair<Pose3,vector<Pose3> > (Fi,cam_pose_v);
         }
 
         int frame_id = -1;
@@ -218,7 +227,7 @@ namespace mcs
             {
                 LOG(ERROR)<<"KFIDs.size() == 0! Access Violation!"<<endl;
             }
-            return referringKFIDs.end();
+            return referringKFIDs.back();
         }
 
         void checkFrameIntegrity_debug()

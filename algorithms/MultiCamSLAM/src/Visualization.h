@@ -98,28 +98,5 @@ void visualized_tracked_p2d_and_ordinary_frame_stereo(Frame& frame,vector<p2dT>&
 }
 
 
-
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
+#endif
