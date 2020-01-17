@@ -31,5 +31,9 @@ target_link_libraries(test_SLAM_simple
 FeatureFrontEndCV
 FrameManager
 ${REQUIRED_LIBRARIES}
-SLAMOptimizationGraph
+#SLAMOptimizationGraph
+IMU_Preint_GTSAM
+ReprojectionInfoDatabase
+SlidingWindow
+
 )

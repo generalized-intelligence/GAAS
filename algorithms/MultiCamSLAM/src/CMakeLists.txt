@@ -44,5 +44,5 @@ SLAMOptimizationGraph
 IMU_Preint_GTSAM
 ReprojectionInfoDatabase
 )
-
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} FeatureFrontEndCV FrameManager SLAMOptimizationGraph IMU_Preint_GTSAM ReprojectionInfoDatabase SlidingWindow)
 add_subdirectory(test)

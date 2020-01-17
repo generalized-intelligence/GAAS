@@ -191,7 +191,10 @@ public:
     int currentID = 0;
     map<int,shared_ptr<LandmarkProperties> > dataTable;
     void insertLandmark(shared_ptr<LandmarkProperties> pLandmark);
-    inline shared_ptr<LandmarkProperties> query(int id);
+    inline shared_ptr<LandmarkProperties> query(int id)
+    {
+        return this->dataTable.at(id);
+    }
     vector<shared_ptr<LandmarkProperties> > queryByCreatedByKF(int createdByKFID);
     shared_ptr<LandmarkProperties> queryByKF_camID_p2dID(int kfid,int cam_id,int p2d_id)
     {

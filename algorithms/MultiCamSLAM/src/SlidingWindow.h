@@ -81,7 +81,7 @@ using namespace cv;
 namespace mcs
 {
 
-double getAverageDisp(const ReprojectionRecordT& reproj_info);
+
 
 
 
@@ -100,6 +100,7 @@ private:
     int cam_count;
     //vector<int> KF_id_queue;
     deque<int> KF_id_queue;
+    double getAverageDisp(const ReprojectionRecordT& reproj_info,int ref_kf_id);
 
 
 public:
@@ -352,11 +353,25 @@ public:
         this->optimizeFactorGraph(pLocalGraph,pInitialEstimate);
     }
 
-    void removeOrdinaryFrame(shared_ptr<Frame>);
-    void removeKeyFrameAndItsProperties(shared_ptr<Frame>);
+    void removeOrdinaryFrame(shared_ptr<Frame>)
+    {
+        //TODO.
+    }
+    void removeKeyFrameAndItsProperties(shared_ptr<Frame>)
+    {
+        //TODO.
+    }
     inline int getOrdinaryFrameSize();
     inline int getKFSize();
-    vector<int> getInWindKFidVec();
+    vector<int> getInWindKFidVec()
+    {
+        vector<int> retval;
+        for(int u:this->KF_id_queue)
+        {
+            retval.push_back(u);
+        }
+        return retval;
+    }
     int proposalMarginalizationKF(int currentFrameID)//提议一个应该被marg的关键帧.
     {
         auto pCurrentFrame = this->getFrameByID(currentFrameID);
@@ -377,9 +392,9 @@ public:
             //}
             for(auto proj_rec_iter = pCurrentFrame->reproj_map.begin();proj_rec_iter!=pCurrentFrame->reproj_map.end();++proj_rec_iter)
             {
-                int ref_kf = proj_rec_iter->first;
+                int ref_kf_id = proj_rec_iter->first;
                 auto& reproj_relation = proj_rec_iter->second;
-                v_mean_disp.push_back(getAverageDisp(reproj_relation));
+                v_mean_disp.push_back(getAverageDisp(reproj_relation,ref_kf_id));
             }
             //step<2>.如果第一帧到当前帧平均视差 与 最后一帧到当前帧平均视差 比值<2.0: marg最后一个关键帧
             //    (一直不动.就不要创建新的.否则会一直累计误差.)
@@ -394,9 +409,36 @@ public:
     }
 };
 
-double getAverageDisp(const ReprojectionRecordT& reproj_info)
+inline double get_dist_between_2_p2dT(const cv::Point2f& p1,const cv::Point2f& p2)
+{
+    return sqrt(pow(p1.x - p2.x,2)+pow(p1.y-p2.y,2));
+}
+double SlidingWindow::getAverageDisp(const ReprojectionRecordT& reproj_info,int ref_kf_id)
 {//计算平均像素位置变化
-    return -1;//TODO:fill in this.
+    auto pRefKF = this->getFrameByID(ref_kf_id);
+    vector<double> dist_v;
+    for(int cam_i = 0;cam_i<reproj_info.size();cam_i++)
+    {
+        for(int track_j = 0;track_j<reproj_info.at(cam_i).size();track_j++)
+        {
+            auto& reproj_ = reproj_info.at(cam_i).at(track_j);
+            const p2dT& current_p2d = reproj_.current_frame_p2d;
+            const p2dT& ref_p2d = pRefKF->p2d_vv.at(cam_i).at(reproj_.ref_p2d_id);
+            dist_v.push_back(get_dist_between_2_p2dT(current_p2d,ref_p2d));
+        }
+    }
+    double avg = 0;
+    if(dist_v.size() == 0)
+    {
+        LOG(INFO)<<"Track failed!!"<<endl;
+        return 0;
+    }
+    for(double& dist:dist_v)
+    {
+        avg+=dist;
+    }
+    avg/=dist_v.size();
+    return avg;//TODO:fill in this.
 }
 
 

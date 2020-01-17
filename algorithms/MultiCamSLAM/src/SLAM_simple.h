@@ -1,4 +1,5 @@
-#include "SLAMOptimizationGraph.h"
+//#include "SLAMOptimizationGraph.h"
+#include "SlidingWindow.h"
 #include "utils/Timer.h"
 #include "Frame.h"
 #include <sensor_msgs/Imu.h>
@@ -49,8 +50,8 @@ private:
     std::chrono::high_resolution_clock::time_point last_frame_update_t;
     bool ever_init = false;
 
-    shared_ptr<mcs::SLAMOptimizationGraph> pGraph;
-
+    //shared_ptr<mcs::SLAMOptimizationGraph> pGraph;
+    shared_ptr<mcs::SlidingWindow> pWind;
 public:
     SLAM_simple(int argc,char** argv)
     {
@@ -60,13 +61,13 @@ public:
         }
         begin_t = std::chrono::high_resolution_clock::now();
         cv::FileStorage settings(argv[1],cv::FileStorage::READ);
-        pGraph = shared_ptr<mcs::SLAMOptimizationGraph>(new mcs::SLAMOptimizationGraph(settings));
+        pWind = shared_ptr<mcs::SlidingWindow>(new mcs::SlidingWindow(2));
         //加载cam config.
         StereoCamConfig conf(settings["cams"][0]);
         StereoCamConfig conf2(settings["cams"][1]);
         this->stereo_cam_config.push_back(conf);
         this->stereo_cam_config.push_back(conf2);
-        pGraph->initCamsStereo(this->stereo_cam_config);
+        //pGraph->initCamsStereo(this->stereo_cam_config);
     }
     bool needNewKeyFrame()
     {
@@ -118,14 +119,16 @@ public:
                 pNewF->rotation = Eigen::Matrix3d::Identity();
                 pNewF->position = Eigen::Vector3d(0,0,0);
                 ever_init = true;
-                pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr,tracked_pts_count_out);//TODO.
+                //pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr,tracked_pts_count_out);//TODO.
+                pWind->insertKFintoSlidingWindow(pNewF);
             }
             else
             {
                 LOG(INFO)<<"SLAM initiated.Add new kf to optimization graph and do optimize()."<<endl;
                 //bool track_localframe_success;
 
-                pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,pLastKF,tracked_pts_count_out);//TODO.
+                //pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,pLastKF,tracked_pts_count_out);//TODO.
+                pWind->insertKFintoSlidingWindow(pNewF);
 
                 //if(track_localframe_success)//TODO:fix the logic.
                 if(true) //DEBUG ONLY!
@@ -165,7 +168,8 @@ public:
             bool track_and_pnp_ransac_success;
             //mcs::trackAndDoSolvePnPRansacMultiCam(pNewF); //frame_wise tracking....
             cout<<"in iterateWith4Imgs: track ordinary frame:referring frame id:"<<pLastKF->frame_id<<endl;
-            pGraph->addOrdinaryStereoFrameToBackendAndOptimize(pNewF,pLastKF,tracked_pts_count_out);
+            //pGraph->addOrdinaryStereoFrameToBackendAndOptimize(pNewF,pLastKF,tracked_pts_count_out);
+            pWind->insertOrdinaryFrameintoSlidingWindow(pNewF);
 
             if(track_and_pnp_ransac_success)
             {
