@@ -81,6 +81,9 @@ using namespace cv;
 namespace mcs
 {
 
+double getAverageDisp(const ReprojectionRecordT& reproj_info);
+
+
 
 //滑动窗口类
 class SlidingWindow
@@ -94,11 +97,15 @@ private:
     //map<int,LandmarkProperties> KF_landmark_extension_map;
     ReprojectionInfoDatabase reproj_db;
     const int max_kf_count = 5;
+    int cam_count;
+    //vector<int> KF_id_queue;
     deque<int> KF_id_queue;
 
+
 public:
-    SlidingWindow()
+    SlidingWindow(int cam_count)
     {
+        this->cam_count = cam_count;
     }
     shared_ptr<Frame> getFrameByID(int frame_id)
     {
@@ -106,16 +113,23 @@ public:
     }
     inline shared_ptr<Frame> getLastKF()
     {
-        return getFrameByID(KF_id_queue.end());
+        return getFrameByID(KF_id_queue.back());
     }
-    vector<int> getKFidQueue()
+    deque<int> getKFidQueue()
     {
         return this->KF_id_queue;
+//        vector<int> retval;
+//        for(int i = 0;i<this->KF_id_queue.size();i++)
+//        {
+//            retval.push_back(KF_id_queue.at(i));
+//        }
+//        return retval;
     }
     shared_ptr<Values> optimizeFactorGraph(shared_ptr<NonlinearFactorGraph> pGraph,shared_ptr<Values> pInitialEstimate)
     {
         ScopeTimer timer_optimizer("optimizeFactorGraph()");
         //初始化一个Levenburg-Marquardt优化器,解优化图.返回估计值.
+        LevenbergMarquardtParams params;
         LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
         Values *pResult = new Values();
         *pResult = optimizer.optimize();
@@ -140,7 +154,10 @@ public:
                 //查找对应的item X - x_index;
                 auto pFrame = this->getFrameByID(x_index/cam_count);
                 //TODO:这里一个Frame有6个姿态.怎么融合?取哪个?
-                pFrame->setRotationAndTranslation(value.rotation(),value.translation());
+                Rot3 rot;Point3 trans;
+                rot = value.rotation();
+                trans = value.translation();
+                pFrame->setRotationAndTranslation(rot.matrix(),trans.vector());
             }
             else if(asSymbol.chr() == 'L')
             {
@@ -179,9 +196,9 @@ public:
                 //doTrackLastKF(...);//跟踪窗口里的所有kf.处理所有情况(mono2mono,mono2stereo,stereo2mono,stereo2stereo.)
                 //TODO:start a thread rather than invoke doTrackLastKF_all2dpts() directly.
                 doTrackLaskKF_all2dpts(pFrame,getFrameByID(ref_kf_id),i,
-                                       this->getFrameByID(ref_kf_id).p2d_vv.at(i),
+                                       this->getFrameByID(ref_kf_id)->p2d_vv.at(i),
                                        vv_disps.at(i),vv_track_type.at(i),v_p2d_to_kf_p2d_index.at(i),v_p2d_to_kf_p3d_index.at(i),
-                                       v_track_success.at(i),v_track_success_count.at(i)
+                                       &(v_track_success.at(i)),&(v_track_success_count.at(i))
                                        );
             }
             //threads.join();//合并结果集.
@@ -193,7 +210,7 @@ public:
             pFrame->setReferringID(ref_kf_id);//最后一个是上一个.
 
             //第二步 建立地图点跟踪关系 根据结果集维护数据库.
-            for(int i = 0 ;i<cam_count,i++)//这是一个不可重入过程.数据库本身访问暂时没有锁.暂时估计应该不需要.
+            for(int i = 0 ;i<cam_count;i++)//这是一个不可重入过程.数据库本身访问暂时没有锁.暂时估计应该不需要.
             {
                 if(v_track_success.at(i))
                 {
@@ -225,13 +242,13 @@ public:
                                 this->reproj_db.landmarkTable.insertLandmark(pLandmark);//维护索引.从此以后它就有id了.
                                 if(proj_.tracking_state == TRACK_STEREO2MONO||proj_.tracking_state == TRACK_STEREO2STEREO)
                                 {
-                                    pLandmark->setEstimatedPosition(pRefKF->);//这里认为参考的关键帧位姿已经优化完毕.可以直接根据坐标变换关系计算Landmark位置初始估计.
-                                    pLandmark->setTriangulated();//三角化成功.
+                                    //pLandmark->setEstimatedPosition(pRefKF->);//这里认为参考的关键帧位姿已经优化完毕.可以直接根据坐标变换关系计算Landmark位置初始估计.
+                                    //pLandmark->setTriangulated();//三角化成功.
                                 }
                                 else if(proj_.tracking_state == TRACK_MONO2STEREO)
                                 {//这种比较特殊.暂时认为当前帧位姿 == 最后一个被优化的帧位姿,进行三角化;这种误差肯定是比上一种情况要大.
-                                    pLandmark->setEstimatedPosition(p);
-                                    pLandmark->setTriangulated();
+                                    //pLandmark->setEstimatedPosition(p);
+                                    //pLandmark->setTriangulated();
                                 }
                                 else if(proj_.tracking_state == TRACK_MONO2MONO)//这种三角化最复杂.应该放到一个队列里去.判断是否能够三角化.实用意义不大.
                                 {
@@ -295,21 +312,21 @@ public:
         //第六步 第二次优化.
 
         //第七步 进行Marginalize,分析优化图并选择要舍弃的关键帧和附属的普通帧,抛弃相应的信息.
-        int toMargKFID = this->proposalMarginalizationKF();
+        int toMargKFID = this->proposalMarginalizationKF(pCurrentKF->frame_id);
         if(toMargKFID < 0)//无需marg.
         {
             LOG(INFO)<<"deque not full, skip marginalization.return."<<endl;
             return;
         }
         shared_ptr<Frame> pToMarginalizeKF = this->getFrameByID(toMargKFID);
-        if(pToMarginalize!= nullptr)
+        if(pToMarginalizeKF!= nullptr)
         {
             //TODO:对它的每一个从属OrdinaryFrame进行递归删除.
-            if(this->toMargKFID == this->KF_id_queue.back())
+            if(toMargKFID == this->KF_id_queue.back())
             {
                 this->KF_id_queue.pop_back();
             }
-            else if(this->toMargKFID == this->KF_id_queue.front())
+            else if(toMargKFID == this->KF_id_queue.front())
             {
                 this->KF_id_queue.pop_front();
             }
@@ -328,9 +345,11 @@ public:
     {
         //第一步 跟踪特征点.
         //第二步 建立地图点跟踪关系. 修改/创建LandmarkProperties.
-        trackAndKeepReprojectionDBForFrame(pOrdinaryFrame);
+        trackAndKeepReprojectionDBForFrame(pCurrentFrame);
         //第三步 创建局部优化图.第一次优化.
-        shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pOriginaryFrame->frame_id);
+        shared_ptr<Values> pInitialEstimate;
+        shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pCurrentFrame->frame_id,pInitialEstimate);
+        this->optimizeFactorGraph(pLocalGraph,pInitialEstimate);
     }
 
     void removeOrdinaryFrame(shared_ptr<Frame>);
@@ -350,26 +369,35 @@ public:
         for(auto iter = currentInWindKFList.begin();iter!=currentInWindKFList.end();++iter)
         {
             int kf_id = *iter;
-            vector<shared_ptr<Frame> > v_relative_frames = this->reproj_db.frameTable.queryByRefKFID(kf_id);//查询和他有关联的帧.
-            for(auto& pF:v_relative_frames)
-            {//判断marg哪个关键帧最合适.
-                //step<1>.计算帧间平均视差.
-                double mean_disp = calcMeanDispBetween2Frames(pCurrentFrame,pF);
+            //vector<shared_ptr<Frame> > v_relative_frames = this->reproj_db.frameTable.queryByRefKFID(kf_id);//查询和他有关联的帧.
+            //for(auto& pF:v_relative_frames)
+            //{//判断marg哪个关键帧最合适.
+            //    //step<1>.计算帧间平均视差.
+            //    double mean_disp = calcMeanDispBetween2Frames(pCurrentFrame,pF);
+            //}
+            for(auto proj_rec_iter = pCurrentFrame->reproj_map.begin();proj_rec_iter!=pCurrentFrame->reproj_map.end();++proj_rec_iter)
+            {
+                int ref_kf = proj_rec_iter->first;
+                auto& reproj_relation = proj_rec_iter->second;
+                v_mean_disp.push_back(getAverageDisp(reproj_relation));
             }
             //step<2>.如果第一帧到当前帧平均视差 与 最后一帧到当前帧平均视差 比值<2.0: marg最后一个关键帧
             //    (一直不动.就不要创建新的.否则会一直累计误差.)
 
             //step<3>.否则,marg第一个关键帧.
         }
-        if(v_mean_disp[0]<2* (*v_mean_disp.end()) )
+        if(v_mean_disp[0]<2* (v_mean_disp.back()) )
         {
-            return currentInWindKFList.begin();
+            return currentInWindKFList.front();
         }
-        return currentInWindKFList.end();
+        return currentInWindKFList.back();
     }
 };
 
-
+double getAverageDisp(const ReprojectionRecordT& reproj_info)
+{//计算平均像素位置变化
+    return -1;//TODO:fill in this.
+}
 
 
 

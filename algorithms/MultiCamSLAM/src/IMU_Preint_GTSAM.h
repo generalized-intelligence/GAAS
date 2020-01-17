@@ -1,3 +1,6 @@
+#ifndef IMU_PREINT_GTSAM
+#define IMU_PREINT_GTSAM
+
 #include <gtsam/navigation/CombinedImuFactor.h>
 #include <gtsam/nonlinear/ISAM2.h>
 #include <gtsam_unstable/slam/SmartStereoProjectionPoseFactor.h>
@@ -7,6 +10,12 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+
+
+namespace mcs
+{
+
 
 using namespace std;
 using namespace gtsam;
@@ -178,3 +187,5 @@ struct IMUHelper {
 };
 
 */
+}
+#endif
