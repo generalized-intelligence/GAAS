@@ -161,6 +161,7 @@ public:
 void FrameTable::insertFrame(shared_ptr<Frame> pFrame)
 {
     this->dataTable[currentID] = pFrame;
+    pFrame->frame_id = currentID;
     currentID++;
 }
 shared_ptr<Frame> FrameTable::query(int id)
@@ -307,13 +308,15 @@ public:
                 else
                 {//这个应该是出错了才会有.
                     LOG(ERROR)<<"last frame estimation invalid!!"<<endl;
+                    throw "frame pose estimation invalid!";
                     exit(-1);
                 }
             }
         }
         else// frameID = 0,固定第一帧的位置.
         {
-
+            auto pCurrentFrame = this->frameTable.query(frameID);
+            pCurrentFrame->setRotationAndTranslation(Rot3().matrix(),Vector3d());
         }
 
     }
@@ -335,17 +338,25 @@ public:
 
         shared_ptr<Frame> pFrame = this->frameTable.query(frameID);
         //获取跟踪的点.
-        shared_ptr<Frame> pRefKF = this->frameTable.query(pFrame->getLastKFID());
 
         //创建Fframe,Xframe,Xframe+i.建立约束关系.
         this->insertFramePoseEstimation(frameID,pGraph,pInitialEstimate_output);
+        if(frameID == 0)
+        {
+            return pGraph;//对第一帧 只设定约束即可.
+        }
+        shared_ptr<Frame> pRefKF = this->frameTable.query(pFrame->getLastKFID());
         const int cam_count = pFrame->get_cam_num();
 
         //创建Xref,Xref+i.
         //
         //  step<1>.查询对应的Frame.//暂时只用getLastKFID();将来可以把所有track过的都加入进去.
         //  step<2>.生成对应的Symbol.
-        this->insertFramePoseEstimation(pFrame->getLastKFID(),pGraph,pInitialEstimate_output);
+//        this->insertFramePoseEstimation(pFrame->getLastKFID(),pGraph,pInitialEstimate_output);
+//        if(frameID == 0)
+//        {
+//            return pGraph;
+//        }
         for(int i = 0;i<cam_count;i++)
         {
             float camfx,camfy,camcx,camcy;
@@ -608,6 +619,7 @@ public:
                 }
             }
         }
+        return pGraph;
     }
     double evaluateTrackingQualityScoreOfFrame(int frame_id);//查询重投影/跟踪质量(从数据库图结构的角度),评估是否需要创建新的关键帧.
     double analyzeTrackQualityOfCamID(int frame_id,int cam_id);//分析某一组摄像头的投影质量.

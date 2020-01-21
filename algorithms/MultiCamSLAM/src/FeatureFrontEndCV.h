@@ -470,10 +470,38 @@ namespace mcs
         }
         return ret_;
     }
-    void upgradeOrdinaryFrameToKeyFrameStereos(shared_ptr<Frame> pOrdinaryFrame)
+    void upgradeOrdinaryFrameToKeyFrameStereos(shared_ptr<Frame> pOrdinaryFrame)//,bool& create_stereo_success)
     {//升级成关键帧.补充提取gftt,并且加入左右之间的关联关系(p2d,p3d,各种Mapping.).
         //TODO.
+        bool create_stereo_success = false;
         pOrdinaryFrame->isKeyFrame = true;
+        auto& pF_ret = pOrdinaryFrame;
+        for(int i = 0;i<pF_ret->get_cam_num();i++ )//对每组摄像头//TODO:改成多线程.
+        //TODO:追加一个策略,保留能保留的Landmark.
+        {
+             auto& p =  pF_ret->pLRImgs->at(i);
+             cvMat_T& l = *(std::get<0>(p));
+             cvMat_T& r = *(std::get<1>(p));
+             //shared_ptr<vector<p2dT> > p2d_output_;
+             //shared_ptr<vector<p3dT> > p3d_output_;
+             pF_ret->isKeyFrame = true;
+             map<int,int>& kps_2d_to_3d = pF_ret->map2d_to_3d_pt_vec.at(i);
+             map<int,int>& kps_3d_to_2d = pF_ret->map3d_to_2d_pt_vec.at(i);
+             vector<double>& disps = pF_ret->disps_vv.at(i);
+             LOG(INFO)<<"will create kf_stereo :"<<i<<endl;
+             createStereoMatchViaOptFlowMatching(l,r,pF_ret->cam_info_stereo_vec[i],pF_ret->p2d_vv.at(i),pF_ret->p3d_vv.at(i),kps_2d_to_3d,kps_3d_to_2d,disps,create_stereo_success);
+             if(!create_stereo_success)
+             {
+                 LOG(WARNING)<<"Created Stereo KF in cam "<<i<<" Failed!"<<endl;//TODO.
+             }
+             LOG(INFO)<<"create kf_stereo "<<i<<" finished;p2d_size:"<<pF_ret->p2d_vv.at(i).size()<<endl;
+             pF_ret->map_points =  createMapPointForKeyFrame(pF_ret);
+        }
+//        if(pimu_info!= nullptr)
+//        {
+//            pF_ret->imu_info_vec = *pimu_info;
+//        }
+//        //return pF_ret;
     }
     shared_ptr<Frame> createFrameStereos(shared_ptr<vector<StereoMatPtrPair> >stereo_pair_imgs_vec,
                                       vector<StereoCamConfig>& cam_distribution_info_vec,

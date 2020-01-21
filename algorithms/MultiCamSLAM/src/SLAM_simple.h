@@ -49,9 +49,10 @@ private:
     std::chrono::high_resolution_clock::time_point last_kf_update_t;
     std::chrono::high_resolution_clock::time_point last_frame_update_t;
     bool ever_init = false;
-
     //shared_ptr<mcs::SLAMOptimizationGraph> pGraph;
+
     shared_ptr<mcs::SlidingWindow> pWind;
+
 public:
     SLAM_simple(int argc,char** argv)
     {
@@ -60,13 +61,15 @@ public:
             throw "argc < 2 terminated in SLAM_simple constructor!";
         }
         begin_t = std::chrono::high_resolution_clock::now();
-        cv::FileStorage settings(argv[1],cv::FileStorage::READ);
-        pWind = shared_ptr<mcs::SlidingWindow>(new mcs::SlidingWindow(2));
+        cv::FileStorage* pSettings = new cv::FileStorage(argv[1],cv::FileStorage::READ);
+
         //加载cam config.
-        StereoCamConfig conf(settings["cams"][0]);
-        StereoCamConfig conf2(settings["cams"][1]);
+        StereoCamConfig conf((*pSettings)["cams"][0]);
+        StereoCamConfig conf2((*pSettings)["cams"][1]);
+
         this->stereo_cam_config.push_back(conf);
         this->stereo_cam_config.push_back(conf2);
+        pWind = shared_ptr<mcs::SlidingWindow>(new mcs::SlidingWindow(this->stereo_cam_config.size()));
         //pGraph->initCamsStereo(this->stereo_cam_config);
     }
     bool needNewKeyFrame()

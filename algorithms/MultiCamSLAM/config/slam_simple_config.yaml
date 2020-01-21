@@ -1,4 +1,5 @@
 %YAML:1.0
+
 cams:
    -Mode: "stereo" #forward
     camMat1:  !!opencv-matrix
@@ -50,5 +51,3 @@ cams:
                 0.        ,    1.        ,    0.        , -376.        ,
               0.        ,    0.        ,    0.        ,  376.        ,
               0.        ,    0.        ,   -9.43396226,    0.        ]  # -9.43 if x_right > x_left
-   
-    

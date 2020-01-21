@@ -66,6 +66,7 @@ MESSAGE("G2O PATH: ${G2O_INCLUDE_DIR}")
 find_package(PCL REQUIRED)
 # octomap
 find_package( octomap REQUIRED )
+find_package(tf REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
                                 cv_bridge
                                 #image_transport
@@ -77,7 +78,7 @@ find_package(catkin REQUIRED COMPONENTS
                                 octomap_msgs
                                 #octomap_rviz_plugins
                                 visualization_msgs
-                                #tf
+                                tf
 				)
 #find_package(CUDA  REQUIRED)
 find_package(DBoW3 REQUIRED PATH Thirdparty/DBow3/build)
@@ -109,6 +110,7 @@ ${OCTOMAP_INCLUDE_DIRS}
 
 
 # thirdparty
+link_directories("/opt/ros/melodic/lib/")
 set(THIRD_PARTY_LIBS
         ${OpenCV_LIBS}
         ${EIGEN3_LIBS}

@@ -16,7 +16,20 @@ public:
         //A = (int)node["A"];
         //X = (double)node["X"];
         //id = (string)node["id"];
+        for(auto u:cam_node.keys())
+        {
+            std::cout<<"keys:"<<u<<std::endl;
+        }
+        for(auto iter = cam_node.begin();iter!=cam_node.end();++iter)
+        {
+            std::cout<<(*iter).string()<<std::endl;
+        }
+
+
         LOG(INFO)<<"check stereo cam config:"<<std::endl;
+        const cv::FileNode& cam_mat1 = cam_node["camMat1"];
+
+        std::cout<<"cam_node[camMat1]:"<<cam_mat1.mat()<<std::endl;
         cam_node["camMat1"]>>this->camera1_mat;
         LOG(INFO)<<"check stereo cam config: 1"<<std::endl;
         cam_node["camMat2"]>>this->camera2_mat;

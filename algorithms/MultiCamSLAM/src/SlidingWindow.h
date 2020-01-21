@@ -153,7 +153,7 @@ public:
                 Pose3 value = key_value->value.cast<Pose3>();
                 int x_index = asSymbol.index();
                 //查找对应的item X - x_index;
-                auto pFrame = this->getFrameByID(x_index/cam_count);
+                auto pFrame = this->getFrameByID(x_index);
                 //TODO:这里一个Frame有6个姿态.怎么融合?取哪个?
                 Rot3 rot;Point3 trans;
                 rot = value.rotation();
@@ -173,6 +173,10 @@ public:
     void trackAndKeepReprojectionDBForFrame(shared_ptr<Frame> pFrame)//这是普通帧和关键帧公用的.
     {
         this->reproj_db.frameTable.insertFrame(pFrame);//加入frame_id;
+        if(pFrame->frame_id == 0)
+        {
+            return;//初始帧不追踪.
+        }
         for(const int& ref_kf_id:this->getInWindKFidVec())//对当前帧,追踪仍在窗口内的关键帧.
         {
             //第一步 跟踪特征点,创建关联关系.
@@ -204,7 +208,7 @@ public:
             }
             //threads.join();//合并结果集.
 
-            pFrame->reproj_map.at(ref_kf_id) = ReprojectionRecordT();
+            pFrame->reproj_map[ref_kf_id] = ReprojectionRecordT();
             pFrame->reproj_map.at(ref_kf_id).resize(cam_count);
             //改Frame之间引用关系.
             //是不是上一帧?
@@ -288,7 +292,9 @@ public:
         //第二步 建立地图点跟踪关系 根据结果集维护数据库.
         trackAndKeepReprojectionDBForFrame(pCurrentKF);
         //第三步 将当前普通帧升级成一个关键帧.
+        //bool create_kf_success;
         upgradeOrdinaryFrameToKeyFrameStereos(pCurrentKF);//升级.
+        this->KF_id_queue.push_back(pCurrentKF->frame_id);
         //第四步 创建局部优化图 第一次优化.
         //method<1>.pnp初始位置估计.
         //  stage<1>.选取最优相机组,估计初始位置.
@@ -301,8 +307,14 @@ public:
 //            localInitialEstimate.insert(...);
 //        }
 
+
         shared_ptr<Values> pLocalInitialEstimate,pLocalRes;
         shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pCurrentKF->frame_id,pLocalInitialEstimate);//优化当前帧.
+        if(pCurrentKF->frame_id == 0)
+        {
+            LOG(INFO)<<"First keyframe inserted!"<<endl;
+            return;
+        }
         pLocalRes = optimizeFactorGraph(pLocalGraph,pLocalInitialEstimate);//TODO:这种"优化" 可以考虑多线程实现.
         //优化这个图.
         //第五步 对当前帧,跟踪滑窗里的所有关键帧(地图点向当前帧估计位置重投影).创建新优化图.
