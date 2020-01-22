@@ -71,6 +71,7 @@
 #include "IMU_Preint_GTSAM.h"
 #include "FrameWiseGeometry.h"
 #include <iostream>
+#include "utils/Timer.h"
 #include "Visualization.h"
 #include "ReprojectionInfoDatabase.h"
 
@@ -96,7 +97,7 @@ private:
     //扩展kf的内容.这里不需要外部Frame结构知道这种扩展.
     //map<int,LandmarkProperties> KF_landmark_extension_map;
     ReprojectionInfoDatabase reproj_db;
-    const int max_kf_count = 5;
+    const int max_kf_count = 3;//5;
     int cam_count;
     //vector<int> KF_id_queue;
     deque<int> KF_id_queue;
@@ -172,11 +173,14 @@ public:
     }
     void trackAndKeepReprojectionDBForFrame(shared_ptr<Frame> pFrame)//这是普通帧和关键帧公用的.
     {
+        ScopeTimer timer__("trackAndKeepReprojectionDBForFrame()");
         this->reproj_db.frameTable.insertFrame(pFrame);//加入frame_id;
         if(pFrame->frame_id == 0)
         {
             return;//初始帧不追踪.
         }
+        int kf_vec_len = this->getInWindKFidVec().size();
+        LOG(INFO)<<"In trackAndKeepReprojectionDBForFrame():tracking wind size:"<<kf_vec_len<<endl;
         for(const int& ref_kf_id:this->getInWindKFidVec())//对当前帧,追踪仍在窗口内的关键帧.
         {
             //第一步 跟踪特征点,创建关联关系.
@@ -197,6 +201,7 @@ public:
             v_track_success_count.resize(cam_count);
             for(int i = 0;i<cam_count;i++)//这里可以多线程.暂时不用.
             {
+                ScopeTimer t_cvdopyrlk("track doTrackLastKF_all2dpts");//DEBUG ONLY!
                 //doTrackLastKF(pFrame,getLastKF(),i,vvLeftp2d.at(i),vvRightp2d.at(i),v_p2d_to_kf_p3d_index.at(i),v_originalKFP2d_relative.at(i),&v_track_success.at(i),&v_track_success_count.at(i));
                 //doTrackLastKF(...);//跟踪窗口里的所有kf.处理所有情况(mono2mono,mono2stereo,stereo2mono,stereo2stereo.)
                 //TODO:start a thread rather than invoke doTrackLastKF_all2dpts() directly.
@@ -215,6 +220,8 @@ public:
             pFrame->setReferringID(ref_kf_id);//最后一个是上一个.
 
             //第二步 建立地图点跟踪关系 根据结果集维护数据库.
+            {
+            ScopeTimer t_trackDB("keep tracking db infomation.");
             for(int i = 0 ;i<cam_count;i++)//这是一个不可重入过程.数据库本身访问暂时没有锁.暂时估计应该不需要.
             {
                 if(v_track_success.at(i))
@@ -284,10 +291,12 @@ public:
                     //TODO.
                 }
             }
+            }
         }
     }
     void insertKFintoSlidingWindow(shared_ptr<Frame> pCurrentKF)
     {
+        ScopeTimer timer__("insertKFintoSlidingWindow()");
         //第一步 跟踪特征点,创建关联关系.
         //第二步 建立地图点跟踪关系 根据结果集维护数据库.
         trackAndKeepReprojectionDBForFrame(pCurrentKF);
@@ -356,6 +365,7 @@ public:
     void insertOrdinaryFrameintoSlidingWindow(shared_ptr<Frame> pCurrentFrame)
     //普通帧和关键帧的区别是:普通帧没有附属landmark properties;普通帧与普通帧之间不考虑关联追踪.
     {
+        ScopeTimer timer__("insertOrdinaryFrameintoSlidingWindow()");
         //第一步 跟踪特征点.
         //第二步 建立地图点跟踪关系. 修改/创建LandmarkProperties.
         trackAndKeepReprojectionDBForFrame(pCurrentFrame);

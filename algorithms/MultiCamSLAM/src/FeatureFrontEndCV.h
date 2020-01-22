@@ -98,8 +98,8 @@ namespace mcs
         }
         //const int rows_count = 5;
         //const int cols_count = 5;
-        const int rows_count = 4;
-        const int cols_count = 4;
+        const int rows_count = 3;
+        const int cols_count = 3;
         const int img_size_v = Img.rows;
         const int img_size_u = Img.cols;
         shared_ptr<PointWithFeatureT> pResult(new PointWithFeatureT);
@@ -600,12 +600,14 @@ namespace mcs
 
     void do_cvPyrLK(InputOutputArray prev,InputOutputArray next,vector<Point2f>& p2d_v_prev,vector<Point2f>& p2d_v_next,vector<unsigned char>& track_success_v,vector<float>& err,bool do_backward_check)
     {
+        ScopeTimer do_pyrlk_timer("        do_cvPyrLK()");
         cv::calcOpticalFlowPyrLK(prev,next,p2d_v_prev,p2d_v_next,track_success_v,err,cv::Size(21, 21), 3,
                                   cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
         vector<unsigned char> backward_check_output = track_success_v;
         vector<unsigned char> final_output = track_success_v;
 
-
+        LOG(INFO)<<"        To track 2d pts size:"<<p2d_v_prev.size();
+        do_pyrlk_timer.watch("      forward pyrlk done...");
         if(do_backward_check)
         {
             //进行反向光流检查,有一个阈值限制.
@@ -617,6 +619,7 @@ namespace mcs
                 backward_check_output.at(i) = backward_check_output.at(i) && (pt_calc_dist(p2d_v_prev.at(i),p2d_prev_backward.at(i))<1.0);
             }
         }
+        do_pyrlk_timer.watch("      backward pyrlk done...");
         vector<unsigned char> fundamental_match_success;
         cv::Mat fundMat = cv::findFundamentalMat(p2d_v_prev,p2d_v_next,fundamental_match_success);
 

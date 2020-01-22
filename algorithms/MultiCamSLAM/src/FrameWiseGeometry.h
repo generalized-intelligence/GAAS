@@ -152,6 +152,7 @@ namespace mcs
                                 int* success_tracked_stereo_pts_count,int method = 0)
     {
         //TODO:Implementation of this function!
+        ScopeTimer t_dotrackKFall2dpts("    In doTrackLastKF");
         LOG(INFO)<<"in doTrackLastKF_all2dpts."<<endl;
         if(pKeyFrameReference == nullptr)
         {
@@ -181,6 +182,7 @@ namespace mcs
         vector<Point2f> right_tracked_pts;
         vector<unsigned char> right_track_success_v;
         vector<float> err_right;
+        t_dotrackKFall2dpts.watch("Data integrety checked...");
         try
         {
             do_cvPyrLK(*p_origin_img,*p_left,pKeyFrameReference->p2d_vv.at(i),left_tracked_pts,left_tracked_success_v,err);//进行追踪.
@@ -199,6 +201,7 @@ namespace mcs
             LOG(ERROR)<<"Caught exception in doTrackLastKF_all2dpts()-->do_cvPyrLK for leftImage and rightImage,error is: "<<e.what()<<endl;
             return;
         }
+        t_dotrackKFall2dpts.watch("PyrLK*2 done...");
         //Merge the result of these 2 process.
         int kf_stereo_output_stereo_count = 0;//都是双目追踪.
         int kf_stereo_output_mono_count = 0;//KF双目,当前单目.
@@ -250,6 +253,7 @@ namespace mcs
                 }
             }
         }
+        t_dotrackKFall2dpts.watch("output bool values updated...");
         *success_tracked_stereo_pts_count = output_tracked_pts_left.size();
         if(*success_tracked_stereo_pts_count > 15)
         {
