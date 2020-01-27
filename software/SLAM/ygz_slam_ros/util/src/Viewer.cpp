@@ -411,7 +411,7 @@ namespace ygz {
         shared_ptr<Frame> f = mCurrentFrame;
 
         cv::Mat im;
-        cv::cvtColor(f->mImLeft, im, CV_GRAY2BGR);
+        cv::cvtColor(f->mImLeft, im, cv::COLOR_GRAY2BGR);
 
         for (shared_ptr<Feature> feat: f->mFeaturesLeft) {
             if (feat == nullptr)
