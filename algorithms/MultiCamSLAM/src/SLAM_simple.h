@@ -111,7 +111,8 @@ public:
         //if(!ever_init)//||needNewKeyFrame())//DEBUG ONLY!
         if(needNewKeyFrame())
         {//关键帧处理.
-            bool needNewKF = true;
+            //bool needNewKF = true;
+            bool needNewKF = false;//DEBUG ONLY.Using inner strategy in SlidingWindow.
             bool create_frame_success;
             auto v_imu = form_imu_data_vec_from_msg_vec(this->imu_vec_tmp);
             pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF,&v_imu);

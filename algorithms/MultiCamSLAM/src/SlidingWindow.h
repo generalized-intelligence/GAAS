@@ -97,7 +97,7 @@ private:
     //扩展kf的内容.这里不需要外部Frame结构知道这种扩展.
     //map<int,LandmarkProperties> KF_landmark_extension_map;
     ReprojectionInfoDatabase reproj_db;
-    const int max_kf_count = 3;//5;
+    const int max_kf_count = 5;
     int cam_count;
     //vector<int> KF_id_queue;
     deque<int> KF_id_queue;
@@ -132,7 +132,15 @@ public:
         ScopeTimer timer_optimizer("optimizeFactorGraph()");
         //初始化一个Levenburg-Marquardt优化器,解优化图.返回估计值.
         LevenbergMarquardtParams params;
+        params.verbosityLM = LevenbergMarquardtParams::LAMBDA;
         LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
+        //DEBUG ONLY
+        {
+            cout<<"Before optimization:"<<endl;
+            pInitialEstimate->print();
+        }
+
+
         Values *pResult = new Values();
         *pResult = optimizer.optimize();
         cout<<"optimized result:"<<endl;
@@ -206,7 +214,8 @@ public:
                 //doTrackLastKF(...);//跟踪窗口里的所有kf.处理所有情况(mono2mono,mono2stereo,stereo2mono,stereo2stereo.)
                 //TODO:start a thread rather than invoke doTrackLastKF_all2dpts() directly.
                 doTrackLaskKF_all2dpts(pFrame,getFrameByID(ref_kf_id),i,
-                                       this->getFrameByID(ref_kf_id)->p2d_vv.at(i),
+                                       //this->getFrameByID(ref_kf_id)->p2d_vv.at(i),
+                                       vvLeftp2d.at(i),
                                        vv_disps.at(i),vv_track_type.at(i),v_p2d_to_kf_p2d_index.at(i),v_p2d_to_kf_p3d_index.at(i),
                                        &(v_track_success.at(i)),&(v_track_success_count.at(i))
                                        );
@@ -233,11 +242,12 @@ public:
                     for(int current_frame_p2d_index = 0;current_frame_p2d_index<vvLeftp2d.at(i).size();current_frame_p2d_index++)
                     {
                         SingleProjectionT proj_;
+                        assert (vv_disps.at(i).size() == vvLeftp2d.at(i).size());
                         proj_.current_frame_p2d = vvLeftp2d.at(i).at(current_frame_p2d_index);
                         proj_.disp = vv_disps.at(i).at(current_frame_p2d_index);
                         proj_.ref_p2d_id = v_p2d_to_kf_p2d_index.at(i).at(current_frame_p2d_index);
                         proj_.tracking_state = vv_track_type.at(i).at(current_frame_p2d_index);
-                        pFrame->reproj_map.at(ref_kf_id).at(i).at(current_frame_p2d_index) = proj_;
+                        pFrame->reproj_map.at(ref_kf_id).at(i).push_back(proj_);//.at(current_frame_p2d_index) = proj_;
                         //查询是否存在对应的 landmark结构.如果不存在,创建一个.
                         if(proj_.tracking_state == TRACK_STEREO2STEREO|| proj_.tracking_state == TRACK_STEREO2MONO||proj_.tracking_state == TRACK_MONO2STEREO
                                 //||proj_.tracking_state == TRACK_MONO2MONO // 暂时不管.
@@ -252,6 +262,7 @@ public:
                                 pLandmark->landmark_reference_time = 1; //创建那一次不算.
                                 pLandmark->relative_kf_p2d_id = proj_.ref_p2d_id;
                                 this->reproj_db.landmarkTable.insertLandmark(pLandmark);//维护索引.从此以后它就有id了.
+                                pRefKF->insertLandmarkIDByCamIndexAndp2dIndex(i,proj_.ref_p2d_id,pLandmark->landmark_id);//在Frame中索引.
                                 if(proj_.tracking_state == TRACK_STEREO2MONO||proj_.tracking_state == TRACK_STEREO2STEREO)
                                 {
                                     //pLandmark->setEstimatedPosition(pRefKF->);//这里认为参考的关键帧位姿已经优化完毕.可以直接根据坐标变换关系计算Landmark位置初始估计.
@@ -270,6 +281,7 @@ public:
                                     LOG(WARNING)<<"Track mono2mono not implemented yet!"<<endl;
                                 }
                                 pLandmark->ObservedByFrameIDSet.insert(pFrame->frame_id);//当前帧id加入观测关系.
+
 
 
 //                                ObservationInfo obs_info;

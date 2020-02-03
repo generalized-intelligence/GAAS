@@ -132,6 +132,7 @@ struct LandmarkProperties
     //weak_ptr<Frame> pCreatedByFrame;
     int created_by_kf_id;
     int relative_kf_p2d_id;//在created_by_kf_id这个帧里对应的p2d id.
+    int landmark_id;
     //weak_ptr<Frame> pLastObservedByFrame;
     //boost::shared_ptr<SmartStereoProjectionPoseFactor> pRelativeStereoSmartFactor;//目前还没实现处理无穷远.//不用这个垃圾东西了.
     //std::vector<ObservationInfo> vObservationInfo;//这个和relationT选一个?
@@ -212,17 +213,18 @@ public:
 void LandmarkTable::insertLandmark(shared_ptr<LandmarkProperties> pLandmark)
 {
     //插入.
-    this->dataTable.at(this->currentID) = pLandmark;
+    this->dataTable.insert(std::make_pair(currentID,pLandmark)); //.at(this->currentID) = pLandmark;
+    pLandmark->landmark_id = currentID;
     //加索引.
     if(this->kfid_camid_p2did_to_landmark_id_mapping.count(pLandmark->created_by_kf_id)  == 0)//不存在,创建:
     {
-        this->kfid_camid_p2did_to_landmark_id_mapping.at(pLandmark->created_by_kf_id) = map<int ,map<int,int> >();
+        this->kfid_camid_p2did_to_landmark_id_mapping.insert(std::make_pair(pLandmark->created_by_kf_id,map<int ,map<int,int> >()));//.at(pLandmark->created_by_kf_id) = map<int ,map<int,int> >();
     }
     if(this->kfid_camid_p2did_to_landmark_id_mapping.at(pLandmark->created_by_kf_id).count(pLandmark->cam_id) == 0)
     {
-        this->kfid_camid_p2did_to_landmark_id_mapping.at(pLandmark->created_by_kf_id).at(pLandmark->cam_id) = map<int,int>();
+        this->kfid_camid_p2did_to_landmark_id_mapping.at(pLandmark->created_by_kf_id).insert(std::make_pair(pLandmark->cam_id,map<int,int>() ) );//.at(pLandmark->cam_id) = map<int,int>();
     }
-    this->kfid_camid_p2did_to_landmark_id_mapping.at(pLandmark->created_by_kf_id).at(pLandmark->cam_id).at(pLandmark->relative_kf_p2d_id) = this->currentID;
+    this->kfid_camid_p2did_to_landmark_id_mapping.at(pLandmark->created_by_kf_id).at(pLandmark->cam_id).insert(make_pair(pLandmark->relative_kf_p2d_id, this->currentID));
     this->currentID++;
 }
 class RelationTableT
@@ -317,6 +319,22 @@ public:
         {
             auto pCurrentFrame = this->frameTable.query(frameID);
             pCurrentFrame->setRotationAndTranslation(Rot3().matrix(),Vector3d());
+
+            Rot3 rot;Point3 trans;
+            bool valid;
+            pCurrentFrame->getRotationAndTranslation(rot,trans,valid);
+            const int cam_count =pCurrentFrame->get_cam_num();
+//            pInitialEstimate->insert();
+            auto Fi_XiArray = pCurrentFrame->getFiAndXiArray();
+            pInitialEstimate->insert(Symbol('F',frameID),Fi_XiArray.first);
+            for(int i = 0;i<cam_count;i++)
+            {
+                //
+                pInitialEstimate->insert(Symbol('X',frameID*cam_count + i),
+                                            Pose3(Fi_XiArray.second.at(i).matrix()*
+                                               pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix())
+                                            );
+            }
         }
 
     }
@@ -333,6 +351,11 @@ public:
                                                     gtsam::noiseModel::mEstimator::Huber::Create(
                                                     1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
                                                     gaussian__);
+        auto gaussian__2d = noiseModel::Isotropic::Sigma(2, 1.0);
+        gtsam::SharedNoiseModel robust_kernel_2d = gtsam::noiseModel::Robust::Create(
+                                                    gtsam::noiseModel::mEstimator::Huber::Create(
+                                                    1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    gaussian__2d);
         Cal3_S2Stereo::shared_ptr K_stereo(new Cal3_S2Stereo(1000, 1000, 0, 320, 240, 0.2));//TODO edit this.
         Cal3_S2::shared_ptr K_mono(new Cal3_S2(50.0, 50.0, 0.0, 50.0, 50.0));
 
@@ -346,6 +369,10 @@ public:
             return pGraph;//对第一帧 只设定约束即可.
         }
         shared_ptr<Frame> pRefKF = this->frameTable.query(pFrame->getLastKFID());
+        this->insertFramePoseEstimation(pRefKF->frame_id,pGraph,pInitialEstimate_output);
+        //对refkf进行set fixed.
+        pGraph->emplace_shared<NonlinearEquality<Pose3> >(Symbol('F',pRefKF->frame_id),pInitialEstimate_output->at(Symbol('F',pRefKF->frame_id)).cast<Pose3>());
+
         const int cam_count = pFrame->get_cam_num();
 
         //创建Xref,Xref+i.
@@ -376,6 +403,7 @@ public:
                 if(relative_landmark_id<0)//Landmark invalid.
                 {//create a landmark;
                     LOG(ERROR)<<"in generateLocalGraphByFrameID(): landmark id index access violation!"<<endl;
+                    throw "access violation.";
                     exit(-1);
                 }
                 auto pLandmark = this->landmarkTable.query(relative_landmark_id);
@@ -401,7 +429,7 @@ public:
                                                                                             ),robust_kernel,
                                 Symbol('X',pFrame->getLastKFID()*cam_count + i ),Symbol('L',relative_landmark_id),K_stereo);
                     //加入当前帧的观测.
-                    pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> > (Point2(tracked_pt.current_frame_p2d.x,tracked_pt.current_frame_p2d.y),robust_kernel,
+                    pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> > (Point2(tracked_pt.current_frame_p2d.x,tracked_pt.current_frame_p2d.y),robust_kernel_2d,
                                 Symbol('X',frameID*cam_count+i),Symbol('L',relative_landmark_id),K_mono);
                 }
                 else if(tracking_state == TRACK_MONO2STEREO)
@@ -418,7 +446,7 @@ public:
                     }
                     //加入关键帧位置的观测.
                     auto kf_p2d = pRefKF->p2d_vv.at(i).at(tracked_pt.ref_p2d_id);
-                    pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> >(Point2(kf_p2d.x,kf_p2d.y),robust_kernel,
+                    pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> >(Point2(kf_p2d.x,kf_p2d.y),robust_kernel_2d,
                         Symbol('X',pFrame->getLastKFID()*cam_count + i ),Symbol('L',relative_landmark_id),K_mono);
                     //加入当前帧的观测.
                     pGraph->emplace_shared<GenericStereoFactor<Pose3,Point3> > (StereoPoint2(tracked_pt.current_frame_p2d.x,
@@ -502,6 +530,12 @@ public:
                                                     gtsam::noiseModel::mEstimator::Huber::Create(
                                                     1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
                                                     gaussian__);
+
+        auto gaussian__2d = noiseModel::Isotropic::Sigma(2, 1.0);
+        gtsam::SharedNoiseModel robust_kernel_2d = gtsam::noiseModel::Robust::Create(
+                                                    gtsam::noiseModel::mEstimator::Huber::Create(
+                                                    1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    gaussian__2d);
         Cal3_S2Stereo::shared_ptr K_stereo(new Cal3_S2Stereo(1000, 1000, 0, 320, 240, 0.2));//TODO edit this.
         Cal3_S2::shared_ptr K_mono(new Cal3_S2(50.0, 50.0, 0.0, 50.0, 50.0));
 
@@ -531,6 +565,13 @@ public:
 //                pGraph->emplace_shared(Symbol('X',kfid*cam_count+i), estimated_cam_pose);
 //            }
             insertFramePoseEstimation(kfid,pGraph,pInitialEstimate_output);
+            //noiseModel::Diagonal::shared_ptr priorModel = noiseModel::Diagonal::Variances((Vector(6) << 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4).finished());
+            //pGraph->add(PriorFactor<Pose3>(Symbol('F',kfid),pInitialEstimate_output->at(Symbol('F',kfid)).cast<Pose3>(),priorModel));//加入约束.
+            if(kf_index ==0)
+            {
+                cout<<"In generateCurrentGraphByKFIDVector():added NonlinearEquality!"<<endl;
+                pGraph->emplace_shared<NonlinearEquality<Pose3> >(Symbol('F',kfid),pInitialEstimate_output->at(Symbol('F',kfid)).cast<Pose3>());//固定滑动窗口第一帧 DEBUG ONLY!!
+            }
         }
         for(int kf_index = 0;kf_index<kf_ids.size();kf_index++)
         {
@@ -586,7 +627,7 @@ public:
                                             }
                                             else
                                             {
-                                                pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> > (Point2(kf_p2d.x,kf_p2d.y),robust_kernel,
+                                                pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> > (Point2(kf_p2d.x,kf_p2d.y),robust_kernel_2d,
                                                     Symbol('X',kfid*cam_count+cam_index),Symbol('L',proj_referring_landmark_id),K_mono);
                                             }
                                         }
@@ -601,16 +642,19 @@ public:
                                     //分情况,创建对应的投影关系约束.
                                     //只需要约束后面的观测就行了.不需要再去追加.
                                     const int i = cam_index;
+
                                     if(proj_.tracking_state == TRACK_STEREO2MONO)
                                     {
-                                        pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> > (Point2(proj_.current_frame_p2d.x,proj_.current_frame_p2d.y),robust_kernel,
+                                        pGraph->emplace_shared<GenericProjectionFactor<Pose3,Point3,Cal3_S2> > (Point2(proj_.current_frame_p2d.x,proj_.current_frame_p2d.y),robust_kernel_2d,
                                                     Symbol('X',kfid*cam_count+i),Symbol('L',proj_referring_landmark_id),K_mono);
+                                        cout<<"added a mono projection into kf graph!"<<endl;
                                     }
                                     else if(proj_.tracking_state == TRACK_MONO2STEREO||proj_.tracking_state == TRACK_STEREO2STEREO)
                                     {
                                         auto current_p2d = proj_.current_frame_p2d;
                                         pGraph->emplace_shared<GenericStereoFactor<Pose3,Point3> > (StereoPoint2(current_p2d.x,current_p2d.x - proj_.disp,current_p2d.y),robust_kernel,
                                                     Symbol('X',kfid*cam_count+i),Symbol('L',proj_referring_landmark_id),K_stereo);
+                                        cout<<"added a stereo reprojection into kf graph!"<<endl;
                                     }//MONO2MONO暂时不处理.
                                 }
                             }

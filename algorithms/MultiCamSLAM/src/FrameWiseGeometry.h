@@ -142,9 +142,10 @@ namespace mcs
     const char TRACK_MONO2STEREO = 2;
     const char TRACK_MONO2MONO = 3;
     void doTrackLaskKF_all2dpts(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
+                                //const vector<Point2f>& input_kf_p2d,
                                 vector<Point2f>& output_tracked_pts_left,
                                 //vector<Point2f>& output_tracked_pts_right,//不需要了.只存disparity,不再保存p2dT数值.
-                                vector<float> disps,//双目追踪失败,disp填入-1.这里的disps是本帧追踪产生的disps,与关键帧无关.
+                                vector<float>& disps,//双目追踪失败,disp填入-1.这里的disps是本帧追踪产生的disps,与关键帧无关.
                                 vector<char>& output_track_type,//跟踪类型:有KFStereoCurrentMono,KFMonoCurrentStereo,KFStereoCurrentStereo,KFMonoCurrentMono.
                                 map<int,int>& map_point2f_to_kf_p2ds,//必然有.
                                 map<int,int>& map_point2f_to_kf_p3ds,//没有填写-1;
@@ -183,6 +184,7 @@ namespace mcs
         vector<unsigned char> right_track_success_v;
         vector<float> err_right;
         t_dotrackKFall2dpts.watch("Data integrety checked...");
+        LOG(INFO)<<"pFrame id:"<<pFrame->frame_id<<" ; pRefKF id:"<<pKeyFrameReference->frame_id<<endl;
         try
         {
             do_cvPyrLK(*p_origin_img,*p_left,pKeyFrameReference->p2d_vv.at(i),left_tracked_pts,left_tracked_success_v,err);//进行追踪.

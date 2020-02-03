@@ -38,6 +38,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 # ----------------------------------------------------------------------------
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 find_package(OpenCV 3.4.5 EXACT REQUIRED) # same with ros.
+
+#set(GTSAM_DIR "/home/gi/Downloads/gtsam")
 find_package(GTSAM REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS

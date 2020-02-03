@@ -473,6 +473,10 @@ namespace mcs
     void upgradeOrdinaryFrameToKeyFrameStereos(shared_ptr<Frame> pOrdinaryFrame)//,bool& create_stereo_success)
     {//升级成关键帧.补充提取gftt,并且加入左右之间的关联关系(p2d,p3d,各种Mapping.).
         //TODO.
+        if(pOrdinaryFrame->isKeyFrame)
+        {
+            return;
+        }
         bool create_stereo_success = false;
         pOrdinaryFrame->isKeyFrame = true;
         auto& pF_ret = pOrdinaryFrame;

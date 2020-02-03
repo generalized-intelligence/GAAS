@@ -129,6 +129,10 @@ namespace mcs
             }
             return this->kf_p2d_to_landmark_id.at(cam_index).at(p2d_index);
         }
+        void insertLandmarkIDByCamIndexAndp2dIndex(int cam_index,int p2d_index,int landmark_index)
+        {
+            this->kf_p2d_to_landmark_id.at(cam_index).insert(std::make_pair(p2d_index,landmark_index));
+        }
         vector<CamInfo> cam_info_vec;
         vector<StereoCamConfig> cam_info_stereo_vec;
         vector<vector<shared_ptr<FeaturePoint> > > feature_points;
