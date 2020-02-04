@@ -132,6 +132,7 @@ public:
         ScopeTimer timer_optimizer("optimizeFactorGraph()");
         //初始化一个Levenburg-Marquardt优化器,解优化图.返回估计值.
         LevenbergMarquardtParams params;
+        params.setVerbosity("DELTA");
         params.verbosityLM = LevenbergMarquardtParams::LAMBDA;
         LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
         //DEBUG ONLY
@@ -177,6 +178,12 @@ public:
                 pLandmark->setEstimatedPosition(value);
             }
         }
+        cout<<"loss after optimization:"<<endl;
+        //Marginals marginals(*pGraph, *pResult);
+        //marginals.print();
+        //cout << "x1 covariance:\n" << marginals.marginalCovariance(1) << endl;
+        //cout << "x2 covariance:\n" << marginals.marginalCovariance(2) << endl;
+        //cout << "x3 covariance:\n" << marginals.marginalCovariance(3) << endl;
         return shared_ptr<Values>(pResult);
     }
     void trackAndKeepReprojectionDBForFrame(shared_ptr<Frame> pFrame)//这是普通帧和关键帧公用的.
@@ -233,6 +240,8 @@ public:
             ScopeTimer t_trackDB("keep tracking db infomation.");
             for(int i = 0 ;i<cam_count;i++)//这是一个不可重入过程.数据库本身访问暂时没有锁.暂时估计应该不需要.
             {
+                float camfx,camfy,camcx,camcy;
+                pFrame->cam_info_stereo_vec.at(i).getCamMatFxFyCxCy(camfx,camfy,camcx,camcy);
                 if(v_track_success.at(i))
                 {
                     //反复查表,改数据库.
@@ -254,7 +263,8 @@ public:
 
                                 )//如果这个点可直接三角化.
                         {
-                            if(pRefKF->kf_p2d_to_landmark_id.at(i).count(proj_.ref_p2d_id) == 0)
+                            //if(pRefKF->kf_p2d_to_landmark_id.at(i).count(proj_.ref_p2d_id) == 0)
+                            if(pRefKF->getLandmarkIDByCamIndexAndp2dIndex(i,proj_.ref_p2d_id)<0)
                             {//创建landmark
                                 shared_ptr<LandmarkProperties> pLandmark(new LandmarkProperties());
                                 pLandmark->cam_id = i;
@@ -267,11 +277,28 @@ public:
                                 {
                                     //pLandmark->setEstimatedPosition(pRefKF->);//这里认为参考的关键帧位姿已经优化完毕.可以直接根据坐标变换关系计算Landmark位置初始估计.
                                     //pLandmark->setTriangulated();//三角化成功.
+                                    auto v4d = triangulatePoint(pRefKF->disps_vv.at(i).at(proj_.ref_p2d_id),pRefKF->p2d_vv.at(i).at(proj_.ref_p2d_id).x,
+                                                                pRefKF->p2d_vv.at(i).at(proj_.ref_p2d_id).y,
+                                                                0.12,//DEBUG ONLY!b=0.12
+                                                     camfx,camfy,camcx,camcy
+                                                     );
+                                    //v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                                    v4d = pRefKF->getFiAndXiArray().second.at(i).matrix().inverse() * v4d;
+                                    pLandmark->setEstimatedPosition(Point3(v4d[0],v4d[1],v4d[2]));
                                 }
                                 else if(proj_.tracking_state == TRACK_MONO2STEREO)
                                 {//这种比较特殊.暂时认为当前帧位姿 == 最后一个被优化的帧位姿,进行三角化;这种误差肯定是比上一种情况要大.
                                     //pLandmark->setEstimatedPosition(p);
                                     //pLandmark->setTriangulated();
+                                    auto v4d = triangulatePoint(proj_.disp,proj_.current_frame_p2d.x,
+                                                                proj_.current_frame_p2d.y,
+                                                                0.12,//DEBUG ONLY!b=0.12
+                                                     camfx,camfy,camcx,camcy
+                                                     );
+                                    //v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                                    v4d = this->reproj_db.frameTable.query(pFrame->frame_id - 1)->getFiAndXiArray().
+                                                                                    second.at(i).matrix().inverse() * v4d;
+                                    pLandmark->setEstimatedPosition(Point3(v4d[0],v4d[1],v4d[2]));
                                 }
                                 else if(proj_.tracking_state == TRACK_MONO2MONO)//这种三角化最复杂.应该放到一个队列里去.判断是否能够三角化.实用意义不大.
                                 {
@@ -281,6 +308,7 @@ public:
                                     LOG(WARNING)<<"Track mono2mono not implemented yet!"<<endl;
                                 }
                                 pLandmark->ObservedByFrameIDSet.insert(pFrame->frame_id);//当前帧id加入观测关系.
+                                pLandmark->ObservedByFrameIDSet.insert(pRefKF->frame_id);//追踪的KF也加入.
 
 
 
@@ -293,6 +321,10 @@ public:
                             else
                             {//维护landmark.
                                 //ObservationInfo obs_info;....//这块用到的时候设计一下.
+                                auto pLandmark = this->reproj_db.landmarkTable.query(
+                                            pRefKF->getLandmarkIDByCamIndexAndp2dIndex(i,proj_.ref_p2d_id)
+                                            );
+                                pLandmark->ObservedByFrameIDSet.insert(pFrame->frame_id);
                             }
                         }
                     }
@@ -336,12 +368,21 @@ public:
             LOG(INFO)<<"First keyframe inserted!"<<endl;
             return;
         }
+        cout<<"pLocalGraph.size():"<<pLocalGraph->size()<<endl;
         pLocalRes = optimizeFactorGraph(pLocalGraph,pLocalInitialEstimate);//TODO:这种"优化" 可以考虑多线程实现.
         //优化这个图.
         //第五步 对当前帧,跟踪滑窗里的所有关键帧(地图点向当前帧估计位置重投影).创建新优化图.
 
         shared_ptr<Values> pSWRes,pSWInitialEstimate;
         shared_ptr<NonlinearFactorGraph> pSlidingWindGraph = this->reproj_db.generateCurrentGraphByKFIDVector(this->getInWindKFidVec(),pSWInitialEstimate);
+        cout<<"pSlidingWindowGraph.size():"<<pSlidingWindGraph->size()<<endl;
+        LOG(INFO)<<"Generated graph for frame:"<<pCurrentKF->frame_id<<endl;
+        LOG(INFO)<<"optimizing kf graph,kf id list:";
+        for(auto kfid:this->getInWindKFidVec())
+        {
+            LOG(INFO)<<kfid;
+        }
+        LOG(INFO)<<";"<<endl;
         pSWRes = optimizeFactorGraph(pSlidingWindGraph,pSWInitialEstimate);
         //第六步 第二次优化.
 
@@ -384,6 +425,7 @@ public:
         //第三步 创建局部优化图.第一次优化.
         shared_ptr<Values> pInitialEstimate;
         shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pCurrentFrame->frame_id,pInitialEstimate);
+        LOG(INFO)<<"Generated graph for frame:"<<pCurrentFrame->frame_id<<endl;
         this->optimizeFactorGraph(pLocalGraph,pInitialEstimate);
     }
 

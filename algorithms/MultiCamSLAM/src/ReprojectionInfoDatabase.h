@@ -118,13 +118,15 @@ struct LandmarkProperties
         valid = position_ever_init;
         if(!valid)//DEBUG.
         {
-            throw "trying to get an invalid pose estimation!";
+            //throw "trying to get an invalid pose estimation!";
+            ;//DEBUG ONLY.
         }
         return estimatedPosition;
     }
     void setEstimatedPosition(Point3 pose)
     {
         this->estimatedPosition = pose;
+        LOG(INFO)<<"landmark_id:"<<this->landmark_id<<" estimated!"<<endl;
         position_ever_init = true;
     }
     int landmark_reference_time = 0;
@@ -422,6 +424,7 @@ public:
                         v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
                         pInitialEstimate_output->insert(Symbol('L',relative_landmark_id),Point3(v4d[0],v4d[1],v4d[2]
                                                             ));//创建initial estimate,根据对应的那一次双目观测.
+                        pLandmark->setEstimatedPosition(Point3(v4d[0],v4d[1],v4d[2]));
                     }
                     //加入关键帧位置的观测.
                     auto kf_p2d = pRefKF->p2d_vv.at(i).at(tracked_pt.ref_p2d_id);
@@ -443,6 +446,7 @@ public:
                         v4d = pInitialEstimate_output->at(Symbol('X',pFrame->frame_id*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
                         pInitialEstimate_output->insert(Symbol('L',relative_landmark_id),Point3(v4d[0],v4d[1],v4d[2]
                                                                 ));//创建initial estimate,根据对应的那一次双目观测.
+                        pLandmark->setEstimatedPosition(Point3(v4d[0],v4d[1],v4d[2]));
                     }
                     //加入关键帧位置的观测.
                     auto kf_p2d = pRefKF->p2d_vv.at(i).at(tracked_pt.ref_p2d_id);
@@ -467,6 +471,7 @@ public:
                         v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
                         pInitialEstimate_output->insert(Symbol('L',relative_landmark_id),Point3(v4d[0],v4d[1],v4d[2]
                                                             ));//创建initial estimate,根据对应的那一次双目观测.和stereo2mono相同.
+                        pLandmark->setEstimatedPosition(Point3(v4d[0],v4d[1],v4d[2]));
                     }
 
                     //加入关键帧位置的观测.
@@ -565,13 +570,14 @@ public:
 //                pGraph->emplace_shared(Symbol('X',kfid*cam_count+i), estimated_cam_pose);
 //            }
             insertFramePoseEstimation(kfid,pGraph,pInitialEstimate_output);
-            //noiseModel::Diagonal::shared_ptr priorModel = noiseModel::Diagonal::Variances((Vector(6) << 1e-6, 1e-6, 1e-6, 1e-4, 1e-4, 1e-4).finished());
-            //pGraph->add(PriorFactor<Pose3>(Symbol('F',kfid),pInitialEstimate_output->at(Symbol('F',kfid)).cast<Pose3>(),priorModel));//加入约束.
-            if(kf_index ==0)
-            {
-                cout<<"In generateCurrentGraphByKFIDVector():added NonlinearEquality!"<<endl;
-                pGraph->emplace_shared<NonlinearEquality<Pose3> >(Symbol('F',kfid),pInitialEstimate_output->at(Symbol('F',kfid)).cast<Pose3>());//固定滑动窗口第一帧 DEBUG ONLY!!
-            }
+            noiseModel::Diagonal::shared_ptr priorModel = noiseModel::Diagonal::Variances((Vector(6) << 1e-3, 1e-3, 1e-3, 1e-1, 1e-1, 1e-1).finished());
+            pGraph->add(PriorFactor<Pose3>(Symbol('F',kfid),pInitialEstimate_output->at(Symbol('F',kfid)).cast<Pose3>(),priorModel));//加入约束.
+            cout<<"In generateCurrentGraphByKFIDVector():added prior!"<<endl;
+            //if(kf_index ==0)
+            //{
+            //    cout<<"In generateCurrentGraphByKFIDVector():added NonlinearEquality!"<<endl;
+            //    pGraph->emplace_shared<NonlinearEquality<Pose3> >(Symbol('F',kfid),pInitialEstimate_output->at(Symbol('F',kfid)).cast<Pose3>());//固定滑动窗口第一帧 DEBUG ONLY!!
+            //}
         }
         for(int kf_index = 0;kf_index<kf_ids.size();kf_index++)
         {
@@ -634,7 +640,8 @@ public:
                                         else
                                         {
                                             LOG(ERROR)<<"Invalid estimation of landmark position!"<<endl;
-                                            exit(-1);//DEBUG ONLY.
+                                            throw "bad estimation of landmark position!";
+                                            //exit(-1);//DEBUG ONLY.
                                         }
                                     }
                                     //cv::Point2f proj_.current_frame_p2d;

@@ -33,7 +33,7 @@ struct ScopeTimer
             case MSEC:fact=1e6;str="ms";break;
             case SEC:fact=1e9;str="s";break;
             };  
-            LOG(INFO) << "Time ("<<info_desc<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
+            LOG(INFO) << "Time cost till("<<info_desc<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
         }
     }
     ~ScopeTimer()
@@ -49,7 +49,7 @@ struct ScopeTimer
             case SEC:fact=1e9;str="s";break;
             };
 
-            LOG(INFO) << "Time ("<<name<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
+            LOG(INFO) << "Time cost("<<name<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
         }   
     }   
 };
