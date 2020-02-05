@@ -214,6 +214,22 @@ namespace mcs
             return retval;
             //return std::make_pair<Pose3,vector<Pose3> > (Fi,cam_pose_v);
         }
+        vector<Pose3> getXiArray()//直接生成需要的Fi和Xi位置.
+        {
+            vector<Pose3> cam_pose_v;
+            const int cam_count = this->get_cam_num();
+            for(int i = 0;i<cam_count;i++)
+            {
+                auto stereo_config = this->cam_info_stereo_vec.at(i);
+                Matrix3d r_mat;
+                cv::cv2eigen(stereo_config.get_RMat(),r_mat);
+                float x,y,z;
+                stereo_config.get_tMat(x,y,z);
+                Vector3d t_(x,y,z);
+                cam_pose_v.push_back(Pose3(Rot3(r_mat),Point3(t_)));
+            }
+            return cam_pose_v;
+        }
 
         int frame_id = -1;
         vector<int> referringKFIDs;

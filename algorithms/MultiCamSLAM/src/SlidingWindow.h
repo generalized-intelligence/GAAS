@@ -83,7 +83,19 @@ namespace mcs
 {
 
 
-
+std::string serializeIntVec(const vector<int>& vec)
+{
+    stringstream ss;
+    for(int i = 0;i<vec.size();i++)
+    {
+        if (i!=0)
+        {
+            ss<<",";
+        }
+        ss<<vec.at(i);
+    }
+    return ss.str();
+}
 
 
 //滑动窗口类
@@ -131,19 +143,23 @@ public:
     {
         ScopeTimer timer_optimizer("optimizeFactorGraph()");
         //初始化一个Levenburg-Marquardt优化器,解优化图.返回估计值.
-        LevenbergMarquardtParams params;
-        params.setVerbosity("DELTA");
-        params.verbosityLM = LevenbergMarquardtParams::LAMBDA;
-        LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
+//        LevenbergMarquardtParams params;
+//        params.setVerbosity("DELTA");
+//        params.verbosityLM = LevenbergMarquardtParams::LAMBDA;
+//        LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
+
+        DoglegOptimizer optimizer(*pGraph,*pInitialEstimate);//为什么这个用不了?
+
         //DEBUG ONLY
-        {
-            cout<<"Before optimization:"<<endl;
-            pInitialEstimate->print();
-        }
+//        {
+//            cout<<"Before optimization:"<<endl;
+//            pInitialEstimate->print();
+//        }
 
 
         Values *pResult = new Values();
         *pResult = optimizer.optimize();
+        LOG(WARNING)<<"Loss after optimiziation:"<<pGraph->error(*pResult)<<endl;
         cout<<"optimized result:"<<endl;
         pResult->print();
         //修改对应Frame和Landmark的值.
@@ -393,6 +409,7 @@ public:
             LOG(INFO)<<"deque not full, skip marginalization.return."<<endl;
             return;
         }
+        LOG(INFO)<<"Will marginalize kf:"<<toMargKFID<<endl;
         shared_ptr<Frame> pToMarginalizeKF = this->getFrameByID(toMargKFID);
         if(pToMarginalizeKF!= nullptr)
         {
@@ -425,7 +442,8 @@ public:
         //第三步 创建局部优化图.第一次优化.
         shared_ptr<Values> pInitialEstimate;
         shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pCurrentFrame->frame_id,pInitialEstimate);
-        LOG(INFO)<<"Generated graph for frame:"<<pCurrentFrame->frame_id<<endl;
+        LOG(WARNING)<<"Generated graph for frame:"<<pCurrentFrame->frame_id<<endl;
+        LOG(WARNING)<<"KFid list:"<<serializeIntVec(getInWindKFidVec())<<";"<<endl;
         this->optimizeFactorGraph(pLocalGraph,pInitialEstimate);
     }
 
@@ -477,10 +495,13 @@ public:
 
             //step<3>.否则,marg第一个关键帧.
         }
+        LOG(WARNING)<<"Current frame id:"<<currentFrameID<<",kfid list:"<<serializeIntVec(getInWindKFidVec())<<";"<<endl;
         if(v_mean_disp[0]<2* (v_mean_disp.back()) )
         {
+            LOG(WARNING)<<"will marginalize first kf."<<endl;
             return currentInWindKFList.front();
         }
+        LOG(WARNING)<<"will marginalize last kf."<<endl;
         return currentInWindKFList.back();
     }
 };

@@ -256,7 +256,8 @@ public:
     vector<shared_ptr<RelationT> > queryAllRelatedRelationsByKF(shared_ptr<Frame> pKF);//查询所有相关的点.用于创建投影关系和marginalize;
     void insertFramePoseEstimation(int frameID,shared_ptr<NonlinearFactorGraph> pGraph,shared_ptr<Values> pInitialEstimate)
     {//插入对应的frame Fi, Cam Xi,并创建对应的约束关系.
-
+        noiseModel::Diagonal::shared_ptr noise_model_between_cams = gtsam::noiseModel::Diagonal::Variances (
+                    ( gtsam::Vector ( 6 ) <<0.00001, 0.00001, 0.00001, 0.0001, 0.0001, 0.0001 ).finished()); //1mm,0.1度.//放松一些
         if(frameID > 0)
         {
             Rot3 rot;Point3 trans;
@@ -265,6 +266,8 @@ public:
             auto pCurrentFrame = this->frameTable.query(frameID);
             pCurrentFrame->getRotationAndTranslation(rot,trans,valid);
             const int cam_count =pCurrentFrame->get_cam_num();
+
+            auto xi_array = pCurrentFrame->getXiArray();
             if(valid)
             {//当前帧曾经优化过.那就直接填写老值.
                 auto Fi_XiArray = pCurrentFrame->getFiAndXiArray();
@@ -276,6 +279,12 @@ public:
                                                 Pose3(Fi_XiArray.second.at(i).matrix()*
                                                    pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix())
                                                 );
+                    Pose3 relative_pose = xi_array.at(i);//TODO.
+                    pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',frameID),Symbol('X',frameID*cam_count + i),
+                                                                  relative_pose,
+                                                                  noise_model_between_cams
+                                                                  );//加入约束关系.
+                    LOG(WARNING)<<"X"<<frameID*cam_count + i<<"already restrained!"<<endl;
                 }
             }
             else
@@ -293,8 +302,6 @@ public:
                                                                         pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()
                                                        )//两次变换.
                                                  );
-                        noiseModel::Diagonal::shared_ptr noise_model_between_cams = gtsam::noiseModel::Diagonal::Variances (
-                                    ( gtsam::Vector ( 6 ) <<0.00001, 0.00001, 0.00001, 0.0001, 0.0001, 0.0001 ).finished()); //1mm,0.1度.//放松一些
 
 
                         Matrix3d Rot;
@@ -302,11 +309,12 @@ public:
                         float tx,ty,tz;
                         pCurrentFrame->cam_info_stereo_vec.at(i).get_tMat(tx,ty,tz);
                         Vector3d translation(tx,ty,tz);
-                        Pose3 relative_pose;//(Rot3(Rot),Point3(translation));//TODO.
+                        Pose3 relative_pose = xi_array.at(i);
                         pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',frameID),Symbol('X',x_index),
                                                                       relative_pose,
                                                                       noise_model_between_cams
                                                                       );//加入约束关系.
+                        LOG(WARNING)<<"X"<<x_index<<"already restrained!"<<endl;
                     }
                 }
                 else
@@ -327,18 +335,24 @@ public:
             pCurrentFrame->getRotationAndTranslation(rot,trans,valid);
             const int cam_count =pCurrentFrame->get_cam_num();
 //            pInitialEstimate->insert();
-            auto Fi_XiArray = pCurrentFrame->getFiAndXiArray();
-            pInitialEstimate->insert(Symbol('F',frameID),Fi_XiArray.first);
+            //auto Fi_XiArray = pCurrentFrame->getFiAndXiArray();
+            auto xi_array = pCurrentFrame->getXiArray();
+            pInitialEstimate->insert(Symbol('F',frameID),Pose3());
             for(int i = 0;i<cam_count;i++)
             {
                 //
                 pInitialEstimate->insert(Symbol('X',frameID*cam_count + i),
-                                            Pose3(Fi_XiArray.second.at(i).matrix()*
+                                            Pose3(xi_array.at(i).matrix()*
                                                pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix())
                                             );
+                Pose3 relative_pose = xi_array.at(i);//TODO.
+                pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',0),Symbol('X',i),
+                                                              relative_pose,
+                                                              noise_model_between_cams
+                                                              );//加入约束关系.
+                LOG(WARNING)<<"X"<<i<<"already restrained!"<<endl;
             }
         }
-
     }
 
     shared_ptr<NonlinearFactorGraph> generateLocalGraphByFrameID(int frameID, shared_ptr<Values>& pInitialEstimate_output)
@@ -373,7 +387,10 @@ public:
         shared_ptr<Frame> pRefKF = this->frameTable.query(pFrame->getLastKFID());
         this->insertFramePoseEstimation(pRefKF->frame_id,pGraph,pInitialEstimate_output);
         //对refkf进行set fixed.
-        pGraph->emplace_shared<NonlinearEquality<Pose3> >(Symbol('F',pRefKF->frame_id),pInitialEstimate_output->at(Symbol('F',pRefKF->frame_id)).cast<Pose3>());
+        //pGraph->emplace_shared<NonlinearEquality<Pose3> >(Symbol('F',pRefKF->frame_id),pInitialEstimate_output->at(Symbol('F',pRefKF->frame_id)).cast<Pose3>());
+        noiseModel::Diagonal::shared_ptr priorModel = noiseModel::Diagonal::Variances((Vector(6) << 1e-3, 1e-3, 1e-3, 1e-1, 1e-1, 1e-1).finished());
+        pGraph->add(PriorFactor<Pose3>(Symbol('F',pRefKF->frame_id),pInitialEstimate_output->at(Symbol('F',pRefKF->frame_id)).cast<Pose3>(),priorModel));//加入约束.
+
 
         const int cam_count = pFrame->get_cam_num();
 
