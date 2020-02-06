@@ -1,11 +1,4 @@
-## TODO
-* Adjust params.
-* Encapsulation all operations as `.launch` file.
+## Fast-Planner
+Please enter [this repo](https://github.com/hddgi/Fast-Planner.git).
 
-## Doing
-* Add L1 Controller.
-
-## Done
-* Pointcloud to esdf and voxel.
-* Generate trajectory(trajectroy, vel, acc).
-
+A new path planning module is being developed.
