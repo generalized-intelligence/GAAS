@@ -67,6 +67,7 @@
 #include <iostream>
 #include "Visualization.h"
 #include <mutex>
+#include "utils/mcs_utils.h"
 using namespace gtsam;
 using namespace std;
 using namespace cv;
@@ -87,19 +88,7 @@ namespace mcs
 //        return mat;
 //    }
 
-    bool is_obvious_movement(cv::Mat rvec,cv::Mat tvec)
-    {
-        double r1 = rvec.at<double>(0),r2 = rvec.at<double>(1),r3 = rvec.at<double>(2);
-        double t1 = tvec.at<double>(0),t2 = tvec.at<double>(1),t3 = tvec.at<double>(2);
 
-        double t_len = pow(pow(t1,2)+pow(t2,2)+pow(t3,2) ,0.5);
-        double rotate_ang = (pow(pow(r1,2)+pow(r2,2)+pow(r3,2) ,0.5)/3.14)*180;
-        if ( (t_len>2 )&& (rotate_ang>90)  )
-        {
-            return true;
-        }
-        return false;
-    }
 
     struct landmark_properties;
 

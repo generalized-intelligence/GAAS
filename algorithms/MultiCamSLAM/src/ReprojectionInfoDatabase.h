@@ -67,20 +67,10 @@
 #include <iostream>
 #include "Visualization.h"
 #include<algorithm>
+#include "utils/mcs_utils.h"
 
 namespace mcs {
 using namespace gtsam;
-
-
-void Intersection(set<int> &A,set<int> &B,set<int> &result){//保证a小b大即可.
-    set<int>::iterator it;
-    it = A.begin();
-    while(it != A.end()){
-        if(B.find(*it) != B.end()) result.insert(*it);
-        it++;
-    }
-}
-
 
 class FrameTable;
 class LandmarkTable;
@@ -258,7 +248,7 @@ public:
     {//插入对应的frame Fi, Cam Xi,并创建对应的约束关系.
         noiseModel::Diagonal::shared_ptr noise_model_between_cams = gtsam::noiseModel::Diagonal::Variances (
                     ( gtsam::Vector ( 6 ) <<0.00001, 0.00001, 0.00001, 0.0001, 0.0001, 0.0001 ).finished()); //1mm,0.1度.//放松一些
-        if(frameID > 0)
+        if(frameID > 0)//初始化完成后的帧
         {
             Rot3 rot;Point3 trans;
             bool valid;
@@ -276,15 +266,15 @@ public:
                 {
                     //
                     pInitialEstimate->insert(Symbol('X',frameID*cam_count + i),
-                                                Pose3(Fi_XiArray.second.at(i).matrix()*
+                                                Pose3(Fi_XiArray.second.at(i).matrix().inverse()*
                                                    pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix())
                                                 );
-                    Pose3 relative_pose = xi_array.at(i);//TODO.
+                    Pose3 relative_pose = Pose3(xi_array.at(i).matrix().inverse());//TODO.
                     pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',frameID),Symbol('X',frameID*cam_count + i),
                                                                   relative_pose,
                                                                   noise_model_between_cams
                                                                   );//加入约束关系.
-                    LOG(WARNING)<<"X"<<frameID*cam_count + i<<"already restrained!"<<endl;
+                    LOG(WARNING)<<"X"<<frameID*cam_count + i<<"already constrained!"<<endl;
                 }
             }
             else
@@ -298,7 +288,7 @@ public:
                     {//对每个摄像头,创建约束关系.
                         int x_index = frameID*cam_count + i;
                         pInitialEstimate->insert(Symbol('X',x_index),
-                                                 Pose3(Fi_XiArray.second.at(i).matrix()*
+                                                 Pose3(Fi_XiArray.second.at(i).matrix().inverse()*
                                                                         pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()
                                                        )//两次变换.
                                                  );
@@ -309,12 +299,13 @@ public:
                         float tx,ty,tz;
                         pCurrentFrame->cam_info_stereo_vec.at(i).get_tMat(tx,ty,tz);
                         Vector3d translation(tx,ty,tz);
-                        Pose3 relative_pose = xi_array.at(i);
+                        //Pose3 relative_pose = xi_array.at(i);
+                        Pose3 relative_pose = Pose3(xi_array.at(i).matrix().inverse());
                         pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',frameID),Symbol('X',x_index),
                                                                       relative_pose,
                                                                       noise_model_between_cams
                                                                       );//加入约束关系.
-                        LOG(WARNING)<<"X"<<x_index<<"already restrained!"<<endl;
+                        LOG(WARNING)<<"X"<<x_index<<"already constrained!"<<endl;
                     }
                 }
                 else
@@ -342,15 +333,16 @@ public:
             {
                 //
                 pInitialEstimate->insert(Symbol('X',frameID*cam_count + i),
-                                            Pose3(xi_array.at(i).matrix()*
+                                            Pose3(xi_array.at(i).matrix().inverse()*
                                                pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix())
                                             );
-                Pose3 relative_pose = xi_array.at(i);//TODO.
+                //Pose3 relative_pose = xi_array.at(i);//TODO.
+                Pose3 relative_pose = Pose3(xi_array.at(i).matrix().inverse());
                 pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',0),Symbol('X',i),
                                                               relative_pose,
                                                               noise_model_between_cams
                                                               );//加入约束关系.
-                LOG(WARNING)<<"X"<<i<<"already restrained!"<<endl;
+                LOG(WARNING)<<"X"<<i<<"already constrained!"<<endl;
             }
         }
     }
@@ -358,19 +350,22 @@ public:
     shared_ptr<NonlinearFactorGraph> generateLocalGraphByFrameID(int frameID, shared_ptr<Values>& pInitialEstimate_output)
     {//创建"局部"优化图.只参考上一关键帧,优化本帧位置.
 
+        LOG(WARNING)<<"Generating local graph for frame:"<<frameID<<endl;
         shared_ptr<NonlinearFactorGraph> pGraph = shared_ptr<NonlinearFactorGraph>(new NonlinearFactorGraph());
         pInitialEstimate_output = shared_ptr<Values>(new Values());
         auto gaussian__ = noiseModel::Isotropic::Sigma(3, 1.0);
         //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Cauchy::Create(15), gaussian__); //robust
         //auto robust_kernel = gtsam::noiseModel::Robust::Create(gtsam::noiseModel::mEstimator::Huber::Create(1.345), gaussian__); //robust
         gtsam::SharedNoiseModel robust_kernel = gtsam::noiseModel::Robust::Create(
-                                                    gtsam::noiseModel::mEstimator::Huber::Create(
-                                                    1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    //gtsam::noiseModel::mEstimator::Huber::Create(
+                                                    //1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    gtsam::noiseModel::mEstimator::Huber::Create(1.345),
                                                     gaussian__);
         auto gaussian__2d = noiseModel::Isotropic::Sigma(2, 1.0);
         gtsam::SharedNoiseModel robust_kernel_2d = gtsam::noiseModel::Robust::Create(
-                                                    gtsam::noiseModel::mEstimator::Huber::Create(
-                                                    1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    //gtsam::noiseModel::mEstimator::Huber::Create(
+                                                    //1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    gtsam::noiseModel::mEstimator::Huber::Create(1.345),
                                                     gaussian__2d);
         Cal3_S2Stereo::shared_ptr K_stereo(new Cal3_S2Stereo(1000, 1000, 0, 320, 240, 0.2));//TODO edit this.
         Cal3_S2::shared_ptr K_mono(new Cal3_S2(50.0, 50.0, 0.0, 50.0, 50.0));
@@ -379,15 +374,19 @@ public:
         //获取跟踪的点.
 
         //创建Fframe,Xframe,Xframe+i.建立约束关系.
+        LOG(WARNING)<<"Insert pose estimation of frame:"<<frameID<<endl;
         this->insertFramePoseEstimation(frameID,pGraph,pInitialEstimate_output);
         if(frameID == 0)
         {
+            LOG(WARNING)<<"Initialized frame X0."<<endl;
             return pGraph;//对第一帧 只设定约束即可.
         }
+        LOG(WARNING)<<"Insert pose estimation of referring frame:"<<pFrame->getLastKFID()<<endl;
         shared_ptr<Frame> pRefKF = this->frameTable.query(pFrame->getLastKFID());
         this->insertFramePoseEstimation(pRefKF->frame_id,pGraph,pInitialEstimate_output);
         //对refkf进行set fixed.
         //pGraph->emplace_shared<NonlinearEquality<Pose3> >(Symbol('F',pRefKF->frame_id),pInitialEstimate_output->at(Symbol('F',pRefKF->frame_id)).cast<Pose3>());
+        LOG(WARNING)<<"Constrained frame: F"<<pFrame->getLastKFID()<<endl;
         noiseModel::Diagonal::shared_ptr priorModel = noiseModel::Diagonal::Variances((Vector(6) << 1e-3, 1e-3, 1e-3, 1e-1, 1e-1, 1e-1).finished());
         pGraph->add(PriorFactor<Pose3>(Symbol('F',pRefKF->frame_id),pInitialEstimate_output->at(Symbol('F',pRefKF->frame_id)).cast<Pose3>(),priorModel));//加入约束.
 
@@ -438,7 +437,9 @@ public:
                                                     0.12,//DEBUG ONLY!b=0.12
                                          camfx,camfy,camcx,camcy
                                          );
-                        v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                        //v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                        v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix() * v4d;//DEBUG.
+                        LOG(INFO)<<"Landmark L"<<relative_landmark_id<<" estimated at "<<v4d[0]<<","<<v4d[1]<<","<<v4d[2]<<";STEREO_TO_MONO."<<endl;
                         pInitialEstimate_output->insert(Symbol('L',relative_landmark_id),Point3(v4d[0],v4d[1],v4d[2]
                                                             ));//创建initial estimate,根据对应的那一次双目观测.
                         pLandmark->setEstimatedPosition(Point3(v4d[0],v4d[1],v4d[2]));
@@ -460,7 +461,9 @@ public:
                         auto v4d = triangulatePoint(tracked_pt.disp,tracked_pt.current_frame_p2d.x,tracked_pt.current_frame_p2d.y,
                                                     0.12,//DEBUG ONLY.
                                                     camfx,camfy,camcx,camcy);
-                        v4d = pInitialEstimate_output->at(Symbol('X',pFrame->frame_id*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                        //v4d = pInitialEstimate_output->at(Symbol('X',pFrame->frame_id*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                        v4d = pInitialEstimate_output->at(Symbol('X',pFrame->frame_id*cam_count + i)).cast<Pose3>().matrix() * v4d;
+                        LOG(INFO)<<"Landmark L"<<relative_landmark_id<<" estimated at "<<v4d[0]<<","<<v4d[1]<<","<<v4d[2]<<";MONO_TO_STEREO."<<endl;
                         pInitialEstimate_output->insert(Symbol('L',relative_landmark_id),Point3(v4d[0],v4d[1],v4d[2]
                                                                 ));//创建initial estimate,根据对应的那一次双目观测.
                         pLandmark->setEstimatedPosition(Point3(v4d[0],v4d[1],v4d[2]));
@@ -485,7 +488,9 @@ public:
                                                     0.12,//DEBUG ONLY!b=0.12
                                          camfx,camfy,camcx,camcy
                                          );
-                        v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                        //v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix().inverse() * v4d;
+                        v4d = pInitialEstimate_output->at(Symbol('X',pFrame->getLastKFID()*cam_count + i)).cast<Pose3>().matrix() * v4d;
+                        LOG(INFO)<<"Landmark L"<<relative_landmark_id<<" estimated at "<<v4d[0]<<","<<v4d[1]<<","<<v4d[2]<<";STEREO_TO_STEREO."<<endl;
                         pInitialEstimate_output->insert(Symbol('L',relative_landmark_id),Point3(v4d[0],v4d[1],v4d[2]
                                                             ));//创建initial estimate,根据对应的那一次双目观测.和stereo2mono相同.
                         pLandmark->setEstimatedPosition(Point3(v4d[0],v4d[1],v4d[2]));
@@ -549,14 +554,16 @@ public:
 
         auto gaussian__ = noiseModel::Isotropic::Sigma(3, 1.0);
         gtsam::SharedNoiseModel robust_kernel = gtsam::noiseModel::Robust::Create(
-                                                    gtsam::noiseModel::mEstimator::Huber::Create(
-                                                    1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    //gtsam::noiseModel::mEstimator::Huber::Create(
+                                                    //1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    gtsam::noiseModel::mEstimator::Huber::Create(1.345),
                                                     gaussian__);
 
         auto gaussian__2d = noiseModel::Isotropic::Sigma(2, 1.0);
         gtsam::SharedNoiseModel robust_kernel_2d = gtsam::noiseModel::Robust::Create(
-                                                    gtsam::noiseModel::mEstimator::Huber::Create(
-                                                    1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    //gtsam::noiseModel::mEstimator::Huber::Create(
+                                                    //1.345,gtsam::noiseModel::mEstimator::Huber::Scalar),  // Default is
+                                                    gtsam::noiseModel::mEstimator::Huber::Create(1.345),
                                                     gaussian__2d);
         Cal3_S2Stereo::shared_ptr K_stereo(new Cal3_S2Stereo(1000, 1000, 0, 320, 240, 0.2));//TODO edit this.
         Cal3_S2::shared_ptr K_mono(new Cal3_S2(50.0, 50.0, 0.0, 50.0, 50.0));
@@ -691,6 +698,10 @@ public:
     }
     double evaluateTrackingQualityScoreOfFrame(int frame_id);//查询重投影/跟踪质量(从数据库图结构的角度),评估是否需要创建新的关键帧.
     double analyzeTrackQualityOfCamID(int frame_id,int cam_id);//分析某一组摄像头的投影质量.
+    void DEBUG_showLossForeachFactor(NonlinearFactorGraph& graph,Values& values)
+    {
+        //graph.error()
+    }
 };
 
 }

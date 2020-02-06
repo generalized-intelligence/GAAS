@@ -82,22 +82,6 @@ using namespace cv;
 namespace mcs
 {
 
-
-std::string serializeIntVec(const vector<int>& vec)
-{
-    stringstream ss;
-    for(int i = 0;i<vec.size();i++)
-    {
-        if (i!=0)
-        {
-            ss<<",";
-        }
-        ss<<vec.at(i);
-    }
-    return ss.str();
-}
-
-
 //滑动窗口类
 class SlidingWindow
 {
@@ -143,12 +127,19 @@ public:
     {
         ScopeTimer timer_optimizer("optimizeFactorGraph()");
         //初始化一个Levenburg-Marquardt优化器,解优化图.返回估计值.
-//        LevenbergMarquardtParams params;
-//        params.setVerbosity("DELTA");
-//        params.verbosityLM = LevenbergMarquardtParams::LAMBDA;
-//        LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
+        LevenbergMarquardtParams params;
+        params.setVerbosity("ERROR");
+        params.linearSolverType = NonlinearOptimizerParams::MULTIFRONTAL_QR;
+        params.setMaxIterations(5);//如果不设置,有时候甚至能优化90多次.大部分时间都消耗在这里.其他在30ms左右,这里300ms.
+        params.verbosityLM = LevenbergMarquardtParams::LAMBDA;
+        LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
 
-        DoglegOptimizer optimizer(*pGraph,*pInitialEstimate);//为什么这个用不了?
+
+//        DoglegParams params;
+//        params.setVerbosity("ERROR");
+//        params.linearSolverType = NonlinearOptimizerParams::MULTIFRONTAL_QR;
+//        params.setMaxIterations(5);//如果不设置,有时候甚至能优化90多次.大部分时间都消耗在这里.其他在30ms左右,这里300ms.
+//        DoglegOptimizer optimizer(*pGraph,*pInitialEstimate,params);//为什么这个用不了?
 
         //DEBUG ONLY
 //        {
@@ -158,7 +149,10 @@ public:
 
 
         Values *pResult = new Values();
-        *pResult = optimizer.optimize();
+        cout<<"Loss info of optimizer:"<<endl;//详细的信息.
+        cout<<"before optimizing:"<<endl;
+        pGraph->printErrors(*pInitialEstimate);
+        *pResult = optimizer.optimize();//TODO:换成optimizer.optimizeSafely(),避免出现异常.
         LOG(WARNING)<<"Loss after optimiziation:"<<pGraph->error(*pResult)<<endl;
         cout<<"optimized result:"<<endl;
         pResult->print();
@@ -194,8 +188,16 @@ public:
                 pLandmark->setEstimatedPosition(value);
             }
         }
-        cout<<"loss after optimization:"<<endl;
-        //Marginals marginals(*pGraph, *pResult);
+        cout<<"loss after optimization variables:(Marginals):"<<endl;
+        Marginals marginals(*pGraph, *pResult);
+        for(auto& key_:pResult->keys())
+        {
+            Symbol asSymbol(key_);
+            cout<<asSymbol.chr()<<asSymbol.index()<<"covariance is:\n" << marginals.marginalCovariance(key_) << endl;
+            LOG(INFO)<<asSymbol.chr()<<asSymbol.index()<<"covariance is:\n" << marginals.marginalCovariance(key_) << endl;
+        }
+        cout<<"errors of factors:"<<endl;
+        pGraph->printErrors(*pResult);
         //marginals.print();
         //cout << "x1 covariance:\n" << marginals.marginalCovariance(1) << endl;
         //cout << "x2 covariance:\n" << marginals.marginalCovariance(2) << endl;

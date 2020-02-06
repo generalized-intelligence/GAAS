@@ -77,11 +77,12 @@ namespace mcs
         return pResult;
     }
 
+    const int EXTRACT_COUNT_EACH_BLOCK = 20;
     shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature)
     {
         LOG(INFO)<<"in extractCamKeyPoints_splited(),method and compute_feat:"<<method<<","<<compute_feature<<endl;
         //cv::Feature2D* pfeat = gftt;
-        auto gftt = cv::GFTTDetector::create(50,  // maximum number of corners to be returned
+        auto gftt = cv::GFTTDetector::create(EXTRACT_COUNT_EACH_BLOCK,//50,  // maximum number of corners to be returned
                                                        0.01, // quality level
               10);
         auto orb_ex= orb;cv::ORB::create(1000);
