@@ -232,6 +232,16 @@ public:
     vector<shared_ptr<RelationT> > queryRelativeWithFrameID(int frameID);
 };
 
+struct TrackStateForCam
+{
+    int avail = 0;
+    int failed = 0;
+};
+struct StatisticOfTrackingState
+{
+    vector<TrackStateForCam> tracking_avail_failed_count_of_each_cam;
+};
+
 
 class ReprojectionInfoDatabase{
 private:

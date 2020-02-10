@@ -118,13 +118,17 @@ public:
             pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF,&v_imu);
             this->imu_vec_tmp.clear();
             if(!ever_init)
+            //初始化SLAM simple.
+            //第一帧,必须是关键帧.
             {
-                LOG(INFO)<<"init SLAM_simple!"<<endl;//初始化SLAM simple.
+                LOG(INFO)<<"init SLAM_simple!"<<endl;
                 pNewF->rotation = Eigen::Matrix3d::Identity();
                 pNewF->position = Eigen::Vector3d(0,0,0);
                 ever_init = true;
                 //pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr,tracked_pts_count_out);//TODO.
-                pWind->insertKFintoSlidingWindow(pNewF);
+                //pWind->insertKFintoSlidingWindow(pNewF);
+
+                pWind->insertAFrameIntoSlidingWindow(pNewF,true);
             }
             else
             {
@@ -132,7 +136,10 @@ public:
                 //bool track_localframe_success;
 
                 //pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,pLastKF,tracked_pts_count_out);//TODO.
-                pWind->insertKFintoSlidingWindow(pNewF);
+
+
+                //pWind->insertKFintoSlidingWindow(pNewF);
+                pWind->insertAFrameIntoSlidingWindow(pNewF,false);
 
                 //if(track_localframe_success)//TODO:fix the logic.
                 if(true) //DEBUG ONLY!
@@ -173,7 +180,11 @@ public:
             //mcs::trackAndDoSolvePnPRansacMultiCam(pNewF); //frame_wise tracking....
             cout<<"in iterateWith4Imgs: track ordinary frame:referring frame id:"<<pLastKF->frame_id<<endl;
             //pGraph->addOrdinaryStereoFrameToBackendAndOptimize(pNewF,pLastKF,tracked_pts_count_out);
-            pWind->insertOrdinaryFrameintoSlidingWindow(pNewF);
+
+
+
+            //pWind->insertOrdinaryFrameintoSlidingWindow(pNewF);
+            pWind->insertAFrameIntoSlidingWindow(pNewF,false);
 
             if(track_and_pnp_ransac_success)
             {
