@@ -19,6 +19,7 @@
 #include <gtsam/geometry/Pose3.h>
 
 #include "stereo_cam.h"
+#include "utils/mcs_utils.h"
 namespace mcs
 {
     using namespace std;
@@ -362,8 +363,9 @@ namespace mcs
                 throw "no secondary image!";
             }
         }
-
+        StatisticOfTrackingStateForAllKF track_states;
+        bool optimization_valid = false;
+        //int last_valid_frame_id = -1;
     };
-
 }
 #endif

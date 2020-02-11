@@ -150,6 +150,10 @@ public:
     inline shared_ptr<Frame> query(int id);
     //vector<shared_ptr<Frame> > queryByRefKFID(int refKFID);//查询函数都按这个模型写.
     void marginalizeKFDeleteEverythingRecursive(int KFID);
+//    void withdrawAFrame()
+//    {
+//        this->currentID--;
+//    }
 };
 void FrameTable::insertFrame(shared_ptr<Frame> pFrame)
 {
@@ -232,15 +236,6 @@ public:
     vector<shared_ptr<RelationT> > queryRelativeWithFrameID(int frameID);
 };
 
-struct TrackStateForCam
-{
-    int avail = 0;
-    int failed = 0;
-};
-struct StatisticOfTrackingState
-{
-    vector<TrackStateForCam> tracking_avail_failed_count_of_each_cam;
-};
 
 
 class ReprojectionInfoDatabase{
@@ -254,6 +249,10 @@ public:
 
 
     vector<shared_ptr<RelationT> > queryAllRelatedRelationsByKF(shared_ptr<Frame> pKF);//查询所有相关的点.用于创建投影关系和marginalize;
+//    void withdrawAFrame()
+//    {
+//        this->frameTable.withdrawAFrame();
+//    }
     void insertFramePoseEstimation(int frameID,shared_ptr<NonlinearFactorGraph> pGraph,shared_ptr<Values> pInitialEstimate)
     {//插入对应的frame Fi, Cam Xi,并创建对应的约束关系.
         noiseModel::Diagonal::shared_ptr noise_model_between_cams = gtsam::noiseModel::Diagonal::Variances (
@@ -271,6 +270,7 @@ public:
             if(valid)
             {//当前帧曾经优化过.那就直接填写老值.
                 auto Fi_XiArray = pCurrentFrame->getFiAndXiArray();
+                LOG(WARNING)<<"Insert F"<<frameID<<endl;
                 pInitialEstimate->insert(Symbol('F',frameID),Fi_XiArray.first);
                 for(int i = 0;i<cam_count;i++)
                 {
@@ -293,6 +293,7 @@ public:
                 if(valid)
                 {
                     auto Fi_XiArray = this->frameTable.query(frameID -1)->getFiAndXiArray();//查上一个老帧.
+                    LOG(WARNING)<<"Insert F"<<frameID<<endl;
                     pInitialEstimate->insert(Symbol('F',frameID),Fi_XiArray.first);
                     for(int i = 0;i<cam_count;i++)
                     {//对每个摄像头,创建约束关系.
@@ -338,6 +339,7 @@ public:
 //            pInitialEstimate->insert();
             //auto Fi_XiArray = pCurrentFrame->getFiAndXiArray();
             auto xi_array = pCurrentFrame->getXiArray();
+            LOG(WARNING)<<"Insert F"<<frameID<<endl;
             pInitialEstimate->insert(Symbol('F',frameID),Pose3());
             for(int i = 0;i<cam_count;i++)
             {
@@ -357,7 +359,7 @@ public:
         }
     }
 
-    shared_ptr<NonlinearFactorGraph> generateLocalGraphByFrameID(int frameID, shared_ptr<Values>& pInitialEstimate_output)
+    shared_ptr<NonlinearFactorGraph> generateLocalGraphByFrameID(int frameID, shared_ptr<Values>& pInitialEstimate_output)//,bool& local_graph_track_valid)
     {//创建"局部"优化图.只参考上一关键帧,优化本帧位置.
 
         LOG(WARNING)<<"Generating local graph for frame:"<<frameID<<endl;
@@ -391,15 +393,29 @@ public:
             LOG(WARNING)<<"Initialized frame X0."<<endl;
             return pGraph;//对第一帧 只设定约束即可.
         }
-        LOG(WARNING)<<"Insert pose estimation of referring frame:"<<pFrame->getLastKFID()<<endl;
-        shared_ptr<Frame> pRefKF = this->frameTable.query(pFrame->getLastKFID());
-        this->insertFramePoseEstimation(pRefKF->frame_id,pGraph,pInitialEstimate_output);
+
+        //shared_ptr<Frame> pRefKF = this->frameTable.query(pFrame->getLastKFID());//TODO:改成选择最好的那个.
+
+
+        int ref_kf_best_id;double best_score;
+        bool best_kf_valid = pFrame->track_states.getBestRefKFid(ref_kf_best_id,best_score);
+        if(best_kf_valid == false )//获取的最优id无效.
+        {
+            //local_graph_track_valid = false;//无法生成优化图.
+            LOG(ERROR)<<"For frame F"<<frameID<<" all track invalid!"<<endl;
+            //return;//DEBUG ONLY.
+        }
+        LOG(WARNING)<<"Insert pose estimation of referring frame:"<<ref_kf_best_id<<",score:"<<best_score<<endl;
+        shared_ptr<Frame> pRefKF = this->frameTable.query(ref_kf_best_id);
+
+
+        this->insertFramePoseEstimation(ref_kf_best_id//pRefKF->frame_id
+                                        ,pGraph,pInitialEstimate_output);
         //对refkf进行set fixed.
         //pGraph->emplace_shared<NonlinearEquality<Pose3> >(Symbol('F',pRefKF->frame_id),pInitialEstimate_output->at(Symbol('F',pRefKF->frame_id)).cast<Pose3>());
         LOG(WARNING)<<"Constrained frame: F"<<pFrame->getLastKFID()<<endl;
         noiseModel::Diagonal::shared_ptr priorModel = noiseModel::Diagonal::Variances((Vector(6) << 1e-3, 1e-3, 1e-3, 1e-1, 1e-1, 1e-1).finished());
         pGraph->add(PriorFactor<Pose3>(Symbol('F',pRefKF->frame_id),pInitialEstimate_output->at(Symbol('F',pRefKF->frame_id)).cast<Pose3>(),priorModel));//加入约束.
-
 
         const int cam_count = pFrame->get_cam_num();
 

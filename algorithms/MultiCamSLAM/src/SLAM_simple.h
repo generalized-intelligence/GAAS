@@ -127,22 +127,21 @@ public:
                 ever_init = true;
                 //pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr,tracked_pts_count_out);//TODO.
                 //pWind->insertKFintoSlidingWindow(pNewF);
-
-                pWind->insertAFrameIntoSlidingWindow(pNewF,true);
+                bool useless_;
+                pWind->insertAFrameIntoSlidingWindow(pNewF,true,useless_);
             }
             else
             {
                 LOG(INFO)<<"SLAM initiated.Add new kf to optimization graph and do optimize()."<<endl;
-                //bool track_localframe_success;
-
+                bool track_local_success;
                 //pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,pLastKF,tracked_pts_count_out);//TODO.
 
 
                 //pWind->insertKFintoSlidingWindow(pNewF);
-                pWind->insertAFrameIntoSlidingWindow(pNewF,false);
+                pWind->insertAFrameIntoSlidingWindow(pNewF,false,track_local_success);
 
-                //if(track_localframe_success)//TODO:fix the logic.
-                if(true) //DEBUG ONLY!
+                if(track_local_success)//当前帧追踪局部成功
+                //if(true) //DEBUG ONLY!
                 {
                     //pNewF->rotation = ...
                     //pNewF->position =
@@ -154,14 +153,15 @@ public:
                 }
                 else
                 {
-                    LOG(ERROR)<<"Track failure!Using last frame rt."<<endl;
-                    pNewF->rotation = getLastFrame()->rotation;
-                    pNewF->position = getLastFrame()->position;
+//                    LOG(ERROR)<<"Track failure!Using last frame rt."<<endl;
+//                    pNewF->rotation = getLastFrame()->rotation;
+//                    pNewF->position = getLastFrame()->position;
                     if(this->SLAMRunningState!= this->STATE_TRACKING_FALIED)
                     {
-                        LOG(WARNING)<<"State transfer from "<<state_id_map[SLAMRunningState]<<" to STATE_TRACKING_FAILED!"<<endl;
+                        LOG(ERROR)<<"State transfer from "<<state_id_map[SLAMRunningState]<<" to STATE_TRACKING_FAILED!"<<endl;
                     }
                     this->SLAMRunningState = this->STATE_TRACKING_FALIED;
+                    return;//这种情况下KF F都不变.暂不考虑IMU问题.
                 }
             }
             pLastKF = pNewF;
@@ -176,7 +176,7 @@ public:
             pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF,&v_imu);
             this->imu_vec_tmp.clear();
             //TODO:
-            bool track_and_pnp_ransac_success;
+            //bool track_and_pnp_ransac_success;//pnp 验证不要了.
             //mcs::trackAndDoSolvePnPRansacMultiCam(pNewF); //frame_wise tracking....
             cout<<"in iterateWith4Imgs: track ordinary frame:referring frame id:"<<pLastKF->frame_id<<endl;
             //pGraph->addOrdinaryStereoFrameToBackendAndOptimize(pNewF,pLastKF,tracked_pts_count_out);
@@ -184,18 +184,23 @@ public:
 
 
             //pWind->insertOrdinaryFrameintoSlidingWindow(pNewF);
-            pWind->insertAFrameIntoSlidingWindow(pNewF,false);
+            bool track_local_success;
+            pWind->insertAFrameIntoSlidingWindow(pNewF,false,track_local_success);
 
-            if(track_and_pnp_ransac_success)
+            if(track_local_success)
             {
                 //createNewKF...
+                pLastF = pNewF;
             }
             else
             {
                 //pNewF->rotation = ...
                 //pNewF->translation = ...
+                LOG(ERROR)<<"State transfer from "<<state_id_map[SLAMRunningState]<<" to STATE_TRACKING_FAILED!"<<endl;
+                this->SLAMRunningState = this->STATE_TRACKING_FALIED;
+                return;//这种情况下KF F都不变.暂不考虑IMU问题.
             }
-            pLastF = pNewF;
+
         }
     }
     void addIMUInfo(const sensor_msgs::Imu& imu_info)

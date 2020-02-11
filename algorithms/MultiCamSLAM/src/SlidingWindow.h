@@ -99,7 +99,8 @@ private:
     //vector<int> KF_id_queue;
     deque<int> KF_id_queue;
     double getAverageDisp(const ReprojectionRecordT& reproj_info,int ref_kf_id);
-    StatisticOfTrackingState current_track_state;
+    StatisticOfTrackingStateForAllKF current_track_state;
+    int last_optimized_frame_id = 0;
 
 
 public:
@@ -125,7 +126,7 @@ public:
 //        }
 //        return retval;
     }
-    shared_ptr<Values> optimizeFactorGraph(shared_ptr<NonlinearFactorGraph> pGraph,shared_ptr<Values> pInitialEstimate,int MaxIter = 15)
+    shared_ptr<Values> optimizeFactorGraph(shared_ptr<NonlinearFactorGraph> pGraph,shared_ptr<Values> pInitialEstimate,int MaxIter,int lastFrameID)
     {
         ScopeTimer timer_optimizer("optimizeFactorGraph()");
         //初始化一个Levenburg-Marquardt优化器,解优化图.返回估计值.
@@ -155,40 +156,84 @@ public:
         cout<<"before optimizing:"<<endl;
         pGraph->printErrors(*pInitialEstimate);
         *pResult = optimizer.optimize();//TODO:换成optimizer.optimizeSafely(),避免出现异常.
+        int actual_iter_times = optimizer.iterations();
+        LOG(WARNING)<<"Iter times:"<<actual_iter_times<<endl;
+        this->reproj_db.frameTable.query(lastFrameID)->optimization_valid = true;
+        if(actual_iter_times == 0)
+        {//优化器出现了问题.没有迭代直接终止.
+            //最大的F_id干扰一下 尝试再优化.
+            if(lastFrameID>=0)
+            {//是单帧型可以动
+                Pose3 original_pose = pInitialEstimate->at(Symbol('F',lastFrameID)).cast<Pose3>();
+                Pose3 new_pose = Pose3(original_pose.rotation(),Point3( original_pose.translation().vector()+Vector3d(0.1,0.1,0.1)) );
+                pInitialEstimate->update(Symbol('F',lastFrameID),new_pose);
+            }
+            LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
+            *pResult = optimizer.optimize();
+            if(optimizer.iterations() == 0)
+            {
+                LOG(ERROR)<<"Optimizer failed for 2 times.Giving up."<<endl;
+                this->reproj_db.frameTable.query(lastFrameID)->optimization_valid = false;
+                //return shared_ptr<Values>(pResult);
+            }
+            else
+            {
+                LOG(WARNING)<<"Optimizer state correct."<<endl;
+            }
+        }
         LOG(WARNING)<<"Loss after "<<MaxIter<<" times optimiziation:"<<pGraph->error(*pResult)<<endl;
+        if(lastFrameID>=0)
+        {
+            LOG(WARNING)<<"optimized translation:"<<pResult->at(Symbol('F',lastFrameID)).cast<Pose3>().translation().vector()<<endl;
+        }
         cout<<"optimized result:"<<endl;
         pResult->print();
         //修改对应Frame和Landmark的值.
-        for(auto key_value = pResult->begin(); key_value != pResult->end(); ++key_value)
+        if(this->reproj_db.frameTable.query(lastFrameID)->optimization_valid)//当优化成功时:
         {
-            auto key = key_value->key;
-            Symbol asSymbol(key);
-            //Symbol之间的关系:
-
-            //Xi-j 相机的位姿
-            //Fi Frame i 的位姿
-            //Xi-0 Xi-cam_count -1与Fi有位置约束.
-
-            //Lj Landmark j的位置.
-            if(asSymbol.chr() == 'F')
-            {//对所有的Frame:
-                Pose3 value = key_value->value.cast<Pose3>();
-                int x_index = asSymbol.index();
-                //查找对应的item X - x_index;
-                auto pFrame = this->getFrameByID(x_index);
-                //TODO:这里一个Frame有6个姿态.怎么融合?取哪个?
-                Rot3 rot;Point3 trans;
-                rot = value.rotation();
-                trans = value.translation();
-                pFrame->setRotationAndTranslation(rot.matrix(),trans.vector());
-            }
-            else if(asSymbol.chr() == 'L')
+            last_optimized_frame_id = lastFrameID;
+            for(auto key_value = pResult->begin(); key_value != pResult->end(); ++key_value)
             {
-                Point3 value = key_value->value.cast<Point3>();
-                int landmark_id = asSymbol.index();
-                auto pLandmark = this->reproj_db.landmarkTable.query(landmark_id);
-                pLandmark->setEstimatedPosition(value);
+                auto key = key_value->key;
+                Symbol asSymbol(key);
+                //Symbol之间的关系:
+
+                //Xi-j 相机的位姿
+                //Fi Frame i 的位姿
+                //Xi-0 Xi-cam_count -1与Fi有位置约束.
+
+                //Lj Landmark j的位置.
+                if(asSymbol.chr() == 'F')
+                {//对所有的Frame:
+                    Pose3 value = key_value->value.cast<Pose3>();
+                    int x_index = asSymbol.index();
+                    //查找对应的item X - x_index;
+                    auto pFrame = this->getFrameByID(x_index);
+                    //TODO:这里一个Frame有6个姿态.怎么融合?取哪个?
+                    Rot3 rot;Point3 trans;
+                    rot = value.rotation();
+                    trans = value.translation();
+                    //if(asSymbol.index() == lastFrameID)
+                    //{
+                    //    pFrame->setRotationAndTranslation(rot.matrix(),trans.vector());
+                    //}
+                    pFrame->setRotationAndTranslation(rot.matrix(),trans.vector());
+                }
+                else if(asSymbol.chr() == 'L')
+                {
+                    Point3 value = key_value->value.cast<Point3>();
+                    int landmark_id = asSymbol.index();
+                    auto pLandmark = this->reproj_db.landmarkTable.query(landmark_id);
+                    pLandmark->setEstimatedPosition(value);
+                }
             }
+        }
+        else
+        {
+            LOG(WARNING)<<"Optimization failed.Set pose as last valid frame"<<this->last_optimized_frame_id<<endl;
+            Rot3 r;Point3 pt;bool valid;
+            this->reproj_db.frameTable.query(this->last_optimized_frame_id)->getRotationAndTranslation(r,pt,valid);
+            this->reproj_db.frameTable.query(lastFrameID)->setRotationAndTranslation(r.matrix(),pt.vector());
         }
 //        cout<<"loss after optimization variables:(Marginals):"<<endl;
 //        Marginals marginals(*pGraph, *pResult);
@@ -206,7 +251,7 @@ public:
         //cout << "x3 covariance:\n" << marginals.marginalCovariance(3) << endl;
         return shared_ptr<Values>(pResult);
     }
-    void trackAndKeepReprojectionDBForFrame(shared_ptr<Frame> pFrame,StatisticOfTrackingState& trackState_output)//这是普通帧和关键帧公用的.
+    void trackAndKeepReprojectionDBForFrame(shared_ptr<Frame> pFrame,StatisticOfTrackingStateForAllKF& track_states_output)//这是普通帧和关键帧公用的.
     {
         ScopeTimer timer__("trackAndKeepReprojectionDBForFrame()");
         this->reproj_db.frameTable.insertFrame(pFrame);//加入frame_id;
@@ -216,6 +261,7 @@ public:
         }
         int kf_vec_len = this->getInWindKFidVec().size();
         LOG(INFO)<<"In trackAndKeepReprojectionDBForFrame():tracking wind size:"<<kf_vec_len<<endl;
+        track_states_output = StatisticOfTrackingStateForAllKF();
         for(const int& ref_kf_id:this->getInWindKFidVec())//对当前帧,追踪仍在窗口内的关键帧.
         {
             //第一步 跟踪特征点,创建关联关系.
@@ -258,9 +304,9 @@ public:
             //第二步 建立地图点跟踪关系 根据结果集维护数据库.
             {
                 ScopeTimer t_trackDB("keep tracking db infomation.");
-                StatisticOfTrackingState& trackingState = trackState_output;
+                StatisticOfTrackingState trackingState;
                 trackingState.tracking_avail_failed_count_of_each_cam.resize(pFrame->get_cam_num());
-
+                trackingState.ref_kf_id = ref_kf_id;//设置好记录.
                 for(int i = 0 ;i<cam_count;i++)//这是一个不可重入过程.数据库本身访问暂时没有锁.暂时估计应该不需要.
                 {
                     float camfx,camfy,camcx,camcy;
@@ -367,55 +413,50 @@ public:
                         trackingState.tracking_avail_failed_count_of_each_cam.at(i).failed+=1;
                     }
                 }
+                track_states_output.add(trackingState);
             }
         }
     }
 
-    void analyzeTrackingState(StatisticOfTrackingState& ts,bool& need_KF_output,bool& state_good_output)
-    {
-        need_KF_output = false;
-        state_good_output = false;
-        LOG(WARNING)<<"In analyzeTrackingState():got a new state."<<endl;
-        int cam_count = ts.tracking_avail_failed_count_of_each_cam.size();
-        int total_avail_pts = 0;
-        int total_failed_pts = 0;
-        for(int i = 0;i<cam_count;i++)
-        {
-            total_avail_pts  += ts.tracking_avail_failed_count_of_each_cam.at(i).avail;
-            total_failed_pts +=ts.tracking_avail_failed_count_of_each_cam.at(i).failed;
-        }
-        LOG(WARNING)<<"total good pts count:"<<total_avail_pts<<";bad pts count:"<<total_failed_pts<<endl;
-        if(total_avail_pts*2.0<(total_avail_pts+total_failed_pts))
-        {
-            state_good_output = false;//只有33%的点是好点
-            need_KF_output = true;
-        }
-        else
-        {
-            state_good_output = true;
-            if(total_avail_pts*1.3<(total_avail_pts+total_failed_pts))
-            {
-                need_KF_output = true;
-            }
-            else
-            {
-                need_KF_output = false;
-            }
-        }
-    }
-    void insertAFrameIntoSlidingWindow(shared_ptr<Frame> pCurrentFrame,bool force_kf)
+    void insertAFrameIntoSlidingWindow(shared_ptr<Frame> pCurrentFrame,bool force_kf,bool& this_frame_valid)
     //pCurrentFrame:即将插入的帧.
     //force_kf:外部控制必须创建KF.
+    //this_frame_valid:当前帧是否有效.
     {
+        this_frame_valid = true;
         ScopeTimer timer__("insertFrameIntoSlidingWindow()");
-        StatisticOfTrackingState track_state;
-        trackAndKeepReprojectionDBForFrame(pCurrentFrame,track_state);
-        this->current_track_state = track_state;
-        bool track_good,needKF;
-        analyzeTrackingState(current_track_state,needKF,track_good);
-        if(!track_good)
+        //StatisticOfTrackingState track_state;
+        StatisticOfTrackingStateForAllKF track_states;
+        trackAndKeepReprojectionDBForFrame(pCurrentFrame,track_states);
+        pCurrentFrame->track_states = track_states;
+        this->current_track_state = track_states;
+        bool needKF;
+        bool track_good,status_stable;
+
+//      老逻辑.先废了
+//        //analyzeTrackingStates(current_track_state,needKF,track_good);
+//        if(!force_kf&& pCurrentFrame->frame_id !=0)
+//        {
+//            int best_id;double best_score;
+//            track_good = track_states.getBestRefKFid(best_id,best_score);//track good评价是否有足够多的点能跟踪上.
+//            bool needKF;
+//            analyzeTrackingStates(track_states.find(best_id),needKF,status_stable);//status_stable分析整体好跟踪的点占比.
+//            if(!status_stable)
+//            {
+//                LOG(ERROR)<<"Frame F"<<pCurrentFrame->frame_id<<" tracking state unstable!"<<endl;
+//            }
+//        }
+        int best_id;double best_score;
+        track_good = track_states.getBestRefKFid(best_id,best_score);
+        needKF = (best_score<=50);
+
+
+        if((!track_good)&&(!force_kf))
         {
-            LOG(ERROR)<<"[WARNING]Track state poor!"<<endl;
+            LOG(ERROR)<<"[WARNING] Frame F"<<pCurrentFrame->frame_id<<"track state poor,too few stable pts!"<<endl;
+            //this_frame_valid = false;
+            //this->reproj_db.withdrawAFrame();//撤回这一帧的id.不能撤回.撤回原来优化图和reproj_db就废了.
+            //return;
         }
         if((!needKF) &&(!force_kf))
         {//普通帧
@@ -425,10 +466,11 @@ public:
             shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pCurrentFrame->frame_id,pInitialEstimate);
             LOG(WARNING)<<"Generated graph for frame:"<<pCurrentFrame->frame_id<<endl;
             LOG(WARNING)<<"KFid list:"<<serializeIntVec(getInWindKFidVec())<<";"<<endl;
-            this->optimizeFactorGraph(pLocalGraph,pInitialEstimate);
+            this->optimizeFactorGraph(pLocalGraph,pInitialEstimate,15,pCurrentFrame->frame_id);
         }
         else
         {//创建关键帧
+            LOG(WARNING)<<"Need KF is true.Create kf."<<endl;
             upgradeOrdinaryFrameToKeyFrameStereos(pCurrentFrame);//升级.
             auto& pCurrentKF = pCurrentFrame;
             this->KF_id_queue.push_back(pCurrentKF->frame_id);
@@ -441,7 +483,7 @@ public:
                 return;
             }
             cout<<"pLocalGraph.size():"<<pLocalGraph->size()<<endl;
-            pLocalRes = optimizeFactorGraph(pLocalGraph,pLocalInitialEstimate);//TODO:这种"优化" 可以考虑多线程实现.
+            pLocalRes = optimizeFactorGraph(pLocalGraph,pLocalInitialEstimate,15,pCurrentKF->frame_id);//TODO:这种"优化" 可以考虑多线程实现.
             //优化这个图.
             //第五步 对当前帧,跟踪滑窗里的所有关键帧(地图点向当前帧估计位置重投影).创建新优化图. 这个可以放到后台运行.
             shared_ptr<Values> pSWRes,pSWInitialEstimate;
@@ -454,7 +496,7 @@ public:
                 LOG(INFO)<<kfid;
             }
             LOG(INFO)<<";"<<endl;
-            pSWRes = optimizeFactorGraph(pSlidingWindGraph,pSWInitialEstimate,30);
+            pSWRes = optimizeFactorGraph(pSlidingWindGraph,pSWInitialEstimate,30,pCurrentKF->frame_id);
             //第六步 第二次优化.
 
             //第七步 进行Marginalize,分析优化图并选择要舍弃的关键帧和附属的普通帧,抛弃相应的信息.
@@ -493,9 +535,9 @@ public:
         ScopeTimer timer__("insertKFintoSlidingWindow()");
         //第一步 跟踪特征点,创建关联关系.
         //第二步 建立地图点跟踪关系 根据结果集维护数据库.
-        StatisticOfTrackingState track_state;
-        trackAndKeepReprojectionDBForFrame(pCurrentKF,track_state);
-        this->current_track_state = track_state;
+        StatisticOfTrackingStateForAllKF track_states;
+        trackAndKeepReprojectionDBForFrame(pCurrentKF,track_states);
+        this->current_track_state = track_states;
         //第三步 将当前普通帧升级成一个关键帧.
         //bool create_kf_success;
         upgradeOrdinaryFrameToKeyFrameStereos(pCurrentKF);//升级.
@@ -521,7 +563,7 @@ public:
             return;
         }
         cout<<"pLocalGraph.size():"<<pLocalGraph->size()<<endl;
-        pLocalRes = optimizeFactorGraph(pLocalGraph,pLocalInitialEstimate);//TODO:这种"优化" 可以考虑多线程实现.
+        pLocalRes = optimizeFactorGraph(pLocalGraph,pLocalInitialEstimate,15,pCurrentKF->frame_id);//TODO:这种"优化" 可以考虑多线程实现.
         //优化这个图.
         //第五步 对当前帧,跟踪滑窗里的所有关键帧(地图点向当前帧估计位置重投影).创建新优化图.
 
@@ -535,7 +577,7 @@ public:
             LOG(INFO)<<kfid;
         }
         LOG(INFO)<<";"<<endl;
-        pSWRes = optimizeFactorGraph(pSlidingWindGraph,pSWInitialEstimate);
+        pSWRes = optimizeFactorGraph(pSlidingWindGraph,pSWInitialEstimate,30,pCurrentKF->frame_id);
         //第六步 第二次优化.
 
         //第七步 进行Marginalize,分析优化图并选择要舍弃的关键帧和附属的普通帧,抛弃相应的信息.
@@ -574,15 +616,15 @@ public:
         ScopeTimer timer__("insertOrdinaryFrameintoSlidingWindow()");
         //第一步 跟踪特征点.
         //第二步 建立地图点跟踪关系. 修改/创建LandmarkProperties.
-        StatisticOfTrackingState track_state;
-        trackAndKeepReprojectionDBForFrame(pCurrentFrame,track_state);
-        this->current_track_state = track_state;
+        StatisticOfTrackingStateForAllKF track_states;
+        trackAndKeepReprojectionDBForFrame(pCurrentFrame,track_states);
+        this->current_track_state = track_states;
         //第三步 创建局部优化图.第一次优化.
         shared_ptr<Values> pInitialEstimate;
         shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pCurrentFrame->frame_id,pInitialEstimate);
         LOG(WARNING)<<"Generated graph for frame:"<<pCurrentFrame->frame_id<<endl;
         LOG(WARNING)<<"KFid list:"<<serializeIntVec(getInWindKFidVec())<<";"<<endl;
-        this->optimizeFactorGraph(pLocalGraph,pInitialEstimate);
+        this->optimizeFactorGraph(pLocalGraph,pInitialEstimate,15,pCurrentFrame->frame_id);
     }
 
     void removeOrdinaryFrame(shared_ptr<Frame>)
