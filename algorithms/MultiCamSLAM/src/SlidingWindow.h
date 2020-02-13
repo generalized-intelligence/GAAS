@@ -93,8 +93,8 @@ private:
     //扩展kf的内容.这里不需要外部Frame结构知道这种扩展.
     //map<int,LandmarkProperties> KF_landmark_extension_map;
     ReprojectionInfoDatabase reproj_db;
-    //const int max_kf_count = 5;
-    const int max_kf_count = 3;//debug.
+    //const int max_kf_count = 3;
+    const int max_kf_count = 6;//debug.
     int cam_count;
     //vector<int> KF_id_queue;
     deque<int> KF_id_queue;
@@ -184,7 +184,8 @@ public:
         LOG(WARNING)<<"Loss after "<<MaxIter<<" times optimiziation:"<<pGraph->error(*pResult)<<endl;
         if(lastFrameID>=0)
         {
-            LOG(WARNING)<<"optimized translation:"<<pResult->at(Symbol('F',lastFrameID)).cast<Pose3>().translation().vector()<<endl;
+            auto t_ = pResult->at(Symbol('F',lastFrameID)).cast<Pose3>().translation().vector();
+            LOG(WARNING)<<"optimized translation:"<<t_[0]<<","<<t_[1]<<","<<t_[2]<<endl;
         }
         cout<<"optimized result:"<<endl;
         pResult->print();
@@ -249,6 +250,7 @@ public:
         //cout << "x1 covariance:\n" << marginals.marginalCovariance(1) << endl;
         //cout << "x2 covariance:\n" << marginals.marginalCovariance(2) << endl;
         //cout << "x3 covariance:\n" << marginals.marginalCovariance(3) << endl;
+        LOG(WARNING)<<endl;
         return shared_ptr<Values>(pResult);
     }
     void trackAndKeepReprojectionDBForFrame(shared_ptr<Frame> pFrame,StatisticOfTrackingStateForAllKF& track_states_output)//这是普通帧和关键帧公用的.
@@ -447,10 +449,17 @@ public:
 //            }
 //        }
         int best_id;double best_score;
+
         track_good = track_states.getBestRefKFid(best_id,best_score);
-        needKF = (best_score<=50);
 
-
+        if(pCurrentFrame->frame_id >0)
+        {
+            double avg_disp = getAverageDisp(pCurrentFrame->reproj_map[this->getLastKF()->frame_id],this->getLastKF()->frame_id);
+            LOG(WARNING)<<"Avg disp between current frame and last KF:"<<avg_disp<<endl;
+            vector<p2dT> useless_;
+            visualized_tracked_p2d_and_ordinary_frame_stereo(*pCurrentFrame,useless_,useless_,0);
+            needKF = (best_score<=50)||(avg_disp>10);
+        }
         if((!track_good)&&(!force_kf))
         {
             LOG(ERROR)<<"[WARNING] Frame F"<<pCurrentFrame->frame_id<<"track state poor,too few stable pts!"<<endl;
@@ -496,7 +505,7 @@ public:
                 LOG(INFO)<<kfid;
             }
             LOG(INFO)<<";"<<endl;
-            pSWRes = optimizeFactorGraph(pSlidingWindGraph,pSWInitialEstimate,30,pCurrentKF->frame_id);
+            pSWRes = optimizeFactorGraph(pSlidingWindGraph,pSWInitialEstimate,20,pCurrentKF->frame_id);
             //第六步 第二次优化.
 
             //第七步 进行Marginalize,分析优化图并选择要舍弃的关键帧和附属的普通帧,抛弃相应的信息.
@@ -563,7 +572,7 @@ public:
             return;
         }
         cout<<"pLocalGraph.size():"<<pLocalGraph->size()<<endl;
-        pLocalRes = optimizeFactorGraph(pLocalGraph,pLocalInitialEstimate,15,pCurrentKF->frame_id);//TODO:这种"优化" 可以考虑多线程实现.
+        pLocalRes = optimizeFactorGraph(pLocalGraph,pLocalInitialEstimate,7,pCurrentKF->frame_id);//TODO:这种"优化" 可以考虑多线程实现.
         //优化这个图.
         //第五步 对当前帧,跟踪滑窗里的所有关键帧(地图点向当前帧估计位置重投影).创建新优化图.
 
@@ -624,7 +633,7 @@ public:
         shared_ptr<NonlinearFactorGraph> pLocalGraph = this->reproj_db.generateLocalGraphByFrameID(pCurrentFrame->frame_id,pInitialEstimate);
         LOG(WARNING)<<"Generated graph for frame:"<<pCurrentFrame->frame_id<<endl;
         LOG(WARNING)<<"KFid list:"<<serializeIntVec(getInWindKFidVec())<<";"<<endl;
-        this->optimizeFactorGraph(pLocalGraph,pInitialEstimate,15,pCurrentFrame->frame_id);
+        this->optimizeFactorGraph(pLocalGraph,pInitialEstimate,7,pCurrentFrame->frame_id);
     }
 
     void removeOrdinaryFrame(shared_ptr<Frame>)
@@ -655,15 +664,15 @@ public:
             return -1;
         }
         vector<double> v_mean_disp;
-        for(auto iter = currentInWindKFList.begin();iter!=currentInWindKFList.end();++iter)
-        {
-            int kf_id = *iter;
-            //vector<shared_ptr<Frame> > v_relative_frames = this->reproj_db.frameTable.queryByRefKFID(kf_id);//查询和他有关联的帧.
-            //for(auto& pF:v_relative_frames)
-            //{//判断marg哪个关键帧最合适.
-            //    //step<1>.计算帧间平均视差.
-            //    double mean_disp = calcMeanDispBetween2Frames(pCurrentFrame,pF);
-            //}
+        //for(auto iter = currentInWindKFList.begin();iter!=currentInWindKFList.end();++iter)
+        //{
+//            int kf_id = *iter;
+//            //vector<shared_ptr<Frame> > v_relative_frames = this->reproj_db.frameTable.queryByRefKFID(kf_id);//查询和他有关联的帧.
+//            //for(auto& pF:v_relative_frames)
+//            //{//判断marg哪个关键帧最合适.
+//            //    //step<1>.计算帧间平均视差.
+//            //    double mean_disp = calcMeanDispBetween2Frames(pCurrentFrame,pF);
+//            //}
             for(auto proj_rec_iter = pCurrentFrame->reproj_map.begin();proj_rec_iter!=pCurrentFrame->reproj_map.end();++proj_rec_iter)
             {
                 int ref_kf_id = proj_rec_iter->first;
@@ -672,11 +681,11 @@ public:
                 LOG(WARNING)<<"Avg disp between F"<<currentFrameID<<" and RefKF"<<ref_kf_id<<":"<<avg_disp<<endl;
                 v_mean_disp.push_back(avg_disp);
             }
-            //step<2>.如果第一帧到当前帧平均视差 与 最后一帧到当前帧平均视差 比值<2.0: marg最后一个关键帧
-            //    (一直不动.就不要创建新的.否则会一直累计误差.)
+//            //step<2>.如果第一帧到当前帧平均视差 与 最后一帧到当前帧平均视差 比值<2.0: marg最后一个关键帧
+//            //    (一直不动.就不要创建新的.否则会一直累计误差.)
 
-            //step<3>.否则,marg第一个关键帧.
-        }
+//            //step<3>.否则,marg第一个关键帧.
+//        }
         LOG(WARNING)<<"Current frame id:"<<currentFrameID<<",kfid list:"<<serializeIntVec(getInWindKFidVec())<<";"<<endl;
         if(v_mean_disp[0]<2* (v_mean_disp.back()) )
         {
@@ -685,6 +694,11 @@ public:
         }
         LOG(WARNING)<<"will marginalize last kf."<<endl;
         return currentInWindKFList.back();
+    }
+    void Reset()
+    {//重启整个系统.滑窗中的变量重新设置.
+        ;//TODO
+
     }
 };
 
