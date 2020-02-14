@@ -18,8 +18,8 @@ if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
   message(WARNING "CMAKE_BUILD_TYPE not set to 'Release'. Performance may be terrible.")
 else()
   message(STATUS "Building with build type '${CMAKE_BUILD_TYPE}', turn on the compiler optimization")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}     -Wall -march=native -O3 -Wno-reorder -pthread -fopenmp")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -march=native -O3 -pthread -fopenmp")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}     -Wall -O3 -Wno-reorder -pthread -fopenmp")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -O3 -pthread -fopenmp")
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
@@ -43,9 +43,6 @@ endif()
 
 # for tx2
 #SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -ffast-math -march=armv8-a+crypto -mcpu=cortex-a57+crypto")
-# for x86
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -msse2 -march=native")
-
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-modules)
 

@@ -72,8 +72,8 @@ int main(int argc, char **argv) {
         cv::Mat imLeft, imRight, imLeftRect, imRightRect;
 
         // Read left and right images from file
-        imLeft = cv::imread(vstrImageLeft[i], CV_LOAD_IMAGE_UNCHANGED);
-        imRight = cv::imread(vstrImageRight[i], CV_LOAD_IMAGE_UNCHANGED);
+        imLeft = cv::imread(vstrImageLeft[i], -1);
+        imRight = cv::imread(vstrImageRight[i], -1);
 
         if (imLeft.empty() || imRight.empty()) {
             LOG(WARNING) << "Cannot load image " << i << endl;

@@ -19,7 +19,7 @@ class Px4Controller:
         self.local_pose = None
         self.current_state = None
         self.current_heading = None
-        self.takeoff_height = 3.2
+        self.takeoff_height = 20
         self.local_enu_position = None
 
         self.cur_target_pose = None
@@ -36,44 +36,39 @@ class Px4Controller:
         '''
         ros subscribers
         '''
-        self.local_pose_sub = rospy.Subscriber("/mavros/local_position/pose", PoseStamped, self.local_pose_callback)
-        self.mavros_sub = rospy.Subscriber("/mavros/state", State, self.mavros_state_callback)
-        self.gps_sub = rospy.Subscriber("/mavros/global_position/global", NavSatFix, self.gps_callback)
-        self.imu_sub = rospy.Subscriber("/mavros/imu/data", Imu, self.imu_callback)
+        self.local_pose_sub = rospy.Subscriber("/uav4/mavros/local_position/pose", PoseStamped, self.local_pose_callback)
+        self.mavros_sub = rospy.Subscriber("/uav4/mavros/state", State, self.mavros_state_callback)
+        self.gps_sub = rospy.Subscriber("/uav4/mavros/global_position/global", NavSatFix, self.gps_callback)
+        self.imu_sub = rospy.Subscriber("/uav4/mavros/imu/data", Imu, self.imu_callback)
 
-        self.set_target_position_sub = rospy.Subscriber("gi/set_pose/position", PoseStamped, self.set_target_position_callback)
-        self.set_target_yaw_sub = rospy.Subscriber("gi/set_pose/orientation", Float32, self.set_target_yaw_callback)
-        self.custom_activity_sub = rospy.Subscriber("gi/set_activity/type", String, self.custom_activity_callback)
+        self.set_target_position_sub = rospy.Subscriber("/uav4/gi/set_pose/position", PoseStamped, self.set_target_position_callback)
+        self.set_target_yaw_sub = rospy.Subscriber("/uav4/gi/set_pose/orientation", Float32, self.set_target_yaw_callback)
+        self.custom_activity_sub = rospy.Subscriber("/uav4/gi/set_activity/type", String, self.custom_activity_callback)
 
 
         '''
         ros publishers
         '''
-        self.local_target_pub = rospy.Publisher('mavros/setpoint_raw/local', PositionTarget, queue_size=10)
+        self.local_target_pub = rospy.Publisher('/uav4/mavros/setpoint_raw/local', PositionTarget, queue_size=10)
 
         '''
         ros services
         '''
-        self.armService = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
-        self.flightModeService = rospy.ServiceProxy('/mavros/set_mode', SetMode)
+        self.armService = rospy.ServiceProxy('/uav4/mavros/cmd/arming', CommandBool)
+        self.flightModeService = rospy.ServiceProxy('/uav4/mavros/set_mode', SetMode)
 
 
         print("Px4 Controller Initialized!")
 
 
     def start(self):
-        rospy.init_node("offboard_node")
-        for i in range(10):
-            if self.current_heading is not None:
-                break
-            else:
-                print("Waiting for initialization.")
-                time.sleep(0.5)
-        self.cur_target_pose = self.construct_target(0, 0, self.takeoff_height, self.current_heading)
+        rospy.init_node("uav4_offboard_node")
+
+        self.cur_target_pose = self.construct_target(self.local_pose.pose.position.x, self.local_pose.pose.position.y, self.takeoff_height, self.current_heading)
 
         #print ("self.cur_target_pose:", self.cur_target_pose, type(self.cur_target_pose))
 
-        for i in range(10):
+        for i in range(20):
             self.local_target_pub.publish(self.cur_target_pose)
             self.arm_state = self.arm()
             self.offboard_state = self.offboard()
@@ -304,6 +299,6 @@ class Px4Controller:
 
 
 if __name__ == '__main__':
+
     con = Px4Controller()
     con.start()
-

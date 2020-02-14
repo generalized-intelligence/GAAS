@@ -62,8 +62,8 @@ int main(int argc, char **argv) {
     cv::Mat imLeft, imRight;
     for (int ni = 0; ni < nImages; ni++) {
         // Read left and right images from file
-        imLeft = cv::imread(vstrImageLeft[ni], CV_LOAD_IMAGE_GRAYSCALE);
-        imRight = cv::imread(vstrImageRight[ni], CV_LOAD_IMAGE_GRAYSCALE);
+        imLeft = cv::imread(vstrImageLeft[ni]);
+        imRight = cv::imread(vstrImageRight[ni]);
         double tframe = vTimestamps[ni];
 
         if (imLeft.empty() || imRight.empty()) {

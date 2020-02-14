@@ -1,22 +1,57 @@
-*/build/
-*/*/build/
-*/*/*/build/
-*/*/*/*/build/
-*/build/*
-.idea
-*/.idea/*
-*/.kdev4
-*/.kdev4/*
-*.so
+# Big files
 *.png
 *.jpg
 *.log
 *.bag
-*.kdev*
-bin
-software/SLAM/ygz_slam_ros/bin/*
-software/SLAM/ygz_slam_ros/build/*
-*.pyc
+
+# IDE project settings
+.idea/
+.vscode/
+.kdev4/
+*.kdev4
+
+# Build directories
+build/
+bin/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
 *.cfgc
-*/.vscode
-*/.vscode/
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.so

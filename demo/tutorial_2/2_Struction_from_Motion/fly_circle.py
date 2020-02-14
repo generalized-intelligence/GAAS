@@ -23,8 +23,9 @@ class fly_circle:
 
             x_rad = (math.pi / 2.0) - (math.pi - triangle_rad) / 2.0
             line_segment = math.sqrt(2*self.r**2 -2 * (self.r**2) * math.cos(triangle_rad))
-            x_idx = line_segment * math.cos(x_rad)
-            y_idx = line_segment * math.sin(x_rad)
+            x_idx = line_segment * math.sin(x_rad)
+            y_idx = -1 * line_segment * math.cos(x_rad)
+            
 
             return x_idx, y_idx, triangle_rad
 
@@ -32,8 +33,9 @@ class fly_circle:
 
             x_rad = (math.pi / 2.0) - (triangle_rad - math.pi) / 2.0
             line_segment = math.sqrt(2*self.r**2 -2 * (self.r**2) * math.cos(triangle_rad))
-            x_idx = -1 * line_segment * math.cos(x_rad)
-            y_idx = line_segment * math.sin(x_rad)
+            x_idx = line_segment * math.sin(x_rad)
+            y_idx = line_segment * math.cos(x_rad)
+            
 
             return x_idx, y_idx, triangle_rad
 
@@ -58,7 +60,7 @@ class fly_circle:
         for idx in range(self.n + 1):
             x, y, triangle_rad= self.projected_x_y(idx)
 
-            com.move(x, y, self.height, BODY_OFFSET_ENU=False)
+            com.move( x, y, self.height, BODY_OFFSET_ENU=False)
             time.sleep(4)
 
             # commander.turn() requires angle in Degree
