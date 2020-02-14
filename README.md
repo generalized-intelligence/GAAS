@@ -12,7 +12,7 @@
   
 [<img src = "https://s2.ax1x.com/2019/11/07/Mkwj81.png">](https://github.com/generalized-intelligence/GAAS/releases/tag/v0.7)
 ---
-[<img src = "https://s2.ax1x.com/2019/11/12/M1FrVA.png">](https://www.julyedu.com/course/getDetail/196/0/1)
+
 
 [<img width="280" src = "https://s2.ax1x.com/2019/06/20/Vvmy6A.png" >](https://www.facebook.com/groups/300340454189266/?ref=bookmarks)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvmsld.png"/>](https://bit.ly/2Ky8VbV)[<img width="280" src="https://s2.ax1x.com/2019/06/20/Vvm6OI.png"/>](https://discord.gg/cUxYsRc)
 <img src="https://s2.ax1x.com/2019/09/20/nXrXjK.png">
@@ -32,7 +32,7 @@
 
 <img src="https://s2.ax1x.com/2019/02/25/kIZ3vj.jpg" align="right" width="300px" alt="hardware">
 
-> GAAS (Generalized Autonomy Aviation System) is an open source software platform for autonomous drones and VTOLs. GAAS was built to provide a common infrastructure for computer-vision based drone intelligence. In the long term, GAAS aims to accelerate the coming of autonomous VTOLs. Being a BSD-licensed product, GAAS makes it easy for enterprises, researches, and drone enthusiasts to modify the code to suit specific use cases. 
+> GAAS (Generalized Autonomy Aviation System) is an open source autonomous aviation software platform, designed for fully autonomous drones and flying cars. GAAS was built to provide a common infrastructure for computer-vision based drone intelligence. In the long term, GAAS aims to accelerate the coming of autonomous VTOLs. Being a BSD-licensed product, GAAS makes it easy for enterprises, researches, and drone enthusiasts to modify the code to suit specific use cases. 
 
 > Our long-term vision is to implement GAAS in autonomous passenger carrying VTOLs (or "flying cars"). The first step of this vision is to make Unmanned Aerial Vehicles truly "unmanned", and thus make drones ubiquitous. We currently support manned and unmanned multi-rotor drones and helicopters. Our next step is to support VTOLs and eVTOLs.
 
