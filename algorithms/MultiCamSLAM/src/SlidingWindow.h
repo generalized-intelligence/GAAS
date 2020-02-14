@@ -93,8 +93,8 @@ private:
     //扩展kf的内容.这里不需要外部Frame结构知道这种扩展.
     //map<int,LandmarkProperties> KF_landmark_extension_map;
     ReprojectionInfoDatabase reproj_db;
-    //const int max_kf_count = 3;
-    const int max_kf_count = 6;//debug.
+    //const int max_kf_count = 5;
+    const int max_kf_count = 3;//debug.
     int cam_count;
     //vector<int> KF_id_queue;
     deque<int> KF_id_queue;
@@ -264,7 +264,17 @@ public:
         int kf_vec_len = this->getInWindKFidVec().size();
         LOG(INFO)<<"In trackAndKeepReprojectionDBForFrame():tracking wind size:"<<kf_vec_len<<endl;
         track_states_output = StatisticOfTrackingStateForAllKF();
-        for(const int& ref_kf_id:this->getInWindKFidVec())//对当前帧,追踪仍在窗口内的关键帧.
+
+        vector<int> to_track_kf_id;
+        for(int kfindex_ = 0;kfindex_<this->getInWindKFidVec().size();kfindex_++)//跟踪的和窗口数不一样.这样减少压力.
+        {
+            if(kfindex_ == this->getInWindKFidVec().size() -1 || kfindex_ == this->getInWindKFidVec().size() -2)
+            {
+                to_track_kf_id.push_back(this->getInWindKFidVec().at(kfindex_));
+            }
+        }
+        //for(const int& ref_kf_id:this->getInWindKFidVec())//对当前帧,追踪仍在窗口内的关键帧.
+        for(const int& ref_kf_id:to_track_kf_id)
         {
             //第一步 跟踪特征点,创建关联关系.
             auto pRefKF = getFrameByID(ref_kf_id);
@@ -282,18 +292,33 @@ public:
             v_track_success.resize(cam_count);
             vector<int> v_track_success_count;
             v_track_success_count.resize(cam_count);
+
+            vector<std::thread> v_threads;
             for(int i = 0;i<cam_count;i++)//这里可以多线程.暂时不用.
             {
                 ScopeTimer t_cvdopyrlk("track doTrackLastKF_all2dpts");//DEBUG ONLY!
                 //doTrackLastKF(pFrame,getLastKF(),i,vvLeftp2d.at(i),vvRightp2d.at(i),v_p2d_to_kf_p3d_index.at(i),v_originalKFP2d_relative.at(i),&v_track_success.at(i),&v_track_success_count.at(i));
                 //doTrackLastKF(...);//跟踪窗口里的所有kf.处理所有情况(mono2mono,mono2stereo,stereo2mono,stereo2stereo.)
                 //TODO:start a thread rather than invoke doTrackLastKF_all2dpts() directly.
-                doTrackLaskKF_all2dpts(pFrame,getFrameByID(ref_kf_id),i,
-                                       //this->getFrameByID(ref_kf_id)->p2d_vv.at(i),
-                                       vvLeftp2d.at(i),
-                                       vv_disps.at(i),vv_track_type.at(i),v_p2d_to_kf_p2d_index.at(i),v_p2d_to_kf_p3d_index.at(i),
-                                       &(v_track_success.at(i)),&(v_track_success_count.at(i))
-                                       );
+
+
+//                doTrackLaskKF_all2dpts(pFrame,getFrameByID(ref_kf_id),i,
+//                                       //this->getFrameByID(ref_kf_id)->p2d_vv.at(i),
+//                                       vvLeftp2d.at(i),
+//                                       vv_disps.at(i),vv_track_type.at(i),v_p2d_to_kf_p2d_index.at(i),v_p2d_to_kf_p3d_index.at(i),
+//                                       &(v_track_success.at(i)),&(v_track_success_count.at(i))
+//                                       );
+                v_threads.push_back(std::thread(doTrackLaskKF_all2dpts,pFrame,getFrameByID(ref_kf_id),i,
+                                                     //this->getFrameByID(ref_kf_id)->p2d_vv.at(i),
+                                                     std::ref(vvLeftp2d.at(i)),
+                                                     std::ref(vv_disps.at(i)),std::ref(vv_track_type.at(i)),std::ref(v_p2d_to_kf_p2d_index.at(i)),std::ref(v_p2d_to_kf_p3d_index.at(i)),
+
+                                                     &v_track_success.at(i),&v_track_success_count.at(i),0
+                                                     ));
+            }
+            for(auto& th:v_threads)
+            {
+                th.join();
             }
             //threads.join();//合并结果集.
 
@@ -458,7 +483,7 @@ public:
             LOG(WARNING)<<"Avg disp between current frame and last KF:"<<avg_disp<<endl;
             vector<p2dT> useless_;
             visualized_tracked_p2d_and_ordinary_frame_stereo(*pCurrentFrame,useless_,useless_,0);
-            needKF = (best_score<=50)||(avg_disp>10);
+            needKF = (best_score<=40)||(avg_disp>20);
         }
         if((!track_good)&&(!force_kf))
         {

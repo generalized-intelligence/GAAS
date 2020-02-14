@@ -37,3 +37,14 @@ ReprojectionInfoDatabase
 SlidingWindow
 
 )
+add_executable(test_SLAM_offline test_SLAM_offline.cpp)
+target_link_libraries(test_SLAM_offline
+FeatureFrontEndCV
+FrameManager
+${REQUIRED_LIBRARIES}
+#SLAMOptimizationGraph
+IMU_Preint_GTSAM
+ReprojectionInfoDatabase
+SlidingWindow
+)
+

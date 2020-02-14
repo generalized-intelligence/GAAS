@@ -19,7 +19,7 @@ def parse_line_pose(line):
 
 def main():
     print('usage: python visualize_poses.py')
-    log_path = '/tmp/test_SLAM_simple.INFO'
+    log_path = '/tmp/test_SLAM_offline.INFO'
     xs,ys,zs = {},{},{}
     xl,yl,zl = [],[],[]
     xl_estimated,yl_estimated,zl_estimated = [],[],[]
