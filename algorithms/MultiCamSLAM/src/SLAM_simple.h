@@ -64,11 +64,18 @@ public:
         cv::FileStorage* pSettings = new cv::FileStorage(argv[1],cv::FileStorage::READ);
 
         //加载cam config.
-        StereoCamConfig conf((*pSettings)["cams"][0]);
-        StereoCamConfig conf2((*pSettings)["cams"][1]);
+//        StereoCamConfig conf((*pSettings)["cams"][0]);
+//        StereoCamConfig conf2((*pSettings)["cams"][1]);
 
-        this->stereo_cam_config.push_back(conf);
-        this->stereo_cam_config.push_back(conf2);
+//        this->stereo_cam_config.push_back(conf);
+//        this->stereo_cam_config.push_back(conf2);
+
+        auto node = (*pSettings)["cams"];
+
+        for(int i = 0;i<node.size();i++)
+        {
+            this->stereo_cam_config.push_back(node[i]);
+        }
         pWind = shared_ptr<mcs::SlidingWindow>(new mcs::SlidingWindow(this->stereo_cam_config.size()));
         //pGraph->initCamsStereo(this->stereo_cam_config);
     }
@@ -101,6 +108,116 @@ public:
         shared_ptr < vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > > > pvInputs( new vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > >());
         pvInputs->push_back(std::make_pair(img1,img2));
         pvInputs->push_back(std::make_pair(img3,img4));
+        int tracked_pts_count_out;
+
+
+
+        //if(needNewKeyFrame())
+
+        //if(pGraph->getFrameID() ==  0)//DEBUG ONLY.
+        //if(!ever_init)//||needNewKeyFrame())//DEBUG ONLY!
+        if(needNewKeyFrame())
+        {//关键帧处理.
+            //bool needNewKF = true;
+            bool needNewKF = false;//DEBUG ONLY.Using inner strategy in SlidingWindow.
+            bool create_frame_success;
+            auto v_imu = form_imu_data_vec_from_msg_vec(this->imu_vec_tmp);
+            pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF,&v_imu);
+            this->imu_vec_tmp.clear();
+            if(!ever_init)
+            //初始化SLAM simple.
+            //第一帧,必须是关键帧.
+            {
+                LOG(INFO)<<"init SLAM_simple!"<<endl;
+                pNewF->rotation = Eigen::Matrix3d::Identity();
+                pNewF->position = Eigen::Vector3d(0,0,0);
+                ever_init = true;
+                //pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,nullptr,tracked_pts_count_out);//TODO.
+                //pWind->insertKFintoSlidingWindow(pNewF);
+                bool useless_;
+                pWind->insertAFrameIntoSlidingWindow(pNewF,true,useless_);
+            }
+            else
+            {
+                LOG(INFO)<<"SLAM initiated.Add new kf to optimization graph and do optimize()."<<endl;
+                bool track_local_success;
+                //pGraph->addStereoKeyFrameToBackEndAndOptimize(pNewF,pLastKF,tracked_pts_count_out);//TODO.
+
+
+                //pWind->insertKFintoSlidingWindow(pNewF);
+                pWind->insertAFrameIntoSlidingWindow(pNewF,false,track_local_success);
+
+                if(track_local_success)//当前帧追踪局部成功
+                //if(true) //DEBUG ONLY!
+                {
+                    //pNewF->rotation = ...
+                    //pNewF->position =
+                    if(this->SLAMRunningState != STATE_TRACKING)
+                    {
+                        LOG(INFO)<<"State transfer from "<<state_id_map[SLAMRunningState]<<" to STATE_TRACKING!"<<endl;
+                    }
+                    this->SLAMRunningState = this->STATE_TRACKING;
+                }
+                else
+                {
+//                    LOG(ERROR)<<"Track failure!Using last frame rt."<<endl;
+//                    pNewF->rotation = getLastFrame()->rotation;
+//                    pNewF->position = getLastFrame()->position;
+                    if(this->SLAMRunningState!= this->STATE_TRACKING_FALIED)
+                    {
+                        LOG(ERROR)<<"State transfer from "<<state_id_map[SLAMRunningState]<<" to STATE_TRACKING_FAILED!"<<endl;
+                    }
+                    this->SLAMRunningState = this->STATE_TRACKING_FALIED;
+                    return;//这种情况下KF F都不变.暂不考虑IMU问题.
+                }
+            }
+            pLastKF = pNewF;
+            pLastF = pNewF;
+        }
+        else
+        {//普通帧处理.
+            bool needNewKF =false;
+            bool create_frame_success;
+            last_frame_update_t = std::chrono::high_resolution_clock::now();
+            auto v_imu = form_imu_data_vec_from_msg_vec(this->imu_vec_tmp);
+            pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF,&v_imu);
+            this->imu_vec_tmp.clear();
+            //TODO:
+            //bool track_and_pnp_ransac_success;//pnp 验证不要了.
+            //mcs::trackAndDoSolvePnPRansacMultiCam(pNewF); //frame_wise tracking....
+            cout<<"in iterateWith4Imgs: track ordinary frame:referring frame id:"<<pLastKF->frame_id<<endl;
+            //pGraph->addOrdinaryStereoFrameToBackendAndOptimize(pNewF,pLastKF,tracked_pts_count_out);
+
+
+
+            //pWind->insertOrdinaryFrameintoSlidingWindow(pNewF);
+            bool track_local_success;
+            pWind->insertAFrameIntoSlidingWindow(pNewF,false,track_local_success);
+
+            if(track_local_success)
+            {
+                //createNewKF...
+                pLastF = pNewF;
+            }
+            else
+            {
+                //pNewF->rotation = ...
+                //pNewF->translation = ...
+                LOG(ERROR)<<"State transfer from "<<state_id_map[SLAMRunningState]<<" to STATE_TRACKING_FAILED!"<<endl;
+                this->SLAMRunningState = this->STATE_TRACKING_FALIED;
+                return;//这种情况下KF F都不变.暂不考虑IMU问题.
+            }
+
+        }
+    }
+    void iterateWithImgs(shared_ptr < vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > > > pvInputs)
+    {
+        ScopeTimer t("SLAM_simple::iterateWith4Imgs()");
+        shared_ptr<mcs::Frame> pNewF;
+        bool needNewKF;
+//        shared_ptr < vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > > > pvInputs( new vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > >());
+//        pvInputs->push_back(std::make_pair(img1,img2));
+//        pvInputs->push_back(std::make_pair(img3,img4));
         int tracked_pts_count_out;
 
 

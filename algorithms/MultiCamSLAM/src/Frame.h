@@ -78,6 +78,11 @@ namespace mcs
         double covariance_alpha_x = 0,covariance_alpha_y = 0,covariance_alpha_z = 0;
     }IMU_Data_T;
 
+
+    const char TRACK_STEREO2STEREO = 0;
+    const char TRACK_STEREO2MONO = 1;
+    const char TRACK_MONO2STEREO = 2;
+    const char TRACK_MONO2MONO = 3;
     //typedef std::tuple<int,p2dT,float,char> SingleProjectionT;
     struct SingleProjectionT
     {

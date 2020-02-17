@@ -137,10 +137,7 @@ namespace mcs
 
 
 
-    const char TRACK_STEREO2STEREO = 0;
-    const char TRACK_STEREO2MONO = 1;
-    const char TRACK_MONO2STEREO = 2;
-    const char TRACK_MONO2MONO = 3;
+
     void doTrackLaskKF_all2dpts(shared_ptr<Frame> pFrame,shared_ptr<Frame> pKeyFrameReference,int cam_index,
                                 //const vector<Point2f>& input_kf_p2d,
                                 vector<Point2f>& output_tracked_pts_left,

@@ -268,7 +268,8 @@ public:
         vector<int> to_track_kf_id;
         for(int kfindex_ = 0;kfindex_<this->getInWindKFidVec().size();kfindex_++)//跟踪的和窗口数不一样.这样减少压力.
         {
-            if(kfindex_ == this->getInWindKFidVec().size() -1 || kfindex_ == this->getInWindKFidVec().size() -2)
+            //if(kfindex_ == this->getInWindKFidVec().size() -1 || kfindex_ == this->getInWindKFidVec().size() -2)
+            if(kfindex_ == this->getInWindKFidVec().size() -1)
             {
                 to_track_kf_id.push_back(this->getInWindKFidVec().at(kfindex_));
             }
@@ -481,8 +482,8 @@ public:
         {
             double avg_disp = getAverageDisp(pCurrentFrame->reproj_map[this->getLastKF()->frame_id],this->getLastKF()->frame_id);
             LOG(WARNING)<<"Avg disp between current frame and last KF:"<<avg_disp<<endl;
-            vector<p2dT> useless_;
-            visualized_tracked_p2d_and_ordinary_frame_stereo(*pCurrentFrame,useless_,useless_,0);
+            //vector<p2dT> useless_;
+            visualize_tracked_p2d_and_ordinary_frame_stereo_helper(*pCurrentFrame);
             needKF = (best_score<=40)||(avg_disp>20);
         }
         if((!track_good)&&(!force_kf))

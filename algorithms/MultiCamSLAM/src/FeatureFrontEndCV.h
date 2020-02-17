@@ -77,7 +77,7 @@ namespace mcs
         return pResult;
     }
 
-    const int EXTRACT_COUNT_EACH_BLOCK = 40;
+    const int EXTRACT_COUNT_EACH_BLOCK = 20;//40;
     shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature)
     {
         LOG(INFO)<<"in extractCamKeyPoints_splited(),method and compute_feat:"<<method<<","<<compute_feature<<endl;

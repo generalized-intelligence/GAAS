@@ -23,7 +23,9 @@ namespace mcs
 
     return ...//TODO:Fill in.
 }*/
-
+void visualized_tracked_p2d_and_ordinary_frame_stereo(Frame& frame,vector<p2dT>& p2d_vec_left,vector<p2dT>& p2d_vec_right,int cam_index,
+                                               vector<unsigned char>* pStates = nullptr//TODO:design the enums.
+                                               );
 
 void visualized_tracked_p2d_and_ordinary_frame(Frame& frame,vector<p2dT>& p2d_vec,int cam_index,
                                                vector<unsigned char>* pStates = nullptr//TODO:design the enums.
@@ -54,8 +56,30 @@ void visualized_tracked_p2d_and_ordinary_frame(Frame& frame,vector<p2dT>& p2d_ve
     cv::imshow(ss.str(),img);
     cv::waitKey(1);
 }
+void visualize_tracked_p2d_and_ordinary_frame_stereo_helper(Frame& frame)//封装一下,支持reprojection map的形式
+{
+    auto iter = frame.reproj_map.begin();//只有一个元素,就是最近的那个关键帧.
+    {
+        int kf_id = iter->first;
+        ReprojectionRecordT& recs_vv = iter->second;
+        for(int cam_id = 0;cam_id<recs_vv.size();cam_id++)
+        {
+            auto track_cam_id_v = recs_vv.at(cam_id);
+            vector<p2dT> p2d_v_l,p2d_v_r;
+            for(auto& track_:track_cam_id_v)
+            {
+                if (track_.tracking_state!=TRACK_MONO2MONO)//只要不是这种没用的
+                {
+                    p2d_v_l.push_back(track_.current_frame_p2d);
+                }
+            }
+            visualized_tracked_p2d_and_ordinary_frame_stereo(frame,p2d_v_l,p2d_v_r,cam_id);
+        }
+    }
+
+}
 void visualized_tracked_p2d_and_ordinary_frame_stereo(Frame& frame,vector<p2dT>& p2d_vec_left,vector<p2dT>& p2d_vec_right,int cam_index,
-                                               vector<unsigned char>* pStates = nullptr//TODO:design the enums.
+                                               vector<unsigned char>* pStates//TODO:design the enums.
                                                )
 {
     //可视化显示所有被跟踪的2d点.

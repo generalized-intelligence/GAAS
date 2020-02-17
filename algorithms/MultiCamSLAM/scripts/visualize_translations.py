@@ -42,9 +42,9 @@ def main():
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z') # 坐标轴 
-    #ax.set_xlim3d(-10,10)
-    #ax.set_ylim3d(-10,10)
-    #ax.set_zlim3d(-10,10)
+    ax.set_xlim3d(-40,40)
+    ax.set_ylim3d(-40,40)
+    ax.set_zlim3d(-40,40)
 
     ax.scatter(xl, yl, zl, c='y')  # optimized result
     #ax.scatter(lm_x,lm_y,lm_z,c = 'b') # optmized landmarks (optional)
