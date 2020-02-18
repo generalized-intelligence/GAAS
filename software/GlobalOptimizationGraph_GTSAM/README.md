@@ -2,7 +2,7 @@
 
 ### Constant GPS + SLAM fusion
 
-The SLAM and GPS are both constant at all time, so GOG will try to fusion the pose information from these two sources.
+The SLAM and GPS are both constant at all time, so GOG will try to fuse the pose information from these two sources.
     
 <img src = "https://s2.ax1x.com/2019/11/07/MF5Ru4.png">
 
