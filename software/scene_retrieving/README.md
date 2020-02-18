@@ -1,6 +1,6 @@
 # Scene Retrieving
 
-Enabling the drone to recover its pose in a predefined map. By recovering its pose in a map, the drone can eliminate its acculated pose error. At the same time, the drone is capable of flying to a selected target in RVIZ.
+Enabling the drone to recover its pose in a predefined map. By recovering its pose in a map, the drone can eliminate its accumulated pose error. At the same time, the drone is capable of flying to a selected target in RVIZ.
 
 ### How To Use
 
