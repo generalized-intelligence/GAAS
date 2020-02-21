@@ -3,18 +3,50 @@
 //#include "imgproc.hpp"
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
+#include <glog/logging.h>
+#include <opencv2/highgui.hpp>
 
 #ifndef CV_UTILS_MESHGEN_H
 #define CV_UTILS_MESHGEN_H
 
+namespace std {
+
+template <>
+struct hash<cv::Point2f>
+{
+    size_t operator()(const cv::Point2f& point) const noexcept
+    {
+        const size_t fnv_prime = 16777619u;
+        const size_t fnv_offset_basis = 2166136261u;
+
+        size_t state = fnv_offset_basis;
+        for(const uint8_t* p = reinterpret_cast<const uint8_t*>(&point), *end = p + sizeof(cv::Point2f); p < end; ++p)
+            state = (state ^ *p) * fnv_prime;
+
+        return state;
+    }
+};
+}
 namespace MeshGen
 {
 using namespace cv;
 using namespace std;
 
+vector<Point2i> p2f_array_to_p2i_vec(Point2f* p2f,int count)
+{
+    vector<Point2i> p2i_v;
+    for(int i = 0;i<count;i++)
+    {
+        p2i_v.push_back(Point2i(std::round(p2f[i].x),std::round(p2f[i].y)));
+    }
+    return p2i_v;
+}
+
+
+
 bool checkHighIntensityInsideOfTriangle(const Mat& canny_img,const cvTriangleT& triangle,const float threshold,const int max_intense_count);
 void doCVDelaunaySubdiv2d(Mat& img,std::vector<cv::Point2f>& kps);
-void doCVCalcCannyEdge(Mat& img,Mat& canny_img);
+//void doCVCalcCannyEdge(Mat& img,Mat& canny_img,const double edge_threshold = 40);
 template <typename T>
 void extract_sub_vec(const vector<T>& input_vec,vector<T>& output_vec,const vector<uint8_t> valid_mask)
 {
@@ -32,6 +64,7 @@ void extract_sub_vec(const vector<T>& input_vec,vector<T>& output_vec,const vect
 
 void doCVDelaunaySubdiv2d(Mat& img,vector<cv::Point2f>& kps,vector<cvTriangleT>& output_triangles)
 {
+    cv::Size img_size = img.size();
     cv::Rect2f rect(0, 0, img_size.width, img_size.height);
     cv::Subdiv2D subdiv(
         rect);  // subdiv has the delaunay triangulation function//预备三角剖分keypoints_to_triangulate的所有点.
@@ -39,17 +72,17 @@ void doCVDelaunaySubdiv2d(Mat& img,vector<cv::Point2f>& kps,vector<cvTriangleT>&
 
     // Perform triangulation.
     try {
-      subdiv.insert(*keypoints_to_triangulate);//插入顶点.
+      subdiv.insert(kps);//插入顶点.
     } catch (...) {
       LOG(FATAL) << "CreateMesh2D: subdiv.insert error (2).\n Keypoints to triangulate.size(): "
-                 << keypoints_to_triangulate->size();
+                 << kps.size();
     }
 
     subdiv.getTriangleList(output_triangles);//获取结果.
 }
 void getBoundaryBoxOfcvTriangle(const cvTriangleT& triangle,int& topLeftx,int& topLefty,int& botRightx,int& botRighty)//不检查边界,一定是3个元素的数组.
 {
-    Point2i[3] t_i;
+    Point2i t_i[3];
     t_i[0].x = std::round(triangle(0));
     t_i[0].y = std::round(triangle(1));
 
@@ -59,32 +92,51 @@ void getBoundaryBoxOfcvTriangle(const cvTriangleT& triangle,int& topLeftx,int& t
     t_i[2].x = std::round(triangle(4));
     t_i[2].y = std::round(triangle(5));
 
-    topLeft_x = std::min(t_i[0].x, std::min(t_i[1].x, t_i[2].x));
-    topLeft_y = std::min(t_i[0].y, std::min(t_i[1].y, t_i[2].y));
-    botRight_x = std::max(t_i[0].x, std::max(t_i[1].x, t_i[2].x));
-    botRight_y = std::max(t_i[0].y, std::max(t_i[1].y, t_i[2].y));
+    topLeftx = std::min(t_i[0].x, std::min(t_i[1].x, t_i[2].x));
+    topLefty = std::min(t_i[0].y, std::min(t_i[1].y, t_i[2].y));
+    botRightx = std::max(t_i[0].x, std::max(t_i[1].x, t_i[2].x));
+    botRighty = std::max(t_i[0].y, std::max(t_i[1].y, t_i[2].y));
 }
 
+void doCVCalcCannyEdge(const Mat& img,Mat& canny_img,const double edge_threshold = 40)
+{
+    // duplicate image to preserve const input
+    cv::Mat copy = img.clone();
+    cv::Mat gray_im;
+    if (copy.channels() > 1)
+    {
+        cv::cvtColor(copy, gray_im, cv::COLOR_RGB2GRAY);
+    }
+    else
+    {
+        gray_im = copy;
+    }
+    cv::Mat gray_copy = gray_im.clone();
+    cv::equalizeHist(gray_copy,gray_copy);
+
+    // 高斯平滑 3*3
+    cv::GaussianBlur(gray_copy, gray_copy, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
+
+    // convert it to grayscale (CV_8UC3 -> CV_8UC1)
+
+    cv::Canny(gray_copy, canny_img, edge_threshold, edge_threshold*3, 3);
+}
 
 bool checkHighIntensityInsideOfTriangle(const Mat& canny_img,const cvTriangleT& triangle,const float threshold,const int max_intense_count)
 {
-    std::vector<std::pair<Poin2i, uint8_t>> keypointsWithIntensities;
+    std::vector<std::pair<Point2i, uint8_t>> keypointsWithIntensities;
     //填充三角形.使用边扫描算法.
     //三角形离散化.
-//    Point2i[3] t_i;
-//    t_i[0].x = std::round(triangle(0));
-//    t_i[0].y = std::round(triangle(1));
+    Point2f t_i[3];
+    t_i[0].x = triangle(0);
+    t_i[0].y = triangle(1);
 
-//    t_i[1].x = std::round(triangle(2));
-//    t_i[1].y = std::round(triangle(3));
+    t_i[1].x = triangle(2);
+    t_i[1].y = triangle(3);
 
-//    t_i[2].x = std::round(triangle(4));
-//    t_i[2].y = std::round(triangle(5));
+    t_i[2].x = triangle(4);
+    t_i[2].y = triangle(5);
 
-//    int topLeft_x = std::min(t_i[0].x, std::min(t_i[1].x, t_i[2].x));
-//    int topLeft_y = std::min(t_i[0].y, std::min(t_i[1].y, t_i[2].y));
-//    int botRight_x = std::max(t_i[0].x, std::max(t_i[1].x, t_i[2].x));
-//    int botRight_y = std::max(t_i[0].y, std::max(t_i[1].y, t_i[2].y));
     int topLeftx,topLefty,botRightx,botRighty;
     getBoundaryBoxOfcvTriangle(triangle,topLeftx,topLefty,botRightx,botRighty);
     //triangle(0)
@@ -116,12 +168,13 @@ bool checkHighIntensityInsideOfTriangle(const Mat& canny_img,const cvTriangleT& 
 //            }
 //        }
 //    }
-    cv::fillConvexPoly(local,t_i,3,Scalar(255,255,255));
+
+    cv::fillConvexPoly(local,p2f_array_to_p2i_vec(t_i,3),Scalar(255,255,255));
     //对照检查.(避免cache反复读取,集中处理.)
 
-    for(int y = topLeft_y;y<botRight_y;y++)
+    for(int y = topLefty;y<botRighty;y++)
     {
-        for(int x = topLeft_x;x<botRight_x;x++)
+        for(int x = topLeftx;x<botRightx;x++)
         {
             if(local.at<uint8_t>(y,x)&&canny_img.at<uint8_t>(y,x)>threshold)
             {
@@ -136,34 +189,42 @@ bool checkHighIntensityInsideOfTriangle(const Mat& canny_img,const cvTriangleT& 
     }
     return true;
 }
-inline getXYbyZ(const float& fx,const float& fy,const float& cx,const float& cy,const float& b,
+inline void getXYbyZ(const float& fx,const float& fy,const float& cx,const float& cy,const float& b,
                 const float z,
                 const float& u,const float& v,
                 float& x,float& y)
 {
-    x = z*(u-camcx)/camfx;
-    y = z*(u-camcy)/camfy;
+    x = z*(u-cx)/fx;
+    y = z*(v-cy)/fy;
 }
 inline void getZByUVDisp(const float& disp,const float& fx,const float& fy,const float& cx,const float& cy,const float& b,
                            const float& u,const float& v,
                            float& z)
 {
-        z = b*camfx/(disp+1e-05);//防止浮点溢出.
+        z = b*fx/(disp+1e-05);//防止浮点溢出.
 }
 
 //inline void getXYZByUVDisp(const float& disp,const float& fx,const float& fy,const float& cx,const float& cy,const float& b,
 //                           const float& u,const float& v,
 //                           float& x,float& y,float& z)
 //{
-//        z = b*camfx/(disp+1e-05);//防止浮点溢出.
-//        x = z*(u - camcx) / camfx;
-//        y = z*(v - camcy) / camfy;
+//        z = b*fx/(disp+1e-05);//防止浮点溢出.
+//        x = z*(u - cx) / fx;
+//        y = z*(v - cy) / fy;
 //}
+inline KeyPoint point2f_to_kp(const Point2f& p2f)
+{
+    vector<Point2f> p2fv;
+    vector<KeyPoint> kpv;
+    p2fv.push_back(p2f);
+    cv::KeyPoint::convert(p2fv,kpv);
+    return kpv[0];
+}
 
 inline void generateDepthMapForATriangle(const cvTriangleT& triangle,const unordered_map<Point2f,float>& pt_disp_map,Mat& depth_img_output,Mat& render_helper,
                                          const float& fx,const float& fy,const float& cx,const float& cy,const float& b)
 {
-    Point2f pts_2d[2];
+    Point2f pts_2d[3];
     pts_2d[0].x = triangle[0];
     pts_2d[0].y = triangle[1];
 
@@ -197,32 +258,62 @@ inline void generateDepthMapForATriangle(const cvTriangleT& triangle,const unord
     getBoundaryBoxOfcvTriangle(triangle,topLeftx,topLefty,botRightx,botRighty);
     //cv::Mat inside_triangle(botRighty-topLefty,botRightx-topLeftx,CV_8U,Scalar(0));//包围盒,减少创建时间消耗.
 
-    cv::fillConvexPoly(render_helper,pts_2d,3,Scalar(128));//128表示未填充.
+    cv::fillConvexPoly(render_helper,p2f_array_to_p2i_vec(pts_2d,3),Scalar(128));//128表示未填充.
 
-
-    for(int y = topLefty,y<botRighty;y++)
+    for(int y = topLefty;y<botRighty;y++)
     {
-        for(int x = topLeftx;x<botRighty;x++)
+        for(int x = topLeftx;x<botRightx;x++)
         {
+//            //对顶点pts_2d[0]展开:
+//            float dx = x-pts_2d[0].x;
+//            float dy = y-pts_2d[0].y;
+//            float dz = -1*(n[0]*dx+n[1]*dy)/(n[2]+0.001);
+//            if(render_helper.at<uint8_t>(y,x))//未填充.
+//            {
+//                depth_img_output.at<float>(y,x) =  z0+dz;//填充深度.
+//                render_helper.at<uint8_t>(y,x) = 255;//着色.
+//            }
             //对顶点pts_2d[0]展开:
-            float dx = x-pts_2d[0].x;
-            float dy = y-pts_2d[0].y;
-            float dz = -1*(n[0]*dx+n[1]*dy)/n[2];
-            if(render_helper.at<uint8_t>(y,x) == 128)//未填充.
+
+            if(render_helper.at<uint8_t>(y,x)==128)//未填充.
             {
+                float dx = x-pts_2d[0].x;
+                float dy = y-pts_2d[0].y;
+                float dz = -1*(n[0]*dx+n[1]*dy)/(n[2]+0.001);
                 depth_img_output.at<float>(y,x) =  z0+dz;//填充深度.
-                render_helper.at<uint8_t>(y,x) = 255;//着色.
+                render_helper.at<uint8_t>(y,x) = 255;
             }
+
         }
     }
+    cv::imshow("1",render_helper);
+    cv::waitKey(10);/*
+    int unmatched = 0;
+    for(int y = 0;y<render_helper.rows;y++)
+    {
+        for(int x = 0;x<render_helper.cols;x++)
+        {
+            if(render_helper.at<uint8_t>(y,x) == 128)//未填充.
+            {
+                unmatched++;
+                if(unmatched>10)
+                {
+                    throw "error!";
+                }
+            }
+        }
+    }*/
+
 }
 inline void generateDepthMapForAllTriangles(const vector<cvTriangleT>& triangles,const unordered_map<Point2f,float>& pt_disp_map,Mat& depth_img_output,Mat& render_helper,
                                             const float& fx,const float& fy,const float& cx,const float& cy,const float& b)
 {
     for(const auto& t:triangles)//可以并行.
     {
-        generateDepthMapForATriangle(t,pt_disp_map,depth_img_output,render_helper);
+        generateDepthMapForATriangle(t,pt_disp_map,depth_img_output,render_helper,fx,fy,cx,cy,b);
     }
+    cv::imshow("render helper",render_helper);
+    cv::waitKey(0);
 }
 
 

@@ -25,24 +25,27 @@ struct Triangle3D_T
 
 };
 typedef vector<cv::Vec6f> meshT;
-struct MeshObject2d //定义存储方式
-{
-    //点表 边表
-    cv::Mat polygons_vertex_mat;
-    //    // Connectivity of the mesh.
-    //    // Set of polygons.
-    //    // Raw integer list of the form: (n,id1_a,id2_a,...,idn_a,
-    //    // n,id1_b,id2_b,...,idn_b, ..., n, ... idn_x)
-    //    // where n is the number of points per polygon, and id is a zero-offset
-    //    // index into the associated row in vertices_mesh_.
+//struct MeshObject2d //定义存储方式
+//{
+//    //点表 边表
+//    cv::Mat polygons_vertex_mat;
+//    //    // Connectivity of the mesh.
+//    //    // Set of polygons.
+//    //    // Raw integer list of the form: (n,id1_a,id2_a,...,idn_a,
+//    //    // n,id1_b,id2_b,...,idn_b, ..., n, ... idn_x)
+//    //    // where n is the number of points per polygon, and id is a zero-offset
+//    //    // index into the associated row in vertices_mesh_.
 
-    //边表.
-    cv::Mat polygons_mesh_;
-};
-struct MeshObject3d
-{
+//    //边表.
+//    cv::Mat polygons_mesh_;
+//};
 
-};
+
+//struct MeshObject3d
+//{
+
+//};
 
 
 }
+#endif
