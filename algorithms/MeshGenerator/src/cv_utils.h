@@ -5,6 +5,9 @@
 #include <opencv2/imgproc.hpp>
 #include <glog/logging.h>
 #include <opencv2/highgui.hpp>
+#include "opencv2/core/ocl.hpp"
+#include "omp.h"
+
 
 #ifndef CV_UTILS_MESHGEN_H
 #define CV_UTILS_MESHGEN_H
@@ -48,6 +51,13 @@ struct hash<P3d_PLY_T>
 }
 namespace MeshGen
 {
+#define USE_OPENCL
+
+
+#ifdef USE_OPENCL
+#define HAVE_OPENCL
+#endif
+
 using namespace cv;
 using namespace std;
 
@@ -117,8 +127,11 @@ void getBoundaryBoxOfcvTriangle(const cvTriangleT& triangle,int& topLeftx,int& t
     botRighty = std::max(t_i[0].y, std::max(t_i[1].y, t_i[2].y));
 }
 
+#ifdef USE_OPENCL
+
 void doCVCalcCannyEdge(const Mat& img,Mat& canny_img,const double edge_threshold = 40)
 {
+    ocl::setUseOpenCL(true);
     // duplicate image to preserve const input
     cv::Mat copy = img.clone();
     cv::Mat gray_im;
@@ -132,15 +145,17 @@ void doCVCalcCannyEdge(const Mat& img,Mat& canny_img,const double edge_threshold
     }
     cv::Mat gray_copy = gray_im.clone();
     cv::equalizeHist(gray_copy,gray_copy);
+    cv::UMat umat_gray_copy = gray_copy.getUMat(ACCESS_READ).clone();
 
     // 高斯平滑 3*3
-    cv::GaussianBlur(gray_copy, gray_copy, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
+    cv::GaussianBlur(umat_gray_copy, umat_gray_copy, cv::Size(3, 3), 0, 0, cv::BORDER_DEFAULT);
 
     // convert it to grayscale (CV_8UC3 -> CV_8UC1)
-
-    cv::Canny(gray_copy, canny_img, edge_threshold, edge_threshold*3, 3);
+    cv::UMat canny_umat;
+    cv::Canny(umat_gray_copy, canny_umat, edge_threshold, edge_threshold*3, 3);
+    canny_img = canny_umat.getMat(ACCESS_READ).clone();
 }
-
+#endif
 bool checkHighIntensityInsideOfTriangle(const Mat& canny_img,const cvTriangleT& triangle,const float threshold,const int max_intense_count)
 {
     std::vector<std::pair<Point2i, uint8_t>> keypointsWithIntensities;
