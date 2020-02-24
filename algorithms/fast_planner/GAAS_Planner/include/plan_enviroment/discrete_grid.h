@@ -7,7 +7,7 @@
 using namespace std;  
 
 
-class DiscreteGrid
+class DiscreteGridUtils
 {
     public:
 
