@@ -66,21 +66,21 @@ ENDIF()
 
 
 include_directories(${OpenCV_INCLUDE_DIRS}
-			${PCL_INCLUDE_DIRS}
-			../loop_closing/DBow3/src
-			./include/
-            ${catkin_INCLUDE_DIRS}
-            ${EIGEN3_INCLUDE_DIR}
-			${catkin_INCLUDE_DIRS}
-                        ../multi_cam_utils/
-                        ./src/
-                        ./src/utils/
-            ${GTSAM_INCLUDE_DIR}
-            ${GLOG_INCLUDE_DIRS}
+		    ${PCL_INCLUDE_DIRS}
+		    ../loop_closing/DBow3/src
+		    ./include/
+                    ${catkin_INCLUDE_DIRS}
+                    ${EIGEN3_INCLUDE_DIR}
+		    ${catkin_INCLUDE_DIRS}
+                    ../multi_cam_utils/
+                    ./src/
+                    ./src/utils/
+                    ${GTSAM_INCLUDE_DIR}
+                    ${GLOG_INCLUDE_DIRS}
                         )
 
 MESSAGE("DBOW3 LIBS:${DBoW3_LIBS}")
-SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES} -lpthread gtsam gtsam_unstable;${Boost_PROGRAM_OPTIONS_LIBRARY} glog::glog ${excluded_examples})
+SET(REQUIRED_LIBRARIES ${REQUIRED_LIBRARIES} ${OpenCV_LIBS} ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${DBoW3_LIBS} ${GLOG_LIBRARIES} -lpthread gtsam gtsam_unstable;${Boost_PROGRAM_OPTIONS_LIBRARY} ${excluded_examples})
 
 
 # ----------------------------------------------------------------------------
