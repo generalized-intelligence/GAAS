@@ -10,9 +10,11 @@
 #include "opencv2/calib3d.hpp"
 #include "opencv2/core/mat.hpp"
 #include <opencv2/imgcodecs.hpp>
+#include "Timer.h"
 
 using namespace cv;
 using namespace std;
+using namespace MeshGen;
 
 const int EXTRACT_COUNT_EACH_BLOCK = 100;
 float pt_calc_dist(const Point2f& p1,const Point2f& p2)
@@ -85,7 +87,7 @@ shared_ptr<PointDetected> extractCamKeyPoints_splited(cv::Mat& Img)
     const int img_size_u = Img.cols;
     shared_ptr<PointDetected> pResult(new PointDetected);
     vector<KeyPoint> out_kps;
-    cv::Mat out_feats;
+    cv::Mat out_feats; //TODO, not used?
     for(int v_ = 0;v_ < rows_count;v_++)
     {
         for(int u_ = 0; u_ < cols_count;u_++)
@@ -132,16 +134,6 @@ inline bool check_stereo_match(Point2f& pl,Point2f& pr)
 }
 
 
-
-
-
-
-
-
-
-#include "Timer.h"
-
-using namespace MeshGen;
 int main(int argc,char**argv)
 {
     auto pImg1 = make_shared<cv::Mat>();
@@ -152,16 +144,16 @@ int main(int argc,char**argv)
     ScopeTimer t("mesh_gen_pipeline");
     auto img_pair = make_pair(pImg1,pImg2);
 
-
     auto pts_detected = extractCamKeyPoints_splited(*pImg1);
     vector<Point2f> p_prev = pts_detected->get_p2f_vec();
     vector<Point2f> p_next;
     vector<uint8_t> success_vec;
     vector<float> track_err,disps;
-    do_cvPyrLK(*pImg1,*pImg2,p_prev,p_next,success_vec,track_err,true);
+    do_cvPyrLK(*pImg1, *pImg2, p_prev, p_next, success_vec, track_err, true);
+
     for(int i = 0;i<p_prev.size();i++)
     {
-        if (!(success_vec.at(i)&&check_stereo_match(p_prev.at(i),p_next.at(i) )))
+        if (!(success_vec.at(i) && check_stereo_match(p_prev.at(i),p_next.at(i) )))
         {
             success_vec.at(i) = 0;
         }
@@ -176,7 +168,11 @@ int main(int argc,char**argv)
     extract_sub_vec(p_prev,pleftpts,success_vec);
     t.watch("tracking finished.");
     MeshGenerator mg;
-    mg.generateMeshWithImagePair_vKP_disps(img_pair,pleftpts,disps);
+    
+    LOG(INFO)<<"pleftpts and disps size: "<<pleftpts.size()<<", "<<disps.size()<<endl;
+    assert(pleftpts.size() == disps.size());
+
+    mg.generateMeshWithImagePair_vKP_disps(img_pair, pleftpts, disps);
 
     t.watch("mesh generated 100 times.");
 
