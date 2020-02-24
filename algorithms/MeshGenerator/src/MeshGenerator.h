@@ -4,6 +4,9 @@
 #include "cv_utils.h"
 #include "pcl_utils.h"
 #include "cam_config.h"
+#include "../happly/happly.h"
+#include <random>
+#include "Timer.h"
 
 #ifndef MESH_GENERATOR_H
 #define MESH_GENERATOR_H
@@ -14,6 +17,16 @@ using namespace std;
 using namespace cv;
 using namespace pcl;
 
+static default_random_engine e;
+static uniform_real_distribution<double> u(0.0, 1.0);
+array<double,3> generateRandomColor()
+{
+    array<double,3> ret_val;
+    ret_val[0] = u(e);
+    ret_val[1] = u(e);
+    ret_val[2] = u(e);
+    return ret_val;
+}
 
 unordered_map<Point2f,float> createMapTableForValidDisps(const vector<Point2f>& kps,const vector<float>& disps)
 {
@@ -23,6 +36,22 @@ unordered_map<Point2f,float> createMapTableForValidDisps(const vector<Point2f>& 
     {
         ret_val.insert(std::make_pair(kps.at(i),disps.at(i)));
     }
+    return ret_val;
+}
+inline bool check_p3d_valid(const P3d_PLY_T& p3d)
+{
+    if(p3d[2]<0 || p3d[2]>1000||isinf(p3d[2])||isnan(p3d[2]))
+    {
+        return false;
+    }
+    return true;
+}
+inline vector<int> make_int3_vector(int i1,int i2,int i3)
+{
+    vector<int> ret_val;
+    ret_val.push_back(i1);
+    ret_val.push_back(i2);
+    ret_val.push_back(i3);
     return ret_val;
 }
 class MeshGenerator
@@ -58,6 +87,7 @@ public:
 //        std::vector<cv::Vec6f>* mesh_2d_filtered_for_viz)
     shared_ptr<vector<cvTriangleT> > generateMeshWithImagePair_vKP_disps(std::pair<shared_ptr<cv::Mat>,shared_ptr<cv::Mat> > im_pair,const vector<Point2f>& kps,const vector<float> disps)
     {
+        ScopeTimer t_("generateMeshWithImagePair_vKP_disps");
         LOG(INFO)<<"in generateMeshWithImagePair_vKP_disps input_kps.size():"<<kps.size()<<endl;
         //对图像进行三角剖分.
         Mat& l_img = *(im_pair.first);
@@ -97,7 +127,7 @@ public:
                 cv::rectangle(img2,left_top,right_bottom,cv::Scalar(0,0,255),-1);
             }
             cv::imshow("valid kps",img2);
-            cv::waitKey(0);
+            cv::waitKey(1);
         }
 
 //        vector<KeyPoint> valid_keypoints;
@@ -119,17 +149,97 @@ public:
         vector<uint8_t> v_success_check_triangle;
         checkTriangles(canny,triangles,v_success_check_triangle);
 
-        vector<cvTriangleT> triangles_valid;//这里triangle对应的是顶点.应该检查顶点获取disp.
+        //vector<cvTriangleT> triangles_valid;//这里triangle对应的是顶点.应该检查顶点获取disp.
 
         extract_sub_vec(triangles,triangles_filtered,v_success_check_triangle);
         LOG(INFO)<<"after checkEdge:valid triangles.size():"<<triangles_filtered.size()<<endl;
 
+        t_.watch("2d mesh created.");
+        bool create_ply_by_PCL = false;
+        if(create_ply_by_PCL)
+        {
+            shared_ptr<PointCloud<PointXYZRGB> > pMesh = createPCLMeshFromTriangles(triangles_filtered,l_img,map_p2d_to_disps,valid_disps,fx_,fy_,cx_,cy_,b_);//二维三角形->三维三角面片
+        }
+        else
+        {//直接写PLY文件.略过3d三角形填充过程.
+            unordered_map<P3d_PLY_T,int> point_to_index;
+            //int current_index = 0;
+            vector<P3d_PLY_T> vVertices;
+            vector<vector<int> > vTriangleIDs;
+            vector<array<double,3> > vVertexColors;
+            for(const auto& tri:triangles_filtered)
+            {
+                //创建2d的.
+                Point2f pts_2d[3];
+                pts_2d[0].x = tri[0];
+                pts_2d[0].y = tri[1];
 
-        shared_ptr<PointCloud<PointXYZRGB> > pMesh = createMeshFromTriangles(triangles_filtered,l_img,map_p2d_to_disps,valid_disps,fx_,fy_,cx_,cy_,b_);//二维三角形->三维三角面片
+                pts_2d[1].x = tri[2];
+                pts_2d[1].y = tri[3];
+
+                pts_2d[2].x = tri[4];
+                pts_2d[2].y = tri[5];
+
+                P3d_PLY_T p0,p1,p2;//创建3d点.std::array<double>
+                getXYZByUVDispDouble(map_p2d_to_disps.at(pts_2d[0]),fx_,fy_,cx_,cy_,b_,pts_2d[0].x,pts_2d[0].y,p0[0],p0[1],p0[2]);
+                getXYZByUVDispDouble(map_p2d_to_disps.at(pts_2d[1]),fx_,fy_,cx_,cy_,b_,pts_2d[1].x,pts_2d[1].y,p1[0],p1[1],p1[2]);
+                getXYZByUVDispDouble(map_p2d_to_disps.at(pts_2d[2]),fx_,fy_,cx_,cy_,b_,pts_2d[2].x,pts_2d[2].y,p2[0],p2[1],p2[2]);
+                if(
+                        (!check_p3d_valid(p0))||(!check_p3d_valid(p1))||(!check_p3d_valid(p2))
+                        )
+                {
+                    continue;//三角形无效.
+                }
+
+                //查索引表.
+                int index0,index1,index2;
+                if(!point_to_index.count(p0))
+                {
+                    vVertices.push_back(p0);
+                    point_to_index[p0] = vVertices.size()-1;
+                }
+                index0 = point_to_index[p0];
+
+                if(!point_to_index.count(p1))
+                {
+                    vVertices.push_back(p1);
+                    point_to_index[p1] = vVertices.size()-1;
+                }
+                index1 = point_to_index[p1];
+
+                if(!point_to_index.count(p2))
+                {
+                    vVertices.push_back(p2);
+                    point_to_index[p2] = vVertices.size()-1;
+                }
+                index2 = point_to_index[p2];
+                vTriangleIDs.push_back(make_int3_vector(index0,index1,index2));                
+            }
+
+            //填充随机颜色.
+            for(int i = 0;i<vVertices.size();i++)
+            {
+                vVertexColors.push_back(generateRandomColor());
+            }
+            t_.watch("3d mesh created.");
+            //写PLY!
+            happly::PLYData plyOut;
+            // Add mesh data (elements are created automatically)
+            LOG(INFO)<<"Writing ply with "<<vVertices.size()<<"vertices and "<<vTriangleIDs.size()<<"triangles."<<endl;
+            plyOut.addVertexPositions(vVertices);
+            plyOut.addVertexColors(vVertexColors);
+            plyOut.addFaceIndices(vTriangleIDs);
+
+
+            // Write the object to file
+            plyOut.write("my_output_mesh_file.ply", happly::DataFormat::ASCII);
+            t_.watch("io finished.");
+
+        }
         return pTriangles_filtered;
     }
 
-    shared_ptr<PointCloud<PointXYZRGB> > createMeshFromTriangles(vector<cvTriangleT>& triangles,const Mat& original_img,unordered_map<Point2f,float>& p2d_to_disps,vector<float>& disps,
+    shared_ptr<PointCloud<PointXYZRGB> > createPCLMeshFromTriangles(vector<cvTriangleT>& triangles,const Mat& original_img,unordered_map<Point2f,float>& p2d_to_disps,vector<float>& disps,
                                                      const float& fx,const float& fy,const float& cx,const float& cy,const float& b,
                                                      bool doTextureMapping=true)
     {

@@ -68,7 +68,7 @@ void img2d_to_mesh_3d(const cv::Mat& original_img,const cv::Mat& depth_map,const
                 total_pts++;
             }
             else
-            {
+            {/*
                 PointXYZRGB xyzrgb;
                 xyzrgb.b = static_cast<std::uint8_t> (original_img.at<cv::Vec3b>(v,u)[0]);
                 xyzrgb.g = static_cast<std::uint8_t> (original_img.at<cv::Vec3b>(v,u)[1]);
@@ -76,7 +76,7 @@ void img2d_to_mesh_3d(const cv::Mat& original_img,const cv::Mat& depth_map,const
                 xyzrgb.x = u;
                 xyzrgb.y = v;
                 xyzrgb.z = 1;
-                output_cloud(u,v) = xyzrgb;
+                output_cloud(u,v) = xyzrgb;*/
             }
 
             PointXYZRGB xyzrgb2;

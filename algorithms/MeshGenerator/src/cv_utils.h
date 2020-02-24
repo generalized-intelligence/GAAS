@@ -9,6 +9,7 @@
 #ifndef CV_UTILS_MESHGEN_H
 #define CV_UTILS_MESHGEN_H
 
+typedef std::array<double,3> P3d_PLY_T;
 namespace std {
 
 template <>
@@ -26,6 +27,24 @@ struct hash<cv::Point2f>
         return state;
     }
 };
+template <>
+struct hash<P3d_PLY_T>
+{
+    size_t operator()(const P3d_PLY_T& point) const noexcept
+    {
+        const size_t fnv_prime = 16777619u;
+        const size_t fnv_offset_basis = 2166136261u;
+
+        size_t state = fnv_offset_basis;
+        for(const uint8_t* p = reinterpret_cast<const uint8_t*>(&point), *end = p + sizeof(double)*3; p < end; ++p)
+            state = (state ^ *p) * fnv_prime;
+
+        return state;
+    }
+};
+
+
+
 }
 namespace MeshGen
 {
@@ -204,14 +223,14 @@ inline void getZByUVDisp(const float& disp,const float& fx,const float& fy,const
         z = b*fx/(disp+1e-05);//防止浮点溢出.
 }
 
-//inline void getXYZByUVDisp(const float& disp,const float& fx,const float& fy,const float& cx,const float& cy,const float& b,
-//                           const float& u,const float& v,
-//                           float& x,float& y,float& z)
-//{
-//        z = b*fx/(disp+1e-05);//防止浮点溢出.
-//        x = z*(u - cx) / fx;
-//        y = z*(v - cy) / fy;
-//}
+inline void getXYZByUVDispDouble(const float& disp,const float& fx,const float& fy,const float& cx,const float& cy,const float& b,
+                           const float& u,const float& v,
+                           double& x,double& y,double& z)
+{
+        z = b*fx/(disp+1e-05);//防止浮点溢出.
+        x = z*(u - cx) / fx;
+        y = z*(v - cy) / fy;
+}
 inline KeyPoint point2f_to_kp(const Point2f& p2f)
 {
     vector<Point2f> p2fv;
@@ -283,11 +302,10 @@ inline void generateDepthMapForATriangle(const cvTriangleT& triangle,const unord
                 depth_img_output.at<float>(y,x) =  z0+dz;//填充深度.
                 render_helper.at<uint8_t>(y,x) = 255;
             }
-
         }
     }
     cv::imshow("1",render_helper);
-    cv::waitKey(10);/*
+    cv::waitKey(1);/*
     int unmatched = 0;
     for(int y = 0;y<render_helper.rows;y++)
     {
