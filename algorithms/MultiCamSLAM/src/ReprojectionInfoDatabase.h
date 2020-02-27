@@ -280,18 +280,20 @@ public:
                                                  //Fi_XiArray.second.at(i).matrix().inverse()*
                                                  //pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()
 
-                                                 //  pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix().inverse()
+                                                   pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()*
+                                                   Fi_XiArray.second.at(i).matrix().inverse()
                                                    //pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()
 
-                                                   pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()*
-                                                   //Fi_XiArray.second.at(i).matrix().inverse()
-                                                   Fi_XiArray.second.at(i).matrix()
+                                                   //pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()*
+                                                   //Fi_XiArray.second.at(i).matrix()
 
 
+                                                 //Fi_XiArray.second.at(i).matrix()*
+                                                 //pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()
                                                       )
                                                 );
-                    //Pose3 relative_pose = Pose3(xi_array.at(i).matrix().inverse());//TODO.
-                    Pose3 relative_pose = Pose3(xi_array.at(i).matrix());//TODO.
+                    Pose3 relative_pose = Pose3(xi_array.at(i).matrix().inverse());//TODO.
+                    //Pose3 relative_pose = Pose3(xi_array.at(i).matrix());//TODO.
                     pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',frameID),Symbol('X',frameID*cam_count + i),
                                                                   relative_pose,
                                                                   noise_model_between_cams
@@ -317,9 +319,10 @@ public:
 //                                                 );
                         pInitialEstimate->insert(Symbol('X',x_index),
                                                  Pose3(
-                                                      pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()*
-                                                      //Fi_XiArray.second.at(i).matrix().inverse()
-                                                     Fi_XiArray.second.at(i).matrix()
+
+                                                     pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix()*
+                                                     Fi_XiArray.second.at(i).matrix().inverse()
+
                                                        )//两次变换.
                                                  );
 
@@ -330,9 +333,9 @@ public:
                         pCurrentFrame->cam_info_stereo_vec.at(i).get_tMat(tx,ty,tz);
                         Vector3d translation(tx,ty,tz);
                         //Pose3 relative_pose = xi_array.at(i);
-                        //Pose3 relative_pose = Pose3(xi_array.at(i).matrix().inverse());
+                        Pose3 relative_pose = Pose3(xi_array.at(i).matrix().inverse());
 
-                        Pose3 relative_pose = Pose3(xi_array.at(i).matrix());
+                        //Pose3 relative_pose = Pose3(xi_array.at(i).matrix());
                         pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',frameID),Symbol('X',x_index),
                                                                       relative_pose,
                                                                       noise_model_between_cams
@@ -367,14 +370,14 @@ public:
                 //
                 pInitialEstimate->insert(Symbol('X',frameID*cam_count + i),
                                             Pose3(
-                                             //xi_array.at(i).matrix().inverse()*
-                                             xi_array.at(i).matrix()*
+                                             xi_array.at(i).matrix().inverse()*
+                                             //xi_array.at(i).matrix()*
                                                pInitialEstimate->at(Symbol('F',frameID)).cast<Pose3>().matrix())
                                             );
                 //Pose3 relative_pose = xi_array.at(i);//TODO.
-                //Pose3 relative_pose = Pose3(xi_array.at(i).matrix().inverse());
+                Pose3 relative_pose = Pose3(xi_array.at(i).matrix().inverse());
 
-                Pose3 relative_pose = Pose3(xi_array.at(i).matrix());
+                //Pose3 relative_pose = Pose3(xi_array.at(i).matrix());
                 pGraph->emplace_shared<BetweenFactor<Pose3> >(Symbol('F',0),Symbol('X',i),
                                                               relative_pose,
                                                               noise_model_between_cams

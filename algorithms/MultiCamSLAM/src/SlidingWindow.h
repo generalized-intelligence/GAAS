@@ -129,6 +129,7 @@ public:
     shared_ptr<Values> optimizeFactorGraph(shared_ptr<NonlinearFactorGraph> pGraph,shared_ptr<Values> pInitialEstimate,int MaxIter,int lastFrameID)
     {
         ScopeTimer timer_optimizer("optimizeFactorGraph()");
+        MaxIter*=100;
         //初始化一个Levenburg-Marquardt优化器,解优化图.返回估计值.
         LevenbergMarquardtParams params;
         params.setVerbosity("ERROR");
@@ -144,7 +145,7 @@ public:
 //        params.setMaxIterations(MaxIter);//如果不设置,有时候甚至能优化90多次.大部分时间都消耗在这里.其他在30ms左右,这里300ms.
 //        DoglegOptimizer optimizer(*pGraph,*pInitialEstimate,params);//为什么这个用不了?
 
-        //DEBUG ONLY
+//        //DEBUG ONLY
 //        {
 //            cout<<"Before optimization:"<<endl;
 //            pInitialEstimate->print();
@@ -169,6 +170,7 @@ public:
                 pInitialEstimate->update(Symbol('F',lastFrameID),new_pose);
             }
             LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
+            //DoglegOptimizer optimizer(*pGraph,*pInitialEstimate,params);//为什么这个用不了?
             *pResult = optimizer.optimize();
             if(optimizer.iterations() == 0)
             {
@@ -484,7 +486,8 @@ public:
             LOG(WARNING)<<"Avg disp between current frame and last KF:"<<avg_disp<<endl;
             //vector<p2dT> useless_;
             visualize_tracked_p2d_and_ordinary_frame_stereo_helper(*pCurrentFrame);
-            needKF = (best_score<=40)||(avg_disp>20);
+            //needKF = (best_score<=40)||(avg_disp>20);
+            needKF = (best_score<=30)||(avg_disp>20);
         }
         if((!track_good)&&(!force_kf))
         {
@@ -506,7 +509,14 @@ public:
         else
         {//创建关键帧
             LOG(WARNING)<<"Need KF is true.Create kf."<<endl;
-            upgradeOrdinaryFrameToKeyFrameStereos(pCurrentFrame);//升级.
+            if(pCurrentFrame->frame_id == 0)
+            {
+                upgradeOrdinaryFrameToKeyFrameStereos(pCurrentFrame);//升级.
+            }
+            else
+            {
+                upgradeOrdinaryFrameToKeyFrameStereosReservingPreviousKPs(pCurrentFrame);
+            }
             auto& pCurrentKF = pCurrentFrame;
             this->KF_id_queue.push_back(pCurrentKF->frame_id);
             //第四步 创建局部优化图 第一次优化.

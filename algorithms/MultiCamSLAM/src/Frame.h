@@ -198,6 +198,10 @@ namespace mcs
             r__ = gtsam::Rot3(rot);
             t__ = gtsam::Point3(pos);
         }
+        std::pair<Matrix3d,Vector3d> getRotationAndTranslation(bool& valid)
+        {
+            return std::make_pair(this->rotation,this->position);
+        }
         std::pair<Pose3,vector<Pose3> > getFiAndXiArray()//直接生成需要的Fi和Xi位置.
         {
             assert(this->pose_estimated);

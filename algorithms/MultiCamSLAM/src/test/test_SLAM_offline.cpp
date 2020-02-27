@@ -38,22 +38,35 @@
 #include <deque>
 #include <chrono>
 #include "SLAM_simple.h"
+
+#include "ROSPublisher.h"
+
+
 using namespace std;
+
+
+
 
 
 #define READ_MODE //读并离线运行 / 写入包
 SLAM_simple* pSLAM;
+mcs::ROSPublisher* pPublisher;
+
+
 
 //离线测试SLAM系统.
 class FileReaderWriter
 {
     //int frame_id = 0;
-    int frame_id = 80;//避免下面看不见!
+    int frame_id = 220;//避免下面看不见!
 
-    int cam_count = 3;
+    //int cam_count = 3;
+    int cam_count = 1;
 
     //string basic_path = "/home/gi/GAAS/algorithms/data/01_bag/";
-    string basic_path = "/home/gi/GAAS/algorithms/data/02_bag_5_aspect/";
+    //string basic_path = "/home/gi/GAAS/algorithms/data/03_bag_5_aspect/";
+    string basic_path = "/home/gi/GAAS/algorithms/data/04_downonly/";
+    //string basic_path = "/home/gi/GAAS/algorithms/data/02_bag_5_aspect/";
     //示例: $basic_path/0/l/1.jpg $basic_path/0/r/1.jpg $basic_path/1/l/1.jpg $basic_path/1/r/1.jpg
 public:
     std::string genearte_path_from_frame_id_cam_id_and_lr(int frame_id,int cam_id,bool isLeft)
@@ -99,6 +112,13 @@ public:
         //pSLAM->iterateWith4Imgs(imgs[0],imgs[1],imgs[2],imgs[3]);//这个函数设计的是真的烂...
         auto p = getNextImageSet();
         pSLAM->iterateWithImgs(p);
+        bool valid;
+        auto pose = pSLAM->getLastFramePose(valid);
+        if(valid)
+        {
+            pPublisher->publish_ros_odometry(pose);
+        }
+
     }
     void write_iter(vector<std::pair<shared_ptr<cv::Mat>,shared_ptr<cv::Mat> > > imgs)
     {
@@ -225,6 +245,7 @@ int main(int argc,char** argv)
     //sync.registerCallback(boost::bind(FetchImageCallback, _1, _2,_3,_4));
     sync.registerCallback(boost::bind(FetchImageCallback, _1, _2,_3,_4,_5,_6));
     ros::Subscriber sub = nh.subscribe("/mavros/imu/data_raw",100,FetchIMUCallBack);
+    pPublisher = new mcs::ROSPublisher(nh);
     pSLAM = new SLAM_simple(argc,argv);
     pReaderWriter = new FileReaderWriter();
 #ifdef READ_MODE

@@ -68,6 +68,7 @@ void FetchImageCallback(const sensor_msgs::ImageConstPtr& img1,const sensor_msgs
     }
     LOG(INFO)<<"Images caught! Will call iterateWith4Imgs."<<endl;
     pSLAM->iterateWith4Imgs(m1,m2,m3,m4);
+
     LOG(INFO)<<"iterateWith4Imgs() finished."<<endl;
 }
 void FetchIMUCallBack(const sensor_msgs::ImuConstPtr& imu)

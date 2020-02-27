@@ -100,6 +100,10 @@ public:
     {
         return this->pLastF;
     }
+    std::pair<Eigen::Matrix3d,Eigen::Vector3d> getLastFramePose(bool& valid)
+    {
+        return this->pLastF->getRotationAndTranslation(valid);
+    }
     void iterateWith4Imgs(shared_ptr<cv::Mat> img1,shared_ptr<cv::Mat> img2,shared_ptr<cv::Mat> img3,shared_ptr<cv::Mat> img4)
     {
         ScopeTimer t("SLAM_simple::iterateWith4Imgs()");
@@ -258,7 +262,7 @@ public:
                 pWind->insertAFrameIntoSlidingWindow(pNewF,false,track_local_success);
 
                 if(track_local_success)//当前帧追踪局部成功
-                //if(true) //DEBUG ONLY!
+                //if(true) //DEBUG ONLY!void
                 {
                     //pNewF->rotation = ...
                     //pNewF->position =

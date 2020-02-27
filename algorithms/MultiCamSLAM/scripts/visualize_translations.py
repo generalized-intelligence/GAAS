@@ -5,6 +5,14 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt 
 
+
+
+def parse_loss_line(line):
+    if line.find('Loss')>=0 and line.find('times optimiziation:')>=0:
+        loss = float(line.split('times optimiziation:')[1])/1000
+        return loss
+    return None
+
 def parse_line_pose(line):
     if line.find('optimized translation:')>=0:
         #进行相应的操作.
@@ -29,6 +37,7 @@ def main():
     with open(log_path,'rb') as f:
         lines = f.readlines()
         processed_lines = filter(lambda x:x is not None ,map(parse_line_pose,lines))
+        processed_loss_val = filter(lambda x:x is not None,map(parse_loss_line,lines))
         #processed_lines_landmark = filter(lambda x:x is not None, map(parse_line_landmark,lines))
         #processed_lines_before_optimize = filter(lambda x:x is not None ,map(parse_line_pose_prev_optimize,lines))
 
@@ -42,9 +51,9 @@ def main():
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z') # 坐标轴 
-    ax.set_xlim3d(-40,40)
-    ax.set_ylim3d(-40,40)
-    ax.set_zlim3d(-40,40)
+    ax.set_xlim3d(-10,10)
+    ax.set_ylim3d(-10,10)
+    ax.set_zlim3d(-10,10)
 
     ax.scatter(xl, yl, zl, c='y')  # optimized result
     #ax.scatter(lm_x,lm_y,lm_z,c = 'b') # optmized landmarks (optional)
@@ -57,6 +66,10 @@ def main():
 #    ax = plt.plot(yl_estimated,'y',linewidth = 1)
 #    ax = plt.plot(zl_estimated,'b',linewidth = 1)
 
+    #plt.show()
+
+    #show loss value.
+    ax = plt.plot(processed_loss_val,'r',linewidth = 1)
     plt.show()
     
 

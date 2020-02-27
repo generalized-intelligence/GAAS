@@ -19,6 +19,8 @@ namespace mcs
     using namespace std;
     using namespace cv;
     const static cv::Ptr<cv::ORB> orb = cv::ORB::create(1000);
+    //const int GFTT_MIN_DIST = 10;
+    const int GFTT_MIN_DIST = 15;
     //const static auto brief = cv::xfeatures2d::BriefDescriptorExtractor::create();
     const static auto gftt = cv::GFTTDetector::create(500,  // maximum number of corners to be returned
                                          0.01, // quality level
@@ -32,6 +34,7 @@ namespace mcs
 
 
     shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature);
+    shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& img,cvMat_T& mask,int desired_pts_count,bool compute_feature);
 
     const bool do_img_split = true;
     //const bool do_img_split = false;
@@ -77,14 +80,17 @@ namespace mcs
         return pResult;
     }
 
-    const int EXTRACT_COUNT_EACH_BLOCK = 20;//40;
+    //const int EXTRACT_COUNT_EACH_BLOCK = 4;//10;//40;
+    const int EXTRACT_COUNT_EACH_BLOCK = 20;//10;//40;
+    const int rows_count = 5;
+    const int cols_count = 5;
     shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature)
     {
         LOG(INFO)<<"in extractCamKeyPoints_splited(),method and compute_feat:"<<method<<","<<compute_feature<<endl;
         //cv::Feature2D* pfeat = gftt;
         auto gftt = cv::GFTTDetector::create(EXTRACT_COUNT_EACH_BLOCK,//50,  // maximum number of corners to be returned
                                                        0.01, // quality level
-              10);
+              GFTT_MIN_DIST);
         auto orb_ex= orb;cv::ORB::create(1000);
         cv::Feature2D* pfeat;
         //auto orb_ex = orb;
@@ -99,8 +105,6 @@ namespace mcs
         }
         //const int rows_count = 5;
         //const int cols_count = 5;
-        const int rows_count = 3;
-        const int cols_count = 3;
         const int img_size_v = Img.rows;
         const int img_size_u = Img.cols;
         shared_ptr<PointWithFeatureT> pResult(new PointWithFeatureT);
@@ -151,6 +155,64 @@ namespace mcs
                 //    cv::vconcat(out_feats,feats,feat_tmp);
                 //    out_feats = feat_tmp.clone();
                 //}
+                if(!feats.empty())
+                {
+                    desps_vec.push_back(feats);
+                }
+            }
+        }
+        cv::vconcat(desps_vec,out_feats);
+        LOG(INFO)<<"output_feats.size():"<<out_feats.cols<<","<<out_feats.rows<<";kps.size():"<<out_kps.size()<<endl;
+        pResult->kps = out_kps;
+        pResult->desp= out_feats;
+        return pResult;
+    }
+
+    shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,cvMat_T& mask_,int desired_pts_count,bool compute_feature)
+    {//mask处不提取.
+        auto gftt = cv::GFTTDetector::create(desired_pts_count,//50,  // maximum number of corners to be returned
+                                                       0.01, // quality level
+              GFTT_MIN_DIST);
+        //分割行列.
+        const int img_size_v = Img.rows;
+        const int img_size_u = Img.cols;
+        shared_ptr<PointWithFeatureT> pResult(new PointWithFeatureT);
+        vector<KeyPoint> out_kps;
+        cvMat_T out_feats;
+        vector<cvMat_T> desps_vec;
+        //LOG(INFO)<<"input image size:"<<Img.cols<<","<<Img.rows<<endl;
+        for(int v_ = 0;v_ < rows_count;v_++)
+        {
+            for(int u_ = 0; u_ < cols_count;u_++)
+            {
+                //LOG(INFO)<<"        creating img crops.u,v:"<<u_<<","<<v_<<endl;
+                auto img_part = Img.colRange(u_*(img_size_u/cols_count),((u_+1)*(img_size_u/cols_count))>(img_size_u-1)?(img_size_u-1):(u_+1)*(img_size_u/cols_count)
+                                             ).rowRange(
+                                             v_*(img_size_v/rows_count),((v_+1)*(img_size_v/rows_count))>(img_size_v-1)?(img_size_v-1):(v_+1)*(img_size_v/rows_count)
+                                            );
+                vector<KeyPoint> kps;
+                cvMat_T feats;
+                auto mask = mask_.colRange(u_*(img_size_u/cols_count),((u_+1)*(img_size_u/cols_count))>(img_size_u-1)?(img_size_u-1):(u_+1)*(img_size_u/cols_count)
+                                    ).rowRange(
+                                    v_*(img_size_v/rows_count),((v_+1)*(img_size_v/rows_count))>(img_size_v-1)?(img_size_v-1):(v_+1)*(img_size_v/rows_count)
+                                    );
+                //LOG(INFO)<<"        input_size:"<<img_part.cols<<","<<img_part.rows<<endl;
+                //LOG(INFO)<<"        detect kps."<<endl;
+                gftt->detect(img_part,kps,mask);
+                //LOG(INFO)<<"        kps.size:"<<kps.size()<<endl;
+//                if(compute_feature&&kps.size()>0)
+//                {
+//                    //LOG(INFO)<<"        compute desps."<<endl;
+//                    orb_ex->compute(img_part,kps,feats);
+//                }
+                for(auto& kp:kps)
+                {
+                    //LOG(INFO)<<"original_pos_x"<<kp.pt.x<<endl;
+                    kp.pt.x += u_*(img_size_u/cols_count);
+                    kp.pt.y += v_*(img_size_v/rows_count);
+                    //LOG(INFO)<<"transformed_pos_x"<<kp.pt.x<<endl;
+                    out_kps.push_back(kp);
+                }
                 if(!feats.empty())
                 {
                     desps_vec.push_back(feats);
@@ -335,7 +397,7 @@ namespace mcs
         }
         return false;
     }
-    Eigen::Vector4d triangulatePoint(double disp,double u,double v,double b,double camfx,double camfy,double camcx,double camcy)
+    inline Eigen::Vector4d triangulatePoint(double disp,double u,double v,double b,double camfx,double camfy,double camcx,double camcy)
     {
         //b = 0.12;//DEBUG ONLY!!!
         double x,y,z;
@@ -344,13 +406,22 @@ namespace mcs
         y = z*(v - camcy) / camfy;
         return Eigen::Vector4d(x,y,z,1.0);
     }
+
     void createStereoMatchViaOptFlowMatching(cvMat_T& l,cvMat_T& r,StereoCamConfig& cam_info,vector<p2dT>& p2d_output,
                                              vector<p3dT>& p3d_output,map<int,int>& map_2d_to_3d_pts,
                                              map<int,int>& map_3d_to_2d_pts,vector<double>& p3d_disparity,
-                                             bool& output_create_success)//for this is a multi-thread usage function, we let it return void.
+                                             bool& output_create_success,shared_ptr<PointWithFeatureT> pFeats_prev = nullptr)//for this is a multi-thread usage function, we let it return void.
     {
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:extracting features."<<endl;
-        shared_ptr<mcs::PointWithFeatureT> pPWFT_l_img = mcs::extractCamKeyPoints(l,mcs::KEYPOINT_METHOD_GFTT,false);
+        shared_ptr<mcs::PointWithFeatureT> pPWFT_l_img;
+        if(pFeats_prev == nullptr)
+        {
+            pPWFT_l_img = mcs::extractCamKeyPoints(l,mcs::KEYPOINT_METHOD_GFTT,false);
+        }
+        else
+        {
+            pPWFT_l_img = pFeats_prev;
+        }
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:kp.size():"<<pPWFT_l_img->kps.size()<<endl;
         vector<Point2f> l_p2fs_original;
         cv::KeyPoint::convert(pPWFT_l_img->kps,l_p2fs_original);
@@ -471,6 +542,7 @@ namespace mcs
         }
         return ret_;
     }
+
     void upgradeOrdinaryFrameToKeyFrameStereos(shared_ptr<Frame> pOrdinaryFrame)//,bool& create_stereo_success)
     {//升级成关键帧.补充提取gftt,并且加入左右之间的关联关系(p2d,p3d,各种Mapping.).
         //TODO.
@@ -500,14 +572,162 @@ namespace mcs
                  LOG(WARNING)<<"Created Stereo KF in cam "<<i<<" Failed!"<<endl;//TODO.
              }
              LOG(INFO)<<"create kf_stereo "<<i<<" finished;p2d_size:"<<pF_ret->p2d_vv.at(i).size()<<endl;
-             pF_ret->map_points =  createMapPointForKeyFrame(pF_ret);
         }
+        pF_ret->map_points =  createMapPointForKeyFrame(pF_ret);
 //        if(pimu_info!= nullptr)
 //        {
 //            pF_ret->imu_info_vec = *pimu_info;
 //        }
 //        //return pF_ret;
     }
+
+    shared_ptr<cvMat_T> generateMaskFromCurrentKPs(const vector<SingleProjectionT>& kps,const cvMat_T& img)
+    {
+        shared_ptr<cvMat_T> pMask(new cvMat_T(img.rows,img.cols,CV_8U,Scalar(1)));
+        for(auto& kp:kps)
+        {
+            if(kp.tracking_state!=TRACK_MONO2MONO)
+            {
+                cv::circle(*pMask,kp.current_frame_p2d,GFTT_MIN_DIST,0,-1);//-1:FILL CIRCLE. 填充半径为GFTT_MIN_DIST的圆.
+            }
+        }
+        return pMask;
+    }
+    void upgradeOrdinaryFrameToKeyFrameStereosReservingPreviousKPs(shared_ptr<Frame> pOrdinaryFrame)
+    {
+        //大体思路:
+        //1.保留能保留的kps.
+        //2.对每个镜头,创建相应的kps,划分网格块.
+        //3.补充不够的,有余的地方可以少加入一些.
+        //assert(pOrdinaryFrame->p2d_vv.size() == 0);//创建之前.
+        pOrdinaryFrame->p2d_vv.resize(pOrdinaryFrame->get_cam_num());
+        pOrdinaryFrame->disps_vv.resize(pOrdinaryFrame->get_cam_num());
+        ReprojectionRecordT* prec;
+        assert(pOrdinaryFrame->reproj_map.size() == 1);//正常应该只有一个,即只追踪上一帧.
+        for(auto iter = pOrdinaryFrame->reproj_map.begin();iter!= pOrdinaryFrame->reproj_map.end();++iter)
+        {
+            prec = &(iter->second);
+        }
+        ReprojectionRecordT &rec = *prec;
+        //step<1>.生成mask.
+
+        vector<shared_ptr<cvMat_T> > masks;
+        for(int cam_index = 0;cam_index<rec.size();cam_index++)
+        {
+            auto img_map = rec.at(cam_index);
+            shared_ptr<cvMat_T> pMask = generateMaskFromCurrentKPs(img_map,*pOrdinaryFrame->getMainImages().at(cam_index));
+            masks.push_back(pMask);
+        }
+        //step<2>.保存老的kps到新的p2d_vv;
+        vector<int> old_kps_of_each_cam;
+        old_kps_of_each_cam.resize(pOrdinaryFrame->get_cam_num());
+        auto old_p2d_vv = pOrdinaryFrame->p2d_vv;
+        auto old_disps_vv = pOrdinaryFrame->disps_vv;
+        for(int cam_index = 0;cam_index<rec.size();cam_index++)
+        {
+            auto img_map = rec.at(cam_index);
+            int total_valid_old_kp_count = 0;
+            for(int kp_index = 0;kp_index<img_map.size();kp_index++)
+            {
+                auto &proj_ = img_map.at(kp_index);
+                if(proj_.tracking_state==TRACK_MONO2STEREO||proj_.tracking_state == TRACK_STEREO2STEREO)
+                {
+                    old_p2d_vv.at(cam_index).push_back(proj_.current_frame_p2d);
+                    old_disps_vv.at(cam_index).push_back(proj_.disp);
+                    //step<3>.分析每个摄像机内每个网格块的kps数量.
+                    total_valid_old_kp_count++;
+                }
+            }
+            old_kps_of_each_cam.at(cam_index) = total_valid_old_kp_count;
+            LOG(WARNING)<<"Old kps count in frame "<<pOrdinaryFrame->frame_id<<":"<<total_valid_old_kp_count<<endl;
+        }
+
+        //step<4>.提取,合并.
+        //generateMaskFromCurrentKPs();
+        auto main_imgs = pOrdinaryFrame->getMainImages();
+        for(int cam_index = 0;cam_index<rec.size();cam_index++)//可以多线程!
+        {//提取新的.
+            auto img_map = rec.at(cam_index);
+            if(old_kps_of_each_cam.at(cam_index)>100)//限制过多特征点在一个图像上. //TODO:变成一个常数.
+            {
+                continue;
+            }
+            auto extracted_kps = extractCamKeyPoints_splited(*main_imgs.at(cam_index),*masks.at(cam_index),
+                                        std::max(EXTRACT_COUNT_EACH_BLOCK - old_kps_of_each_cam.at(cam_index)/(rows_count*cols_count),0),false
+                                        );
+
+            const int i = cam_index;
+            auto& p =  pOrdinaryFrame->pLRImgs->at(i);
+            cvMat_T& l = *(std::get<0>(p));
+            cvMat_T& r = *(std::get<1>(p));
+            //shared_ptr<vector<p2dT> > p2d_output_;
+            //shared_ptr<vector<p3dT> > p3d_output_;
+            map<int,int>& kps_2d_to_3d = pOrdinaryFrame->map2d_to_3d_pt_vec.at(i);
+            map<int,int>& kps_3d_to_2d = pOrdinaryFrame->map3d_to_2d_pt_vec.at(i);
+            vector<double>& disps = pOrdinaryFrame->disps_vv.at(i);
+            LOG(INFO)<<"will create kf_stereo :"<<i<<endl;
+            bool create_stereo_success;
+            createStereoMatchViaOptFlowMatching(l,r,pOrdinaryFrame->cam_info_stereo_vec[i],pOrdinaryFrame->p2d_vv.at(i),pOrdinaryFrame->p3d_vv.at(i),kps_2d_to_3d,kps_3d_to_2d,disps,create_stereo_success,extracted_kps);
+            if(!create_stereo_success)
+            {
+                LOG(WARNING)<<"Created Stereo KF in cam "<<i<<" Failed!"<<endl;//TODO.
+            }
+            LOG(INFO)<<"create kf_stereo "<<i<<" finished;p2d_size:"<<pOrdinaryFrame->p2d_vv.at(i).size()<<endl;
+        }
+        //追加之前保留的kps.
+        for(int cam_index = 0;cam_index<rec.size();cam_index++)//可以多线程!
+        {
+            auto& p2dv = pOrdinaryFrame->p2d_vv.at(cam_index);
+            int old_p2dv_size = p2dv.size();
+            int old_p3dv_size = pOrdinaryFrame->p3d_vv.at(cam_index).size();
+//            p2dv.reserve(p2dv.size()+ old_p2d_vv.at(cam_index).size());
+//            p2dv.insert(p2dv.end(), old_p2d_vv.at(cam_index).begin(), old_p2d_vv.at(cam_index).end());
+
+            auto& disps_v = pOrdinaryFrame->disps_vv.at(cam_index);
+//            disps_v.reserve(disps_v.size()+ old_disps_vv.at(cam_index).size());
+//            disps_v.insert(disps_v.end(),old_disps_vv.at(cam_index).begin(),old_disps_vv.at(cam_index).end());
+
+
+            auto& map2d_to_3d_pts = pOrdinaryFrame->map2d_to_3d_pt_vec.at(cam_index);
+            auto& map3d_to_2d_pts = pOrdinaryFrame->map3d_to_2d_pt_vec.at(cam_index);
+            //auto& p3d_disp = pOrdinaryFrame->
+            auto& p3dv_ = pOrdinaryFrame->p3d_vv.at(cam_index);
+
+            float fx,fy,cx,cy;
+            //pOrdinaryFrame->get_cam_info().at(cam_index).getCamMatFxFyCxCy(fx,fy,cx,cy);
+            pOrdinaryFrame->get_stereo_cam_info().at(cam_index).getLCamMatFxFyCxCy(fx,fy,cx,cy);//getCamMatFxFyCxCy(fx,fy,cx,cy);
+            double b_ = pOrdinaryFrame->get_stereo_cam_info().at(cam_index).getBaseLine();
+
+            for(int kp_index = 0;kp_index<old_p2d_vv.at(cam_index).size();kp_index++)
+            {
+                auto& p2d_ = old_p2d_vv.at(cam_index).at(kp_index);
+                auto disp = old_disps_vv.at(cam_index).at(kp_index);
+                p2dv.push_back(p2d_);
+
+                Eigen::Vector4d p3d_v4d_ = triangulatePoint(disp,p2d_.x,p2d_.y,b_,fx,fy,cx,cy);
+                p3dT p3d_pt(p3d_v4d_[0],p3d_v4d_[1],p3d_v4d_[2]);
+
+                p3dv_.push_back(p3d_pt);
+                disps_v.push_back(disp);
+                map2d_to_3d_pts[p2dv.size()-1] = p3dv_.size()-1;
+                map3d_to_2d_pts[p3dv_.size()-1] = p2dv.size()-1;
+            }
+
+
+
+            //TODO:要维护的结构:
+//            map_2d_to_3d_pts.insert(std::pair<int,int>(checked_l.size()-1,p3d_output.size()));
+//            //map_3d_to_2d_pts.at(p3d_output.size()) = checked_l.size()-1;
+//            map_3d_to_2d_pts.insert(std::pair<int,int>(p3d_output.size(),checked_l.size()-1));
+//            p3d_disparity.push_back((double)disparity);
+//            p3d_output.push_back(p3dT(x,y,z));
+        }
+        pOrdinaryFrame->map_points =  createMapPointForKeyFrame(pOrdinaryFrame);
+        pOrdinaryFrame->isKeyFrame = true;
+        return;
+    }
+
+
     shared_ptr<Frame> createFrameStereos(shared_ptr<vector<StereoMatPtrPair> >stereo_pair_imgs_vec,
                                       vector<StereoCamConfig>& cam_distribution_info_vec,
                                       bool& create_Frame_success,
@@ -606,6 +826,10 @@ namespace mcs
     void do_cvPyrLK(InputOutputArray prev,InputOutputArray next,vector<Point2f>& p2d_v_prev,vector<Point2f>& p2d_v_next,vector<unsigned char>& track_success_v,vector<float>& err,bool do_backward_check)
     {
         ScopeTimer do_pyrlk_timer("        do_cvPyrLK()");
+        if(p2d_v_prev.size() == 0)
+        {
+            return;
+        }
         cv::calcOpticalFlowPyrLK(prev,next,p2d_v_prev,p2d_v_next,track_success_v,err,cv::Size(21, 21), 3,
                                   cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01));
         vector<unsigned char> backward_check_output = track_success_v;
