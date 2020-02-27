@@ -38,6 +38,7 @@ unordered_map<Point2f,float> createMapTableForValidDisps(const vector<Point2f>& 
     }
     return ret_val;
 }
+
 inline bool check_p3d_valid(const P3d_PLY_T& p3d)
 {
     if(p3d[2]<0 || p3d[2]>1000||isinf(p3d[2])||isnan(p3d[2]))
@@ -54,6 +55,8 @@ inline vector<int> make_int3_vector(int i1,int i2,int i3)
     ret_val.push_back(i3);
     return ret_val;
 }
+
+
 class MeshGenerator
 {
 
@@ -89,11 +92,12 @@ public:
     {
         ScopeTimer t_("generateMeshWithImagePair_vKP_disps");
         LOG(INFO)<<"in generateMeshWithImagePair_vKP_disps input_kps.size():"<<kps.size()<<endl;
+
         //对图像进行三角剖分.
         Mat& l_img = *(im_pair.first);
         assert(kps.size() == disps.size());//否则输入有误.
-        //step<1>.先排除disp不正常的点.
 
+        //step<1>.先排除disp不正常的点.
         int pt_count = disps.size();
         vector<uint8_t> v_success;
         v_success.resize(pt_count);
@@ -133,15 +137,16 @@ public:
 //        vector<KeyPoint> valid_keypoints;
 //        cv::KeyPoint::convert(valid_kps,valid_keypoints);
 
-        auto map_p2d_to_disps = createMapTableForValidDisps(valid_kps,valid_disps);
+        auto map_p2d_to_disps = createMapTableForValidDisps(valid_kps, valid_disps);
 
         //step<2>.三角剖分
         LOG(INFO)<<"in generateMeshWithImagePair_vKP_disps valid disps.size():"<<valid_kps.size()<<endl;
-        vector<cvTriangleT> triangles;//
+        vector<cvTriangleT> triangles;
         auto pTriangles_filtered = make_shared<vector<cvTriangleT>>();
         auto &triangles_filtered = *pTriangles_filtered;
-        doCVDelaunaySubdiv2d(l_img,valid_kps,triangles);
+        doCVDelaunaySubdiv2d(l_img, valid_kps, triangles);
         LOG(INFO)<<"after delaunay subdiv2d:valid triangles.size():"<<triangles.size()<<endl;
+
         //step<3>.检查所有三角形.
         //计算canny.
         cv::Mat canny;
@@ -155,18 +160,23 @@ public:
         LOG(INFO)<<"after checkEdge:valid triangles.size():"<<triangles_filtered.size()<<endl;
 
         t_.watch("2d mesh created.");
+
+        LOG(INFO)<<"debug 1"<<endl;
         bool create_ply_by_PCL = false;
         if(create_ply_by_PCL)
         {
             shared_ptr<PointCloud<PointXYZRGB> > pMesh = createPCLMeshFromTriangles(triangles_filtered,l_img,map_p2d_to_disps,valid_disps,fx_,fy_,cx_,cy_,b_);//二维三角形->三维三角面片
         }
         else
-        {//直接写PLY文件.略过3d三角形填充过程.
-            unordered_map<P3d_PLY_T,int> point_to_index;
+        {   
+            LOG(INFO)<<"debug 2"<<endl;
+            //直接写PLY文件.略过3d三角形填充过程.
+            unordered_map<P3d_PLY_T, int> point_to_index;
             //int current_index = 0;
             vector<P3d_PLY_T> vVertices;
             vector<vector<int> > vTriangleIDs;
             vector<array<double,3> > vVertexColors;
+            LOG(INFO)<<"debug 3"<<endl;
             for(const auto& tri:triangles_filtered)
             {
                 //创建2d的.
@@ -180,17 +190,25 @@ public:
                 pts_2d[2].x = tri[4];
                 pts_2d[2].y = tri[5];
 
+                LOG(INFO)<<"debug 3.1"<<endl;
                 P3d_PLY_T p0,p1,p2;//创建3d点.std::array<double>
-                getXYZByUVDispDouble(map_p2d_to_disps.at(pts_2d[0]),fx_,fy_,cx_,cy_,b_,pts_2d[0].x,pts_2d[0].y,p0[0],p0[1],p0[2]);
-                getXYZByUVDispDouble(map_p2d_to_disps.at(pts_2d[1]),fx_,fy_,cx_,cy_,b_,pts_2d[1].x,pts_2d[1].y,p1[0],p1[1],p1[2]);
-                getXYZByUVDispDouble(map_p2d_to_disps.at(pts_2d[2]),fx_,fy_,cx_,cy_,b_,pts_2d[2].x,pts_2d[2].y,p2[0],p2[1],p2[2]);
-                if(
-                        (!check_p3d_valid(p0))||(!check_p3d_valid(p1))||(!check_p3d_valid(p2))
-                        )
+                int result_0 = map_p2d_to_disps.count(pts_2d[0]);
+                int result_1 = map_p2d_to_disps.count(pts_2d[1]);
+                int result_2 = map_p2d_to_disps.count(pts_2d[2]);
+                
+                if(!result_0 || !result_1 || !result_2)
+                    continue;
+
+                getXYZByUVDispDouble(map_p2d_to_disps.at(pts_2d[0]),fx_,fy_,cx_,cy_,b_,pts_2d[0].x, pts_2d[0].y, p0[0], p0[1], p0[2]);
+                getXYZByUVDispDouble(map_p2d_to_disps.at(pts_2d[1]),fx_,fy_,cx_,cy_,b_,pts_2d[1].x, pts_2d[1].y, p1[0], p1[1], p1[2]);
+                getXYZByUVDispDouble(map_p2d_to_disps.at(pts_2d[2]),fx_,fy_,cx_,cy_,b_,pts_2d[2].x, pts_2d[2].y, p2[0], p2[1], p2[2]);
+                if( (!check_p3d_valid(p0)) || 
+                    (!check_p3d_valid(p1)) ||
+                    (!check_p3d_valid(p2)) )
                 {
                     continue;//三角形无效.
                 }
-
+                LOG(INFO)<<"debug 3.11"<<endl;
                 //查索引表.
                 int index0,index1,index2;
                 if(!point_to_index.count(p0))
@@ -198,6 +216,7 @@ public:
                     vVertices.push_back(p0);
                     point_to_index[p0] = vVertices.size()-1;
                 }
+                LOG(INFO)<<"debug 3.12"<<endl;
                 index0 = point_to_index[p0];
 
                 if(!point_to_index.count(p1))
@@ -206,15 +225,19 @@ public:
                     point_to_index[p1] = vVertices.size()-1;
                 }
                 index1 = point_to_index[p1];
-
+                LOG(INFO)<<"debug 3.13"<<endl;
                 if(!point_to_index.count(p2))
                 {
                     vVertices.push_back(p2);
                     point_to_index[p2] = vVertices.size()-1;
                 }
+
+                LOG(INFO)<<"debug 3.2"<<endl;
+
                 index2 = point_to_index[p2];
                 vTriangleIDs.push_back(make_int3_vector(index0,index1,index2));                
             }
+            LOG(INFO)<<"debug 4"<<endl;
 
             //填充随机颜色.
             for(int i = 0;i<vVertices.size();i++)
