@@ -17,13 +17,21 @@
 class HybridNode
 {
 public:
-  Eigen::Matrix<double, 6, 1> state;
-  double G, F, H;
+  Eigen::Vector3i grid_pos;
+  Eigen::Matrix<double, 6, 1> dynamic_state;
+  double G, H;
   Eigen::Vector3d input;
   double duration;
   HybridNode* parent;
+  int state;
   
-  HybridNode():G(0), H(0), F(0), duration(0), parent(nullptr)
+  enum
+  {
+    IN_OPEN_SET = 1,
+    IN_CLOSE_SET = 2
+  };
+  
+  HybridNode():G(0), H(0), duration(0), parent(nullptr), state(1)
   {
   }
 };
@@ -37,10 +45,25 @@ public:
   }
 };
 
+//Same as boost::hash_combine
+//https://www.boost.org/doc/libs/1_33_1/doc/html/hash_combine.html
+struct HybridCoordsHashFunc
+{
+  std::size_t operator()(const Eigen::Vector3i &v) const
+  {
+    std::size_t seed = 0;
+    for (int i=1; i<3; i++)
+      seed ^= std::hash<int>()(v(i)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);	//From hash_combine.
+    
+    return seed; 
+  }
+};
+
 class HybridAstar
 {
 private:
   std::priority_queue<HybridNode*, std::vector<HybridNode*>, CompareHybrirdAstarNode> open_set_;
+  std::unordered_map<Eigen::Vecotr3i, HybridNode*, HybridCoordsHashFunc> node_map_;
   std::set<HybridNode*> close_set_;
   
   std::set<Eigen::Vector3d> obstacle_map_; //TODO:Use sdf_map
@@ -49,6 +72,7 @@ private:
   std::vector<Eigen::Vector3d> movement_list_;
   
   Eigen::Vector3d end_pt_, start_pt_, start_vel_, end_vel_, start_acc_;
+  Eigen::Matrix<double, 6, 1> end_state_;
   
   std::vector<Eigen::Vector3d> body_;
   
@@ -58,14 +82,27 @@ private:
   double margin_;
   double tie_;
   double radius_;
-  double resolution;
+  double resolution_;
+  int margin_g_, radius_g_;  //How many grids.
+  
+  Eigen::Matrix<double, 6, 6> A_mat_;
   
   voit getPathFromNode(HybridNode* end_node);
   
-  double getHeuristic(Eigen::VectorXd x1, Eigen::VectorXd x2, double& optimal_time);
+  double getHeuristic(const Eigen::VectorXd &stage0, const Eigen::VectorXd &stage1, double& optimal_time);
   void stateTransit(Eigen::Matrix<double, 6, 1>& state0, Eigen::Matrix<double, 6, 1>& state1,
                     Eigen::Vector3d um, double tau);
   void extendRound(const HybridNode* current_obj);
+  
+  Eigen::Vector3i posToGrid(const Eigen::Vector3d &n);
+  
+  
+  HybridNode* findInCloseset(const Eigen::Vector3d &pos);
+  HybridNode* findInOpenset(const Eigen::Vector3d &pos);
+  
+  
+  bool isValid(const Eigen::Vector3d &pos);
+
   
 public:
   HybridAstar();
