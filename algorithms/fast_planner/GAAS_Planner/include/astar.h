@@ -65,10 +65,13 @@ class Astar
 {
 private:
   std::priority_queue<Node*, std::vector<Node*>, CompareAstarNode> open_set_;
-  std::set<Node*> close_set_;
+  std::vector<Node*> close_set_;
   std::unordered_map<Eigen::Vector3i, Node* , CoordsHashFunc> node_map_;
   
-  std::set<Eigen::Vector3d> obstacle_map_; //TODO:Use sdf_map
+  
+  std::unordered_map<Eigen::Vector3i, Eigen::Vector3d , CoordsHashFunc> obstacle_map_;
+
+  //std::vector<Eigen::Vector3i> obstacle_map_; //TODO:Use sdf_map
   std::vector<Node* > path_node_;
   
   std::vector<Eigen::Vector3d> movement_list_;
@@ -84,7 +87,7 @@ private:
   int margin_g_, radius_g_;  //How many grids.
   double tie_;	//H = tie_ * heu.
   
-  void extendRound(const Node* current_obj);
+  void extendRound(Node* current_obj);
   bool isValid(const Eigen::Vector3d &pos);
   Node* findInCloseset(const Eigen::Vector3d &pos);
   Node* findInOpenset(const Eigen::Vector3d &pos);
@@ -98,18 +101,16 @@ private:
   void gen6ConnectionMovement();
   void gen27ConnectionMovement();
   
-  Eigen::Vector3i posToGrid(const Eigen::Vector3d &n);
-  
-  
 public:
   Astar();
   ~Astar();
-  void setParam(cv::FileStorage &astar_config);
+  void setParam();
   void reset();
   
   int findPath(Eigen::Vector3d start_pt, Eigen::Vector3d end_pt);
-  void setObstacle(std::set<Eigen::Vector3d> &obstacle_map);
+  void setObstacle(std::vector<Eigen::Vector3d> &obstacle_list);
   std::vector<Eigen::Vector3d> getPath();
+  Eigen::Vector3i posToGrid(const Eigen::Vector3d &n);
   
   typedef std::shared_ptr<Astar> Ptr;
   

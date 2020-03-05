@@ -39,7 +39,7 @@ public:
 class CompareHybrirdAstarNode
 {
 public:
-  bool operator ()(const Node* n1, const Node* n2)
+  bool operator ()(const HybridNode* n1, const HybridNode* n2)
   {
     return (n1->G+n1->H) > (n2->G+n2->H);
   }
@@ -63,10 +63,12 @@ class HybridAstar
 {
 private:
   std::priority_queue<HybridNode*, std::vector<HybridNode*>, CompareHybrirdAstarNode> open_set_;
-  std::unordered_map<Eigen::Vecotr3i, HybridNode*, HybridCoordsHashFunc> node_map_;
-  std::set<HybridNode*> close_set_;
+  std::unordered_map<Eigen::Vector3i, HybridNode*, HybridCoordsHashFunc> node_map_;
+  std::vector<HybridNode*> close_set_;
   
-  std::set<Eigen::Vector3d> obstacle_map_; //TODO:Use sdf_map
+  std::unordered_map<Eigen::Vector3i, Eigen::Vector3d , HybridCoordsHashFunc> obstacle_map_;
+  
+  //std::set<Eigen::Vector3d> obstacle_map_; //TODO:Use sdf_map
   std::vector<HybridNode* > path_node_;
   
   std::vector<Eigen::Vector3d> movement_list_;
@@ -87,12 +89,12 @@ private:
   
   Eigen::Matrix<double, 6, 6> A_mat_;
   
-  voit getPathFromNode(HybridNode* end_node);
+  void getPathFromNode(HybridNode* end_node);
   
   double getHeuristic(const Eigen::VectorXd &stage0, const Eigen::VectorXd &stage1, double& optimal_time);
   void stateTransit(Eigen::Matrix<double, 6, 1>& state0, Eigen::Matrix<double, 6, 1>& state1,
                     Eigen::Vector3d um, double tau);
-  void extendRound(const HybridNode* current_obj);
+  void extendRound( HybridNode* current_obj);
   
   Eigen::Vector3i posToGrid(const Eigen::Vector3d &n);
   
@@ -107,13 +109,16 @@ private:
 public:
   HybridAstar();
   ~HybridAstar();
-  void setParam(cv::FileStorage &config);
+  void setParam();
   void reset();
+  
+  std::vector<Eigen::VectorXd> getPath();
+  std::vector<Eigen::Vector3d> getTrajPoints();
   
   int findPath(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,
              Eigen::Vector3d end_pt, Eigen::Vector3d end_vel);
   
-  void setObstacle(std::set<Eigen::Vector3d> &obstacle_map);	//TODO:use SDF
+  void setObstacle(std::vector<Eigen::Vector3d> &obstacle_list);	//TODO:use SDF
   std::vector<Eigen::Vector3d> getTrajectory(double dt);
   
   

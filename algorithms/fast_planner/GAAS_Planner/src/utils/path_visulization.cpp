@@ -3,14 +3,20 @@
 
 #include "utils/path_visulization.h"
 
-void path_visulization::displaySphereList(vector< Eigen::Vector3d > list, double resolution, Eigen::Vector4d color, int id)
+PathVisulization::PathVisulization(ros::NodeHandle& nh): nh_(nh)
+{
+  traj_pub = nh_.advertise<visualization_msgs::Marker>("/gaas/trajectory", 10);
+}
+
+
+void PathVisulization::displaySphereList(std::vector< Eigen::Vector3d > list, double resolution, Eigen::Vector4d color)
 {
   visualization_msgs::Marker mk;
-  mk.header.frame_id = "world";
+  mk.header.frame_id = "map";
   mk.header.stamp = ros::Time::now();
   mk.type = visualization_msgs::Marker::SPHERE_LIST;
   mk.action = visualization_msgs::Marker::DELETE;
-  mk.id = id;
+  mk.id = 1;
   traj_pub.publish(mk);
 
   mk.action = visualization_msgs::Marker::ADD;
@@ -26,7 +32,7 @@ void path_visulization::displaySphereList(vector< Eigen::Vector3d > list, double
   traj_pub.publish(mk);
 }
 
-void path_visulization::drawPath(vector< Eigen::Vector3d > path, double resolution, Eigen::Vector4d color, int id)
+void PathVisulization::drawPath(std::vector< Eigen::Vector3d > path, double resolution, Eigen::Vector4d color)
 {
-  displaySphereList(path, resolution, color, PATH + id % 100);
+  displaySphereList(path, resolution, color);
 }

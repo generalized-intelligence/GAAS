@@ -11,12 +11,15 @@
 #include <glog/logging.h>
 #include <vector>
 
-class path_visulization
+class PathVisulization
 {
+private:
+  ros::NodeHandle nh_;
+  ros::Publisher traj_pub;
 public:
-  void drawPath(vector<Eigen::Vector3d> path, double resolution, Eigen::Vector4d color, int id);
-  void displaySphereList(vector<Eigen::Vector3d> list, double resolution, Eigen::Vector4d color,
-                                              int id);
+  PathVisulization(ros::NodeHandle& nh);
+  void drawPath(std::vector<Eigen::Vector3d> path, double resolution, Eigen::Vector4d color);
+  void displaySphereList(std::vector<Eigen::Vector3d> list, double resolution, Eigen::Vector4d color);
 };
 
 #endif // __PATH_VISULIZATION_H_

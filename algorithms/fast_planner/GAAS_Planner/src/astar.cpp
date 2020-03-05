@@ -10,10 +10,11 @@ Astar::~Astar()
 
 }
 
-void Astar::setParam(cv::FileStorage& astar_config)
+void Astar::setParam()
 {
+  std::cout<<"Set param Astar."<<std::endl;
   //TODO:Use config file.
-  resolution_ = 0.1;
+  resolution_ = 0.2;
   margin_ = 0.6; //use_resolution
   radius_ = 0.4;
   tie_ = 1.001;
@@ -21,12 +22,15 @@ void Astar::setParam(cv::FileStorage& astar_config)
   margin_g_ = std::ceil(margin_ / resolution_);
   radius_g_ = std::ceil(radius_/ resolution_);
   
+  
+  
   bool use_6_connection = false;
   
   if (use_6_connection)
     gen6ConnectionMovement();
   else
     gen27ConnectionMovement();
+  std::cout<<"margin_g_: "<< margin_g_<<std::endl;
   
   for(int i=-margin_g_; i<=margin_g_; i+=1)
     for(int j=-margin_g_; j<=margin_g_; j+=1)
@@ -34,10 +38,12 @@ void Astar::setParam(cv::FileStorage& astar_config)
       {
 	body_.push_back(Eigen::Vector3d(i,j,k));
       }
+   std::cout<<"Finish Set param Astar."<<std::endl;   
 }
 
 void Astar::reset()
 {
+    std::cout<<"Reset Astar."<<std::endl;
     std::priority_queue<Node*, std::vector<Node*>, CompareAstarNode> empty;
     open_set_.swap(empty);
   
@@ -45,23 +51,26 @@ void Astar::reset()
     obstacle_map_.clear();
     path_node_.clear();
     movement_list_.clear();
-    end_pt_ = nullptr;
-    start_pt_ = nullptr;
     body_.clear();
     node_map_.clear();
+    std::cout<<"Finish Reset Astar."<<std::endl;
 }
 
-void Astar::setObstacle(const set< Eigen::Vector3d >& obstacle_map)
+void Astar::setObstacle(vector< Eigen::Vector3d >& obstacle_list)
 {
-    obstacle_map_ = obstacle_map;
+  for(int i=0;i<obstacle_list.size();i++)
+  {
+    obstacle_map_.insert(make_pair(posToGrid(obstacle_list[i]), obstacle_list[i]));
+  }
 }
+
 
 int Astar::findPath(const Eigen::Vector3d start_pt, const Eigen::Vector3d end_pt)
 {
     start_pt_ = start_pt;
     end_pt_ = end_pt;
-    CHECK(is_valid(start_pt)) << "The Start point is in obstacle, Check enviroment please.";
-    CHECK(is_valid(end_pt)) << "The End point is in obstacle, Check order please.";
+    //CHECK(is_valid(start_pt)) << "The Start point is in obstacle, Check enviroment please.";
+    //CHECK(is_valid(end_pt)) << "The End point is in obstacle, Check order please.";
     
     Node* current_node = new Node();
     current_node->position = start_pt;
@@ -76,17 +85,19 @@ int Astar::findPath(const Eigen::Vector3d start_pt, const Eigen::Vector3d end_pt
       current_node = open_set_.top();
       if ((end_pt-current_node->position).norm() <= resolution_)
       {
-	getPathFromNode();
+	getPathFromNode(current_node);
 	return 1;
       }
       open_set_.pop();
       current_node->state = Node::IN_CLOSE_SET;
-      close_set_.insert(current_node);
+      //close_set_.insert(current_node);
       extendRound(current_node);
     }
+    
+    return 0;
 }
 
-void Astar::extendRound(const Node* current_obj)
+void Astar::extendRound(Node* current_obj)
 {
   for (int i=0; i<movement_list_.size();i++)
   {
@@ -100,7 +111,7 @@ void Astar::extendRound(const Node* current_obj)
       continue;
     
     Node * obj = findInOpenset(next_pos);
-    if (!obj==nullptr)
+    if (!(obj==nullptr))
     {
       int new_g = current_obj->G+ getMoveCost(current_obj->position, next_pos);
       if (obj->G > new_g)
@@ -120,7 +131,7 @@ void Astar::extendRound(const Node* current_obj)
       new_obj->parent = current_obj;
       new_obj->state = Node::IN_OPEN_SET;
       open_set_.push(new_obj);
-      node_map_.insert(std::make_pair(new_obj->grid_pos, new_obj))
+      node_map_.insert(std::make_pair(new_obj->grid_pos, new_obj));
     }
   }
 }
@@ -165,26 +176,20 @@ double Astar::getDiag(const Eigen::Vector3d n1, const Eigen::Vector3d n2)
 }
 
 
-
-
-
 bool Astar::isValid(const Eigen::Vector3d &pos)
 {
-  std::set<Eigen::Vector3d> drone_set;
-  drone_set.clear();
-  std::set<Eigen::Vector3d> temp_set;
-  temp_set.clear();
   Eigen::Vector3i grid_p = posToGrid(pos);
   for(int i=0; i<body_.size(); i++)
   {
-    drone_set.insert(body_[i](0)+grid_p(0), 
+    Eigen::Vector3i body_grid(body_[i](0)+grid_p(0), 
 		     body_[i](1)+grid_p(1),body_[i](2)+grid_p(2));
+    auto it = obstacle_map_.find(body_grid);
+    if (!(it==obstacle_map_.end()))
+    {
+      return false;
+    }
   }
-  std::set_intersection(drone_set.begin(),drone_set.end(),
-			  obstacle_map_.begin(),obstacle_map_.end(),
-			  std::inserter(temp_set, temp_set.begin()));
-  if(!temp_set.empty())
-    return false;
+  
   return true;
 }
 
@@ -211,8 +216,10 @@ double Astar::getMoveCost(const Eigen::Vector3d& pos1, const Eigen::Vector3d& po
   Eigen::Vector3i grid_p1 = posToGrid(pos1);
   Eigen::Vector3i grid_p2 = posToGrid(pos2);
   
-  double dist = (grid_p1-grid_p1).norm();
-  DLOG(INFO) << "[Astar] - move_cost - norm is: "<<dist;
+  double dist = (pos1-pos2).norm();
+  
+  if (dist == 0)
+    DLOG(INFO) << "[Astar] - move_cost - norm is: "<<dist;
   
   return grid_p1(2) == grid_p2(2) ? dist : 10 * dist;
 }
@@ -233,24 +240,27 @@ void Astar::getPathFromNode(Node* end_node)
 
 void Astar::gen6ConnectionMovement()
 {
-  movement_list_.push_back(new Eigen::Vector3d(-resolution_,0,0));
-  movement_list_.push_back(new Eigen::Vector3d(resolution_,0,0));
-  movement_list_.push_back(new Eigen::Vector3d(0,-resolution_,0));
-  movement_list_.push_back(new Eigen::Vector3d(0,resolution_,0));
-  movement_list_.push_back(new Eigen::Vector3d(0,0,-resolution_));
-  movement_list_.push_back(new Eigen::Vector3d(0,0,resolution_));
+  movement_list_.push_back(Eigen::Vector3d(-resolution_,0,0));
+  movement_list_.push_back(Eigen::Vector3d(resolution_,0,0));
+  movement_list_.push_back(Eigen::Vector3d(0,-resolution_,0));
+  movement_list_.push_back(Eigen::Vector3d(0,resolution_,0));
+  movement_list_.push_back(Eigen::Vector3d(0,0,-resolution_));
+  movement_list_.push_back(Eigen::Vector3d(0,0,resolution_));
 }
 
 void Astar::gen27ConnectionMovement()
 {
-  for (int i=-resolution_; i<=resolution_; i+=resolution_)
-    for (int j=-resolution_; j<=resolution_; j+=resolution_)
-      for (int k=-resolution_; k<=resolution_; k+=resolution_)
+  std::cout<<"Start gen movement."<<std::endl;
+  for (double i=-resolution_; i<=resolution_; i+=resolution_)
+    for (double j=-resolution_; j<=resolution_; j+=resolution_)
+      for (double k=-resolution_; k<=resolution_; k+=resolution_)
       {
+	
 	if (i==0 && j==0 && k==0)
 	  continue;
-	movement_list_.push_back(new Eigen::Vector3d(i,j,k));
+	movement_list_.push_back(Eigen::Vector3d(i,j,k));
       }
+  std::cout<<"Finish gen movement."<<std::endl;
 }
 
 std::vector< Eigen::Vector3d > Astar::getPath()
