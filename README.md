@@ -44,6 +44,10 @@ See the [repo](https://github.com/generalized-intelligence/GAAS/tree/master/demo
 ## Installation
 Please see [Setup.md](https://github.com/generalized-intelligence/GAAS/blob/master/Setup.md)
 
+We also have a mirror form developers to install GAAS, [click here to download](https://gaas.gitbook.io/guide/handy-tools/v0.7-release-mirror-x86).
+
+Trust me you won't want to install every dependencies by yourself:)
+
 
 ## Overview
 Currently the project provides the following ten funcitons, some of which may need to be further optimized: 
