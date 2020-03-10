@@ -110,6 +110,8 @@ Distributed under the BSD 3-Clause license. See ``LICENSE`` for more information
 
 It is worth mentioning that we did not build everything from scratch, but on top of the solid foundations built by pioneers in the field. We would like to thank communities such as [PX4](https://px4.io) and [Dronecode](https://www.dronecode.org) for constantly pushing the industry foward. What they have built are what allowed us to build GAAS!
 
+Also, thanks for the support from https://thone.io
+
 We are also very grateful for our contributors. You may be able to find them at [AUTHORS.md](https://github.com/generalized-intelligence/GAAS/blob/master/AUTHORS.md).
 
 Il Vole
