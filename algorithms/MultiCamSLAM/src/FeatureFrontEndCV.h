@@ -20,7 +20,8 @@ namespace mcs
     using namespace cv;
     const static cv::Ptr<cv::ORB> orb = cv::ORB::create(1000);
     //const int GFTT_MIN_DIST = 10;
-    const int GFTT_MIN_DIST = 15;
+    //const int GFTT_MIN_DIST = 15;
+    const int GFTT_MIN_DIST = 30;
     //const static auto brief = cv::xfeatures2d::BriefDescriptorExtractor::create();
     const static auto gftt = cv::GFTTDetector::create(500,  // maximum number of corners to be returned
                                          0.01, // quality level
@@ -81,7 +82,8 @@ namespace mcs
     }
 
     //const int EXTRACT_COUNT_EACH_BLOCK = 4;//10;//40;
-    const int EXTRACT_COUNT_EACH_BLOCK = 20;//10;//40;
+    //const int EXTRACT_COUNT_EACH_BLOCK = 20;//10;//40;
+    const int EXTRACT_COUNT_EACH_BLOCK = 10;//10;//40;
     const int rows_count = 5;
     const int cols_count = 5;
     shared_ptr<PointWithFeatureT> extractCamKeyPoints_splited(cvMat_T& Img,int method,bool compute_feature)
@@ -385,7 +387,8 @@ namespace mcs
               abs(p1.y - p2.y) < diff_v_max
              &&  p1.x<p2.x
              //&&  p2.x-p1.x > 10.0 // minimum disparity :2 //TODO:set into config file.20 太大....10试试?
-             &&  p2.x-p1.x > 4.0 // minimum disparity :2 //TODO:set into config file.10 有点大.4试试?
+             //&&  p2.x-p1.x > 4.0 // minimum disparity :2 //TODO:set into config file.10 有点大.4试试?
+             &&  p2.x-p1.x >= 1.0 // minimum disparity :2 //TODO:set into config file.10 有点大.4试试?
                 // && p1.x-p2.x <
             )
         {

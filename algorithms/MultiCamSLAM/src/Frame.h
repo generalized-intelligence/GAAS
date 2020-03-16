@@ -121,6 +121,10 @@ namespace mcs
         vector<vector<p3dT> > p3d_vv;
 
 
+        Eigen::Vector3d imu_velocity;//直接public了,也没什么要改的.
+        Eigen::Vector3d imu_bias;
+        bool imu_velocity_bias_valid = false;//默认是未初始化的.
+
 
         map<int,ReprojectionRecordT >  reproj_map;//用于普通帧与关键帧track p2d gftt后 存储在这个中;
         //用参考帧的kfid作为索引, map[kfid][cam_id][p2d_id] == ref_p2d_id,pt.

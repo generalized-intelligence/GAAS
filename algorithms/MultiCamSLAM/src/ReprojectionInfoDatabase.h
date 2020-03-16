@@ -35,6 +35,11 @@
 #include <gtsam/slam/SmartFactorParams.h> //like chi2 outlier select.
 #include <gtsam/slam/GeneralSFMFactor.h>
 
+//GTSAM IMU
+#include <gtsam/navigation/CombinedImuFactor.h>
+#include <gtsam/navigation/GPSFactor.h>
+#include <gtsam/navigation/ImuFactor.h>
+
 #include <gtsam/geometry/Cal3_S2Stereo.h>
 #include <gtsam/slam/StereoFactor.h>
 #include <gtsam_unstable/slam/SmartStereoProjectionPoseFactor.h>
@@ -241,11 +246,20 @@ public:
 class ReprojectionInfoDatabase{
 private:
     mutex writeMutex;
+
 public:
     //TODO:考虑table里只存储索引.
     FrameTable frameTable;
     LandmarkTable landmarkTable;
     RelationTableT relationTable;
+
+
+
+    PreintegrationType *imu_preintegrated_;
+    NavState prev_state;
+    NavState prop_state;
+    imuBias::ConstantBias prev_bias;
+    const bool USE_IMU_INFO = true;
 
 
     vector<shared_ptr<RelationT> > queryAllRelatedRelationsByKF(shared_ptr<Frame> pKF);//查询所有相关的点.用于创建投影关系和marginalize;
@@ -582,6 +596,144 @@ public:
                 graph.emplace_shared<GenericProjectionFactor<Pose3, Point3, Cal3_S2> >(measurement, measurementNoise, Symbol('x', i), Symbol('l', j), K);
                 */
             }
+        }
+        //add imu.
+        if(USE_IMU_INFO)
+        {
+            if(frameID == 1) //第一次进行优化图构造:
+            {
+                imuBias::ConstantBias prior_imu_bias; // assume zero initial bias
+
+                auto pLastFrame = this->frameTable.query(frameID-1);
+
+                //Vector3 prior_velocity(pLastFrame->imu_velocity);//继承上一次的速度.
+                Vector3 prior_velocity(0,0,0);
+
+                //noiseModel::Diagonal::shared_ptr pose_noise_model = noiseModel::Diagonal::Sigmas((Vector(6) << 0.01, 0.01, 0.01, 0.5, 0.5, 0.5).finished()); // rad,rad,rad,m, m, m
+                //位置prior 用不到
+                //初始化预积分器.只需做一次.
+                noiseModel::Diagonal::shared_ptr velocity_noise_model = noiseModel::Isotropic::Sigma(3,0.1); // m/s //一些prior model,不是很重要.
+                noiseModel::Diagonal::shared_ptr bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-3);//这个才是决定imu漂移噪声估计的
+
+                //初始化噪声和速度.
+                pGraph->add(PriorFactor<Vector3>(V(0), prior_velocity,velocity_noise_model));//约束第一帧的速度.
+                pGraph->add(PriorFactor<imuBias::ConstantBias>(B(0), prior_imu_bias,bias_noise_model));//第一帧的bias prior约束.
+                //LOG(WARNING)<<"[Reprojection Database]Initial velocity and bias added in graph!"<<endl;
+                pInitialEstimate_output->insert(V(0), prior_velocity);//TODO:设置适当的速度.
+                pInitialEstimate_output->insert(B(0), prior_imu_bias);
+                LOG(WARNING)<<"[Reprojection Database]Velocity and bias"<<0<<" added in graph!"<<endl;
+
+                //归根结底就是要求出噪声参数p.
+                boost::shared_ptr<PreintegratedCombinedMeasurements::Params> p = PreintegratedCombinedMeasurements::Params::MakeSharedD(0.0);
+                {
+                    // We use the sensor specs to build the noise model for the IMU factor. 构造协方差矩阵.
+                    double accel_noise_sigma = 0.0003924;
+                    double gyro_noise_sigma = 0.000205689024915;
+                    double accel_bias_rw_sigma = 0.004905;
+                    double gyro_bias_rw_sigma = 0.000001454441043;
+                    Matrix33 measured_acc_cov = Matrix33::Identity(3,3) * pow(accel_noise_sigma,2);
+                    Matrix33 measured_omega_cov = Matrix33::Identity(3,3) * pow(gyro_noise_sigma,2);
+                    Matrix33 integration_error_cov = Matrix33::Identity(3,3)*1e-8; // error committed in integrating position from velocities
+                    Matrix33 bias_acc_cov = Matrix33::Identity(3,3) * pow(accel_bias_rw_sigma,2);
+                    Matrix33 bias_omega_cov = Matrix33::Identity(3,3) * pow(gyro_bias_rw_sigma,2);
+                    Matrix66 bias_acc_omega_int = Matrix::Identity(6,6)*1e-5; // error in the bias used for preintegration
+
+
+                    // PreintegrationBase params:
+                    p->accelerometerCovariance = measured_acc_cov; // acc white noise in continuous
+                    p->integrationCovariance = integration_error_cov; // integration uncertainty continuous
+                    // should be using 2nd order integration
+                    // PreintegratedRotation params:
+                    p->gyroscopeCovariance = measured_omega_cov; // gyro white noise in continuous
+                    // PreintegrationCombinedMeasurements params:
+                    p->biasAccCovariance = bias_acc_cov; // acc bias in continuous
+                    p->biasOmegaCovariance = bias_omega_cov; // gyro bias in continuous
+                    p->biasAccOmegaInt = bias_acc_omega_int;
+                }
+
+#ifdef USE_COMBINED
+                imu_preintegrated_ = new PreintegratedCombinedMeasurements(p, prior_imu_bias);
+#else
+                imu_preintegrated_ = new PreintegratedImuMeasurements(p, prior_imu_bias);
+#endif
+                //初值设置.
+
+
+                //pInitialEstimate_output->insert(V(1),prior_velocity);
+                //pInitialEstimate_output->insert(B(1),prior_imu_bias);
+
+                LOG(WARNING)<<"[Reprojection Database]Velocity and bias"<<1<<" added in graph!"<<endl;
+                // Store previous state for the imu integration and the latest predicted outcome.
+                this->prev_state = NavState(Pose3(), prior_velocity);
+                this->prop_state = prev_state;
+                this->prev_bias = prior_imu_bias;
+
+                // Keep track of the total error over the entire run for a simple performance metric.
+                double current_position_error = 0.0, current_orientation_error = 0.0;
+
+                double output_time = 0.0;
+                //double dt = 0.005;  // The real system has noise, but here, results are nearly
+                // exactly the same, so keeping this for simplicity.
+            }
+            else//已经初始化过预积分器.
+            {
+                //更新速度即可.
+                Vector3 prior_velocity(0,0,0);
+
+                noiseModel::Diagonal::shared_ptr velocity_noise_model = noiseModel::Isotropic::Sigma(3,0.1); // m/s //一些prior model,不是很重要.
+                noiseModel::Diagonal::shared_ptr bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-3);//这个才是决定imu漂移噪声估计的
+
+                //初始化噪声和速度.
+                pGraph->add(PriorFactor<Vector3>(Symbol('V',frameID), prior_velocity,velocity_noise_model));//约束上一帧的速度
+                pGraph->add(PriorFactor<imuBias::ConstantBias>(Symbol('B',frameID), this->prev_bias,bias_noise_model));
+
+
+            }
+
+            //优化之前,构造整张优化图:
+            for(int i = 0;i<pFrame->imu_info_vec.size();i++)
+            {
+                auto imu_info = pFrame->imu_info_vec.at(i);
+                Vector3d acc(imu_info.ax,imu_info.ay,imu_info.az);
+                Vector3d gyr(imu_info.alpha_x,imu_info.alpha_y,imu_info.alpha_z);
+                double dt = imu_info.time;//TODO: fix it.
+                imu_preintegrated_->integrateMeasurement(acc, gyr, dt);//替换成自己的量.
+            }
+            this->prop_state = imu_preintegrated_->predict(this->prev_state, this->prev_bias);
+            //pInitialEstimate_output->insert(X(frameID), prop_state.pose());//初始位置不用这种IMU积分方法估计,太不稳定了.
+            pInitialEstimate_output->insert(Symbol('V',frameID), prop_state.v());//速度可以估计.
+            pInitialEstimate_output->insert(Symbol('B',frameID), prev_bias);//用上一个bias估计当前的.
+            pInitialEstimate_output->insert(Symbol('V',frameID-1), prev_state.v());//TODO:替换成之前存的.
+            pInitialEstimate_output->insert(Symbol('B',frameID-1), prev_bias);//用上一个bias估计当前的.
+
+            noiseModel::Diagonal::shared_ptr prior_velocity_noise_model = noiseModel::Isotropic::Sigma(3,0.1); // m/s
+            noiseModel::Diagonal::shared_ptr prior_bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-3);
+
+            pGraph->add(PriorFactor<Vector3>(Symbol('V',frameID - 1), prev_state.v(),prior_velocity_noise_model));
+            pGraph->add(PriorFactor<imuBias::ConstantBias>(Symbol('B',frameID -1), prev_bias,prior_bias_noise_model));
+
+            LOG(WARNING)<<"[Reprojection Database]Velocity and bias"<<frameID<<" added in graph!"<<endl;//这块要约束之前的帧.
+
+#ifdef USE_COMBINED
+            PreintegratedCombinedMeasurements *preint_imu_combined = dynamic_cast<PreintegratedCombinedMeasurements*>(imu_preintegrated_);
+            CombinedImuFactor imu_factor(Symbol('X',frameID-1), Symbol('V',frameID-1),
+                                         Symbol('X',frameID), Symbol('V',frameID),,
+                                         Symbol('B',frameID-1), Symbol('B',frameID),
+                                         *preint_imu_combined);
+            pGraph->add(imu_factor);
+#else
+            PreintegratedImuMeasurements *preint_imu = dynamic_cast<PreintegratedImuMeasurements*>(imu_preintegrated_);
+            ImuFactor imu_factor(Symbol('X',frameID-1), Symbol('V',frameID-1),
+                                 Symbol('X',frameID), Symbol('V',frameID),
+                                 Symbol('B',frameID-1),
+                                 *preint_imu);
+            pGraph->add(imu_factor);
+            imuBias::ConstantBias zero_bias(Vector3(0, 0, 0), Vector3(0, 0, 0));
+            noiseModel::Diagonal::shared_ptr bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-3);//这个才是决定imu漂移噪声估计的
+            pGraph->add(BetweenFactor<imuBias::ConstantBias>(Symbol('B',frameID-1),
+                                                            Symbol('B',frameID),
+                                                            zero_bias, bias_noise_model));
+#endif
         }
         return pGraph;
     }

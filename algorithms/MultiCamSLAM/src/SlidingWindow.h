@@ -101,6 +101,7 @@ private:
     double getAverageDisp(const ReprojectionRecordT& reproj_info,int ref_kf_id);
     StatisticOfTrackingStateForAllKF current_track_state;
     int last_optimized_frame_id = 0;
+    const bool USE_IMU_INFO = true;
 
 
 public:
@@ -238,14 +239,33 @@ public:
             this->reproj_db.frameTable.query(this->last_optimized_frame_id)->getRotationAndTranslation(r,pt,valid);
             this->reproj_db.frameTable.query(lastFrameID)->setRotationAndTranslation(r.matrix(),pt.vector());
         }
-//        cout<<"loss after optimization variables:(Marginals):"<<endl;
-//        Marginals marginals(*pGraph, *pResult);
-//        for(auto& key_:pResult->keys())
-//        {
-//            Symbol asSymbol(key_);
-//            cout<<asSymbol.chr()<<asSymbol.index()<<"covariance is:\n" << marginals.marginalCovariance(key_) << endl;
-//            LOG(INFO)<<asSymbol.chr()<<asSymbol.index()<<"covariance is:\n" << marginals.marginalCovariance(key_) << endl;
-//        }
+        if(USE_IMU_INFO)
+        {
+            if(pResult->exists(Symbol('V',last_optimized_frame_id)))
+            {
+                //使用filter 过滤这两个值.
+                auto v = pResult->at(Symbol('V',last_optimized_frame_id)).cast<Point3>();
+                this->reproj_db.prev_state = NavState(pResult->at(Symbol('F',last_optimized_frame_id)).cast<Pose3>(),v);
+                auto b = pResult->at(Symbol('B',last_optimized_frame_id)).cast<imuBias::ConstantBias>();//把位置和bias写回去.
+                this->reproj_db.prev_bias = b;
+
+                //            prev_state_velocity = NavState(result.at<Pose3>(X(correction_count)),
+                //                                  result.at<Vector3>(V(correction_count)));//获取这两个玩意.
+                //            prev_bias = result.at<imuBias::ConstantBias>(B(correction_count));
+
+                // Reset the preintegration object.
+                LOG(WARNING)<<"bias optimized:"<<b<<endl;
+                this->reproj_db.imu_preintegrated_->resetIntegrationAndSetBias(b);
+            }
+        }
+        //        cout<<"loss after optimization variables:(Marginals):"<<endl;
+        //        Marginals marginals(*pGraph, *pResult);
+        //        for(auto& key_:pResult->keys())
+        //        {
+        //            Symbol asSymbol(key_);
+        //            cout<<asSymbol.chr()<<asSymbol.index()<<"covariance is:\n" << marginals.marginalCovariance(key_) << endl;
+        //            LOG(INFO)<<asSymbol.chr()<<asSymbol.index()<<"covariance is:\n" << marginals.marginalCovariance(key_) << endl;
+        //        }
 //        cout<<"errors of factors:"<<endl;
         pGraph->printErrors(*pResult);
         //marginals.print();
@@ -447,6 +467,10 @@ public:
             }
         }
     }
+//    bool checkNeedKF(shared_ptr<Frame> pCurrentFrame)
+//    {//TODO:检查块分布,检查kp总个数
+//        return false;
+//    }
 
     void insertAFrameIntoSlidingWindow(shared_ptr<Frame> pCurrentFrame,bool force_kf,bool& this_frame_valid)
     //pCurrentFrame:即将插入的帧.

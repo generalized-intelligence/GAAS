@@ -38,11 +38,12 @@ public:
                                             {1,"STATE_UNSTABLE_TRACKING"},
                                             {2,"STATE_TRACKING_FAILED"}
                                      };
+    vector<sensor_msgs::Imu> imu_vec_tmp;
 private:
     int SLAMRunningState = STATE_TRACKING_FALIED; // init.
     int unstable_tracking_patience = 0;//暂时不用.用到的时候使用它计量已经有多少个不稳定追踪.
     deque<mcs::Frame> frameQueue;
-    vector<sensor_msgs::Imu> imu_vec_tmp;
+
     vector<StereoCamConfig> stereo_cam_config;
     shared_ptr<mcs::Frame> pLastKF=nullptr,pLastF=nullptr;
     std::chrono::high_resolution_clock::time_point begin_t;
@@ -214,7 +215,7 @@ public:
 
         }
     }
-    void iterateWithImgs(shared_ptr < vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > > > pvInputs)
+    void iterateWithImgs(shared_ptr < vector<std::pair<shared_ptr<mcs::cvMat_T>,shared_ptr<mcs::cvMat_T> > > > pvInputs,bool optimized_with_imu=false)
     {
         ScopeTimer t("SLAM_simple::iterateWith4Imgs()");
         shared_ptr<mcs::Frame> pNewF;
@@ -236,6 +237,10 @@ public:
             bool needNewKF = false;//DEBUG ONLY.Using inner strategy in SlidingWindow.
             bool create_frame_success;
             auto v_imu = form_imu_data_vec_from_msg_vec(this->imu_vec_tmp);
+            if(optimized_with_imu)
+            {
+                LOG(WARNING)<<"imu_data size:"<<this->imu_vec_tmp.size()<<endl;
+            }
             pNewF = mcs::createFrameStereos(pvInputs,this->stereo_cam_config,create_frame_success,needNewKF,&v_imu);
             this->imu_vec_tmp.clear();
             if(!ever_init)
