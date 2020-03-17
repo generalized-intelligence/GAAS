@@ -1,34 +1,32 @@
-/*
- * Copyright (c) 2020 <copyright holder> <email>
- * 
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- * 
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- * 
- */
+#ifndef __BSPLINE_OPTIMIZER_H__
+#define __BSPLINE_OPTIMIZER_H__
 
-#ifndef BSPLINE_OPTIMIZER_H
-#define BSPLINE_OPTIMIZER_H
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+#include "path_optimization/bspline.h"
 
-class bspline_optimizer
+class BsplineOptimizer
 {
+private:
+  NonUniformBspline* bspline_;
+  
+  double lambda1_;
+  double lambda2_;
+  double lambda3_;
+  double lambda4_;
+  double lambda5_;
+  
+  void calcSmoothnessCost(const vector<Eigen::Vector3d>& q, double& cost, vector<Eigen::Vector3d>& gradient);
+  void calcDistanceCost(const vector<Eigen::Vector3d>& q, double& cost, vector<Eigen::Vector3d>& gradient);
+  void calcFeasibilityCost(const vector<Eigen::Vector3d>& q, double& cost, vector<Eigen::Vector3d>& gradient);
+  void calcEndpointCost(const vector<Eigen::Vector3d>& q, double& cost, vector<Eigen::Vector3d>& gradient);
+  
+public:
+  BsplineOptimizer();
+  void setBspline(NonUniformBspline *bspline);
+  void optimize();
+  void setParam();
+  
 };
 
-#endif // BSPLINE_OPTIMIZER_H
+#endif // __BSPLINE_OPTIMIZER_H__

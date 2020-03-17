@@ -13,6 +13,7 @@
 #include <memory>
 #include <opencv2/opencv.hpp>
 #include <cmath>
+#include "utils/scopetimer.h"
 
 class HybridNode
 {
@@ -104,6 +105,9 @@ private:
   
   
   bool isValid(const Eigen::Vector3d &pos);
+  
+  ScopeTimer *time1;
+  ScopeTimer *time2;
 
   
 public:
@@ -114,6 +118,8 @@ public:
   
   std::vector<Eigen::VectorXd> getPath();
   std::vector<Eigen::Vector3d> getTrajPoints();
+  Eigen::MatrixXd getSampleMatrix(double &dt);
+  
   
   int findPath(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,
              Eigen::Vector3d end_pt, Eigen::Vector3d end_vel);

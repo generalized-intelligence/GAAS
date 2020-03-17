@@ -40,6 +40,9 @@ void HybridAstar::setParam()
   margin_g_ = std::ceil(margin_ / resolution_);
   radius_g_ = std::ceil(radius_/ resolution_);
   
+  time1 = new ScopeTimer("Valid Check");
+  time2 = new ScopeTimer("EXPEND");
+  
   for(int i=-margin_g_; i<=margin_g_; i+=1)
     for(int j=-margin_g_; j<=margin_g_; j+=1)
       for(int k=-margin_g_; k<=margin_g_; k+=1)
@@ -119,6 +122,8 @@ int HybridAstar::findPath(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, E
     Eigen::Vector3d current_pos = current_node->dynamic_state.head(3);
     if((end_pt_-current_pos).norm() <= 0.8)
     {
+      time1->watch("CHECK Valid");
+      time2->watch("ALL Extend");
       LOG(INFO) << "Success.";
       LOG(INFO) << current_pos;
       LOG(INFO) << end_pt_;
@@ -139,6 +144,7 @@ int HybridAstar::findPath(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, E
 
 void HybridAstar::extendRound( HybridNode* current_obj)
 {
+  time2->setStartPoint();
   double T = 0.8;
   Eigen::Matrix<double, 6, 1> current_state = current_obj->dynamic_state;
   Eigen::Matrix<double, 6, 1> next_state;
@@ -219,11 +225,13 @@ void HybridAstar::extendRound( HybridNode* current_obj)
 	  open_set_.push(obj);
 	}
       }
+  time2->stopClockAndUpdateCost();
       
 }
 
 bool HybridAstar::isValid(const Eigen::Vector3d& pos)
 {
+  time1->setStartPoint();
   Eigen::Vector3i grid_p = posToGrid(pos);
   for(int i=0; i<body_.size(); i++)
   {
@@ -235,7 +243,7 @@ bool HybridAstar::isValid(const Eigen::Vector3d& pos)
       return false;
     }
   }
-  
+  time1->stopClockAndUpdateCost();
   return true;
 }
 
@@ -264,7 +272,7 @@ vector< Eigen::Vector3d > HybridAstar::getTrajectory(double dt)
   
 }
 
-void HybridAstar::getNextState(Eigen::Matrix< double, int(6), int(1) >& state0, 
+void HybridAstar::stateTransit(Eigen::Matrix< double, int(6), int(1) >& state0, 
 				Eigen::Matrix< double, int(6), int(1) >& state1, 
 				Eigen::Vector3d u, double tau)
 {
@@ -304,6 +312,63 @@ vector< Eigen::Vector3d > HybridAstar::getTrajPoints()
   }
   reverse(state_list.begin(), state_list.end());
   return state_list;
+}
+
+Eigen::MatrixXd HybridAstar::getSampleMatrix(double& dt)
+{
+  int K = 0;
+  double total_time = 0.0;
+
+  HybridNode* node = path_node_.back();
+  while (node->parent != NULL)
+  {
+    total_time += node->duration;
+    node = node->parent;
+  }
+  
+  K = floor(total_time / dt);
+  dt = total_time / (K + 1);
+
+
+  Eigen::VectorXd px(K + 2), py(K + 2), pz(K + 2);
+  int sample_num = 0;
+  node = path_node_.back();
+
+  double t;
+
+  t = node->duration;
+  end_vel_ = node->dynamic_state.tail(3);
+  
+
+  for (double ti = total_time; ti > -1e-5; ti -= dt)
+  {
+    Eigen::Matrix<double, 6, 1> x0 = node->parent->dynamic_state;
+    Eigen::Matrix<double, 6, 1> xt;
+    Vector3d ut = node->input;
+
+    stateTransit(x0, xt, ut, t); 
+    px(sample_num) = xt(0), px(sample_num) = xt(1), px(sample_num) = xt(2);
+    ++sample_num;
+
+    t -= dt;
+      
+    if (t < -1e-5 && node->parent->parent != NULL)
+    {
+      node = node->parent;
+      t += node->duration;
+    }
+    
+  }
+  /* ---------- return samples ---------- */
+  Eigen::MatrixXd samples(3, K + 5);
+  samples.block(0, 0, 1, K + 2) = px.reverse().transpose();
+  samples.block(1, 0, 1, K + 2) = py.reverse().transpose();
+  samples.block(2, 0, 1, K + 2) = pz.reverse().transpose();
+  samples.col(K + 2) = start_vel_;
+  samples.col(K + 3) = end_vel_;
+  samples.col(K + 4) = node->input;
+
+  return samples;
 }
 
 

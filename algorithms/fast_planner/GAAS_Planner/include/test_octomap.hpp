@@ -18,6 +18,7 @@
 #include <glog/logging.h>
 #include <time.h>
 #include "utils/path_visulization.h"
+#include "utils/scopetimer.h"
 
 class TestOctomap
 {
@@ -126,7 +127,9 @@ public:
     double cost;
     
     start = std::clock();
+    ScopeTimer timer("Hybrid ASTAR");
     int result = hastar_->findPath(start_pt_,start_vel_,start_acc_,  end_pt_, end_vel_);
+    timer.watch("END Search", false);
     end = std::clock();
     
     cost = end-start;
