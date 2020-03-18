@@ -57,6 +57,11 @@ inline vector<int> make_int3_vector(int i1,int i2,int i3)
 }
 
 
+struct Triangle3D_Mesh
+{
+    vector<P3d_PLY_T> vVertices;
+    vector<vector<int> > vTriangleIDs;
+};
 class MeshGenerator
 {
 
@@ -88,10 +93,13 @@ public:
 //            //typedef Mesh<Vertex2D> Mesh2D;
 //        std::vector<cv::Vec6f>* mesh_2d_for_viz,
 //        std::vector<cv::Vec6f>* mesh_2d_filtered_for_viz)
-    shared_ptr<vector<cvTriangleT> > generateMeshWithImagePair_vKP_disps(std::pair<shared_ptr<cvMatT>,shared_ptr<cvMatT> > im_pair,const vector<Point2f>& kps,const vector<float> disps)
+    shared_ptr<Triangle3D_Mesh> generateMeshWithImagePair_vKP_disps(std::pair<shared_ptr<cvMatT>,shared_ptr<cvMatT> > im_pair,const vector<Point2f>& kps,const vector<float> disps)
     {
         ScopeTimer t_("generateMeshWithImagePair_vKP_disps");
         LOG(INFO)<<"in generateMeshWithImagePair_vKP_disps input_kps.size():"<<kps.size()<<endl;
+
+        vector<P3d_PLY_T> vVertices;
+        vector<vector<int> > vTriangleIDs;
 
         //对图像进行三角剖分.
         cvMatT& l_img = *(im_pair.first);
@@ -175,8 +183,6 @@ public:
             //直接写PLY文件.略过3d三角形填充过程.
             unordered_map<P3d_PLY_T, int> point_to_index;
             //int current_index = 0;
-            vector<P3d_PLY_T> vVertices;
-            vector<vector<int> > vTriangleIDs;
             vector<array<double,3> > vVertexColors;
             //LOG(INFO)<<"debug 3"<<endl;
             for(const auto& tri:triangles_filtered)
@@ -264,7 +270,10 @@ public:
             }
 
         }
-        return pTriangles_filtered;
+        shared_ptr<Triangle3D_Mesh> pMesh(new Triangle3D_Mesh);
+        pMesh->vVertices = vVertices;
+        pMesh->vTriangleIDs = vTriangleIDs;
+        return pMesh;
     }
 
 //    shared_ptr<PointCloud<PointXYZRGB> > createPCLMeshFromTriangles(vector<cvTriangleT>& triangles,const cvMatT& original_img,unordered_map<Point2f,float>& p2d_to_disps,vector<float>& disps,
