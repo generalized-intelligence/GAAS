@@ -41,7 +41,7 @@ void FetchImgCallback(int cam_id,const sensor_msgs::ImageConstPtr& img1,const se
     {
         LOG(ERROR)<<e.what()<<endl;
     }
-    pWrapper->onCallback(m1,m2,m3,m4);
+    pWrapper->onCallback(m1,m2,m3,m4,img1);
 }
 
 
@@ -79,6 +79,7 @@ int main(int argc,char** argv)
     sync.registerCallback(boost::bind(FetchImgCallback,cam_id,_1, _2,_3,_4));
     //sync.registerCallback(boost::bind(FetchImageCallback, _1, _2,_3,_4,_5,_6));
     //ros::Subscriber sub = nh.subscribe("/mavros/imu/data_raw",100,FetchIMUCallBack);
-    pWrapper = new MeshGeneratorROSWrapper;
+    pWrapper = new MeshGeneratorROSWrapper(&nh);
+
     ros::spin();
 }

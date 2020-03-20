@@ -135,9 +135,10 @@ inline bool check_stereo_match(Point2f& pl,Point2f& pr)
     return false;
 }
 
-void run_all_pipeline(shared_ptr<cvMatT> pimg1,shared_ptr<cvMatT> pimg2)
+void run_all_pipeline(shared_ptr<cvMatT> pimg1,shared_ptr<cvMatT> pimg2,shared_ptr<Triangle3D_Mesh>& pMesh)
 {
     ScopeTimer t("mesh_gen_pipeline");
+    pMesh = make_shared<Triangle3D_Mesh>();
     auto img_pair = make_pair(pimg1,pimg2);
 
     auto pts_detected = extractCamKeyPoints_splited(*pimg1);
@@ -145,6 +146,10 @@ void run_all_pipeline(shared_ptr<cvMatT> pimg1,shared_ptr<cvMatT> pimg2)
     vector<Point2f> p_next;
     vector<uint8_t> success_vec;
     vector<float> track_err,disps;
+    if(p_prev.size() == 0)
+    {//提取特征点失败了.直接返回.
+        return;
+    }
     do_cvPyrLK(*pimg1, *pimg2, p_prev, p_next, success_vec, track_err, true);
     t.watch("till pyrlk finished:");
     for(int i = 0;i<p_prev.size();i++)
@@ -161,12 +166,16 @@ void run_all_pipeline(shared_ptr<cvMatT> pimg1,shared_ptr<cvMatT> pimg2)
     vector<Point2f> pleftpts;
 
     extract_sub_vec(p_prev,pleftpts,success_vec);
+    if (pleftpts.size() == 0)
+    {
+        return;
+    }
 
     MeshGenerator mg;
 
     LOG(INFO)<<"pleftpts and disps size: "<<pleftpts.size()<<", "<<disps.size()<<endl;
     assert(pleftpts.size() == disps.size());
-    mg.generateMeshWithImagePair_vKP_disps(img_pair, pleftpts, disps);
+    pMesh = mg.generateMeshWithImagePair_vKP_disps(img_pair, pleftpts, disps);
     t.watch("mesh generated.");
 }
 #endif
