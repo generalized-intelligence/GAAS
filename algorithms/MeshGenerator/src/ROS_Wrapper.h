@@ -56,7 +56,7 @@ private:
 
         pMarker->header = img_header;//stamp继承了.
 
-        pMarker->header.frame_id = "map";
+        pMarker->header.frame_id = "world";
         pMarker->id = mesh_id;
         pMarker->type = visualization_msgs::Marker::TRIANGLE_LIST;
         pMarker->action = visualization_msgs::Marker::ADD;
