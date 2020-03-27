@@ -613,7 +613,7 @@ public:
                 //位置prior 用不到
                 //初始化预积分器.只需做一次.
                 noiseModel::Diagonal::shared_ptr velocity_noise_model = noiseModel::Isotropic::Sigma(3,0.1); // m/s //一些prior model,不是很重要.
-                noiseModel::Diagonal::shared_ptr bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-2);//这个才是决定imu漂移噪声估计的
+                noiseModel::Diagonal::shared_ptr bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-3);//这个才是决定imu漂移噪声估计的
 
                 //初始化噪声和速度.
                 pGraph->add(PriorFactor<Vector3>(Symbol('V',0), prior_velocity,velocity_noise_model));//约束第一帧的速度.
@@ -633,10 +633,10 @@ public:
                     double gyro_bias_rw_sigma = 0.000001454441043;
                     Matrix33 measured_acc_cov = Matrix33::Identity(3,3) * pow(accel_noise_sigma,2);
                     Matrix33 measured_omega_cov = Matrix33::Identity(3,3) * pow(gyro_noise_sigma,2);
-                    Matrix33 integration_error_cov = Matrix33::Identity(3,3)*1e-6; // error committed in integrating position from velocities
+                    Matrix33 integration_error_cov = Matrix33::Identity(3,3)*1e-8; // error committed in integrating position from velocities
                     Matrix33 bias_acc_cov = Matrix33::Identity(3,3) * pow(accel_bias_rw_sigma,2);
                     Matrix33 bias_omega_cov = Matrix33::Identity(3,3) * pow(gyro_bias_rw_sigma,2);
-                    Matrix66 bias_acc_omega_int = Matrix::Identity(6,6)*1e-5; // error in the bias used for preintegration
+                    Matrix66 bias_acc_omega_int = Matrix::Identity(6,6)*1e-6; // error in the bias used for preintegration
 
 
                     // PreintegrationBase params:
@@ -681,7 +681,7 @@ public:
                 Vector3 prior_velocity(0,0,0);
 
                 noiseModel::Diagonal::shared_ptr velocity_noise_model = noiseModel::Isotropic::Sigma(3,0.01); // m/s //一些prior model,不是很重要.
-                noiseModel::Diagonal::shared_ptr bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-4);//这个才是决定imu漂移噪声估计的
+                noiseModel::Diagonal::shared_ptr bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-5);//这个才是决定imu漂移噪声估计的
 
                 //初始化噪声和速度.
                 pGraph->add(PriorFactor<Vector3>(Symbol('V',frameID-1), prior_velocity,velocity_noise_model));//约束上一帧的速度
@@ -716,7 +716,7 @@ public:
             //pInitialEstimate_output->insert(Symbol('B',frameID-1), prev_bias);//用上一个bias估计当前的.
 
             noiseModel::Diagonal::shared_ptr prior_velocity_noise_model = noiseModel::Isotropic::Sigma(3,0.01); // m/s//初速度为0约束不用那么严格.
-            noiseModel::Diagonal::shared_ptr prior_bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-3);
+            noiseModel::Diagonal::shared_ptr prior_bias_noise_model = noiseModel::Isotropic::Sigma(6,1e-4);
 
             pGraph->add(PriorFactor<Vector3>(Symbol('V',frameID - 1), prop_state.v(),prior_velocity_noise_model));
             pGraph->add(PriorFactor<imuBias::ConstantBias>(Symbol('B',frameID -1), prev_bias,prior_bias_noise_model));

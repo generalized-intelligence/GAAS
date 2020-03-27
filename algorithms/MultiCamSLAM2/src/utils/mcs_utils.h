@@ -129,7 +129,7 @@ struct StatisticOfTrackingStateForAllKF
 
         //if(best_score>30)
         //if(best_score>20)//TODO:这里的逻辑需要反复考量.
-        if(total_score>40)
+        if(total_score>10)
         {
             return true;
         }

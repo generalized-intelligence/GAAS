@@ -138,6 +138,10 @@ public:
         params.linearSolverType = NonlinearOptimizerParams::MULTIFRONTAL_QR;
         params.setMaxIterations(MaxIter);//如果不设置,有时候甚至能优化90多次.大部分时间都消耗在这里.其他在30ms左右,这里300ms.
         params.verbosityLM = LevenbergMarquardtParams::LAMBDA;
+
+        params.absoluteErrorTol = 1.0;//Try to reduce time cost.
+        params.relativeErrorTol = 0.1;
+
         LevenbergMarquardtOptimizer optimizer(*pGraph, *pInitialEstimate, params);
 
 
@@ -497,7 +501,8 @@ public:
             //vector<p2dT> useless_;
             visualize_tracked_p2d_and_ordinary_frame_stereo_helper(*pCurrentFrame);
             //needKF = (best_score<=40)||(avg_disp>20);
-            needKF = (best_score<=30)||(avg_disp>20);
+            //needKF = (best_score<=30)||(avg_disp>20);
+            needKF = (best_score<=15)||(avg_disp>20);
         }
         if((!track_good)&&(!force_kf))
         {

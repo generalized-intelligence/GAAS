@@ -409,6 +409,105 @@ namespace mcs
         y = z*(v - camcy) / camfy;
         return Eigen::Vector4d(x,y,z,1.0);
     }
+    inline void flood_fill(cv::Mat& edge_img,cv::Mat& weight_img,int cx,int cy)
+    {
+        if(cx>=edge_img.cols||cx<0||cy<0||cy>=edge_img.rows)
+        {
+            return;
+        }
+        uint8_t curr = edge_img.at<uint8_t>(cy,cx);
+        if(curr == 0)
+        {
+            edge_img.at<uint8_t>(cy,cx) = 1;
+            weight_img.at<uint8_t>(cy,cx)+=10;
+            flood_fill(edge_img,weight_img,cx-1,cy);
+            flood_fill(edge_img,weight_img,cx+1,cy);
+            flood_fill(edge_img,weight_img,cx,cy-1);
+            flood_fill(edge_img,weight_img,cx,cy+1);
+        }
+    }
+    vector<Point2f> filterKPResults(vector<Point2f>& vP2f,const vector<unsigned char>& valid_3dpt,vector<unsigned char>& still_valid,const cv::Size& img_size,int img_id = 0)
+    {
+        const int minimum_count = 22;
+        const int maximum_count = 28;
+        cv::Mat filter_mat(img_size,CV_8UC1,Scalar(0));
+        int total_count = vP2f.size();
+        vector<Point2f> ret_val;
+        still_valid.resize(valid_3dpt.size(),0);
+
+        std::vector<Point2f> vp2f_copy = vP2f;
+        int overlap_thres = 1;
+        bool flag_filled = false;
+        if(total_count>maximum_count)
+        {
+            //step<1>.fill circles.
+//            for(int i = 0;i<vP2f.size();i++)
+//            {
+//                auto& kp = vP2f.at(i);
+//                if(!valid_3dpt[i])
+//                {
+//                    continue;
+//                }
+
+//                //cv::imshow("circle",circle_edge);
+//                //cv::waitKey(0);
+//            }
+            //imshow("edge",circle_edge);
+
+            for(int i = 0;i<10&&!flag_filled;i++)
+            {
+                for(int i = 0;i<vp2f_copy.size();i++)
+                {
+                    auto &kp = vp2f_copy.at(i);
+                    if(!valid_3dpt[i])
+                    {
+                        continue;
+                    }
+                    int x,y;
+                    x = (int)kp.x;
+                    y = (int)kp.y;
+                    if(filter_mat.at<uint8_t>(y,x) <=overlap_thres)
+                    {
+                        //reserve this point.
+                        ret_val.push_back(kp);
+                        still_valid[i] = 1;
+                        //after this pt has been adapted, floodfill a circle.
+                        {
+                            cv::Mat circle_edge(img_size,CV_8UC1,Scalar(0));
+                            //int x,y;
+                            //x = (int)kp.x;
+                            //y = (int)kp.y;
+                            cv::circle(circle_edge,Point2i(x,y),GFTT_MIN_DIST+8,255,1);//fill a circle much larger than GFTT_MIN_DIST. color means overlap times.
+                            flood_fill(circle_edge,filter_mat,x,y);
+                        }
+                        filter_mat.at<uint8_t>(y,x) = 255;
+                    }
+                    if(ret_val.size()>=maximum_count)
+                    {
+                        flag_filled = true;
+                        break;
+                    }
+                }
+
+                if(ret_val.size()<minimum_count)
+                {
+                    overlap_thres+=14;
+                }
+                else
+                {
+                    flag_filled = true;
+                    break;
+                }
+            }
+
+        }
+        stringstream ss;
+        ss<<"weight_img_"<<img_id;
+        imshow(ss.str(),filter_mat);
+        cv::waitKey(1);
+        LOG(WARNING)<<"Filtered kps size():"<<ret_val.size()<<endl;
+        return ret_val;
+    }
 
     void createStereoMatchViaOptFlowMatching(cvMat_T& l,cvMat_T& r,StereoCamConfig& cam_info,vector<p2dT>& p2d_output,
                                              vector<p3dT>& p3d_output,map<int,int>& map_2d_to_3d_pts,
@@ -428,7 +527,7 @@ namespace mcs
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:kp.size():"<<pPWFT_l_img->kps.size()<<endl;
         vector<Point2f> l_p2fs_original;
         cv::KeyPoint::convert(pPWFT_l_img->kps,l_p2fs_original);
-        vector<Point2f> tracked_unchecked;
+        vector<Point2f> tracked_unchecked,tracked_unfiltered;
         vector<unsigned char> v_track_success;
         vector<float> err;
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:starting OptFlow."<<endl;
@@ -438,6 +537,16 @@ namespace mcs
         do_cvPyrLK(l,r,l_p2fs_original,tracked_unchecked,v_track_success,err//,cv::Size(21, 21), 3,
                                  //cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 0.01)
                                  );
+        vector<unsigned char> can_be_triangulated;
+        can_be_triangulated.resize(v_track_success.size());
+        vector<unsigned char> still_can_be_triangulated_after_filter;
+        still_can_be_triangulated_after_filter.resize(v_track_success.size());
+        for(int i = 0;i<v_track_success.size();i++)
+        {
+            can_be_triangulated[i] = v_track_success[i] && check_stereo_match(tracked_unchecked[i],l_p2fs_original[i]);
+        }
+
+        filterKPResults(l_p2fs_original,can_be_triangulated,still_can_be_triangulated_after_filter,cv::Size(l.cols,l.rows));
         //p2d_output = shared_ptr<vector<p2dT> >(new vector<p2dT>);
         //p3d_output = shared_ptr<vector<p3dT> >(new vector<p3dT>);
         vector<Point2f>& checked_l = p2d_output;
@@ -445,7 +554,8 @@ namespace mcs
         LOG(INFO)<<"checking vtrack_success,l_p2fs_original.size:"<<l_p2fs_original.size()<<",tracked_unchecked.size:"<<tracked_unchecked.size() <<endl;
         for(int i = 0;i<v_track_success.size();i++)
         {
-            if(v_track_success[i] && check_stereo_match(tracked_unchecked[i],l_p2fs_original[i]))// check v.diff(v) shall be smaller than 4
+            //if(v_track_success[i] && check_stereo_match(tracked_unchecked[i],l_p2fs_original[i]))// check v.diff(v) shall be smaller than 4
+            if(still_can_be_triangulated_after_filter[i])
             {
                 LOG(INFO)<<"        track success,dealing with 3d reconstruction."<<endl;
                 checked_l.push_back(l_p2fs_original.at(i));
@@ -459,25 +569,7 @@ namespace mcs
                 //LOG(INFO)<<"Q_mat:\n"<<QMat<<endl;
                 //LOG(INFO)<<"Q_mat dtype:"<<QMat.type()<<";cv_32f is:"<<CV_32F<<"cv_64f is:"<<CV_64F<<endl;
                 LOG(INFO)<<"        disp,q_32,q_33:"<<disparity<<","<<QMat.at<float>(3,2)<<","<<QMat.at<float>(3,3)<<endl;
-/*
-                scale = 1.0/(disparity*QMat.at<float>(3,2)+QMat.at<float>(3,3));
-                x = (l_p2fs_original.at(i).x + QMat.at<float>(0,3))*scale;
-                y = (l_p2fs_original.at(i).y + QMat.at<float>(1,3))*scale;
-                z = QMat.at<float>(2, 3)*scale;
 
-                //Point3f p3f_prev(x,y,z);
-                 cv::Mat matp1(4,1,CV_32F);
-                matp1.at<float>(0,0)= x;
-                matp1.at<float>(1,0)= y;
-                matp1.at<float>(2,0)= z;
-                matp1.at<float>(3,0)= 1.0;
-                //LOG(INFO)<<"        RT_mat:\n"<<cam_info.getRTMat()<<endl;
-                matp1 = cam_info.getRTMat()*matp1;
-                //Transformation of rt mat.
-                x = matp1.at<float>(0,0);
-                y = matp1.at<float>(1,0);
-                z = matp1.at<float>(2,0);
-*/
                 float b = 0.12;//DEBUG ONLY!!!
                 z = b*camfx/(disparity);
                 x = z*(l_p2fs_original.at(i).x - camcx) / camfx;
@@ -511,7 +603,7 @@ namespace mcs
             LOG(ERROR)<<"p3d is empty. check your condition of p3d calc!"<<endl;
         }
         LOG(INFO)<<"In createStereoMatchViaOptFlowMatching:points matched success num:"<<checked_l.size()<<endl;
-        if(checked_l.size()>15)
+        if(checked_l.size()>8)
         {
             output_create_success = true;
         }
@@ -569,7 +661,9 @@ namespace mcs
              map<int,int>& kps_3d_to_2d = pF_ret->map3d_to_2d_pt_vec.at(i);
              vector<double>& disps = pF_ret->disps_vv.at(i);
              LOG(INFO)<<"will create kf_stereo :"<<i<<endl;
+
              createStereoMatchViaOptFlowMatching(l,r,pF_ret->cam_info_stereo_vec[i],pF_ret->p2d_vv.at(i),pF_ret->p3d_vv.at(i),kps_2d_to_3d,kps_3d_to_2d,disps,create_stereo_success);
+
              if(!create_stereo_success)
              {
                  LOG(WARNING)<<"Created Stereo KF in cam "<<i<<" Failed!"<<endl;//TODO.
@@ -596,6 +690,8 @@ namespace mcs
         }
         return pMask;
     }
+
+
     void upgradeOrdinaryFrameToKeyFrameStereosReservingPreviousKPs(shared_ptr<Frame> pOrdinaryFrame)
     {
         //大体思路:
@@ -659,6 +755,7 @@ namespace mcs
                                         std::max(EXTRACT_COUNT_EACH_BLOCK - old_kps_of_each_cam.at(cam_index)/(rows_count*cols_count),0),false
                                         );
 
+            //auto extracted_kps = filterKPResults(extracted_kps_prev,cv::Size(752,480),cam_index);//move to extract stereos.
             const int i = cam_index;
             auto& p =  pOrdinaryFrame->pLRImgs->at(i);
             cvMat_T& l = *(std::get<0>(p));

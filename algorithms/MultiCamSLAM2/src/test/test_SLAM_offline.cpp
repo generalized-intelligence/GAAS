@@ -146,6 +146,7 @@ public:
         accl.z = az;
 
         index_out = index;
+        return true;
     }
     void read_iter()
     {
