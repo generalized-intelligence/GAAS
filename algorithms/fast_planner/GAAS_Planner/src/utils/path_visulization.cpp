@@ -12,7 +12,7 @@ PathVisulization::PathVisulization(ros::NodeHandle& nh): nh_(nh)
 void PathVisulization::displaySphereList(std::vector< Eigen::Vector3d > list, double resolution, Eigen::Vector4d color)
 {
   visualization_msgs::Marker mk;
-  mk.header.frame_id = "map";
+  mk.header.frame_id = "world";
   mk.header.stamp = ros::Time::now();
   mk.type = visualization_msgs::Marker::SPHERE_LIST;
   mk.action = visualization_msgs::Marker::DELETE;

@@ -19,6 +19,7 @@
 #include <time.h>
 #include "utils/path_visulization.h"
 #include "utils/scopetimer.h"
+#include "plan_enviroment/enviroment.h"
 
 class TestOctomap
 {
@@ -52,10 +53,8 @@ public:
   
   TestOctomap(ros::NodeHandle* n) : nh(n)
   {
-    astar_ = new Astar();
     std::cout<<"Init test."<<std::endl;
-    astar_->reset();
-    astar_->setParam();
+    
     
     hastar_ = new HybridAstar();
     hastar_->reset();
@@ -69,8 +68,8 @@ public:
     //obstacle_set_mutex.lock();
     ros::Rate rate(50.0);
     ros::Time::init();
-    thread t1(&TestOctomap::ros_thread, this);
-    t1.detach();
+//     thread t1(&TestOctomap::ros_thread, this);
+//     t1.detach();
     
     
     std::cout<<"Init test."<<std::endl;
@@ -84,6 +83,12 @@ public:
             ("/octomap_point_cloud_centers", 10, &TestOctomap::octomap_update_callback, this);
 	ros::spin();    
   }
+  
+  void getDistance(SdfEnviroment& sf, Eigen::Vector3d& pos)
+  {
+    sf.getDistance(pos);
+  }
+  
   
   void search()
   {
@@ -113,11 +118,12 @@ public:
     }
   }
   
-  void searchHybrid()
+  void searchHybrid(SdfEnviroment& sf)
   {
+    hastar_->setMap(sf);
     std::cout<<"Start search."<<std::endl;
     start_pt_ = Eigen::Vector3d(0,0,3);
-    end_pt_ = Eigen::Vector3d(8,0,3);
+    end_pt_ = Eigen::Vector3d(7,0,3);
     
     start_vel_ = Eigen::Vector3d(0,0,0);
     end_vel_ = Eigen::Vector3d(0,0,0);

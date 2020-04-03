@@ -9,11 +9,11 @@
 #include <vector>
 #include <queue>
 #include <set>
-#include "plan_enviroment/discrete_grid.h"
 #include <memory>
 #include <opencv2/opencv.hpp>
 #include <cmath>
 #include "utils/scopetimer.h"
+#include "plan_enviroment/enviroment.h"
 
 class HybridNode
 {
@@ -108,6 +108,8 @@ private:
   
   ScopeTimer *time1;
   ScopeTimer *time2;
+  
+  SdfEnviroment* sdf_map_;
 
   
 public:
@@ -127,6 +129,7 @@ public:
   void setObstacle(std::vector<Eigen::Vector3d> &obstacle_list);	//TODO:use SDF
   std::vector<Eigen::Vector3d> getTrajectory(double dt);
   
+  void setMap(SdfEnviroment& sf);
   
   typedef std::shared_ptr<HybridAstar> Ptr;
   

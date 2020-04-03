@@ -3,7 +3,8 @@
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
-#include "path_optimization/bspline.h"
+#include<IpTNLP.hpp>
+#include "path_optimization/cubic_bspline.h"
 
 class BsplineOptimizer
 {
@@ -26,6 +27,7 @@ public:
   void setBspline(NonUniformBspline *bspline);
   void optimize();
   void setParam();
+  
   
 };
 
