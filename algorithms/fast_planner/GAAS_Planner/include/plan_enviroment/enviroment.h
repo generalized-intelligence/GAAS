@@ -21,6 +21,7 @@ public:
   
   double getDistanceAndGradiend(const Eigen::Vector3d& position, Eigen::Vector3d &gradient) ;
   
+  typedef std::shared_ptr<SdfEnviroment> Ptr;
 };
 
 #endif // __ENVIROMENT_H__

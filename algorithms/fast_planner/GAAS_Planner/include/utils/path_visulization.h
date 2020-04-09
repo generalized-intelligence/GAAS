@@ -10,6 +10,7 @@
 #include <string>
 #include <glog/logging.h>
 #include <vector>
+#include <path_optimization/cubic_bspline.h>
 
 class PathVisulization
 {
@@ -19,7 +20,11 @@ private:
 public:
   PathVisulization(ros::NodeHandle& nh);
   void drawPath(std::vector<Eigen::Vector3d> path, double resolution, Eigen::Vector4d color);
-  void displaySphereList(std::vector<Eigen::Vector3d> list, double resolution, Eigen::Vector4d color);
+  void displaySphereList(std::vector<Eigen::Vector3d> list, double resolution, Eigen::Vector4d color, int id=1);
+  
+  void drawBspline(CubicBspline bspline, double size, Eigen::Vector4d color,
+                                        bool show_ctrl_pts, double size2, Eigen::Vector4d color2);
+  
 };
 
 #endif // __PATH_VISULIZATION_H_

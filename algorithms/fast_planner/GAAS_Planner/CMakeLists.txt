@@ -39,6 +39,8 @@ set(SOURCES
     src/hybrid_astar.cpp
     src/utils/path_visulization.cpp
     src/plan_enviroment/enviroment.cpp
+    src/path_optimization/cubic_bspline.cpp
+    src/path_optimization/bspline_nlp.cpp
 )
 #FILE(GLOB_RECURSE sourcefiles "src/*.cpp")
 

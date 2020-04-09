@@ -245,7 +245,7 @@ bool HybridAstar::isValid(const Eigen::Vector3d& pos)
 //   return true;
 //   time1->setStartPoint();
   double dist = sdf_map_->getDistance(pos);
-  if (dist>1)
+  if (dist>0.8)
   {
 //     std::cout<<"dist: "<<dist<<std::en;
     return true;
@@ -332,7 +332,7 @@ std::vector< Eigen::Vector3d > HybridAstar::getTrajPoints()
   return state_list;
 }
 
-Eigen::MatrixXd HybridAstar::getSampleMatrix(double& dt)
+Eigen::MatrixXd HybridAstar::getSampleMatrix(double& dt)//, std::vector<Eigen::Vector3d> &path)
 {
   int K = 0;
   double total_time = 0.0;
@@ -365,9 +365,12 @@ Eigen::MatrixXd HybridAstar::getSampleMatrix(double& dt)
     Eigen::Vector3d ut = node->input;
 
     stateTransit(x0, xt, ut, t); 
-    px(sample_num) = xt(0), px(sample_num) = xt(1), px(sample_num) = xt(2);
+    px(sample_num) = xt(0), py(sample_num) = xt(1), pz(sample_num) = xt(2);
     ++sample_num;
-
+    
+//     Eigen::Vector3d xx(xt(0), xt(1), xt(2));
+//     path.push_back(xx);
+    
     t -= dt;
       
     if (t < -1e-5 && node->parent->parent != NULL)
@@ -377,6 +380,7 @@ Eigen::MatrixXd HybridAstar::getSampleMatrix(double& dt)
     }
     
   }
+//   reverse(path.begin(), path.end());
   /* ---------- return samples ---------- */
   Eigen::MatrixXd samples(3, K + 5);
   samples.block(0, 0, 1, K + 2) = px.reverse().transpose();

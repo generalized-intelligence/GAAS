@@ -120,7 +120,7 @@ public:
   
   std::vector<Eigen::VectorXd> getPath();
   std::vector<Eigen::Vector3d> getTrajPoints();
-  Eigen::MatrixXd getSampleMatrix(double &dt);
+  Eigen::MatrixXd getSampleMatrix(double &dt);//,  std::vector<Eigen::Vector3d> &path);
   
   
   int findPath(Eigen::Vector3d start_pt, Eigen::Vector3d start_vel, Eigen::Vector3d start_acc,

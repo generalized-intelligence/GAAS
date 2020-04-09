@@ -4,25 +4,66 @@
 #include "IpTNLP.hpp"
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+#include <glog/logging.h>
+#include <plan_enviroment/enviroment.h>
 
 using namespace Ipopt;
 
 class BsplineTNLP: public TNLP
 {
 private:
-  int j;
-  
   Index N_;
-  Number* q_;
   
-  double getSmoothnessCost();
-  double getDistanceCost();
-  double getFeasibilityCost();
-  double getEndpointCost(); //Added from origin project.
+  double dt_; //For get derivative.
+  double vmax_, amax_;
+  
+  Eigen::MatrixXd control_pts_;
+  SdfEnviroment* sdf_map_;
+  
+  std::vector<double> best_q_;
+  
+  
+  std::vector<Eigen::Vector3d> tmp_g_smoothness_;
+  std::vector<Eigen::Vector3d> tmp_g_distance_;
+  std::vector<Eigen::Vector3d> tmp_g_feasible_;
+  std::vector<Eigen::Vector3d> tmp_g_endpoint_;
+  
+  double tmp_c_smoothness_;
+  double tmp_c_distance_;
+  double tmp_c_feasible_;
+  double tmp_c_endpoint_;
+  
+  double getSmoothnessCost(std::vector<Eigen::Vector3d> &q);
+  double getDistanceCost(std::vector<Eigen::Vector3d> &q);
+  double getFeasibilityCost(std::vector<Eigen::Vector3d> &q);
+  double getEndpointCost(std::vector<Eigen::Vector3d> &q); //Added from origin project.
   
 public:
-  BsplineTNLP();
+  BsplineTNLP(const int N, Eigen::MatrixXd &control_pts, double dt);
+  BsplineTNLP(const int N, Eigen::MatrixXd &control_pts, double dt, SdfEnviroment& sdf_map);
+  
+  
+  void setParam();
+  void setMap(const SdfEnviroment::Ptr& sdf_map)
+  {
+    //sdf_map_ = sdf_map;
+  }
+  
+  std::vector<double> getResult()
+  {
+    return best_q_;
+  }
+  
   virtual ~BsplineTNLP();
+  
+   /** Method to return some info about the NLP */
+   virtual bool get_nlp_info(
+      Index&          n,
+      Index&          m,
+      Index&          nnz_jac_g,
+      Index&          nnz_h_lag,
+      IndexStyleEnum& index_style
+   );
   
   /** Method to return the bounds for my problem */
   virtual bool get_bounds_info(
@@ -33,13 +74,12 @@ public:
      Number* g_l,
      Number* g_u
   );
-  
   /** Method to return the starting point for the algorithm */
   virtual bool get_starting_point(
      Index   n,
      bool    init_x,
      Number* x,
-     bool    init_z,combineCost
+     bool    init_z,
      Number* z_L,
      Number* z_U,
      Index   m,

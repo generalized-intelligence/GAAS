@@ -72,7 +72,9 @@ int main(int argc, char **argv)
 //     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 //   }
   DLOG(INFO)<<"Finish set map.";
-  t.searchHybrid(sdf);
+//   t.searchHybrid(sdf);
+  //t.test_cubic_bspline(sdf);
+  t.test_optimizer(sdf);
   DLOG(INFO)<<"Finish test.";
   ros::spin();
   return 0;

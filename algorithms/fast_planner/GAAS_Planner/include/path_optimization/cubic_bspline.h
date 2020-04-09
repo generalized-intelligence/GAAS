@@ -4,6 +4,8 @@
 #include<eigen3/Eigen/Core>
 #include<eigen3/Eigen/Dense>
 #include<iostream>
+#include <memory>
+#include <glog/logging.h>
 
 class CubicBspline
 {
@@ -24,7 +26,7 @@ private:
   
 public:
   CubicBspline();
-  CubicBspline(Eigen::MatrixXd control_pts, double dt);
+  CubicBspline(Eigen::MatrixXd control_pts, double dt, int pb=3);
   
   CubicBspline getDerivative();
   
@@ -42,6 +44,8 @@ public:
   bool reallocateTime();
   
   void setControlPointFromValuePoint(Eigen::MatrixXd sample_pts, double dt);
+  
+  typedef std::shared_ptr<CubicBspline> Ptr;
   
 };
 

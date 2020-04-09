@@ -20,6 +20,11 @@
 #include "utils/path_visulization.h"
 #include "utils/scopetimer.h"
 #include "plan_enviroment/enviroment.h"
+#include "path_optimization/cubic_bspline.h"
+#include <IpTNLP.hpp>
+#include "path_optimization/bspline_nlp.h"
+#include "IpIpoptApplication.hpp"
+#include "IpSolveStatistics.hpp"
 
 class TestOctomap
 {
@@ -165,6 +170,131 @@ public:
     else
     {
       LOG(ERROR)<<"Wrong";
+    }
+  }
+  
+  void test_cubic_bspline(SdfEnviroment& sf)
+  {
+    hastar_->setMap(sf);
+    start_pt_ = Eigen::Vector3d(0,0,3);
+    end_pt_ = Eigen::Vector3d(7,0,3);
+    
+    start_vel_ = Eigen::Vector3d(0,0,0);
+    end_vel_ = Eigen::Vector3d(0,0,0);
+    start_acc_ = Eigen::Vector3d(0,0,0);
+    int result = hastar_->findPath(start_pt_,start_vel_,start_acc_,  end_pt_, end_vel_);
+    LOG(INFO)<<"Get path.";
+    if (result == 1)
+    {
+      std::vector< Eigen::VectorXd > path = hastar_->getPath();
+      std::vector<Eigen::Vector3d> h_path = hastar_->getTrajPoints();
+      double ts = 0.5/2.0;
+      Eigen::MatrixXd samples = hastar_->getSampleMatrix(ts);//, h_path);
+      LOG(INFO)<<"Get samples.";
+      CubicBspline bspline;
+      bspline.setControlPointFromValuePoint(samples, ts);
+      LOG(INFO)<<"Set samples.";
+      for(int i=0; i<30; i++)
+      {
+	visualization_->drawPath(h_path, 0.1,  Eigen::Vector4d(1, 0, 0, 1));
+	visualization_->drawBspline(bspline, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1),true, 0.12,Eigen::Vector4d(0, 1, 0, 1));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	std::cout<<"Print path..."<<std::endl;
+      }
+    }
+    
+  }
+  
+  void test_optimizer(SdfEnviroment &sf)
+  {
+    hastar_->setMap(sf);
+    start_pt_ = Eigen::Vector3d(0,0,3);
+    end_pt_ = Eigen::Vector3d(7,0,3);
+    
+    start_vel_ = Eigen::Vector3d(0,0,0);
+    end_vel_ = Eigen::Vector3d(0,0,0);
+    start_acc_ = Eigen::Vector3d(0,0,0);
+    int result = hastar_->findPath(start_pt_,start_vel_,start_acc_,  end_pt_, end_vel_);
+    LOG(INFO)<<"Get path.";
+    if (result == 1)
+    {
+      std::vector< Eigen::VectorXd > path = hastar_->getPath();
+      std::vector<Eigen::Vector3d> h_path = hastar_->getTrajPoints();
+      double ts = 0.5/2.0;
+      Eigen::MatrixXd samples = hastar_->getSampleMatrix(ts);//, h_path);
+      LOG(INFO)<<"Get samples.";
+      CubicBspline bspline;
+      bspline.setControlPointFromValuePoint(samples, ts);
+      Eigen::MatrixXd control_pts = bspline.getControlPoints();
+      int n = 3*(control_pts.rows()-3-3);
+     
+      
+      
+      Ipopt::SmartPtr<Ipopt::TNLP> mynlp = new BsplineTNLP(n, control_pts, ts, sf);
+      Ipopt::SmartPtr<Ipopt::IpoptApplication> app = new Ipopt::IpoptApplication();
+      app->Options()->SetStringValue("hessian_approximation", "limited-memory");
+      app->Options()->SetIntegerValue("max_iter", 100);
+      app->Initialize();
+      
+      Ipopt::ApplicationReturnStatus status;
+      if( status != Solve_Succeeded )
+      {
+	  std::cout << std::endl << std::endl << "*** Error during initialization!" << std::endl;
+	  //return (int) status;
+      }
+      
+      ScopeTimer timer("Hybrid ASTAR");
+      status = app->OptimizeTNLP(mynlp);
+      
+      
+      if( status == Solve_Succeeded )
+      {
+	Ipopt::Index iter_count = app->Statistics()->IterationCount();
+	std::cout << std::endl << std::endl << "*** The problem solved in " << iter_count << " iterations!" << std::endl;
+	Ipopt::Number final_obj = app->Statistics()->FinalObjective();
+	std::cout << std::endl << std::endl << "*** The final value of the objective function is " << final_obj << '.'
+		  << std::endl;
+      }
+      
+      
+      BsplineTNLP* b = (BsplineTNLP*) Ipopt::GetRawPtr(mynlp);
+      timer.watch("Optimize", false);
+      std::vector<double> best;
+      best = b->getResult();
+      
+      int end_id = control_pts.rows() -3;
+      
+      
+      LOG(INFO)<<"Set samples.";
+      
+      LOG(INFO) << "real rows: "<<control_pts.rows() << " bests: "<<best.size();
+      
+      for(int i=0; i<control_pts.rows(); i++)
+      {
+	if (i<3)
+	  continue;
+	if (i>= end_id)
+	  continue;
+	
+	for (int j=0; j<3; j++)
+	{
+	  //LOG(INFO)<<"i: "<<i<<" j: "<<j<<"best: "<<best[3 * (i - 3) + j];
+	 
+	  control_pts(i,j) = best[3 * (i - 3) + j];
+	}
+      }
+      LOG(INFO)<<control_pts;
+      
+      CubicBspline bspline1(control_pts, ts, 3);
+      LOG(INFO)<<"Set samples.";
+      for(int i=0; i<30; i++)
+      {
+	visualization_->drawPath(h_path, 0.1,  Eigen::Vector4d(1, 0, 0, 1));
+	visualization_->drawBspline(bspline1, 0.1, Eigen::Vector4d(1.0, 1.0, 0.0, 1),true, 0.12,Eigen::Vector4d(0, 1, 0, 1));
+	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	std::cout<<"Print path..."<<std::endl;
+      }
+      
     }
   }
   

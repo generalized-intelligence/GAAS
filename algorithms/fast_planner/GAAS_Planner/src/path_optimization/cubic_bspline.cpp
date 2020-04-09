@@ -6,15 +6,17 @@ CubicBspline::CubicBspline()
   setParam();
 }
 
-CubicBspline::CubicBspline(Eigen::MatrixXd control_points, double dt)
+CubicBspline::CubicBspline(Eigen::MatrixXd control_points, double dt, int pb)
 {
-  pb_ = 3;
+  pb_ = pb;
   //k_ = pb_ + 1;
-  control_points_ = control_points;
+  control_pts_ = control_points;
   dt_ = dt;
   
   n_ = control_points.rows()-1;
   m_ = n_ + pb_ + 1;
+  
+  knots_ = Eigen::VectorXd::Zero(m_+1);
   
   //valid knots span: t ∈ knots_[pb_:m_-pb_]
   for (int i = 0; i <= m_; ++i)
@@ -36,10 +38,10 @@ void CubicBspline::setParam()
 
 Eigen::MatrixXd CubicBspline::getDerivativeControlPoints()
 {
-  Eigen::MatrixXd new_ctp = Eigen::MatrixXd::Zero(control_ps_.rows()-1, 3);
+  Eigen::MatrixXd new_ctp = Eigen::MatrixXd::Zero(control_pts_.rows()-1, 3);
   for (int i = 0; i < new_ctp.rows(); ++i)
   {
-    new_ctp.row(i) = pb_ * (control_ps_.row(i+1) - control_ps_.row(i))/(knots_(i+pb_+1) - knots_(i+1));
+    new_ctp.row(i) = pb_ * (control_pts_.row(i+1) - control_pts_.row(i))/(knots_(i+pb_+1) - knots_(i+1));
   }
   return new_ctp;
 }
@@ -47,7 +49,7 @@ Eigen::MatrixXd CubicBspline::getDerivativeControlPoints()
 CubicBspline CubicBspline::getDerivative()
 {
   Eigen::MatrixXd new_ctp = this->getDerivativeControlPoints();
-  CubicBspline derivative = CubicBspline(new_ctp, pb_-1, dt_);
+  CubicBspline derivative = CubicBspline(new_ctp, dt_, pb_-1);
   Eigen::VectorXd new_knots(knots_.rows()-2);
   new_knots = knots_.segment(1, knots_.rows() - 2);
   derivative.setKnot(new_knots);
@@ -101,7 +103,7 @@ Eigen::Vector3d CubicBspline::deBoorCox(double t)
   }
   
   // B(t) = ∑PiB(t) t ∈ knots_[pb_:m_-pb_]
-  vector<Eigen::Vector3d> P;
+  std::vector<Eigen::Vector3d> P;
   for (int i=0; i <= pb_; i++)
   {
     P.push_back(control_pts_.row(k-pb_+i));
@@ -142,6 +144,7 @@ void CubicBspline::setControlPointFromValuePoint(Eigen::MatrixXd sample_pts, dou
   prow << 1/6.0 * 1, 1/6.0 * 4, 1/6.0 * 1;			//1/6 * (P0 + 4P1 + P2)
   vrow << (1/2.0/dt) * (-1) , 0,  (1/2.0/dt) * 1;		//1/2/dt * (-P0 + P2)
   arow << (1/dt/dt) * 1, (1/dt/dt)*(-2), (1/dt/dt)* 1;		//1/dt/dt * (P0 - 2P1 + P2)
+  
 
   Eigen::MatrixXd A = Eigen::MatrixXd::Zero(K+5, K+4);
 
@@ -170,6 +173,71 @@ void CubicBspline::setControlPointFromValuePoint(Eigen::MatrixXd sample_pts, dou
   control_pts_.col(0) = px;
   control_pts_.col(1) = py;
   control_pts_.col(2) = pz;
+  
+
+//   int K = sample_pts.cols() - 4 - 1;
+//   
+//   Eigen::MatrixXd control_pts;
+// 
+//   // write A
+//   Eigen::VectorXd prow(3), vrow(3), arow(3);
+//   prow << 1, 4, 1;
+//   vrow << -1, 0, 1;
+//   arow << 1, -2, 1;
+// 
+//   Eigen::MatrixXd A = Eigen::MatrixXd::Zero(K + 5, K + 4);
+// 
+//   for (int i = 0; i < K + 2; ++i)
+//     A.block(i, i, 1, 3) = prow.transpose();
+// 
+//   A.block(K + 2, 0, 1, 3) = A.block(K + 3, K + 1, 1, 3) = vrow.transpose();
+//   A.block(K + 4, 0, 1, 3) = arow.transpose();
+// 
+//   // cout << "A:\n" << A << endl;
+//   A.block(0, 0, K + 2, K + 4) = (1 / 6.0) * A.block(0, 0, K + 2, K + 4);
+//   A.block(K + 2, 0, 2, K + 4) = (1 / 2.0 / dt) * A.block(K + 2, 0, 2, K + 4);
+//   A.row(K + 4) = (1 / dt / dt) * A.row(K + 4);
+// 
+//   // write b
+//   Eigen::VectorXd bx(K + 5), by(K + 5), bz(K + 5);
+//   for (int i = 0; i < K + 5; ++i)
+//   {
+//     bx(i) = sample_pts(0, i);
+//     by(i) = sample_pts(1, i);
+//     bz(i) = sample_pts(2, i);
+//   }
+// 
+//   // solve Ax = b
+//   Eigen::VectorXd px = A.colPivHouseholderQr().solve(bx);
+//   Eigen::VectorXd py = A.colPivHouseholderQr().solve(by);
+//   Eigen::VectorXd pz = A.colPivHouseholderQr().solve(bz);
+// 
+//   // convert to control pts
+//   control_pts.resize(K + 4, 3);
+//   control_pts.col(0) = px;
+//   control_pts.col(1) = py;
+//   control_pts.col(2) = pz;
+//   
+//   control_pts_ = control_pts;
+  
+  pb_ = 3;
+  dt_ = dt;
+
+  n_ = control_pts_.rows()-1;
+  m_ = n_ + pb_ + 1;
+  knots_ = Eigen::VectorXd::Zero(m_+1);
+
+  //valid knots span: t ∈ knots_[pb_:m_-pb_]
+  for (int i = 0; i <= m_; ++i)
+  {
+    if (i <= pb_)
+      knots_(i) = double(-pb_+i) * dt_;
+    else
+      knots_(i) = knots_(i-1) + dt_;
+  }
+
+  setParam();
+  
 }
 
 
