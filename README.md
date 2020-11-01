@@ -45,4 +45,8 @@ Velodyne Velarray
 目标平台暂定x86 i7级别处理器(如upextreme平台),用于基础算法的部署,便于开发和仿真测试; Nvidia Jetson AGX Xavier(32GB RAM,30TOPs),用于基于神经网络算法/需要 CUDA加速算法的部署;这两款平台也有充足的性能冗余,能保证算法运行的稳健性.
 更低端的 Jetson tx2, Raspberry pi, Odroid等性能太差,在大型飞行器场景成本对计算单元成本要求不高的场景下,不予考虑.
 
+现在已完成的部分:包含32线激光雷达和双目摄像头的仿真环境初步搭建.
+效果如下图.
+![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Screenshot%20from%202020-11-01%2020-36-44.png)
+
 
