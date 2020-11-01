@@ -9,11 +9,17 @@ Download PX4 Firmware and checkout to branch "v1.8.0".
 At Firmware/CMakeLists.txt, patch:
 
 @@ -185,6 +185,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PX4_BINARY_DIR})
+ 
  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PX4_BINARY_DIR})
+ 
  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PX4_BINARY_DIR})
+ 
 +if (CATKIN_DEVEL_PREFIX)
-+       SET(BUILD_SHARED_LIBS OFF)
+
+\+       SET(BUILD_SHARED_LIBS OFF)
+
 +endif()
 
 To avoid ecl compilation error.
