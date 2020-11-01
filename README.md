@@ -13,7 +13,9 @@ Extra modules of GAAS; Including some amazing lidar-based algorithms!
 对于大型货运无人机和飞行汽车而言,纯视觉的技术路线缺点是:
 
 1.鲁棒性不够,不能针对夜间或逆光等场景有较好的适应性,飞行器高速移动时定位也容易丢失,容易引发恶性事故.**这是大型飞行器绝对不能接受的.**
+
 2.计算量比较大.在移动设备上不容易实现实时运行.
+
 3.基于神经网络的方法在极端场景下容易出现事故,且故障不易复现.
 
 这些问题都是载人飞行场景下不允许发生的.
@@ -21,11 +23,14 @@ Extra modules of GAAS; Including some amazing lidar-based algorithms!
 因此,**引入激光雷达目前看来是十分必要的.**
 
 考虑备选的型号主要是:
+
 Livox TELE-15
+
 Velodyne Velarray
 
 
 考虑获取的点云的稠密性和大量应用的成本,固态激光雷达显然是未来更有前景的方向.
+
 多线束旋转式激光雷达成本高昂,重量大,机械结构容易损坏,布置不易,线束重复难以全面扫描整个场景,无法适应调试中反复的碰撞等不利条件.因此暂不予考虑.
 
 使用激光雷达将大大减少感知,定位模块中一些算法的复杂程度,提高稳健性;实现建图及自动降落等功能也较为容易.
@@ -43,10 +48,14 @@ Velodyne Velarray
 模拟器仍考虑使用 Gazebo.
 
 目标平台暂定x86 i7级别处理器(如upextreme平台),用于基础算法的部署,便于开发和仿真测试; Nvidia Jetson AGX Xavier(32GB RAM,30TOPs),用于基于神经网络算法/需要 CUDA加速算法的部署;这两款平台也有充足的性能冗余,能保证算法运行的稳健性.
+
 更低端的 Jetson tx2, Raspberry pi, Odroid等性能太差,在大型飞行器场景成本对计算单元成本要求不高的场景下,不予考虑.
 
 现在已完成的部分:包含32线激光雷达和双目摄像头的仿真环境初步搭建.
+
 效果如下图.
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Screenshot%20from%202020-11-01%2020-36-44.png)
 
+(图像较大,请耐心等待加载)
 
+详细步骤见simulation/README.md.
