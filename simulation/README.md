@@ -45,7 +45,7 @@ cp -r ./models/*  ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/models/
 
 \# 如果你好奇生成sdf文件的步骤:
 
-\# To get this sdf, run xacro src/velodyne_simulator/velodyne_description/urdf/example.urdf.xacro > example.urdf"
+\# To get this sdf, run "xacro src/velodyne_simulator/velodyne_description/urdf/example.urdf.xacro > example.urdf"
 
 \# and "gz sdf -p example.urdf >example.sdf"
 
