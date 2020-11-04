@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- vision lidar fusion launch script -->
+    <node name="vision_lidar_fusion_node" pkg="vision_lidar_fusion" type="vision_lidar_fusion_node" output="screen" launch-prefix="gdb --args">
+        <param name="visualize" type="bool" value="true"/>
+        <param name="config_file_path" type="string" value="/home/gi/GAAS_contrib/config/camera1_lidar1.yaml"/>
+    </node>
+</launch>
+

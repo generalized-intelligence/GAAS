@@ -72,20 +72,30 @@ public:
                 vPt3ds_z_gt_0.push_back(pt);
             }
         }
+        LOG(INFO)<<"vPt3ds_z_gt_0.size():"<<vPt3ds_z_gt_0.size()<<endl;
         vector<cv::Point2f>& vPt2ds_projected = vPt2ds_output;
         vPt2ds_projected.clear();
-        cv::projectPoints(vPt3ds_z_gt_0,cv::Mat(),cv::Mat(),camera_K,cv::Mat(),vPt2ds_projected);
+        cv::Mat rvec=(cv::Mat_<double>(3,1) <<0,0,0);
+        cv::Mat tvec=(cv::Mat_<double>(3,1) <<0,0,0);
+        cv::Mat distortvec=(cv::Mat_<double>(4,1) <<0,0,0,0);
+        cv::projectPoints(vPt3ds_z_gt_0,rvec,tvec,camera_K,distortvec,vPt2ds_projected);
         vPt2ds_output = vPt2ds_projected;
+        LOG(INFO)<<"p2d.size():"<<vPt2ds_output.size()<<endl;
         if(do_visualize)
         {
             for(const cv::Point2f& pt2d:vPt2ds_projected)
             {
                 int x = (int)pt2d.x;
                 int y = (int)pt2d.y;
+                if(x<0||x>=img.cols||y<0||y>img.rows)
+                {
+                    continue;
+                }
                 cv::Point2i center;
                 center.x = x;
                 center.y = y;
-                cv::circle(img,center,1,0);
+                //cout<<"x,y:"<<x<<" "<<y<<endl;
+                cv::circle(img,center,3,127,-1);
             }
             cv::imshow("Projected Image",img);
             cv::waitKey(1);
