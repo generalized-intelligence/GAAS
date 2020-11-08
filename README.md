@@ -53,9 +53,11 @@ Velodyne Velarray
 
 ## 现在已完成的部分:包含32线激光雷达和双目摄像头的仿真环境初步搭建.
 
-效果如下图.
-![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Screenshot%20from%202020-11-01%2020-36-44.png)
+32线Lidar+Stereo camera 效果如下图.
+![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Velodyne_HDL32E_sim.jpg)
 
+Livox Horizon的模拟:
+![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Livox_sim.jpg)
 (图像较大,请耐心等待加载)
 
 详细步骤见simulation/README.md.
