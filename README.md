@@ -64,12 +64,19 @@ Livox Horizon的模拟:
 
 ## 开发路线图:
 
-### 1.实现模拟器环境的搭建,包括重复扫描式激光雷达和非重复扫描式激光雷达与双目相机的多种组合方式.
+### 1.实现gazebo 仿真环境的搭建,包括重复扫描式激光雷达和非重复扫描式激光雷达与双目相机的多种组合方式.
+
+##### 1.Livox Horizon + Forward Stereo Camera --Done.
+
+##### 2.Velodyne HDL-32 + Forward Stereo Camera --Done.
 
 ### 2.方便的部署脚本,解决GAAS从头编译安装较为复杂的问题.
 
 ### 3.实现一些以激光雷达(机械/固态)为主的算法,并在仿真环境中实现一键启动.
 
+##### 1.Lidar Camera 前融合 点云投影到图像 --完成.
+
+##### 2.Euclidean Cluster Extraction. --Done.
 
 ## GAAS_contrib目前主要分为两个部分:算法和仿真.
 
@@ -81,3 +88,4 @@ Livox Horizon的模拟:
 
 负责实现基于激光雷达和摄像头的感知,建图和定位方案.
 
+负责实现空域动态分配算法.
