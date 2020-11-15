@@ -136,6 +136,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library

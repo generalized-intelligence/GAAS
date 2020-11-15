@@ -156,6 +156,8 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(vision_lidar_fusion_node src/vision_lidar_fusion_node.cpp)
 target_link_libraries(vision_lidar_fusion_node ${REQUIRED_LIBS})
+add_executable(euclidean_cluster_extraction src/euclidean_cluster_extraction.cpp)
+target_link_libraries(euclidean_cluster_extraction ${REQUIRED_LIBS})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
