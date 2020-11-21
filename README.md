@@ -19,6 +19,19 @@
 <img src="https://s2.ax1x.com/2019/09/20/nXrXjK.png">
 
 [Progress Report 2019.08.01-2019.08.28](https://forum.gaas.dev/t/progress-update-2019-08-01-2019-08-28/30)
+# What's new:
+
+## Towards L5 Autonomous Flying Car: GAAS_contrib, A Robust Framework Extends GAAS with Lidars.
+
+[GAAS_contrib](https://github.com/cyanine-gi/GAAS_contrib) supports some lidar-based algorithms for simulation. Now you can simulate Velodyne HDL-32 and **Livox Horizon** (a non-repeatitive lidar only cost you 800$!) with gazebo. Lidar-based perception, mapping and localization will be added, just like what happened to autonomous vehicles.
+
+
+Simulation of HDL-32:
+![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Velodyne_HDL32E_sim.jpg)
+
+Simulation of Livox Horizon:
+![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Livox_sim.jpg)
+
 
 - [What is GAAS?](#what-is-gaas)
   * [Tutorial for GAAS](#tutorial-for-gaas)
