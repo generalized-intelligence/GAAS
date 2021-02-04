@@ -1,13 +1,13 @@
 :star: Star us on GitHub — it helps!
 # Using AirSim to Simulate Aircraft Inspection by Autonomous Drones
 
-Regular maintenance of aircraft is critical to the safety of flights. However, due to the size of the aircraft, maintenance technicians are having trouble inspecting the top of the aircraft. Since 2017, Airbus has been using drones to help with the maintenance of aircraft. The use of drones allows maintenance technicians to collect a large number of pictures of the aircraft for safety analysis.
+The regular maintenance of an aircraft is a critical and important safety measure for flying. However, due to the size of the aircraft, maintenance technicians have difficulty inspecting the top of the aircraft. Since 2017, Airbus has been using drones to aid with the maintenance of aircrafts. The drones allow maintenance technicians to collect several images of the aircraft, which can be used for safety analysis.
 
-For Chinese Version 中文版说明：https://gaas.gitbook.io/guide/case-study/zai-airsim-zhong-mo-ni-wu-ren-ji-dui-ke-ji-xun-jian
+For the Chinese Version 中文版说明：https://gaas.gitbook.io/guide/case-study/zai-airsim-zhong-mo-ni-wu-ren-ji-dui-ke-ji-xun-jian
 
-Existing drones are not suitable for such task. First, it requires pilots to operate the drone. A minor deviation from the planned flight route could damage the aircraft. Also, for effective inspection, the pictures of aircraft parts must be taken at the same angle every time. A lot of pilots are not qualified or willing to operate drones under such risky and challenging scenario. Second, traditional drones rely on GPS, but indoor aircraft storage does not have GPS reception. 
+Existing drones are not suited for such a task. First, it requires a pilot to operate the drone. A minor deviation from the planned flight route could damage the aircraft. Also, for an effective inspection, the pictures of aircraft parts must be taken at the same angle every single time. Many pilots are not qualified or willing to operate drones under such risky and challenging circumstances. Secondly, while traditional drones rely on GPS, aircraft hangars block gps signals.
 
-This case study shows how to use GAAS to control autonomous drones for aircraft inspection. This case study is based on a real project currently ongoing in the GAAS team. Minor details are changed for confidentiality purpose.
+This case study shows how to use GAAS to control autonomous drones for aircraft inspection. It is based on a real, currently ongoing project with the GAAS team. Minor details are changed for confidentiality purposes.
 
 <p align="center">
 <img src="https://github.com/generalized-intelligence/GAAS/blob/master/demo/aircraft_inspection.gif?raw=true"/>
