@@ -14,9 +14,9 @@ This case study shows how to use GAAS to control autonomous drones for aircraft 
 
 ## What is AirSim?
 
-[AirSim](https://github.com/microsoft/AirSim) is an open-source simulator for drones, cars and more, built on Unreal Engine and developed by Microsoft. Comparing to Gazebo, AirSim has a more realistic simulated environment. AirSim supports PX4 based Hardware-In-The-Loop (HITL) and Software-In-The-Loop (SITL)。
+[AirSim](https://github.com/microsoft/AirSim) is an open-source simulator for drones, cars and more, built on Unreal Engine and developed by Microsoft. Compared to Gazebo, AirSim has a more realistic simulated environment. AirSim supports PX4 based Hardware-In-The-Loop (HITL) and Software-In-The-Loop (SITL)。
 
-> Like all Unreal project, AirSim projects can be packaged. However, I do not recommend you to do so under Ubuntu. Using PX4 SITL in AirSim under Ubuntu can cause the program to crash. We are working on fixing related issues.
+> Like all Unreal projects, AirSim projects can be packaged. However, I do not recommend you to do so under Ubuntu. Using PX4 SITL in AirSim under Ubuntu can cause the program to crash. We are working on fixing related issues.
 
 > Also, Unreal needs around 69GB hard disk space with relatively high computational resources. If you do not want to install such a heavy software on your computer, you may choose to do the simulation in Gazebo. The configuration for Gazebo is way easier.
 
@@ -44,7 +44,7 @@ cd AirSim
 ./build.sh
 ```
 ## How to launch AirSim 
-1. Under Linux environment, go to the Unreal directory and run  `UnrealEngine/Engine/Binaries/Linux/UE4Editor`.
+1. Under the Linux environment, go to the Unreal directory and run  `UnrealEngine/Engine/Binaries/Linux/UE4Editor`.
 2. Now you can see the simulator interface. Under the AirSim directory `Unreal/Environments`, there is a default project named `Blocks` . Copy  `AirSim/Unreal/Enviroments/Plugins`  to `AirSim/Unreal/Enviroments/Blocks` . Then open the project in Unreal.
 
 ![Blocks Project](https://s2.ax1x.com/2019/08/21/mUkyPP.png)
@@ -52,7 +52,7 @@ cd AirSim
 ## How to launch PX4 SITL
 Before using PX4 in AirSim, we should install and launch PX4 SITL. Through PX4 SITL, we may use PX4 as the flight control for drones in AirSim. 
 
-1. First, make sure that you have installed all dependencies required by PX4 as listed in the [GAAS Tutorial](https://gaas.gitbook.io/guide/).
+1. First, make sure you have installed all dependencies required by PX4 as listed in the [GAAS Tutorial](https://gaas.gitbook.io/guide/).
 2. Install PX4 Firmware. **Note**: AirSim requires Firmware v1.8.2.
 ```
 bash
@@ -84,7 +84,7 @@ make posix_sitl_default none_iris
 }
 ```
 
-5. In Unreal, click the Play button. The simulation is launched. You should see a drone in the simulator. 
+5. In Unreal, click the Play button. The simulation will be launched. You should see a drone in the simulator. 
 > Press `F1` key to see a list of shortcuts. You may also open FPS to view FPS at any time. 
 
 ![Play Blocks](https://s2.ax1x.com/2019/08/21/mUkTP0.png)
@@ -119,11 +119,11 @@ cd (GAAS_PATH)/demo/tutorial_1/1_px4_mavros_offboard_controller
 python px4_mavros_run.py
 ```
 ## Set up the drone and the aircraft for the inspection
-1. First, build the aircraft storage background. We recommend purchasing background materials from the [Unreal Marketplace](https://www.unrealengine.com/marketplace/zh-CN/item/09dd36e13fdf4b1592a4a09db2ec995c). Purchasing and download must be done on Epic Games on Windows. Then edit the background to your preference with the help of the [Unreal Documentation].(https://docs.unrealengine.com/en-US/index.html)。Due to IP restrictions, we cannot share our Project file with everyone. If you encountered problems with building the background, we welcome you to ask your questions at AirSim repo or Unreal Forum. 
+1. First, build the aircraft storage background. We recommend purchasing background materials from the [Unreal Marketplace](https://www.unrealengine.com/marketplace/zh-CN/item/09dd36e13fdf4b1592a4a09db2ec995c). Purchasing and download must be done with Epic Games on Windows. Then edit the background to your preference with the help of the [Unreal Documentation].(https://docs.unrealengine.com/en-US/index.html)。Due to IP restrictions, we cannot share our Project file with everyone. If you encountered problems with building the background, we welcome you to ask your questions at AirSim repo or Unreal Forum. 
 
 ![Airplane Project](https://s2.ax1x.com/2019/08/21/mUESmQ.png)
 
-2. For the drone to fly without GPS, let's turn off GPS altogether. First,  in PX4 SITL iris, change the `vision position fusion` in `EKF2_AID_MASK` to `8`. Then, edit the `(Firmware_Path)/posix-configs/SITL/init/ekf2/iris`  to change  `EKF2_AID_MASK` from 1 to 8.
+2. For the drone to fly without GPS, let's turn off GPS altogether. First, in PX4 SITL iris, change the `vision position fusion` in `EKF2_AID_MASK` to `8`. Then, edit the `(Firmware_Path)/posix-configs/SITL/init/ekf2/iris`  to change  `EKF2_AID_MASK` from 1 to 8.
 
 ![QGC](https://s2.ax1x.com/2019/08/21/mUEU7d.png)
 
