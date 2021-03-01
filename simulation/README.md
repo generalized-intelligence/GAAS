@@ -49,6 +49,26 @@ cp -r ./simulation_with_velodyne_in_gazebo9_ws/src/velodyne_simulator  ${YOUR_PX
 
 cp -r ./models/*  ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/models/  
 
+
+\# 做完这些后，别忘了：
+
+\# Do not forget:
+
+cd ${YOUR_PX4_WORKSPACE}/src/Firmware
+
+make clean
+
+make
+
+make posix_sitl_default
+
+make posix_sitl_default gazebo
+
+\#避免无法连接 mavros
+
+\#To avoid mavros connection errors.
+
+
 \# 如果你好奇生成sdf文件的步骤:
 
 \# To get this sdf, run "xacro src/velodyne_simulator/velodyne_description/urdf/example.urdf.xacro > example.urdf"
