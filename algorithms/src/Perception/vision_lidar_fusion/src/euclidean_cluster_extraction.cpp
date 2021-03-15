@@ -2,6 +2,7 @@
 #include <pcl/point_types.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/point_cloud.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/filters/extract_indices.h>
 
@@ -42,8 +43,16 @@ void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::P
     LOG(INFO)<<"In doEuclideanSegment()."<<endl;
     ScopeTimer seg_timer("[EuclideanClusterExtraction] in doEuclideanSegment()");
     // Creating the KdTree object for the search method of the extraction
+
+    LidarCloudT::Ptr downsampled_input(new LidarCloudT);
+    pcl::VoxelGrid<PointT> sor;
+    sor.setInputCloud(cloud_in);
+    sor.setLeafSize(0.05f, 0.05f, 0.05f);
+    sor.filter(*downsampled_input);
+
     pcl::search::KdTree<PointT>::Ptr tree (new pcl::search::KdTree<PointT>);
-    tree->setInputCloud (cloud_in);
+    //tree->setInputCloud (cloud_in);
+    tree->setInputCloud (downsampled_input);
 
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<PointT> ec;
@@ -51,7 +60,8 @@ void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::P
     ec.setMinClusterSize (min_cluster_size);
     ec.setMaxClusterSize (max_cluster_size);
     ec.setSearchMethod (tree);
-    ec.setInputCloud (cloud_in);
+    //ec.setInputCloud (cloud_in);
+    ec.setInputCloud(downsampled_input);
     ec.extract (cluster_indices);
     seg_timer.watch("[EuclideanClusterExtraction] extract clusters finished.");
 
@@ -65,13 +75,14 @@ void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::P
         LidarCloudT::Ptr out (new LidarCloudT);
         for(auto i:it->indices)
         {
-            out->points.push_back(cloud_in->points.at(i));
+            out->points.push_back(downsampled_input->points.at(i));
         }
         out->height = 1;
         out->width = out->size();
         output.push_back (out);
         LOG(INFO)<<"[EuclideanClusterExtraction]    cloud size:"<<out->size()<<endl;
     }
+    LOG(INFO)<<"[EuclideanClusterExtraction] clusters count:"<<cluster_indices.size()<<endl;
     seg_timer.watch("[EuclideanClusterExtraction] generate cluster clouds finished.");
     LOG(INFO)<<"doEuclideanSegment() Finished."<<endl;
 }
@@ -118,9 +129,10 @@ void visualizeClusters(const vector<LidarCloudT::Ptr>& clusters)
 void callback(const pcl::PCLPointCloud2::ConstPtr &cloud_msg)
 {
     vector<LidarCloudT::Ptr> output_clusters;
-    const int min_cluster_size = 100;
-    const int max_cluster_size = 20000;
-    const double cluster_tolerance = 0.1;
+    const int min_cluster_size = 200;
+    //const int max_cluster_size = 20000;
+    const int max_cluster_size = 200000;
+    const double cluster_tolerance = 0.25;
     LidarCloudT::Ptr pCurrentCloud(new LidarCloudT);
     pcl::fromPCLPointCloud2(*cloud_msg,*pCurrentCloud);
     doEuclideanSegment(pCurrentCloud,output_clusters,min_cluster_size,max_cluster_size,cluster_tolerance);
