@@ -1,0 +1,8 @@
+<launch>
+   <param name="use_sim_time" type="bool" value="true"/>
+   <param name="map_path" type="string" value="/home/gi/GAAS_contrib/algorithms/src/LocalizationAndMapping/lidar_localization/map/1460.844000000.pcd"/>
+   <param name="lidar_topic_name" type="string" value="/velodyne_points2"/>
+   <param name="ndt_result_visualization" type="bool" value="true"/>
+   <node name="ndt_matching_node" pkg="lidar_localization" type="ndt_matching_node" output="screen"/>
+   <node name="map_publiser_node" pkg="lidar_localization" type="map_publisher" output="screen"/>
+</launch>
