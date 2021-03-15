@@ -78,6 +78,8 @@ Livox Horizon的模拟:
 
 ##### 2.Euclidean Cluster Extraction. --Done.
 
+##### 3.NDT Lidar Localization --Done.
+
 ## GAAS_contrib目前主要分为两个部分:算法和仿真.
 
 ### **1.仿真部分**
