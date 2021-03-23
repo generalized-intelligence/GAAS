@@ -60,7 +60,9 @@ Livox Horizon的模拟:
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Livox_sim.jpg)
 (图像较大,请耐心等待加载)
 
-详细步骤见simulation/README.md.
+32线旋转式Lidar建图 & NDT定位.
+
+仿真环境运行详细说明见simulation/README.md.
 
 ## 开发路线图:
 
@@ -77,6 +79,8 @@ Livox Horizon的模拟:
 ##### 1.Lidar Camera 前融合 点云投影到图像 --完成.
 
 ##### 2.Euclidean Cluster Extraction. --Done.
+
+##### 3.NDT Lidar Localization --Done.
 
 ## GAAS_contrib目前主要分为两个部分:算法和仿真.
 
