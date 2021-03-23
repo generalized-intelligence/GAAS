@@ -9,13 +9,31 @@
 #include <pcl/registration/ndt.h>
 #include "../ndt_cpu/ndt_cpu_include/NormalDistributionsTransform.h"
 #include "Timer.h"
+#include "GPS_AHRS_sync.h"
+#include <opencv2/core/persistence.hpp>
 
+struct MapGPSInfo
+{
+    double longitude;
+    double latitude;
+    double altitude;
+    string coordinate_mode;
 
+    const double earth_radius_m = 6371393;
+    const double pi_ = 3.1415926535;
+    void getRelativeXYZFromLonLatAltInNWUCoordinate(double lon,double lat,double alt,double& x,double& y,double& z)
+    {
+        x = ((lat-latitude)*pi_/180.0)*earth_radius_m;
+        y = ((longitude-lon)*pi_/180.0)*cos(latitude*pi_/180)*earth_radius_m;
+        z = alt-altitude;
+    }
+};
 
 class NDTAlgo
 {
 public:
     MapCloudT::Ptr pmap_cloud=nullptr;
+    MapGPSInfo map_gps_info;
 
     //temp!
     bool ever_init = false;
@@ -24,8 +42,20 @@ public:
     pcl::NormalDistributionsTransform<MapPointT, LidarPointT>::Matrix4 prev_res; //sb template....
 
 
+    Eigen::Matrix4f gps_ahrs_initial_guess;
+    bool gps_ahrs_initial_avail = false;
+    GPS_AHRS_Synchronizer* p_gps_ahrs_sync;
+
+
+    NDTAlgo(GPS_AHRS_Synchronizer* gps_ahrs_sync_ptr)
+    {
+        this->p_gps_ahrs_sync = gps_ahrs_sync_ptr;
+    }
+
     bool loadPCDMap()
     {
+        bool flag_map = false;
+        bool flag_gps_config = false;
         string map_path;
         bool path_exist = ros::param::get("map_path",map_path);
         if(!path_exist)
@@ -39,9 +69,20 @@ public:
         if(pmap_cloud->size()>0)
         {
             LOG(INFO)<<"map pointcloud size:"<<pmap_cloud->size()<<endl;
-            return true;
+            flag_map = true;
         }
-        return false;
+        cv::FileStorage map_gps_config;
+        map_gps_config.open(map_path+".yaml",cv::FileStorage::READ);
+        map_gps_config["initial_longitude"]>>this->map_gps_info.longitude;
+        map_gps_config["initial_latitude"]>>this->map_gps_info.latitude;
+        map_gps_config["initial_altitude"]>>this->map_gps_info.altitude;
+        map_gps_config["coordinate_mode"]>>this->map_gps_info.coordinate_mode;
+        if(this->map_gps_info.coordinate_mode!="NWU")
+        {
+            LOG(ERROR)<<"Coordinate mode is not NWU; not supported yet!"<<endl;
+            throw "Error";
+        }
+        return flag_map;
     }
     //    bool do_ndt_matching_without_initial_guess(LidarCloudT::Ptr pcloud_current)
     //    {
@@ -67,7 +108,64 @@ public:
     //    }
 
 
+    void initializeNDTPoseGuess()
+    {
+        sensor_msgs::NavSatFix gps;
+        nav_msgs::Odometry ahrs;
+        if(this->p_gps_ahrs_sync->get_sync_gps_ahrs_msgs(gps,ahrs))
+        {
+            double x,y,z;
+            this->map_gps_info.getRelativeXYZFromLonLatAltInNWUCoordinate(gps.longitude,gps.latitude,gps.altitude,x,y,z);
+            LOG(INFO)<<"GPS relative XYZ:"<<x<<";"<<y<<";"<<z<<endl;
+            auto orient = ahrs.pose.pose.orientation;
+            Eigen::Quaternionf original;
+            original.x() = orient.x;
+            original.y() = orient.y;
+            original.z() = orient.z;
+            original.w() = orient.w;
 
+            Eigen::Matrix3f R_flu_luf;
+            R_flu_luf<<0,-1,0, -1,0,0 ,0,0,-1; //plane right.
+            //R_flu_luf<<1,0,0, 0,0,-1, 0,1,0; //??
+            //R_flu_luf<<1,0,0,0,0,-1,0,1,0;//???
+            //R_flu_luf <<0,1,0,-1,0,0,0,0,1;
+            //R_flu_luf <<0,-1,0,1,0,0,0,0,1;
+            //R_flu_luf<<-1,0,0,0,1,0,0,0,-1; //plane right.
+
+
+            //Eigen::Matrix3f NWU_R = R_flu_luf.inverse()*original.toRotationMatrix().inverse()*R_flu_luf;
+
+
+          //
+            Eigen::Matrix3f rotate_2;
+            rotate_2<<0,1,0,-1,0,0,0,0,1;
+            Eigen::Matrix3f NWU_R = rotate_2* R_flu_luf.inverse()*original.toRotationMatrix().inverse()*R_flu_luf;
+          //
+
+
+
+            //NWU_R = NWU_R.inverse();
+            //Eigen::Matrix3f NWU_R = R_flu_luf.inverse()*original.toRotationMatrix()*R_flu_luf;
+
+
+            Eigen::Quaternionf NWU_orient(NWU_R);
+            LOG(INFO)<<"NWU coord quaternion initial guess = "<<NWU_orient.x()<<","<<NWU_orient.y()<<","<<NWU_orient.z()<<","<<NWU_orient.w()<<endl;
+            gps_ahrs_initial_guess.block(0,0,3,3) = NWU_R;
+            Eigen::Vector3f xyz_(x,y,z);
+
+            gps_ahrs_initial_guess(0,3) = xyz_(0);
+            gps_ahrs_initial_guess(1,3) = xyz_(1);
+            gps_ahrs_initial_guess(2,3) = xyz_(2);
+            gps_ahrs_initial_guess(3,3) = 1;
+            LOG(INFO)<<"GPS_AHRS_INITIAL:"<<endl<<gps_ahrs_initial_guess<<endl;
+
+            gps_ahrs_initial_avail = true;
+        }
+        else
+        {
+            LOG(INFO)<<"gps_ahrs not initialized."<<endl;
+        }
+    }
 
 
     bool do_ndt_matching_without_initial_guess2(LidarCloudT::Ptr pcloud_current,RTMatrix4f& output_pose,LidarCloudT::Ptr& transformed_cloud_ptr,bool need_transformed_cloud = false)
@@ -90,19 +188,32 @@ public:
         LidarCloudT::Ptr output_cloud (new LidarCloudT);
         if(!this->ever_init)
         {
-            ndt.setMaximumIterations (30);  //Setting max number of registration iterations.
+            ndt.setMaximumIterations (10);  //Setting max number of registration iterations.
             ndt.setTransformationEpsilon (0.05); // Setting maximum step size for More-Thuente line search.
             RTMatrix4f initialguess;
-            initialguess<<1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1;
+            if(gps_ahrs_initial_avail)
+            {
+                initialguess = gps_ahrs_initial_guess;
+                LOG(INFO)<<"Using gps ahrs intitial guess";
+            }
+            else
+            {
+                return false;
+                initialguess<<1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1;
+            }
             ndt.align(*output_cloud,initialguess);
         }
+
         else
         {//set prev result as initial guess.
-            ndt.setMaximumIterations(30);
+            ndt.setMaximumIterations(10);
             ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
             LOG(INFO)<<"ndt with initial guess"<<endl;
-            ndt.align(*output_cloud,this->prev_res);
+            //ndt.align(*output_cloud,this->prev_res);
+            ndt.align(*output_cloud,gps_ahrs_initial_guess);
         }
+
+
         ndt_timer.watch("till ndt aligned.");
         if(ndt.hasConverged())//&&ndt.getEuclideanFitnessEpsilon()<0.5)
         {
@@ -114,7 +225,8 @@ public:
             if(need_transformed_cloud)
             {
                 LidarCloudT::Ptr transformed(new LidarCloudT);
-                pcl::transformPointCloud(*pcloud_current,*transformed,output_pose);
+                //pcl::transformPointCloud(*pcloud_current,*transformed,output_pose);
+                pcl::transformPointCloud(*pcloud_current,*transformed,gps_ahrs_initial_guess);
                 transformed_cloud_ptr = transformed;
             }
             return true;

@@ -7,13 +7,18 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/NavSatFix.h>
+#include <nav_msgs/Odometry.h>
+
 #include <geometry_msgs/PoseStamped.h>
 #include <pcl/filters/voxel_grid.h>
 
 #include <Eigen/Geometry>
 
+
 #include "Timer.h"
 #include "ndt_algo.h"
+#include "GPS_AHRS_sync.h"
 
 NDTAlgo* pNDT;
 bool ndt_result_visualization = false;
@@ -22,6 +27,7 @@ ros::Publisher aligned_cloud_pub;
 void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
     ScopeTimer timer("callback_timer");
+    pNDT->initializeNDTPoseGuess();//测试是否能获取gps-ahrs消息.
     cout <<"callback"<<endl;
     LOG(INFO)<<"In lidar callback:"<<endl;
     LidarCloudT::Ptr pInputCloud(new LidarCloudT);
@@ -74,6 +80,18 @@ void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     }
 }
 
+GPS_AHRS_Synchronizer gps_ahrs_sync;
+
+
+void gps_ahrs_callback(const sensor_msgs::NavSatFixConstPtr& gps_msg, const nav_msgs::OdometryConstPtr& odom)// 同步gps和ahrs.
+{
+    LOG(INFO)<<"In gps_ahrs_callback"<<endl;
+    gps_ahrs_sync.sync_mutex.lock();
+    gps_ahrs_sync.gps_msg = *gps_msg;
+    gps_ahrs_sync.ahrs_msg = *odom;
+    gps_ahrs_sync.ever_init = true;
+    gps_ahrs_sync.sync_mutex.unlock();
+};
 
 int main(int argc,char** argv)
 {
@@ -81,7 +99,7 @@ int main(int argc,char** argv)
     google::InitGoogleLogging("ndt_matching_node");
     ros::init(argc,argv,"ndt_matching_node");
     ros::NodeHandle nh;
-    NDTAlgo ndt;
+    NDTAlgo ndt(&gps_ahrs_sync);
     ndt.loadPCDMap();
     pNDT=&ndt;
 
@@ -92,15 +110,20 @@ int main(int argc,char** argv)
     pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/ndt_pose",5);
     if(ndt_result_visualization)
     {
-        aligned_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("gaas/visualization/localization/ndt_merged_cloud",1);
+        aligned_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/gaas/visualization/localization/ndt_merged_cloud",1);
     }
     ros::Subscriber lidar_sub = nh.subscribe("/velodyne_points2",1,lidar_callback);
-    ros::spin();
+
+    //message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/raw/fix", 1);
+    message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/global", 1);
+    message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/global_position/local", 1);
+    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::NavSatFix, nav_msgs::Odometry> MySyncPolicy;
+    // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
+    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(3), gps_sub, ahrs_sub);
+    sync.registerCallback(boost::bind(&gps_ahrs_callback, _1, _2));
+    while(ros::ok())
+    {
+        ros::spinOnce();
+    }
     return 0;
-    //registerCallback(lidar_callback);
-    //load map.
-    // in callback func:
-    // get lidar pointcloud msgs.
-    // do ndt matching
-    // check matching result.
 }
