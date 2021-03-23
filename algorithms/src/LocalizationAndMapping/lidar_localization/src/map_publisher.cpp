@@ -7,6 +7,7 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <pcl/filters/voxel_grid.h>
 
@@ -25,6 +26,7 @@ bool loadPCDmap(MapCloudT::Ptr& pmap_cloud)
         LOG(ERROR)<<"map_path:"<<map_path<<endl;
         exit(-1);
     }
+    LOG(INFO)<<"Using map:"<<map_path<<endl;
     pmap_cloud = MapCloudT::Ptr(new MapCloudT);
     pcl::io::loadPCDFile(map_path, *pmap_cloud);
     if(pmap_cloud->size()>0)
@@ -43,6 +45,7 @@ int main(int argc,char** argv)
     bool ndt_result_visualization = false;
     ros::param::get("ndt_result_visualization",ndt_result_visualization);
     ros::Publisher map_pub = nh.advertise<sensor_msgs::PointCloud2>("/gaas/visualization/localization/ndt_map",1);
+    ros::Publisher axes_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/visualization/localization/map_axes", 1);
     if(ndt_result_visualization)
     {
         MapCloudT::Ptr pmap=nullptr;
@@ -53,21 +56,33 @@ int main(int argc,char** argv)
         }
         sensor_msgs::PointCloud2 map_msg;
         pcl::toROSMsg(*pmap,map_msg);
+        geometry_msgs::PoseStamped axes_pose;
+        axes_pose.pose.orientation.x = 0;
+        axes_pose.pose.orientation.y = 0;
+        axes_pose.pose.orientation.z = 0;
+        axes_pose.pose.orientation.w = 1;
+        axes_pose.pose.position.x = 0;
+        axes_pose.pose.position.y = 0;
+        axes_pose.pose.position.z = 0;
+        axes_pose.header.frame_id="map";
         LOG(INFO)<<"map msg generated."<<endl;
         map_msg.header.frame_id="map";
 
-        ros::Rate loop_rate(1);
+        //ros::Rate loop_rate(1);
         while(ros::ok())
         {
             //if(map_pub.getNumSubscribers()>1)
             if(true)
             {
                 map_msg.header.stamp = ros::Time::now();
+                axes_pose.header.stamp = map_msg.header.stamp;
                 map_pub.publish(map_msg);
+                axes_pub.publish(axes_pose);
                 ros::spinOnce();
                 LOG(INFO)<<"Map published."<<endl;
             }
-            loop_rate.sleep();
+            //loop_rate.sleep();
+            sleep(1);
         }
     }
     return 0;
