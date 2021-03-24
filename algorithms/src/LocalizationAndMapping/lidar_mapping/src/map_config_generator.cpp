@@ -134,7 +134,9 @@ void transformMapByInitialOdometryAndGPSCoordinate(const nav_msgs::Odometry& odo
         quat.w() = ps.w;
 
         Eigen::Matrix3d R_flu_luf;
-        R_flu_luf<<0,0,1,1,0,0,0,1,0;
+        R_flu_luf<<1,0,0,0,0,-1,0,1,0;//正确.
+
+
         Eigen::Matrix3d rot_original = quat.toRotationMatrix();
         Eigen::Matrix3d rot_transformed_ = R_flu_luf.inverse()*rot_original.inverse()*(R_flu_luf);
         Eigen::Matrix3d rot_LUF = rot_transformed_.inverse();
