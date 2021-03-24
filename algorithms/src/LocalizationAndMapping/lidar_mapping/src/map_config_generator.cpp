@@ -134,10 +134,6 @@ void transformMapByInitialOdometryAndGPSCoordinate(const nav_msgs::Odometry& odo
         quat.w() = ps.w;
 
         Eigen::Matrix3d R_flu_luf;
-        //R_flu_luf<<0,0,1,1,0,0,0,1,0;
-
-
-        //R_flu_luf<<0,0,-1,-1,0,0,0,1,0;//接近了.
         R_flu_luf<<1,0,0,0,0,-1,0,1,0;//正确.
 
 

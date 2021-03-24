@@ -37,7 +37,8 @@ void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     LidarCloudT::Ptr downsampled(new LidarCloudT);
     pcl::VoxelGrid<LidarPointT> sor;
     sor.setInputCloud(pInputCloud);
-    sor.setLeafSize(0.2f, 0.2f, 0.2f);
+    //sor.setLeafSize(0.2f, 0.2f, 0.2f);
+    sor.setLeafSize(DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE);
     sor.filter(*downsampled);
     timer.watch("till cloud downsampled");
     LOG(INFO)<<"Downsampled pointcloud size:"<<downsampled->size()<<endl;
@@ -45,19 +46,25 @@ void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
     bool need_transformed_pointcloud = (ndt_result_visualization&&aligned_cloud_pub.getNumSubscribers()>0);
     LidarCloudT::Ptr transformed_cloud=nullptr;
-    bool ndt_success = pNDT->do_ndt_matching_without_initial_guess2(downsampled,output_ndt_pose,transformed_cloud,need_transformed_pointcloud);
+    //bool ndt_success = pNDT->do_ndt_matching_without_initial_guess2(downsampled,output_ndt_pose,transformed_cloud,need_transformed_pointcloud);
+    bool ndt_success = pNDT->doNDTMatching(downsampled,output_ndt_pose,transformed_cloud,need_transformed_pointcloud);
 
     if(ndt_success)
     {
         //publish output pose;
         Eigen::Matrix3f rotmat = output_ndt_pose.block(0,0,3,3);
         Eigen::Quaternionf quat(rotmat);
-        geometry_msgs::Pose ndt_pose_msg;
-        auto& pos = ndt_pose_msg.position;
-        auto& orient = ndt_pose_msg.orientation;
+        geometry_msgs::PoseStamped ndt_pose_msg;
+
+        ndt_pose_msg.header.frame_id="map";//地图坐标系的定位.
+        ndt_pose_msg.header.stamp = cloud_msg->header.stamp;//与雷达同步.
+
+        auto& pos = ndt_pose_msg.pose.position;
+        auto& orient = ndt_pose_msg.pose.orientation;
         orient.x = quat.x();
         orient.y = quat.y();
         orient.z = quat.z();
+        orient.w = quat.w();
 
         pos.x = output_ndt_pose(0,3);
         pos.y = output_ndt_pose(1,3);
@@ -107,7 +114,7 @@ int main(int argc,char** argv)
     ros::param::get("lidar_topic_name",lidar_topic_name);
     ros::param::get("ndt_result_visualization",ndt_result_visualization);
     LOG(INFO)<<"Subscribing lidar topic name:"<<lidar_topic_name<<endl;
-    pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/ndt_pose",5);
+    pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/ndt_pose",1);
     if(ndt_result_visualization)
     {
         aligned_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/gaas/visualization/localization/ndt_merged_cloud",1);

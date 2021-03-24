@@ -28,6 +28,7 @@ struct MapGPSInfo
         z = alt-altitude;
     }
 };
+const float DOWNSAMPLE_SIZE = 0.5;//0.2
 
 class NDTAlgo
 {
@@ -46,10 +47,19 @@ public:
     bool gps_ahrs_initial_avail = false;
     GPS_AHRS_Synchronizer* p_gps_ahrs_sync;
 
+    bool lidar_height_compensation = false;
+    double lidar_height_to_gps=0;
+    NDT_CORE ndt;
+
 
     NDTAlgo(GPS_AHRS_Synchronizer* gps_ahrs_sync_ptr)
     {
         this->p_gps_ahrs_sync = gps_ahrs_sync_ptr;
+        if(ros::param::get("lidar_height_to_gps",lidar_height_to_gps))
+        {
+            LOG(INFO)<<"LIDAR_GPS_HEIGHT_COMPENSATION ready!"<<endl;
+            lidar_height_compensation = true;
+        }
     }
 
     bool loadPCDMap()
@@ -64,8 +74,22 @@ public:
             LOG(ERROR)<<"map_path:"<<map_path<<endl;
             exit(-1);
         }
-        pmap_cloud = MapCloudT::Ptr(new MapCloudT);
-        pcl::io::loadPCDFile(map_path, *pmap_cloud);
+        MapCloudT::Ptr pFullMap(new MapCloudT);
+
+        this->pmap_cloud = MapCloudT::Ptr(new MapCloudT);
+        pcl::io::loadPCDFile(map_path, *pFullMap);
+        if(pFullMap->size()<=0)
+        {
+            LOG(ERROR)<<"In loadPCDMap(): Map empty!"<<endl;
+            throw "Error!";
+        }
+
+        pcl::VoxelGrid<LidarPointT> sor;
+        sor.setInputCloud(pFullMap);
+        sor.setLeafSize(DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE);
+        sor.filter(*this->pmap_cloud);
+
+
         if(pmap_cloud->size()>0)
         {
             LOG(INFO)<<"map pointcloud size:"<<pmap_cloud->size()<<endl;
@@ -82,31 +106,11 @@ public:
             LOG(ERROR)<<"Coordinate mode is not NWU; not supported yet!"<<endl;
             throw "Error";
         }
+        ndt.setInputTarget(pmap_cloud);
+        ndt.setResolution (3.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
+        ndt.setStepSize (0.5);
         return flag_map;
     }
-    //    bool do_ndt_matching_without_initial_guess(LidarCloudT::Ptr pcloud_current)
-    //    {
-    //        pcl::NormalDistributionsTransform<MapPointT, LidarPointT> ndt;
-    //        ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
-    //        ndt.setStepSize (0.1);
-    //        ndt.setResolution (2.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
-    //        ndt.setMaximumIterations (10);  //Setting max number of registration iterations.
-
-
-    //        ndt.setInputSource (pcloud_current);// Setting point cloud to be aligned.
-    //        ndt.setInputTarget (pmap_cloud);// Setting point cloud to be aligned to.
-    //        LidarCloudT::Ptr output_cloud (new LidarCloudT);
-    //        ndt.align(*output_cloud);
-    //        if(ndt.hasConverged()&&ndt.getEuclideanFitnessEpsilon()<0.5)
-    //        {
-    //            LOG(INFO)<<"NDT Converged. Transformation:"<<ndt.getFinalTransformation()<<endl;
-    //            LOG(INFO)<<"Iteration times:"<<ndt.getFinalNumIteration()<<endl;
-    //            return true;
-    //        }
-    //        LOG(INFO)<<"NDT matching failed. Epsilon:"<<ndt.getEuclideanFitnessEpsilon()<<endl;
-    //        return false;
-    //    }
-
 
     void initializeNDTPoseGuess()
     {
@@ -124,29 +128,11 @@ public:
             original.z() = orient.z;
             original.w() = orient.w;
 
-            Eigen::Matrix3f R_flu_luf;
-            R_flu_luf<<0,-1,0, -1,0,0 ,0,0,-1; //plane right.
-            //R_flu_luf<<1,0,0, 0,0,-1, 0,1,0; //??
-            //R_flu_luf<<1,0,0,0,0,-1,0,1,0;//???
-            //R_flu_luf <<0,1,0,-1,0,0,0,0,1;
-            //R_flu_luf <<0,-1,0,1,0,0,0,0,1;
-            //R_flu_luf<<-1,0,0,0,1,0,0,0,-1; //plane right.
 
-
-            //Eigen::Matrix3f NWU_R = R_flu_luf.inverse()*original.toRotationMatrix().inverse()*R_flu_luf;
-
-
-          //
-            Eigen::Matrix3f rotate_2;
-            rotate_2<<0,1,0,-1,0,0,0,0,1;
-            Eigen::Matrix3f NWU_R = rotate_2* R_flu_luf.inverse()*original.toRotationMatrix().inverse()*R_flu_luf;
-          //
-
-
-
-            //NWU_R = NWU_R.inverse();
-            //Eigen::Matrix3f NWU_R = R_flu_luf.inverse()*original.toRotationMatrix()*R_flu_luf;
-
+            //P_nwu = T_nwu_enu*T_enu_body*P_body
+            Eigen::Matrix3f R_nwu_enu;
+            R_nwu_enu<<0,1,0, -1,0,0 ,0,0,1; //plane right.
+            Eigen::Matrix3f NWU_R = (R_nwu_enu*original.toRotationMatrix());
 
             Eigen::Quaternionf NWU_orient(NWU_R);
             LOG(INFO)<<"NWU coord quaternion initial guess = "<<NWU_orient.x()<<","<<NWU_orient.y()<<","<<NWU_orient.z()<<","<<NWU_orient.w()<<endl;
@@ -155,7 +141,7 @@ public:
 
             gps_ahrs_initial_guess(0,3) = xyz_(0);
             gps_ahrs_initial_guess(1,3) = xyz_(1);
-            gps_ahrs_initial_guess(2,3) = xyz_(2);
+            gps_ahrs_initial_guess(2,3) = xyz_(2) - lidar_height_compensation;
             gps_ahrs_initial_guess(3,3) = 1;
             LOG(INFO)<<"GPS_AHRS_INITIAL:"<<endl<<gps_ahrs_initial_guess<<endl;
 
@@ -168,7 +154,8 @@ public:
     }
 
 
-    bool do_ndt_matching_without_initial_guess2(LidarCloudT::Ptr pcloud_current,RTMatrix4f& output_pose,LidarCloudT::Ptr& transformed_cloud_ptr,bool need_transformed_cloud = false)
+    //bool do_ndt_matching_without_initial_guess2(LidarCloudT::Ptr pcloud_current,RTMatrix4f& output_pose,LidarCloudT::Ptr& transformed_cloud_ptr,bool need_transformed_cloud = false)
+    bool DEBUG_visualize_gps_ahrs_initialguess(LidarCloudT::Ptr pcloud_current,RTMatrix4f& output_pose,LidarCloudT::Ptr& transformed_cloud_ptr,bool need_transformed_cloud = false)
     {
         //pcl::NormalDistributionsTransform<MapPointT, LidarPointT> ndt;
         ScopeTimer ndt_timer("ndt_timer");
@@ -235,10 +222,90 @@ public:
         LOG(INFO)<<"NDT matching failed."<<endl;
         return false;
     }
-    //    bool do_ndt_matching_with_initial_guess(LidarCloudT::Ptr pcloud_current,Pose3d Pose)
-    //    {
-    //        ;
-    //    }
+
+    bool doNDTWithInitialPoseGuess (LidarCloudT::Ptr pcloud_current,
+                                    Eigen::Matrix4f& pose_guess,
+                                    Eigen::Matrix4f& output_pose,
+                                    string initial_guess_type="gps_ahrs"//"gps_ahrs","ndt_prev","imu_integrated"
+            )
+    {
+        ScopeTimer ndt_timer("ndt_timer");
+
+
+
+        //ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
+
+
+
+        //ndt.setInputTarget(pmap_cloud);
+        ndt.setInputSource (pcloud_current);// Setting point cloud to be aligned.
+        ndt_timer.watch("till input set.");
+        //ndt.setInputTarget (pmap_cloud);// Setting point cloud to be aligned to.
+        LidarCloudT::Ptr output_cloud (new LidarCloudT);
+        if(initial_guess_type == "gps_ahrs")
+        {
+            //ndt.setResolution (3.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
+            //ndt.setStepSize (0.5);
+            ndt.setMaximumIterations (10);  //Setting max number of registration iterations.
+            ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
+            LOG(INFO)<<"ndt with prev ndt initial guess"<<endl;
+            ndt.align(*output_cloud,pose_guess);
+        }
+        else if(initial_guess_type == "ndt_prev")
+        {
+            //ndt.setResolution (2.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
+            //ndt.setStepSize (0.5);
+            ndt.setMaximumIterations (10);  //Setting max number of registration iterations.
+            ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
+            LOG(INFO)<<"ndt with prev ndt initial guess"<<endl;
+            ndt.align(*output_cloud,pose_guess);
+        }
+
+        if(!ndt.hasConverged())
+        {
+            LOG(WARNING)<<"NDT with "<<initial_guess_type<<" initial guess failed!"<<endl;
+            return false;
+        }
+        output_pose = ndt.getFinalTransformation();
+        LOG(INFO)<<"NDT Converged. Transformation:"<<ndt.getFinalTransformation()<<endl;
+        LOG(INFO)<<"NDT with initial guess "<<initial_guess_type<<" finished; Iteration times:"<<ndt.getFinalNumIteration()<<endl;
+        return true;
+    }
+
+    bool doNDTMatching(LidarCloudT::Ptr pcloud_current,Eigen::Matrix4f& output_pose,LidarCloudT::Ptr& transformed_cloud_ptr,bool need_transformed_cloud = false)
+    {
+        bool flag_ndt_success = false;
+        if(ever_init)
+        {//使用上次ndt初始值进行初始化.
+            flag_ndt_success = doNDTWithInitialPoseGuess(pcloud_current,this->prev_res,output_pose,"ndt_prev");
+        }
+        else
+        {//尝试使用GPS_AHRS初始化.
+            if(gps_ahrs_initial_avail)//
+            {
+                flag_ndt_success = doNDTWithInitialPoseGuess(pcloud_current,this->gps_ahrs_initial_guess,output_pose,"gps_ahrs");
+            }
+            else
+            {//没有初始值,放弃.
+                return false;
+            }
+        }
+        if(flag_ndt_success)
+        {
+            // 点云坐标变换并发布
+            this->ever_init = true;
+            this->prev_res = output_pose;
+
+            if(need_transformed_cloud)
+            {
+                LidarCloudT::Ptr transformed(new LidarCloudT);
+                //pcl::transformPointCloud(*pcloud_current,*transformed,output_pose);
+                pcl::transformPointCloud(*pcloud_current,*transformed,output_pose);
+                transformed_cloud_ptr = transformed;
+            }
+            return true;
+        }
+    }
 
     //private:
     //    bool do_ndt_matching()

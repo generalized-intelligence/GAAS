@@ -7,6 +7,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl_ros/point_cloud.h>
 #include <deque>
+#include <Eigen/Core>
 
 using std::string;
 using std::vector;
