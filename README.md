@@ -1,4 +1,6 @@
-# GAAS_contrib
+# GAAS_contrib: 向完全取代驾驶员的自主驾驶飞行汽车进发————一组稳健的 GAAS 激光雷达扩展框架!
+
+# GAAS_contrib: Towards L5 Autonomous Flying Cars, a Robust Framework Extends GAAS with Lidars!
 
 Extra modules of GAAS; Including some amazing lidar-based algorithms!
 
