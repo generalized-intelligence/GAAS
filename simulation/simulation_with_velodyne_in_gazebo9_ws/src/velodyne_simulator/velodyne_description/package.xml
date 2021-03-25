@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>velodyne_description</name>
-  <version>1.0.2</version>
+  <version>1.0.9</version>
   <description>
     URDF and meshes describing Velodyne laser scanners.
   </description>
@@ -15,7 +15,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>urdf</run_depend>
-  <run_depend>xacro</run_depend>
+  <exec_depend>urdf</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
 </package>

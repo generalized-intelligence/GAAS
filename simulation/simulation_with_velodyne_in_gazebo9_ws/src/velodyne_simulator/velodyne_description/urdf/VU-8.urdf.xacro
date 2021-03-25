@@ -1,7 +1,21 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="VLP-16">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="VU-8">
   <xacro:property name="M_PI" value="3.1415926535897931" />
-  <xacro:macro name="VLP-16" params="*origin parent:=base_link name:=velodyne topic:=/velodyne_points hz:=10 lasers:=16 samples:=1875 collision_range:=0.3 min_range:=0.9 max_range:=130.0 noise:=0.008 min_angle:=-${M_PI} max_angle:=${M_PI} gpu:=false">
+
+  <!-- Minimum horizontal angle is -100 DEG - Wide FOV -->
+  <xacro:property name="min_horizontal_angle" value="-3.14159" />
+  
+  <!-- Maximum horizontal angle is 100 DEG - Wide FOV -->
+  <xacro:property name="max_horizontal_angle" value="3.14159" />
+
+  <!-- Minimum vertical angle is -3 DEG -->
+  <xacro:property name="min_vertical_angle" value="-0.523599" />
+  
+  <!-- Maximum vertical angle is 3 DEG-->
+  <xacro:property name="max_vertical_angle" value="0.523599" />
+
+  <xacro:macro name="VU-8" params="
+    *origin parent:=base_link name:=leddar topic:=/leddar_points hz:=10 lasers:=8 samples:=1875 collision_range:=0.3 min_range:=0.1 max_range:=130.0 noise:=0.008 gpu:=false">
 
     <joint name="${name}_base_mount_joint" type="fixed">
       <xacro:insert_block name="origin" /> 
@@ -11,11 +25,9 @@
 
     <link name="${name}_base_link">
       <inertial>
-        <mass value="0.83"/>
+        <mass value="1e-7"/>
         <origin xyz="0 0 0.03585"/>
-        <inertia ixx="${(0.83 * (3.0*0.0516*0.0516 + 0.0717*0.0717)) / 12.0}" ixy="0" ixz="0"
-          iyy="${(0.83 * (3.0*0.0516*0.0516 + 0.0717*0.0717)) / 12.0}" iyz="0"
-          izz="${0.5 * 0.83 * (0.0516*0.0516)}"/>
+        <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7"/>
       </inertial>
       <visual>
         <geometry>
@@ -43,7 +55,7 @@
 
     <link name="${name}">
       <inertial>
-        <mass value="0.01"/>
+        <mass value="1e-7"/>
         <origin xyz="0 0 0"/>
         <inertia ixx="1e-7" ixy="0" ixz="0" iyy="1e-7" iyz="0" izz="1e-7"/>
       </inertial>
@@ -58,7 +70,7 @@
     <!-- Gazebo requires the velodyne_gazebo_plugins package -->
     <gazebo reference="${name}">
       <xacro:if value="${gpu}">
-        <sensor type="gpu_ray" name="${name}-VLP16">
+        <sensor type="gpu_ray" name="${name}-VU8">
           <pose>0 0 0 0 0 0</pose>
           <visualize>false</visualize>
           <update_rate>${hz}</update_rate>
@@ -67,14 +79,14 @@
               <horizontal>
                 <samples>${samples}</samples>
                 <resolution>1</resolution>
-                <min_angle>${min_angle}</min_angle>
-                <max_angle>${max_angle}</max_angle>
+                <min_angle>${min_horizontal_angle}</min_angle>
+                <max_angle>${max_horizontal_angle}</max_angle>
               </horizontal>
               <vertical>
                 <samples>${lasers}</samples>
                 <resolution>1</resolution>
-                <min_angle>-${15.0*M_PI/180.0}</min_angle>
-                <max_angle> ${15.0*M_PI/180.0}</max_angle>
+                <min_angle>${min_vertical_angle}</min_angle>
+                <max_angle>${max_vertical_angle}</max_angle>
               </vertical>
             </scan>
             <range>
@@ -98,7 +110,7 @@
         </sensor>
       </xacro:if>
       <xacro:unless value="${gpu}">
-        <sensor type="ray" name="${name}-VLP16">
+        <sensor type="ray" name="${name}-VU8">
           <pose>0 0 0 0 0 0</pose>
           <visualize>false</visualize>
           <update_rate>${hz}</update_rate>
@@ -107,14 +119,14 @@
               <horizontal>
                 <samples>${samples}</samples>
                 <resolution>1</resolution>
-                <min_angle>${min_angle}</min_angle>
-                <max_angle>${max_angle}</max_angle>
+                <min_angle>${min_horizontal_angle}</min_angle>
+                <max_angle>${max_horizontal_angle}</max_angle>
               </horizontal>
               <vertical>
                 <samples>${lasers}</samples>
                 <resolution>1</resolution>
-                <min_angle>-${15.0*M_PI/180.0}</min_angle>
-                <max_angle> ${15.0*M_PI/180.0}</max_angle>
+                <min_angle>${min_vertical_angle}</min_angle>
+                <max_angle>${max_vertical_angle}</max_angle>
               </vertical>
             </scan>
             <range>

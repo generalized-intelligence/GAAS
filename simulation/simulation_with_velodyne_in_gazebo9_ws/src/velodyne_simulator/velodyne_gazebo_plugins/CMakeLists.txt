@@ -2,20 +2,19 @@ cmake_minimum_required(VERSION 2.8.3)
 project(velodyne_gazebo_plugins)
 
 find_package(catkin REQUIRED COMPONENTS
-  tf
-  gazebo_ros
-  gazebo_plugins
   roscpp
   sensor_msgs
+  tf
+  gazebo_ros
+  pcl_ros
 )
 find_package(gazebo REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES gazebo_ros_velodyne_laser
-  CATKIN_DEPENDS tf gazebo_ros gazebo_plugins roscpp sensor_msgs
-  DEPENDS gazebo
+  INCLUDE_DIRS include ${GAZEBO_INCLUDE_DIRS}
+  LIBRARIES gazebo_ros_velodyne_laser gazebo_ros_velodyne_gpu_laser
+  CATKIN_DEPENDS roscpp sensor_msgs gazebo_ros
 )
 
 include_directories(
@@ -35,7 +34,15 @@ target_link_libraries(gazebo_ros_velodyne_laser
   RayPlugin
 )
 
-install(TARGETS gazebo_ros_velodyne_laser
+add_library(gazebo_ros_velodyne_gpu_laser src/GazeboRosVelodyneLaser.cpp)
+target_link_libraries(gazebo_ros_velodyne_gpu_laser
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+  GpuRayPlugin
+)
+target_compile_definitions(gazebo_ros_velodyne_gpu_laser PRIVATE GAZEBO_GPU_RAY=1)
+
+install(TARGETS gazebo_ros_velodyne_laser gazebo_ros_velodyne_gpu_laser
         LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 

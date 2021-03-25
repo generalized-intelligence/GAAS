@@ -1,0 +1,10 @@
+# Publish all joint states -----------------------------------
+joint_state_controller:
+  type: joint_state_controller/JointStateController
+  publish_rate: 50
+
+# Position Controllers ---------------------------------------
+velodyne_controller:
+  type: effort_controllers/JointPositionController
+  joint: velodyne_base_scan_joint
+  pid: {p: 80.0, i: 100.0, d: 8.0, i_clamp_max: 100.0, i_clamp_min: -100.0}

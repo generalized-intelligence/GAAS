@@ -49,6 +49,25 @@ cp -r ./simulation_with_velodyne_in_gazebo9_ws/src/velodyne_simulator  ${YOUR_PX
 
 cp -r ./models/*  ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/models/  
 
+cp -r ./ekf_settings/* ${YOUR_PX4_WORKSPACE}/src/Firmware/posix-configs/SITL/init/ekf2/
+
+
+# GPU lidar simulation is default option in GAAS_contrib now. To enable GPU lidar simulation in gazebo, run:
+
+    ./upgrade_gazebo.sh
+
+You can also run:
+
+    gazebo -v
+
+manually check gazebo version and you shall see something like:
+
+Gazebo multi-robot simulator, version 9.16.0
+
+if the version is still 9.0.0, then you have to upgrade your gazebo manully to enable GPU lidar simulation.
+
+
+
 
 # 做完这些后，别忘了：
 

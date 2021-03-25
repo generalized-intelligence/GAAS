@@ -3,10 +3,19 @@ export SF="/src/Firmware"
 export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:${PX4_ENV_PATH}/devel/lib/
 export LAUNCH_FILE="mavros_posix_sitl.launch"
 #export LAUNCH_FILE="posix_sitl.launch"
-export DRONE_ITEM="iris_stereo_rgb_lidar_gps"  # can be "iris" "iris_stereo_rgb_gps" "iris_stereo_gray_gps".
+
+
+#export DRONE_ITEM="iris_stereo_rgb_lidar_gps"  # can be "iris" "iris_stereo_rgb_gps" "iris_stereo_gray_gps".
+export DRONE_ITEM="iris_stereo_rgb_gpulidar_gps"
 #export DRONE_ITEM="rover"
+#export DRONE_ITEM="standard_vtol"
 #export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/obstacle_avoidance.world
 export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/obstacle_avoidance_without_iris.world
+
+#source /usr/local/share/citysim/setup.sh
+#export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/simple_city.world  # need to run 'source /usr/local/share/citysim/setup.sh'
+
+
 #export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/park_large.world
 #export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/park_large_without_iris.world
 #To use iris_vision, you need to copy files from GAAS. See Readme.md.

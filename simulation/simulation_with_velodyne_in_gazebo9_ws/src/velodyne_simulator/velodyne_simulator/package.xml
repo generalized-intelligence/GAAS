@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<package>
+<package format="2">
   <name>velodyne_simulator</name>
-  <version>1.0.2</version>
+  <version>1.0.9</version>
   <description>
     Metapackage allowing easy installation of Velodyne simulation components.
   </description>
@@ -15,8 +15,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>velodyne_description</run_depend>
-  <run_depend>velodyne_gazebo_plugins</run_depend>
+  <exec_depend>velodyne_description</exec_depend>
+  <exec_depend>velodyne_gazebo_plugins</exec_depend>
 
   <export>
     <metapackage/>
