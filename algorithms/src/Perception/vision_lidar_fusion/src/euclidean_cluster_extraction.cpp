@@ -29,6 +29,15 @@ ros::NodeHandle* pNH = nullptr;
 ros::Publisher* pPub = nullptr;
 
 
+//Load by ros params.
+float EUCLIDEAN_DOWNSAMPLING_SIZE = 0.05;
+
+int min_cluster_size = 200;
+//const int max_cluster_size = 20000;
+int max_cluster_size = 200000;
+double cluster_tolerance = 0.25;
+
+
 void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::Ptr> &output,
                          int min_cluster_size, int max_cluster_size, double cluster_tolerance)
 {
@@ -47,7 +56,7 @@ void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::P
     LidarCloudT::Ptr downsampled_input(new LidarCloudT);
     pcl::VoxelGrid<PointT> sor;
     sor.setInputCloud(cloud_in);
-    sor.setLeafSize(0.05f, 0.05f, 0.05f);
+    sor.setLeafSize(EUCLIDEAN_DOWNSAMPLING_SIZE, EUCLIDEAN_DOWNSAMPLING_SIZE, EUCLIDEAN_DOWNSAMPLING_SIZE);
     sor.filter(*downsampled_input);
 
     pcl::search::KdTree<PointT>::Ptr tree (new pcl::search::KdTree<PointT>);
@@ -86,7 +95,7 @@ void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::P
     seg_timer.watch("[EuclideanClusterExtraction] generate cluster clouds finished.");
     LOG(INFO)<<"doEuclideanSegment() Finished."<<endl;
 }
-void visualizeClusters(const vector<LidarCloudT::Ptr>& clusters)
+void visualizeClusters(const vector<LidarCloudT::Ptr>& clusters,const pcl::PCLPointCloud2::ConstPtr& original_msg)
 {
     ScopeTimer vis_timer("[EuclideanClusterExtraction] in visualizeClusters()");
     vector<VisCloudT> vclouds;
@@ -115,28 +124,27 @@ void visualizeClusters(const vector<LidarCloudT::Ptr>& clusters)
 
     }
     vis_timer.watch("[EuclideanClusterExtraction] clusters copied.");
-    //publish these clouds.
+    //publish these clouds as one.
+    MessageCloudT pc;
+    VisCloudT vcloud_merged;
+
     for(const auto& vcloud:vclouds)
     {
-        MessageCloudT pc;
-        pcl::toPCLPointCloud2(vcloud,pc);
-        pc.header.frame_id="lidar";
-        //pc.header.stamp = ros::Time::now();
-        pPub->publish(pc);
+        vcloud_merged+=vcloud;
     }
+    pcl::toPCLPointCloud2(vcloud_merged,pc);
+    pc.header.frame_id="lidar";
+    pc.header.stamp=original_msg->header.stamp;
+    pPub->publish(pc);
     vis_timer.watch("[EuclideanClusterExtraction] clusters published.");
 }
 void callback(const pcl::PCLPointCloud2::ConstPtr &cloud_msg)
 {
     vector<LidarCloudT::Ptr> output_clusters;
-    const int min_cluster_size = 200;
-    //const int max_cluster_size = 20000;
-    const int max_cluster_size = 200000;
-    const double cluster_tolerance = 0.25;
     LidarCloudT::Ptr pCurrentCloud(new LidarCloudT);
     pcl::fromPCLPointCloud2(*cloud_msg,*pCurrentCloud);
     doEuclideanSegment(pCurrentCloud,output_clusters,min_cluster_size,max_cluster_size,cluster_tolerance);
-    visualizeClusters(output_clusters);
+    visualizeClusters(output_clusters,cloud_msg);
 }
 
 int main(int argc,char **argv)
@@ -147,6 +155,12 @@ int main(int argc,char **argv)
 
     ros::init(argc,argv,"euclidean_cluster_fusion_node");
     ros::NodeHandle nh;
+    ros::param::get("euclidean_cluster_downsampling_size",EUCLIDEAN_DOWNSAMPLING_SIZE);
+    ros::param::get("min_cluster_size",min_cluster_size);
+    ros::param::get("max_cluster_size",max_cluster_size);
+    ros::param::get("cluster_tolerance",cluster_tolerance);
+
+
     pNH=&nh;
     ros::Publisher pub = nh.advertise<MessageCloudT>("extracted_euclidean_clusters",10);
     pPub = &pub;
