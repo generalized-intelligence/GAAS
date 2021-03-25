@@ -35,34 +35,41 @@ Copy simulation_with_velodyne_in_gazebo9_ws/src/ to your own px4 workspace and r
 
 Do:
 
-cp -r ${YOUR_GAAS_PATH}/simulator/models/* ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/models/
+    cp -r ${YOUR_GAAS_PATH}/simulator/models/* ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/models/
 
-cp -r ${YOUR_GAAS_PATH}/simulator/worlds/* ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/worlds/
+    cp -r ${YOUR_GAAS_PATH}/simulator/worlds/* ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/worlds/
 
-cp -r ${YOUR_GAAS_PATH}/simulator/posix-config/* ${YOUR_PX4_WORKSPACE}/src/Firmware/posix-configs/SITL/init/ekf2/
+    cp -r ${YOUR_GAAS_PATH}/simulator/posix-config/* ${YOUR_PX4_WORKSPACE}/src/Firmware/posix-configs/SITL/init/ekf2/
 
 ###这三步与GAAS相同.
 
-cp -r ./simulation_with_velodyne_in_gazebo9_ws/src/velodyne_simulator/velodyne_description/  ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/models/
+    cp -r ./simulation_with_velodyne_in_gazebo9_ws/src/velodyne_simulator/velodyne_description/  ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/models/
 
-cp -r ./simulation_with_velodyne_in_gazebo9_ws/src/velodyne_simulator  ${YOUR_PX4_WORKSPACE}/src
+    cp -r ./simulation_with_velodyne_in_gazebo9_ws/src/velodyne_simulator  ${YOUR_PX4_WORKSPACE}/src
 
-cp -r ./models/*  ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/models/  
+    cp -r ./models/*  ${YOUR_PX4_WORKSPACE}/src/Firmware/Tools/sitl_gazebo/models/  
 
-cp -r ./ekf_settings/* ${YOUR_PX4_WORKSPACE}/src/Firmware/posix-configs/SITL/init/ekf2/
+    cp -r ./ekf_settings/* ${YOUR_PX4_WORKSPACE}/src/Firmware/posix-configs/SITL/init/ekf2/
 
+## 现在, GAAS_contrib 默认使用GPU Lidar仿真.因此*必须更新gazebo*.要更新gazebo以支持GPU lidar仿真，运行:
 
-# GPU lidar simulation is default option in GAAS_contrib now. To enable GPU lidar simulation in gazebo, run:
+## GPU lidar simulation is default option in GAAS_contrib now, so *you have to upgrade gazebo*. To enable GPU lidar simulation in gazebo, run:
 
     ./upgrade_gazebo.sh
+
+你可以手动运行：
 
 You can also run:
 
     gazebo -v
 
+来查看你的gazebo版本,它应该类似:
+
 manually check gazebo version and you shall see something like:
 
 Gazebo multi-robot simulator, version 9.16.0
+
+如果你看到的仍然是 9.0.0,说明更新失败了.你要手动升级你的gazebo到新版本来支持GPU lidar仿真.
 
 if the version is still 9.0.0, then you have to upgrade your gazebo manully to enable GPU lidar simulation.
 
@@ -73,15 +80,15 @@ if the version is still 9.0.0, then you have to upgrade your gazebo manully to e
 
 # Do not forget:
 
-cd ${YOUR_PX4_WORKSPACE}/src/Firmware
+    cd ${YOUR_PX4_WORKSPACE}/src/Firmware
 
-make clean
+    make clean
 
-make
+    make
 
-make posix_sitl_default
+    make posix_sitl_default
 
-make posix_sitl_default gazebo
+    make posix_sitl_default gazebo
 
 
 #避免无法连接 mavros!
@@ -98,7 +105,7 @@ and "gz sdf -p example.urdf >example.sdf"
  Then manually edit your drone's sdf file and add the elements you need for simulation from example.sdf.
 
 
-cp -r ./ekf_settings/* ${YOUR_PX4_WORKSPACE}/src/Firmware/posix-configs/SITL/init/ekf2/
+    cp -r ./ekf_settings/* ${YOUR_PX4_WORKSPACE}/src/Firmware/posix-configs/SITL/init/ekf2/
 
 and change the launch file params in 'script/prepare_simulation.sh' to utilize drones with stereo cam or lidar.
 
