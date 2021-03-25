@@ -91,9 +91,9 @@ if the version is still 9.0.0, then you have to upgrade your gazebo manully to e
     make posix_sitl_default gazebo
 
 
-#避免无法连接 mavros!
+# 避免无法连接 mavros!
 
-#To avoid mavros connection errors.
+# To avoid mavros connection errors.
 
 
 如果你好奇生成sdf文件的步骤:
