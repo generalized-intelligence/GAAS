@@ -162,7 +162,7 @@ int main(int argc,char **argv)
 
 
     pNH=&nh;
-    ros::Publisher pub = nh.advertise<MessageCloudT>("extracted_euclidean_clusters",10);
+    ros::Publisher pub = nh.advertise<MessageCloudT>("/gaas/visualization/perception/euclidean_clusters_colored",10);
     pPub = &pub;
     ros::Subscriber sub = nh.subscribe<MessageCloudT>("velodyne_points2",1,callback);
 

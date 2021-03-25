@@ -71,7 +71,7 @@ Gazebo multi-robot simulator, version 9.16.0
 
 如果你看到的仍然是 9.0.0,说明更新失败了.你要手动升级你的gazebo到新版本来支持GPU lidar仿真.
 
-if the version is still 9.0.0, then you have to upgrade your gazebo manully to enable GPU lidar simulation.
+if the version is still 9.0.0, then you have to upgrade your gazebo manually to enable GPU lidar simulation.
 
 
 
