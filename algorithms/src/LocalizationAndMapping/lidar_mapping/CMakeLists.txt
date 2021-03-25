@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(lidar_localization)
+project(lidar_mapping)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11 -O3)
+# add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -17,11 +17,12 @@ find_package(Glog REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
+  rosbag
   geometry_msgs
+  nav_msgs
   image_transport
   roscpp
   sensor_msgs
-  nav_msgs
   tf
   visualization_msgs
 )
@@ -157,35 +158,11 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-set(srcs
-        ndt_cpu/ndt_cpu_src/NormalDistributionsTransform.cpp
-        ndt_cpu/ndt_cpu_src/Registration.cpp
-        ndt_cpu/ndt_cpu_src/VoxelGrid.cpp
-        ndt_cpu/ndt_cpu_src/Octree.cpp
-        )
-
-set(incs
-        ndt_cpu/ndt_cpu_include/ndt_cpu/debug.h
-        ndt_cpu/ndt_cpu_include/ndt_cpu/NormalDistributionsTransform.h
-        ndt_cpu/ndt_cpu_include/ndt_cpu/Registration.h
-        ndt_cpu/ndt_cpu_include/ndt_cpu/SymmetricEigenSolver.h
-        ndt_cpu/ndt_cpu_include/ndt_cpu/VoxelGrid.h
-        ndt_cpu/ndt_cpu_include/ndt_cpu/Octree.h
-        )
-
-add_library(ndt_cpu_lib ${srcs})
-
-target_link_libraries(ndt_cpu_lib
-        ${PCL_LIBRARIES}
-        ${catkin_LIBRARIES}
-        )
 
 
-add_executable(map_publisher src/map_publisher.cpp)
-target_link_libraries(map_publisher ${REQUIRED_LIBS})
+add_executable(map_config_generator src/map_config_generator.cpp)
+target_link_libraries(map_config_generator ${REQUIRED_LIBS})
 
-add_executable(ndt_matching_node src/ndt_matching.cpp)
-target_link_libraries(ndt_matching_node ${REQUIRED_LIBS} ndt_cpu_lib)
 #add_executable(icp_matching_node src/icp_matching.cpp)
 #target_link_libraries(icp_matching_node ${REQUIRED_LIBS})
 

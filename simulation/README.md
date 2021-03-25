@@ -104,4 +104,10 @@ and change the launch file params in 'script/prepare_simulation.sh' to utilize d
 
 运行'script/prepare_simulation.sh', 启动激光雷达与双目视觉在旋翼机上仿真.
 
+# 高级自定义选项：
+
+通过修改脚本中的 DRONE_ITEM 和 WORLD_ITEM, 使用其他的载具模型及地图进行仿真.
+
+By changing "DRONE_ITEM" and "WORLD_ITEM" in the script, start simulation with other vehicles and maps.
+
 

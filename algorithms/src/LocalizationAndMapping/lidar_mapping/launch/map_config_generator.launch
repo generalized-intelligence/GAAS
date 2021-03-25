@@ -1,0 +1,7 @@
+<launch>
+   <param name="use_sim_time" type="bool" value="true"/>
+   <param name="map_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/pcd_original.pcd"/>
+   <param name="rosbag_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/original.bag"/>
+   <param name="output_map_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/map_global_registered.pcd"/>
+   <node name="map_config_generator" pkg="lidar_mapping" type="map_config_generator" output="screen"/>
+</launch>
