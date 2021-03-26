@@ -164,7 +164,7 @@ int main(int argc,char **argv)
     pNH=&nh;
     ros::Publisher pub = nh.advertise<MessageCloudT>("/gaas/visualization/perception/euclidean_clusters_colored",10);
     pPub = &pub;
-    ros::Subscriber sub = nh.subscribe<MessageCloudT>("velodyne_points2",1,callback);
+    ros::Subscriber sub = nh.subscribe<MessageCloudT>("/gaas/preprocessing/velodyne_downsampled",1,callback);
 
     ros::spin();
     return 0;

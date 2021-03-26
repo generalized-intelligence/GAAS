@@ -8,6 +8,7 @@ Panels:
         - /PointCloud21
         - /PointCloud22
         - /Pose1
+        - /Pose2
       Splitter Ratio: 0.5
     Tree Height: 728
   - Class: rviz/Selection
@@ -129,6 +130,21 @@ Visualization Manager:
       Topic: /gaas/visualization/localization/map_axes
       Unreliable: false
       Value: true
+    - Alpha: 1
+      Axes Length: 2
+      Axes Radius: 0.4000000059604645
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: Pose
+      Shaft Length: 2
+      Shaft Radius: 0.05000000074505806
+      Shape: Axes
+      Topic: /gaas/localization/ndt_pose
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -157,25 +173,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 69.93180084228516
+      Distance: 69.55397033691406
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 4.755685329437256
-        Y: -1.7567485570907593
-        Z: 1.6857634782791138
+        X: -0.13501577079296112
+        Y: 2.1904237270355225
+        Z: 0.525100588798523
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.5697963237762451
+      Pitch: 1.0197961330413818
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.1372487545013428
+      Yaw: 1.5672470331192017
     Saved: ~
 Window Geometry:
   Displays:

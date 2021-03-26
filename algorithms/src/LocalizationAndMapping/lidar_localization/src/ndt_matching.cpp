@@ -119,7 +119,7 @@ int main(int argc,char** argv)
     {
         aligned_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/gaas/visualization/localization/ndt_merged_cloud",1);
     }
-    ros::Subscriber lidar_sub = nh.subscribe("/velodyne_points2",1,lidar_callback);
+    ros::Subscriber lidar_sub = nh.subscribe("/gaas/preprocessing/velodyne_downsampled",1,lidar_callback);
 
     //message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/raw/fix", 1);
     message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/global", 1);

@@ -63,7 +63,7 @@ int main(int argc,char** argv)
     ros::NodeHandle nh;
 
     message_filters::Subscriber<sensor_msgs::Image> image_sub(nh, "/gi/simulation/left/image_raw", 1);
-    message_filters::Subscriber<sensor_msgs::PointCloud2> lidar_sub(nh, "/velodyne_points2", 1);
+    message_filters::Subscriber<sensor_msgs::PointCloud2> lidar_sub(nh, "/gaas/preprocessing/velodyne_downsampled", 1);
 
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::PointCloud2> MySyncPolicy;
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), image_sub, lidar_sub);

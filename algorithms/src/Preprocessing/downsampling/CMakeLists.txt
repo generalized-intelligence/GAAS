@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(vision_lidar_fusion)
+project(downsampling)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11 -O3)
@@ -7,6 +7,7 @@ add_compile_options(-std=c++11 -O3)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+#set(CMAKE_BUILD_TYPE DEBUG)
 set(CMAKE_BUILD_TYPE RELEASE)
 find_package(OpenCV 3.4.5 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
@@ -20,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   roscpp
   sensor_msgs
+  nav_msgs
   tf
   visualization_msgs
 )
@@ -134,7 +136,6 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
   ${OpenCV_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
   ${GLOG_INCLUDE_DIRS}
@@ -154,10 +155,9 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(vision_lidar_fusion_node src/vision_lidar_fusion_node.cpp)
-target_link_libraries(vision_lidar_fusion_node ${REQUIRED_LIBS})
-add_executable(euclidean_cluster_extraction src/euclidean_cluster_extraction.cpp)
-target_link_libraries(euclidean_cluster_extraction ${REQUIRED_LIBS})
+add_executable(downsampling_node src/downsampling_node.cpp)
+target_link_libraries(downsampling_node ${REQUIRED_LIBS})
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find lidar_localization)/launch/ndt_lidar_localization.launch"/>
+  <include file="$(find vision_lidar_fusion)/launch/vision_lidar_fusion.launch"/>
+  <include file="$(find downsampling)/launch/downsampling.launch"/>
+</launch>
