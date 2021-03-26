@@ -10,6 +10,43 @@ Extra modules of GAAS; Including some amazing lidar-based algorithms!
 
 **这个项目是 GAAS----一套无人机/飞行汽车全自主飞行框架的扩展模块.**
 
+## 目录 Index
+
+1.使用说明 Usage
+
+2.开启项目的原因以及作者想说的 The reason why GAAS_contrib was created and the words by the author
+
+3.现在已完成的部分 Finished tasks by now
+
+4.开发路线图 Roadmap
+
+## 1.使用说明 Usage
+
+###     1.编译工程 Build the project:
+
+To build the project, setup all dependencies and run:
+
+    ./build_all.sh
+
+###     2.仿真环境 Simulation:
+
+To start simulation, check out simulation/README.md to setup everything;
+
+run:
+
+    ./scripts/prepare_simulation.sh
+    
+to start your gazebo simulation.    
+
+###     3.算法 GAAS_contrib_algorithms.
+
+To run GAAS_contrib algorithms, just:
+
+    cd algorithms
+    ./run_gaas_contrib_algorithms.sh
+
+## 2.开启项目的原因以及作者想说的 The reason why GAAS_contrib was created and the words by the author
+
 开启此项目的原因是: GAAS基于纯视觉算法的思路,目前看来并不是很好地适应无人驾驶行业发展的现状.GAAS本身设计之初,并不是纯粹为载人自主飞行器(以下统称:飞行汽车)和货运无人机场景设计的,因此不可避免有一些问题.
 
 对于大型货运无人机和飞行汽车而言,纯视觉的技术路线缺点是:
@@ -53,7 +90,11 @@ Velodyne Velarray
 
 更低端的 Jetson tx2, Raspberry pi, Odroid等性能太差,在大型飞行器场景成本对计算单元成本要求不高的场景下,不予考虑.
 
-## 现在已完成的部分:包含32线激光雷达和双目摄像头的仿真环境初步搭建.
+
+
+## 3.现在已完成的部分 Finished tasks by now
+
+包含32线激光雷达和双目摄像头的仿真环境初步搭建.
 
 32线Lidar+Stereo camera 效果如下图.
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Velodyne_HDL32E_sim.jpg)
@@ -66,23 +107,32 @@ Livox Horizon的模拟:
 
 仿真环境运行详细说明见simulation/README.md.
 
-## 开发路线图:
+## 4.开发路线图 Roadmap
 
-### 1.实现gazebo 仿真环境的搭建,包括重复扫描式激光雷达和非重复扫描式激光雷达与双目相机的多种组合方式.
+### 1.实现gazebo 仿真环境的搭建,包括重复扫描式激光雷达和非重复扫描式激光雷达与双目相机的多种组合方式. Gazebo simulation env construction, including spinning lidars and non-repetitive lidars and stereo cameras.
 
 ##### 1.Livox Horizon + Forward Stereo Camera --Done.
 
 ##### 2.Velodyne HDL-32 + Forward Stereo Camera --Done.
 
-### 2.方便的部署脚本,解决GAAS从头编译安装较为复杂的问题.
+### 2.方便的部署脚本,解决GAAS从头编译安装较为复杂的问题. Some scripts to accelerate compiling and deployment.
 
-### 3.实现一些以激光雷达(机械/固态)为主的算法,并在仿真环境中实现一键启动.
+### 3.实现一些以激光雷达(机械/固态)为主的算法,并在仿真环境中实现一键启动. Algorithms based on lidars and scripts to start everything in simulation env.
 
 ##### 1.Lidar Camera 前融合 点云投影到图像 --完成.
 
 ##### 2.Euclidean Cluster Extraction. --Done.
 
-##### 3.NDT Lidar Localization --Done.
+##### 3.Global coordinate based HD-Map building. --Done. 
+
+##### 4.NDT Lidar Localization --Done.
+
+##### 5.Downsampling Node --Done.
+
+##### 6.Interactive GUI target selector in HD-Map --TODO.
+
+
+---------------
 
 ## GAAS_contrib目前主要分为两个部分:算法和仿真.
 
