@@ -56,6 +56,8 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>tf</build_depend>
+  <build_depend>tf2</build_depend>
+  <build_depend>tf2_ros</build_depend>
   <build_depend>visualization_msgs</build_depend>
   <build_export_depend>cv_bridge</build_export_depend>
   <build_export_depend>geometry_msgs</build_export_depend>
@@ -64,6 +66,8 @@
   <build_export_depend>sensor_msgs</build_export_depend>
   <build_export_depend>nav_msgs</build_export_depend>
   <build_export_depend>tf</build_export_depend>
+  <build_export_depend>tf2</build_export_depend>
+  <build_export_depend>tf2_ros</build_export_depend>
   <build_export_depend>visualization_msgs</build_export_depend>
   <exec_depend>cv_bridge</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
@@ -72,6 +76,8 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>tf</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
   <exec_depend>visualization_msgs</exec_depend>
 
 

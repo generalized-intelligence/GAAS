@@ -23,6 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   nav_msgs
   tf
+  tf2
+  tf2_ros
   visualization_msgs
 )
 set(REQUIRED_LIBS

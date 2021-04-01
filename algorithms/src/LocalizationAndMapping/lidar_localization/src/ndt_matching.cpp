@@ -13,6 +13,15 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <pcl/filters/voxel_grid.h>
 
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/transform_datatypes.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <geometry_msgs/TransformStamped.h>
+
 #include <Eigen/Geometry>
 
 
@@ -21,6 +30,7 @@
 #include "GPS_AHRS_sync.h"
 
 NDTAlgo* pNDT;
+tf2_ros::TransformBroadcaster* pTFbroadcaster;
 bool ndt_result_visualization = false;
 ros::Publisher pose_pub;
 ros::Publisher aligned_cloud_pub;
@@ -49,6 +59,8 @@ void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
     //bool ndt_success = pNDT->do_ndt_matching_without_initial_guess2(downsampled,output_ndt_pose,transformed_cloud,need_transformed_pointcloud);
     bool ndt_success = pNDT->doNDTMatching(downsampled,output_ndt_pose,transformed_cloud,need_transformed_pointcloud);
 
+
+
     if(ndt_success)
     {
         //publish output pose;
@@ -71,6 +83,31 @@ void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
         pos.z = output_ndt_pose(2,3);
 
         pose_pub.publish(ndt_pose_msg);
+
+        //publish tf2 transfrom.
+        NDTAlgo::RTMatrix4f lidar_to_map = output_ndt_pose.inverse();
+        Eigen::Matrix3f l_m_rotmat = lidar_to_map.block(0,0,3,3);
+        Eigen::Quaternionf l_m_quat(l_m_rotmat);
+
+
+
+        geometry_msgs::TransformStamped map_lidar_trans_stamped;
+        map_lidar_trans_stamped.header.frame_id = "lidar";// we've got lidar as the top node of tf tree.
+        //So when localization is not avail, still we can solve lidar to body.
+        map_lidar_trans_stamped.child_frame_id = "map";
+
+        map_lidar_trans_stamped.header.stamp = cloud_msg->header.stamp;
+        map_lidar_trans_stamped.transform.translation.x = lidar_to_map(0,3);
+        map_lidar_trans_stamped.transform.translation.y = lidar_to_map(1,3);
+        map_lidar_trans_stamped.transform.translation.z = lidar_to_map(2,3);
+        map_lidar_trans_stamped.transform.rotation.x = l_m_quat.x();
+        map_lidar_trans_stamped.transform.rotation.y = l_m_quat.y();
+        map_lidar_trans_stamped.transform.rotation.z = l_m_quat.z();
+        map_lidar_trans_stamped.transform.rotation.w = l_m_quat.w();
+
+        pTFbroadcaster->sendTransform(map_lidar_trans_stamped);
+
+
         if(need_transformed_pointcloud&&transformed_cloud!=nullptr)
         {
             sensor_msgs::PointCloud2 transformed_cloud_msg;
@@ -109,6 +146,9 @@ int main(int argc,char** argv)
     NDTAlgo ndt(&gps_ahrs_sync);
     ndt.loadPCDMap();
     pNDT=&ndt;
+    tf2_ros::TransformBroadcaster br;
+    pTFbroadcaster = &br;
+
 
     string lidar_topic_name;
     ros::param::get("lidar_topic_name",lidar_topic_name);
