@@ -37,7 +37,7 @@ class PathNode//变动的部分在这里.
 public:
     AStarCostMapGrid* pGrid = nullptr;
     typedef std::shared_ptr<PathNode> Ptr;
-    float cost;
+    float cost = 0;
     std::array<int,3> current_block_index;
     static const uint16_t not_visited = 0;
     static const uint16_t state_open = 1;
@@ -72,6 +72,10 @@ struct PathNodePtrHeap
         //make_heap(coll.begin(),coll.end());
         heap.push_back(pNew);
         std::push_heap(heap.begin(),heap.end(),isSmaller);
+    }
+    void clear()
+    {
+        this->heap.clear();
     }
     int getSize()
     {
@@ -145,11 +149,12 @@ public:
     {
         float cost_current_step = calcShortDistByIndex(prev->current_block_index,alternative->current_block_index)+prev->cost;
         float heuristic_cost_euclidean = calcLongDistByIndex(alternative->current_block_index,targetIndex);
-        float heuristic_cost_tsdf = alternative->pGrid->MAX_TSDF_VAL - alternative->pGrid->TSDF;
+        float heuristic_cost_tsdf = 0.1*(alternative->pGrid->MAX_TSDF_VAL - alternative->pGrid->TSDF);
 
-        //LOG(INFO)<<"history+prev cost:"<<cost_current_step<<";heuristic_cost_dist"<<heuristic_cost_euclidean<<";cost_tsdf"<<heuristic_cost_tsdf<<endl;
-
-        return cost_current_step+heuristic_cost_euclidean+heuristic_cost_tsdf;
+        //LOG(INFO)<<"history+prev cost:"<<cost_current_step<<";heuristic_cost_dist:"<<heuristic_cost_euclidean<<";cost_tsdf:"<<heuristic_cost_tsdf<<endl;
+        float final_cost = cost_current_step+heuristic_cost_euclidean+heuristic_cost_tsdf;
+        //LOG(INFO)<<"final cost:"<<final_cost<<endl;
+        return final_cost;
         //先看上个节点前进方向,决定转向/继续前进的代价项.
         //再看到target的新距离.
         //TODO:可能考虑在一个阈值内到最近障碍物的距离,尤其是当飞机在当前前进方向上有障碍物时；以防止高速前进时减速不及时撞到障碍物.
@@ -161,6 +166,7 @@ public:
         if(!(checkXYZLegal(xi,yi,zi)&&(checkXYZLegal(xf,yf,zf))))
         {
             LOG(ERROR)<<"ERROR:target or initial_point illegal!"<<endl;
+            openList.clear();
             return final_path;
         }
         if(this->map_nodes_const.at(xi*map_size_y*map_size_z+yi*map_size_z+zi).obstacle_status!=AStarCostMapGrid::status_free
@@ -169,11 +175,13 @@ public:
                 )
         {
             LOG(ERROR)<<"ERROR:target or initial point occupied!"<<endl;
+            openList.clear();
             return final_path;
         }
 
         bool flag_failed = false;
         PathNode::Ptr initial = generatePathNode(xi,yi,zi);
+        initial->cost = 0;
         this->openList.push_heap(initial);
         auto current_pos = std::array<int,3>{xi,yi,zi};
         auto final_pos = std::array<int,3>{xf,yf,zf};
@@ -201,6 +209,8 @@ public:
 
         if(flag_failed)
         {
+            LOG(ERROR)<<"ERROR:AStar failed by heap overflow."<<endl;
+            openList.clear();
             return final_path;
         }
         vector<PathNode::Ptr> final_path_reverse;
@@ -213,6 +223,7 @@ public:
         {
             final_path.push_back(final_path_reverse.at(i)->current_block_index);
         }
+        openList.clear();
         return final_path;
         //智能指针自动实现 map结构里所有普通指针的恢复，什么都不用做
         //node::ptr全部重新生成,AStarCostMapGrid map_nodes_const不用动.
@@ -227,11 +238,11 @@ public:
         }
         node.TSDF = node.MAX_TSDF_VAL;
         auto currIndex = getIndex(x,y,z);
-        for(int dx = -5;dx<=5;dx++)
+        for(int dx = -node.MAX_TSDF_VAL;dx<=node.MAX_TSDF_VAL;dx++)
         {
-            for(int dy = -5;dy<=5;dy++)
+            for(int dy = -node.MAX_TSDF_VAL;dy<=node.MAX_TSDF_VAL;dy++)
             {
-                for(int dz = -5;dz<=5;dz++)
+                for(int dz = -node.MAX_TSDF_VAL;dz<=node.MAX_TSDF_VAL;dz++)
                 {
                     int nx=x+dx,ny=y+dy,nz=z+dz;
                     if(checkXYZLegal(nx,ny,nz))

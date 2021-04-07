@@ -33,7 +33,7 @@ public:
         pMb = MapBlock::Ptr(new MapBlock);
         pMb->initMapBlock(pmap_cloud);
         ScopeTimer t("Generate AStar Map");
-        LOG(INFO)<<"genearating a* map..."<<endl;
+        LOG(INFO)<<"generating a* map..."<<endl;
         ascm.initAStarMapByBlockMap(this->pMb);
     }
     void visualizeMap()
@@ -73,8 +73,12 @@ int main(int argc,char** argv)
     google::InitGoogleLogging("astar_debug_node");
     AStarTestEnv aenv;
     aenv.init(argc,argv);
-    aenv.testAstar(0,0,2,0,5,7);
-    aenv.testAstar(0,0,3,25,3,5);
+    aenv.testAstar(0,0,5,0,5,7);
+    aenv.testAstar(0,0,5,25,3,5);
+    aenv.testAstar(0,0,5,0,5,7);
+    aenv.testAstar(0,0,5,0,5,7);//test same path;
+    aenv.testAstar(0,0,5,2500,3,500);//test out of range condition.
+    LOG(INFO)<<"test finished."<<endl;
     //aenv.visualizeMap();
 
     return 0;
