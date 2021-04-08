@@ -121,6 +121,8 @@ int main(int argc,char** argv)
     google::InitGoogleLogging("astar_debug_node");
     AStarTestEnv aenv;
     aenv.init(argc,argv);
+    LOG(INFO)<<"Waiting for rviz initializaion...5s left."<<endl;
+    sleep(5);
     aenv.visualizeMap();
 
     int ix,iy,iz,fx,fy,fz;

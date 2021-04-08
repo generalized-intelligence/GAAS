@@ -30,7 +30,7 @@ public:
     static const int status_tsdf_danger = 2;
     static const int MAX_TSDF_VAL = 5;
 
-    float TSDF;//最近障碍物距离.0-MAX_TSDF_VAL,有障碍物为0;最近障碍在MAX_TSDF_VAL m外为MAX_TSDF_VAL.
+    float TSDF=MAX_TSDF_VAL;//最近障碍物距离.0-MAX_TSDF_VAL,有障碍物为0;最近障碍在MAX_TSDF_VAL m外为MAX_TSDF_VAL.
 };
 class PathNode//变动的部分在这里.
 {
@@ -154,8 +154,8 @@ public:
         float cost_current_step = calcShortDistByIndex(prev->current_block_index,alternative->current_block_index)+prev->toNodeCost+current_cost_tsdf;//如果经过currentNode就必须考虑这个tsdf.
 
         float final_cost = cost_current_step+heuristic_cost_euclidean;
-        LOG(INFO)<<"Node:"<<prev->current_block_index[0]<<","<<prev->current_block_index[1]<<","<<prev->current_block_index[2]<<":history+prev cost:"<<cost_current_step<<
-                   ";heuristic_cost_dist:"<<heuristic_cost_euclidean<<";cost_tsdf:"<<current_cost_tsdf<<";final cost:"<<final_cost<<endl;
+        //LOG(INFO)<<"Node:"<<prev->current_block_index[0]<<","<<prev->current_block_index[1]<<","<<prev->current_block_index[2]<<":history+prev cost:"<<cost_current_step<<
+        //           ";heuristic_cost_dist:"<<heuristic_cost_euclidean<<";cost_tsdf:"<<current_cost_tsdf<<";final cost:"<<final_cost<<endl;
         alternative->toNodeCost = cost_current_step;
         alternative->cost = final_cost;
         return final_cost;
@@ -236,42 +236,78 @@ public:
         //node::ptr全部重新生成,AStarCostMapGrid map_nodes_const不用动.
     }
 
-    void initializeConstMapNodeByOriginalMap(int x,int y,int z)//记录障碍物信息并计算tsdf
+//    void initializeConstMapNodeByOriginalMap(int x,int y,int z)//记录障碍物信息并计算tsdf
+//    {
+//        auto& node = this->map_nodes_const.at(x*map_size_y*map_size_z+y*map_size_z+z);
+//        if(this->original_map->blockAt(x,y,z).isOccupied())
+//        {
+//            node.obstacle_status = node.status_occupied;
+//        }
+//        node.TSDF = node.MAX_TSDF_VAL;
+//        //node.TSDF = 0;
+//        auto currIndex = getIndex(x,y,z);
+//        for(int dx = -node.MAX_TSDF_VAL;dx<=node.MAX_TSDF_VAL;dx++)
+//        {
+//            for(int dy = -node.MAX_TSDF_VAL;dy<=node.MAX_TSDF_VAL;dy++)
+//            {
+//                for(int dz = -node.MAX_TSDF_VAL;dz<=node.MAX_TSDF_VAL;dz++)
+//                {
+//                    int nx=x+dx,ny=y+dy,nz=z+dz;
+//                    if(checkXYZLegal(nx,ny,nz))
+//                    {
+//                        if(this->original_map->blockAt(nx,ny,nz).isOccupied())
+//                        {
+//                            float dist = calcLongDistByIndex(currIndex,getIndex(nx,ny,nz));
+//                            if(dist<node.TSDF)
+//                            {
+//                                node.TSDF = dist;//更新tsdf.
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        if(node.TSDF <=1)
+//        {
+//            node.obstacle_status |= node.status_tsdf_danger;
+//        }
+//    }
+    void initializeConstMapNodeByOriginalMap(int x,int y,int z)
     {
         auto& node = this->map_nodes_const.at(x*map_size_y*map_size_z+y*map_size_z+z);
-        if(this->original_map->blockAt(x,y,z).isOccupied())
+        auto currIndex = getIndex(x,y,z);
+        if(this->original_map->blockAt(x,y,z).isOccupied())//如果这个格没有障碍就什么也不做.
         {
             node.obstacle_status = node.status_occupied;
-        }
-        node.TSDF = node.MAX_TSDF_VAL;
-        auto currIndex = getIndex(x,y,z);
-        for(int dx = -node.MAX_TSDF_VAL;dx<=node.MAX_TSDF_VAL;dx++)
-        {
-            for(int dy = -node.MAX_TSDF_VAL;dy<=node.MAX_TSDF_VAL;dy++)
+            node.TSDF = 0;
+            for(int dx = -node.MAX_TSDF_VAL;dx<=node.MAX_TSDF_VAL;dx++)
             {
-                for(int dz = -node.MAX_TSDF_VAL;dz<=node.MAX_TSDF_VAL;dz++)
+                for(int dy = -node.MAX_TSDF_VAL;dy<=node.MAX_TSDF_VAL;dy++)
                 {
-                    int nx=x+dx,ny=y+dy,nz=z+dz;
-                    if(checkXYZLegal(nx,ny,nz))
+                    for(int dz = -node.MAX_TSDF_VAL;dz<=node.MAX_TSDF_VAL;dz++)
                     {
-                        if(this->original_map->blockAt(nx,ny,nz).isOccupied())
+                        int nx=x+dx,ny=y+dy,nz=z+dz;
+                        if(checkXYZLegal(nx,ny,nz) &&!(dx==0&&dy==0&&dz==0))
                         {
                             float dist = calcLongDistByIndex(currIndex,getIndex(nx,ny,nz));
-                            if(dist<node.TSDF)
+                            auto& neighbor_node = this->map_nodes_const.at(nx*map_size_y*map_size_z+ny*map_size_z+nz);
+                            if(dist<neighbor_node.TSDF)
                             {
-                                node.TSDF = dist;//更新tsdf.
+                                //LOG(INFO)<<"update neighbor tsdf to "<<dist<<"!"<<endl;
+                                neighbor_node.TSDF = dist;//更新邻居的tsdf.
+                            }
+                            //if(neighbor_node.TSDF <=1.8)//max(1.414,1.732)
+                            if(neighbor_node.TSDF <=1)
+                            {
+                                node.obstacle_status |= node.status_tsdf_danger;
                             }
                         }
                     }
                 }
             }
         }
-        if(node.TSDF <=1)
-        {
-            node.obstacle_status |= node.status_tsdf_danger;
-        }
-
     }
+
     void initAStarMapByBlockMap(MapBlock::Ptr mapBlock)
     {
         this->original_map = mapBlock;
