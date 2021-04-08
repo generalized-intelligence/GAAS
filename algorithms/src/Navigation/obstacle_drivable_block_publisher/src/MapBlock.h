@@ -79,6 +79,13 @@ public:
         index_[2] = (int) ((z-z_min)/grid_size);
         return index_;
     }
+    void getMapBlockIndexByXYZ(float x, float y,float z,int& ix,int& iy,int& iz)
+    {
+        ix = (int) ((x-x_min)/grid_size);
+        iy = (int) ((y-y_min)/grid_size);
+        iz = (int) ((z-z_min)/grid_size);
+        return;
+    }
 
     void initMapBlock(MapCloudT::Ptr pMap)
     {

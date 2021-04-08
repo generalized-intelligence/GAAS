@@ -1,14 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(global_map_planner)
+project(gaas_msgs)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11 -O3)
 #add_compile_options(-std=c++11 -O0)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-#set(CMAKE_BUILD_TYPE DEBUG)
 set(CMAKE_BUILD_TYPE RELEASE)
 find_package(OpenCV 3.4.5 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
@@ -17,7 +15,6 @@ find_package(Glog REQUIRED)
 
 
 find_package(catkin REQUIRED COMPONENTS
-  gaas_msgs
   cv_bridge
   geometry_msgs
   image_transport
@@ -28,6 +25,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   visualization_msgs
+  message_generation
 )
 set(REQUIRED_LIBS
         ${OpenCV_LIBS}
@@ -71,11 +69,11 @@ set(REQUIRED_LIBS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+   FILES
+   GAASNavigationPath.msg
+   GAASPerceptionObstacles.msg
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -92,10 +90,10 @@ set(REQUIRED_LIBS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   sensor_msgs#   visualization_msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   geometry_msgs sensor_msgs visualization_msgs nav_msgs std_msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -127,7 +125,6 @@ set(REQUIRED_LIBS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-   CATKIN_DEPENDS gaas_msgs
 #  INCLUDE_DIRS include
 #  LIBRARIES vision_lidar_fusion
 #  CATKIN_DEPENDS cv_bridge geometry_msgs image_transport roscpp sensor_msgs tf visualization_msgs
@@ -162,14 +159,6 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-#add_executable(drivable_block_generator_node src/drivable_block_generator_node.cpp)
-#target_link_libraries(drivable_block_generator_node ${REQUIRED_LIBS})
-
-add_executable(AStarLibDebug src/AStarLibDebug.cpp)
-target_link_libraries(AStarLibDebug ${REQUIRED_LIBS})
-
-add_executable(AStarPlannerNode src/AStarPlannerNode.cpp)
-target_link_libraries(AStarPlannerNode ${REQUIRED_LIBS})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

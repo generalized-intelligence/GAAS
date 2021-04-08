@@ -38,6 +38,7 @@ public:
     AStarCostMapGrid* pGrid = nullptr;
     typedef std::shared_ptr<PathNode> Ptr;
     float cost = 0;
+    float toNodeCost = 0;//到目前点所需要的cost.
     std::array<int,3> current_block_index;
     static const uint16_t not_visited = 0;
     static const uint16_t state_open = 1;
@@ -147,13 +148,16 @@ public:
     }
     float calcCostOfPathAndNewAlternativeNode(PathNode::Ptr prev,PathNode::Ptr alternative,const TIndex& targetIndex)
     {
-        float cost_current_step = calcShortDistByIndex(prev->current_block_index,alternative->current_block_index)+prev->cost;
-        float heuristic_cost_euclidean = calcLongDistByIndex(alternative->current_block_index,targetIndex);
-        float heuristic_cost_tsdf = 0.1*(alternative->pGrid->MAX_TSDF_VAL - alternative->pGrid->TSDF);
 
-        //LOG(INFO)<<"history+prev cost:"<<cost_current_step<<";heuristic_cost_dist:"<<heuristic_cost_euclidean<<";cost_tsdf:"<<heuristic_cost_tsdf<<endl;
-        float final_cost = cost_current_step+heuristic_cost_euclidean+heuristic_cost_tsdf;
-        //LOG(INFO)<<"final cost:"<<final_cost<<endl;
+        float heuristic_cost_euclidean = calcLongDistByIndex(alternative->current_block_index,targetIndex);
+        float current_cost_tsdf = 0.4*(alternative->pGrid->MAX_TSDF_VAL - alternative->pGrid->TSDF);
+        float cost_current_step = calcShortDistByIndex(prev->current_block_index,alternative->current_block_index)+prev->toNodeCost+current_cost_tsdf;//如果经过currentNode就必须考虑这个tsdf.
+
+        float final_cost = cost_current_step+heuristic_cost_euclidean;
+        LOG(INFO)<<"Node:"<<prev->current_block_index[0]<<","<<prev->current_block_index[1]<<","<<prev->current_block_index[2]<<":history+prev cost:"<<cost_current_step<<
+                   ";heuristic_cost_dist:"<<heuristic_cost_euclidean<<";cost_tsdf:"<<current_cost_tsdf<<";final cost:"<<final_cost<<endl;
+        alternative->toNodeCost = cost_current_step;
+        alternative->cost = final_cost;
         return final_cost;
         //先看上个节点前进方向,决定转向/继续前进的代价项.
         //再看到target的新距离.
@@ -187,6 +191,7 @@ public:
         auto final_pos = std::array<int,3>{xf,yf,zf};
         const auto terminalIndex = getIndex(xf,yf,zf);
         PathNode::Ptr currMinCost;
+        int loop_count = 0;
         while(true)
         {
             currMinCost = openList.pop_heap();
@@ -194,7 +199,7 @@ public:
             vector<PathNode::Ptr> alts = getAlternatives(currMinCost);
             for(auto alt:alts)
             {
-                alt->cost = calcCostOfPathAndNewAlternativeNode(currMinCost,alt,terminalIndex);
+                calcCostOfPathAndNewAlternativeNode(currMinCost,alt,terminalIndex);
                 this->openList.push_heap(alt);
             }
             currMinCost->astar_status = currMinCost->state_close;//TODO.
@@ -205,7 +210,9 @@ public:
                 break;
             }
             currMinCost->astar_status = currMinCost->state_close;
+            loop_count++;
         }
+        LOG(INFO)<<"AStar loop finished with "<<loop_count<<" times."<<endl;
 
         if(flag_failed)
         {
