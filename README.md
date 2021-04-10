@@ -125,7 +125,7 @@ Still consider gazebo as the simulator.
 
 Target hardware platform will be something like upextreme with x86 i7 processors for developing and simulation.
 
-Nvidia Jetson AGS Xavier may be used for deploying neural networks/cuda acceleration based algorithms.
+Nvidia Jetson AGX Xavier may be used for deploying neural networks/cuda acceleration based algorithms.
 
 更低端的 Jetson tx2, Raspberry pi, Odroid等性能太差,在大型飞行器场景成本对计算单元成本要求不高的场景下,不予考虑.
 
@@ -172,7 +172,11 @@ Checkout simulation/README.md to get more details of simulation env setup.
 
 ##### 5.Downsampling Node --Done.
 
-##### 6.Interactive GUI target selector in HD-Map --TODO.
+##### 6. A* path planner --Done.
+
+##### 7. Refactored px4 offboard commander --Done.
+
+##### 8.Interactive GUI target selector in HD-Map --TODO.
 
 
 ---------------
