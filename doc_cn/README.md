@@ -4,9 +4,15 @@
 
 ### 两个部分分别有自己的catkin workspace进行构建.
 
+  可以使用构建脚本
+
+    ./build_all.sh
+    
+  进行构建.
+
 ## Simulation模块的使用:
 
-    **初次使用前必须配置simulation部分！**配置和使用说明见 simulation/README.md
+   **初次使用前必须配置simulation部分！**配置和使用说明见 simulation/README.md
 
 ## Algorithms中有以下几个模块:
 
