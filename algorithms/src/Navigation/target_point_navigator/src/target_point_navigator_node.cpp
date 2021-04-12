@@ -1,9 +1,187 @@
+#include <iostream>
+#include <mutex>
+#include <opencv2/core.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core/persistence.hpp>
+
+#include <ros/ros.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+
+#include <glog/logging.h>
+
+#include <nav_msgs/Odometry.h>
+#include <sensor_msgs/NavSatFix.h>
+#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <std_msgs/String.h>
+#include <std_msgs/Float32.h>
+
+#include "gaas_msgs/GAASNavigationPath.h"
+#include "gaas_msgs/GAASGetAStarPath.h"
+#include "Timer.h"
+
+using std::endl;
+
+class TargetPointNavigator
+{
+public:
+    std::shared_ptr<ros::NodeHandle> pNH = nullptr;
+    int path_id;
+    ros::ServiceClient navigation_service_client;
+    ros::Subscriber currentPoseSubscriber;
+    bool pose_ready = false;
+    ros::Publisher targetPositionPublisher;
+    geometry_msgs::PointStamped target_point;
+    geometry_msgs::PoseStamped current_pose;
+    geometry_msgs::PointStamped current_point;
+    std::mutex currentPoseMutex;
+    void initTargetPointNavigator(int argc,char** argv)
+    {
+        ros::init(argc,argv,"target_point_navigator_node");
+        pNH = std::shared_ptr<ros::NodeHandle>(new ros::NodeHandle);
+        navigation_service_client = pNH->serviceClient<gaas_msgs::GAASGetAStarPath>
+                ("/gaas/navigation/global_planner/astar_planning");
+        currentPoseSubscriber = pNH->subscribe<geometry_msgs::PoseStamped>
+                ("/gaas/localization/ndt_pose",1,
+                 &TargetPointNavigator::currentPoseCallback,this);
+        targetPositionPublisher = pNH->advertise<geometry_msgs::PoseStamped>("/gaas/navigation/target_position",1);
+        while(!pose_ready)
+        {
+            ros::spinOnce();
+            usleep(20000);//20ms.
+        }
+        LOG(INFO)<<"Pose ready. Target point navigator stand by!"<<endl;
+    }
+    bool runTargetPointNavigator(double target_x,double target_y,double target_z)
+    {
+        LOG(INFO)<<"In runTargetPointNavigator():setting new goal:"<<target_x<<","<<target_y<<","<<target_z<<endl;
+        target_point.point.x = target_x;
+        target_point.point.y = target_y;
+        target_point.point.z = target_z;
+        while(!finishedWholePath()&&ros::ok())
+        {
+            //step<1> get target position in map coordinate.
+            gaas_msgs::GAASGetAStarPath srv;
+            auto& req = srv.request;
+            {
+                req.header.stamp = ros::Time::now();
+                req.header.frame_id = "map";
+                currentPoseMutex.lock();
+                req.current_point = current_point;
+                currentPoseMutex.unlock();
+                req.target_point = target_point;
+            }
+            //    step<2> call a* planning module srv for new path to target.
+            bool failed = false;
+            ScopeTimer srv_timer("navigation_srv_calling");
+            if (navigation_service_client.call(srv))
+            {
+                srv_timer.watch("after srv.call()");
+                if(srv.response.success)
+                {
+                    srv_timer.watch("navigation_srv calling finished!");
+                    LOG(INFO)<<"Navigation srv client got path!"<<endl;
+                    //step<3> publish new local goal.
+                    if(srv.response.path.path_nodes.size()>=2)
+                    {
+                        auto ct_point = srv.response.path.path_nodes[1];
+                        geometry_msgs::PoseStamped controller_command;
+                        controller_command.header.frame_id = "map";
+                        controller_command.header.stamp = ros::Time::now();
+                        controller_command.pose.position.x = ct_point.x;
+                        controller_command.pose.position.y = ct_point.y;
+                        controller_command.pose.position.z = ct_point.z;
+                        while(!finished_current(controller_command)&&ros::ok())
+                        {
+                            targetPositionPublisher.publish(controller_command);
+                            LOG(INFO)<<"Controller command published! Point:"<<ct_point.x<<";"<<ct_point.y<<";"<<ct_point.z<<endl;
+                            ros::spinOnce();
+                            usleep(20000);
+                        }
+                    }
+                    else
+                    {
+                        LOG(INFO)<<"Path len == 1,finished!"<<endl;
+                        return true;
+                    }
+                }
+                else
+                {
+                    LOG(ERROR)<<"Navigation srv a* failed!"<<endl;
+                    failed=true;
+                }
+            }
+            else
+            {
+                LOG(ERROR)<<"Navigation srv client calling error!"<<endl;
+                failed = true;
+            }
+            if(failed)
+            {
+                LOG(INFO)<<"Global a* planner failed. Stand by."<<endl;//TODO:设置悬停,不再动.需要Mavros controller支持.
+                return false;
+            }
+            ros::spinOnce();
+            usleep(20000);//20 ms.
+        }
+        LOG(INFO)<<"Dist < 0.2m, finished!"<<endl;
+        return true;
+    }
+    void currentPoseCallback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg)
+    {
+        LOG(INFO)<<"Enter currentPoseCallback()"<<endl;
+        currentPoseMutex.lock();
+        current_pose =*pose_msg;
+        //TODO: current_point要不要改成geometry_msgs::Point?要header有用吗....
+        current_point.point.x = pose_msg->pose.position.x;
+        current_point.point.y = pose_msg->pose.position.y;
+        current_point.point.z = pose_msg->pose.position.z;
+        currentPoseMutex.unlock();
+        pose_ready = true;
+    }
+private:
+    bool finishedWholePath()
+    {
+        currentPoseMutex.lock();
+        auto pt = current_point;
+        currentPoseMutex.unlock();
+        double dist = sqrt(pow(target_point.point.x-pt.point.x,2)+pow(target_point.point.y-pt.point.y,2)+pow(target_point.point.z-pt.point.z,2));
+        if(dist<0.2)
+        {
+            return true;
+        }
+        return false;
+    }
+    bool finished_current(const geometry_msgs::PoseStamped& p2)
+    {
+        currentPoseMutex.lock();
+        auto pt = current_point;
+        currentPoseMutex.unlock();
+        double dist = sqrt(pow(p2.pose.position.x-pt.point.x,2)+pow(p2.pose.position.y-pt.point.y,2)+pow(p2.pose.position.z-pt.point.z,2));
+        if(dist<0.2)
+        {
+            return true;
+        }
+        return false;
+    }
+};
+
+
 
 int main(int argc,char** argv)
 {
-    //step<1> get target position in map coordinate.
-    //while(!reached_target)
-    //    step<2> call a* planning module srv for new path to target.
-    //    step<3> publish new local goal.
+    FLAGS_alsologtostderr = 1;
+    google::InitGoogleLogging("target_point_navigator_node");
+    TargetPointNavigator tpn;
+    tpn.initTargetPointNavigator(argc,argv);
+    //    tpn.runTargetPointNavigator(0,0,1);
+    //    tpn.runTargetPointNavigator(0,30,1);//TODO:重新建图解决这个塔高处看不见的问题.
+    while(ros::ok())
+    {
+        tpn.runTargetPointNavigator(0,0,3);
+        tpn.runTargetPointNavigator(0,-12,3);
+    }
     return 0;
 }

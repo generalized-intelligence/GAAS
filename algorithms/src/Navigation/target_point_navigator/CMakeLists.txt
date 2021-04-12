@@ -165,8 +165,8 @@ include_directories(
 #add_executable(drivable_block_generator_node src/drivable_block_generator_node.cpp)
 #target_link_libraries(drivable_block_generator_node ${REQUIRED_LIBS})
 
-add_executable(target_point_navigator_node.cpp src/target_point_navigator_node.cpp)
-target_link_libraries(target_point_navigator_node.cpp ${REQUIRED_LIBS})
+add_executable(target_point_navigator_node src/target_point_navigator_node.cpp)
+target_link_libraries(target_point_navigator_node ${REQUIRED_LIBS})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

@@ -33,17 +33,17 @@ public:
     MapBlock::Ptr pMb;
     std::shared_ptr<ros::NodeHandle> pNH = nullptr;
     AStarCostMap ascm;
-    int path_id;
+    int path_id=0;
     ros::ServiceServer service_server;
-    //std::shared_ptr<ros::Publisher> pMapPub,pPathPub;
+    std::shared_ptr<ros::Publisher> pMapPub,pPathPub;
     void initAStarPlannerNode(int argc,char** argv)
     {
         ros::init(argc,argv,"astar_planner_node");
         pNH = std::shared_ptr<ros::NodeHandle>(new ros::NodeHandle);
-        //pMapPub = std::shared_ptr<ros::Publisher>(new ros::Publisher);
-        //*pMapPub = pNH->advertise<visualization_msgs::MarkerArray>("/gaas/navigation/offline_map_block_generator",1);
-        //pPathPub = std::shared_ptr<ros::Publisher>(new ros::Publisher);
-        //*pPathPub = pNH->advertise<visualization_msgs::Marker>("/gaas/navigation/offline_astar_visualization",1);
+        pMapPub = std::shared_ptr<ros::Publisher>(new ros::Publisher);
+        *pMapPub = pNH->advertise<visualization_msgs::MarkerArray>("/gaas/visualization/navigation/map_blocks",1);
+        pPathPub = std::shared_ptr<ros::Publisher>(new ros::Publisher);
+        *pPathPub = pNH->advertise<visualization_msgs::Marker>("/gaas/visualization/navigation/astar_planned_path",1);
         string map_path;
         if(!ros::param::get("map_path",map_path))
         {
@@ -59,9 +59,11 @@ public:
         }
         pMb = MapBlock::Ptr(new MapBlock);
         pMb->initMapBlock(pmap_cloud);
-        ScopeTimer t("Generate AStar Map");
         LOG(INFO)<<"generating a* map..."<<endl;
-        ascm.initAStarMapByBlockMap(this->pMb);
+        {
+            ScopeTimer t("AStar Planning module load map");
+            ascm.initAStarMapByBlockMap(this->pMb);
+        }
         this->service_server = this->pNH->advertiseService("/gaas/navigation/global_planner/astar_planning",&AStarPlannerNode::planningServiceCallback,this);
         ros::spin();
     }
@@ -92,20 +94,52 @@ public:
             response.path.path_nodes.clear();
             for(auto n:output_path)
             {
+                auto node = ascm.original_map->blockAt(n[0],n[1],n[2]);
                 geometry_msgs::Point pt;
-                pt.x = n[0];
-                pt.y = n[1];
-                pt.z = n[2];
+                pt.x = node.cx;
+                pt.y = node.cy;
+                pt.z = node.cz;
                 response.path.path_nodes.push_back(pt);
             }
         }
+        visualizeAStar(output_path);
         return true;
     }
+    void visualizeAStar(vector<TIndex>& astar_path)
+    {
+        visualization_msgs::Marker lineList;
+        //lineList.header.stamp = ros::Time::now();
+        lineList.header.frame_id = "map";
+        lineList.type = lineList.LINE_STRIP;
+        lineList.ns = "visualize_astar_path";
+        lineList.action = lineList.ADD;
+        lineList.id = this->path_id;
+        lineList.color.r = 1.0;
+        lineList.color.g = 1.0;
+        lineList.color.b = 0.0;
+        lineList.color.a = 1.0;
+        lineList.scale.x = 0.3;
+        lineList.colors.resize(astar_path.size());
+        for(int i=0;i<astar_path.size();i++)
+        {
+            geometry_msgs::Point pt;
+            auto index = astar_path.at(i);
+            int x=index[0],y=index[1],z=index[2];
+            pt.x = ascm.original_map->blockAt(x,y,z).cx;
+            pt.y = ascm.original_map->blockAt(x,y,z).cy;
+            pt.z = ascm.original_map->blockAt(x,y,z).cz;
+            lineList.colors.at(i).r=1.0;
+            lineList.colors.at(i).g=1.0;
+            lineList.colors.at(i).b=0.0;
+            lineList.colors.at(i).a=1.0;
+            lineList.points.push_back(pt);
+        }
+        lineList.pose.orientation.w = 1;
+        pPathPub->publish(lineList);
+        LOG(INFO)<<"Visualizer published astar path!"<<endl;
+        sleep(4);
+    }
 };
- bool planningServiceCallback222(gaas_msgs::GAASGetAStarPath::Request& request,gaas_msgs::GAASGetAStarPath::Response& response)
- {
-     return true;
- }
 int main(int argc,char** argv)
 {
     FLAGS_alsologtostderr = 1;

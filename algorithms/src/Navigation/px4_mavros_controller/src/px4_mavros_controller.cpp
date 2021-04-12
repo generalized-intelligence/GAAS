@@ -454,6 +454,8 @@ void PX4MavrosController::target_position_callback(const geometry_msgs::PoseStam
     //如果输入是lidar系，按照body的FLU坐标系运动;
     //如果是map系，运动到map坐标系的相应位置.
 
+    LOG(INFO)<<"New target position:"<<target_position_msg->pose.position.x<<","<<
+               target_position_msg->pose.position.y<<","<<target_position_msg->pose.position.z<<endl;
     state_mutex.lock();
     mavros_msgs::State curr_state = current_state;
     state_mutex.unlock();

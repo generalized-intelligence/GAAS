@@ -171,6 +171,14 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /gaas/visualization/navigation/astar_planned_path
+      Name: Marker
+      Namespaces:
+        visualize_astar_path: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -214,10 +222,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.829796314239502
+      Pitch: 0.9047961235046387
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.5672470331192017
+      Yaw: 2.0872626304626465
     Saved: ~
 Window Geometry:
   Displays:
