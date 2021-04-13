@@ -72,7 +72,8 @@ set(REQUIRED_LIBS
 add_message_files(
     FILES
     GAASNavigationPath.msg
-    GAASPerceptionObstacles.msg
+    GAASPerceptionObstacleCluster.msg
+    GAASPerceptionObstacleClustersList.msg
 )
 
 ## Generate services in the 'srv' folder

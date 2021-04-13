@@ -5,7 +5,8 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/filters/extract_indices.h>
-
+#include "gaas_msgs/GAASPerceptionObstacleCluster.h"
+#include "gaas_msgs/GAASPerceptionObstacleClustersList.h"
 #include <ros/ros.h>
 #include <glog/logging.h>
 #include "Timer.h"
@@ -26,7 +27,8 @@ typedef pcl::PointCloud<VisPointT> VisCloudT;
 typedef pcl::PCLPointCloud2 MessageCloudT;
 
 ros::NodeHandle* pNH = nullptr;
-ros::Publisher* pPub = nullptr;
+ros::Publisher* pVisPub = nullptr;
+ros::Publisher* pObstaclesPub = nullptr;
 
 
 //Load by ros params.
@@ -135,8 +137,31 @@ void visualizeClusters(const vector<LidarCloudT::Ptr>& clusters,const pcl::PCLPo
     pcl::toPCLPointCloud2(vcloud_merged,pc);
     pc.header.frame_id="lidar";
     pc.header.stamp=original_msg->header.stamp;
-    pPub->publish(pc);
+    pVisPub->publish(pc);
     vis_timer.watch("[EuclideanClusterExtraction] clusters published.");
+}
+void publishPerceptionObstaclesList(const vector<LidarCloudT::Ptr>& clusters,const pcl::PCLPointCloud2::ConstPtr& original_msg)
+{
+    gaas_msgs::GAASPerceptionObstacleClustersList obstacles_list;
+    for(int i = 0;i<clusters.size();i++)
+    {
+        gaas_msgs::GAASPerceptionObstacleCluster new_cluster;
+        new_cluster.obstacle_id = i;
+        LidarCloudT::Ptr pCurrentCloud = clusters.at(i);
+        for(const PointT& pt:pCurrentCloud->points)
+        {
+            geometry_msgs::Point p;
+            p.x = pt.x;
+            p.y = pt.y;
+            p.z = pt.z;
+            new_cluster.points.push_back(p);
+        }
+        obstacles_list.obstacles.push_back(new_cluster);
+    }
+    obstacles_list.header.frame_id = "lidar";
+    obstacles_list.header.stamp.fromNSec(original_msg->header.stamp * 1000ull);//pcl stamp to ros
+    pObstaclesPub->publish(obstacles_list);
+
 }
 void callback(const pcl::PCLPointCloud2::ConstPtr &cloud_msg)
 {
@@ -144,6 +169,7 @@ void callback(const pcl::PCLPointCloud2::ConstPtr &cloud_msg)
     LidarCloudT::Ptr pCurrentCloud(new LidarCloudT);
     pcl::fromPCLPointCloud2(*cloud_msg,*pCurrentCloud);
     doEuclideanSegment(pCurrentCloud,output_clusters,min_cluster_size,max_cluster_size,cluster_tolerance);
+    publishPerceptionObstaclesList(output_clusters,cloud_msg);
     visualizeClusters(output_clusters,cloud_msg);
 }
 
@@ -162,8 +188,10 @@ int main(int argc,char **argv)
 
 
     pNH=&nh;
-    ros::Publisher pub = nh.advertise<MessageCloudT>("/gaas/visualization/perception/euclidean_clusters_colored",10);
-    pPub = &pub;
+    ros::Publisher vis_pub = nh.advertise<MessageCloudT>("/gaas/visualization/perception/euclidean_clusters_colored",10);
+    pVisPub = &vis_pub;
+    ros::Publisher perception_pub = nh.advertise<gaas_msgs::GAASPerceptionObstacleClustersList>("/gaas/perception/euclidean_original_clusters_list",10);
+    pObstaclesPub = &perception_pub;
     ros::Subscriber sub = nh.subscribe<MessageCloudT>("/gaas/preprocessing/velodyne_downsampled",1,callback);
 
     ros::spin();
