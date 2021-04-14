@@ -69,6 +69,7 @@ public:
     }
     bool planningServiceCallback(gaas_msgs::GAASGetAStarPath::Request& request,gaas_msgs::GAASGetAStarPath::Response& response)
     {
+        ScopeTimer t_("planningServiceCallback() timer");
         if(request.header.frame_id!="map")
         {
             LOG(ERROR)<<"ERROR: in planningServiceCallback():Request not in map coordinate!"<<endl;
@@ -80,8 +81,9 @@ public:
 
         ascm.original_map->getMapBlockIndexByXYZ(i_.x,i_.y,i_.z,ix,iy,iz);//map的初始位置
         ascm.original_map->getMapBlockIndexByXYZ(f_.x,f_.y,f_.z,fx,fy,fz);//map的目标
-
+        t_.watch("before astar:");
         vector<TIndex> output_path = ascm.doAstar(ix,iy,iz,fx,fy,fz);
+        t_.watch("after astar:");
         if(output_path.size()==0)
         {
             response.success=false;
@@ -102,7 +104,9 @@ public:
                 response.path.path_nodes.push_back(pt);
             }
         }
+        t_.watch("after response set:");
         visualizeAStar(output_path);
+        t_.watch("after visualize,callback finished:");
         return true;
     }
     void visualizeAStar(vector<TIndex>& astar_path)
@@ -137,13 +141,12 @@ public:
         lineList.pose.orientation.w = 1;
         pPathPub->publish(lineList);
         LOG(INFO)<<"Visualizer published astar path!"<<endl;
-        sleep(4);
     }
 };
 int main(int argc,char** argv)
 {
     FLAGS_alsologtostderr = 1;
-    google::InitGoogleLogging("astar_debug_node");
+    google::InitGoogleLogging("astar_planner_node");
     AStarPlannerNode node;
     node.initAStarPlannerNode(argc,argv);
     return 0;
