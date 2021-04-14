@@ -5,6 +5,8 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
+#include "gaas_msgs/GAASNavigationDynamicBlockGrid.h"
+#include "gaas_msgs/GAASNavigationDynamicBlockMap.h"
 #include <glog/logging.h>
 
 struct BasicBlock;
@@ -48,6 +50,24 @@ struct BasicBlock
             mks.markers.push_back(mk);
         }
     }
+    void toROSMsg(gaas_msgs::GAASNavigationDynamicBlockGrid& grid)
+    {
+        grid.center.x = cx;
+        grid.center.y = cy;
+        grid.center.z = cz;
+        grid.occupancy_status = status;
+    }
+    void fromROSMsg(const gaas_msgs::GAASNavigationDynamicBlockGrid& grid)
+    {
+        this->cx = grid.center.x;
+        this->cy = grid.center.y;
+        this->cz = grid.center.z;
+        this->status = grid.occupancy_status;
+        if(this->status&MAP_OCCUPIED||this->status&PERCEPTION_OCCUPIED)
+        {
+            this->map_point_count = 1000;//确保不会导致问题.
+        }
+    }
 };
 
 class MapBlock// 小格构造地图.与高精地图不同的是，只保留导航用的地图静态占用信息.
@@ -57,11 +77,67 @@ public:
     typedef std::array<int,3> TIndex;
     vector<vector<vector<BasicBlock>>> block_map;
     double grid_size; //in metre.
-    int map_size_x,map_size_y,map_size_z;
+    int map_size_x = 0,map_size_y = 0,map_size_z = 0;
     int xc,yc,zc;//(0,0,0)所占据的MapBlock block_map index.
     double x_min,y_min,z_min,x_max,y_max,z_max;
 
     MapCloudT::Ptr pMapCloud;
+
+    //serializing.
+    std::shared_ptr<gaas_msgs::GAASNavigationDynamicBlockMap> toROSMsg(const std_msgs::Header& header)
+    {
+        std::shared_ptr<gaas_msgs::GAASNavigationDynamicBlockMap> retval(new gaas_msgs::GAASNavigationDynamicBlockMap);
+        retval->gridsize = this->grid_size;
+
+        retval->x_count = map_size_x;
+        retval->y_count = map_size_y;
+        retval->z_count = map_size_z;
+
+        retval->grids.resize(map_size_x*map_size_y*map_size_z);
+        LOG(INFO)<<"in MapBlock::toROSMsg() Total grids:"<<map_size_x*map_size_y*map_size_z<<endl;
+        for(int x_ = 0;x_<map_size_x;x_++)
+        {
+            for(int y_=0;y_<map_size_y;y_++)
+            {
+                for(int z_ = 0;z_<map_size_z;z_++)
+                {
+                    const int index_ = x_*map_size_y*map_size_z+y_*map_size_z+z_;
+                    blockAt(x_,y_,z_).toROSMsg(retval->grids.at(index_));
+                }
+            }
+        }
+        retval->header = header;
+        return retval;
+    }
+    static std::shared_ptr<MapBlock> fromROSMsg(const gaas_msgs::GAASNavigationDynamicBlockMap& map_msg)
+    {
+        std::shared_ptr<MapBlock> block(new MapBlock);
+        block->grid_size = map_msg.gridsize;
+        block->map_size_x = map_msg.x_count;
+        block->map_size_y = map_msg.y_count;
+        block->map_size_z = map_msg.z_count;
+        block->block_map.resize(map_msg.x_count);
+        for(auto& y__:block->block_map)
+        {
+            y__.resize(map_msg.y_count);
+            for(auto&z__:y__)
+            {
+                z__.resize(map_msg.z_count);
+            }
+        }
+        for(int x_ = 0;x_<map_msg.x_count;x_++)
+        {
+            for(int y_=0;y_<map_msg.y_count;y_++)
+            {
+                for(int z_ = 0;z_<map_msg.z_count;z_++)
+                {
+                    const int index_ = x_*map_msg.y_count*map_msg.z_count+y_*map_msg.z_count+z_;
+                    block->blockAt(x_,y_,z_).fromROSMsg(map_msg.grids.at(index_));
+                }
+            }
+        }
+        return block;
+    }
 
     inline BasicBlock& blockAt(int x,int y,int z)
     {
@@ -86,7 +162,6 @@ public:
         iz = (int) ((z-z_min)/grid_size);
         return;
     }
-
     void initMapBlock(MapCloudT::Ptr pMap)
     {
         loadHDMap(pMap);
@@ -103,7 +178,7 @@ public:
     }
     void doConvolutionExpansion(const vector<TIndex>& vehicleOccupancyIndices)//根据飞机的尺寸，扩张障碍BlockMap.
     {//别忘了检查边界防止越界！
-        ;
+        LOG(WARNING)<<"doConvolutionExpansion() not implemented!"<<endl;
     }
     void loadFromDisk(string path);
     void writeToDisk(string path);
@@ -118,6 +193,27 @@ public:
                 for(int z_ = 0;z_<map_size_z;z_++)
                 {
                     blockAt(x_,y_,z_).visualizeToMarkerArray(mks,grid_size,ros::Time::now());//TODO:检查timestamp设置策略.
+                }
+            }
+        }
+    }
+    void eraseBasicBlocks() // 擦除所有block的tsdf和占据信息.
+    {
+        BasicBlock empty_block;
+        int bb_id = 0;
+        for(int x_ = 0;x_<map_size_x;x_++)
+        {
+            for(int y_=0;y_<map_size_y;y_++)
+            {
+                for(int z_ = 0;z_<map_size_z;z_++)
+                {
+                    auto& bb = blockAt(x_,y_,z_);
+                    bb = empty_block;
+                    bb.grid_id = bb_id;
+                    bb_id+=1;
+                    bb.cx = this->x_min + (x_)*grid_size+grid_size*0.5;
+                    bb.cy = this->y_min + (y_)*grid_size+grid_size*0.5;
+                    bb.cz = this->z_min + (z_)*grid_size+grid_size*0.5;
                 }
             }
         }
@@ -216,7 +312,6 @@ bool MapBlock::getXYZMinMaxSizeByPointCloud(const MapCloudT& mapCloud)
             }
         }
     }
-
     return true;
 }
 void MapBlock::setBlockOccupancy(const MapCloudT& mapCloud)
@@ -224,11 +319,14 @@ void MapBlock::setBlockOccupancy(const MapCloudT& mapCloud)
     for(const MapPointT&pt: mapCloud.points)
     {
         TIndex index_ = getMapBlockIndexByXYZ(pt.x,pt.y,pt.z);
-        BasicBlock& bb = this->blockAt(index_);
-        bb.map_point_count++;
-        if(bb.map_point_count>=3)//TODO: 阈值可设置
+        if(index_[0]<map_size_x&&index_[1]<map_size_y&&index_[2]<map_size_z&&index_[0]>=0&&index_[1]>=0&&index_[2]>=0)
         {
-            bb.status|=bb.MAP_OCCUPIED;
+            BasicBlock& bb = this->blockAt(index_);
+            bb.map_point_count++;
+            if(bb.map_point_count>=3)//TODO: 阈值可设置
+            {
+                bb.status|=bb.MAP_OCCUPIED;
+            }
         }
     }
 }

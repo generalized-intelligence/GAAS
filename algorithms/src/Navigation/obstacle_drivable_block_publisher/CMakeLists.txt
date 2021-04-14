@@ -27,6 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   visualization_msgs
+  gaas_msgs
 )
 set(REQUIRED_LIBS
         ${OpenCV_LIBS}
@@ -160,8 +161,8 @@ include_directories(
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 
-#add_executable(drivable_block_generator_node src/drivable_block_generator_node.cpp)
-#target_link_libraries(drivable_block_generator_node ${REQUIRED_LIBS})
+add_executable(dynamic_block_generator src/dynamic_block_generator.cpp)
+target_link_libraries(dynamic_block_generator ${REQUIRED_LIBS})
 
 add_executable(offline_map_block_generator_debug src/offline_map_block_generator_debug.cpp)
 target_link_libraries(offline_map_block_generator_debug ${REQUIRED_LIBS})

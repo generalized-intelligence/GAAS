@@ -8,6 +8,7 @@
 #include "gaas_msgs/GAASPerceptionObstacleCluster.h"
 #include "gaas_msgs/GAASPerceptionObstacleClustersList.h"
 #include <ros/ros.h>
+#include <sensor_msgs/PointCloud2.h>
 #include <glog/logging.h>
 #include "Timer.h"
 
@@ -148,14 +149,9 @@ void publishPerceptionObstaclesList(const vector<LidarCloudT::Ptr>& clusters,con
         gaas_msgs::GAASPerceptionObstacleCluster new_cluster;
         new_cluster.obstacle_id = i;
         LidarCloudT::Ptr pCurrentCloud = clusters.at(i);
-        for(const PointT& pt:pCurrentCloud->points)
-        {
-            geometry_msgs::Point p;
-            p.x = pt.x;
-            p.y = pt.y;
-            p.z = pt.z;
-            new_cluster.points.push_back(p);
-        }
+        pcl::toROSMsg(*pCurrentCloud,new_cluster.cloud);
+        new_cluster.cloud.header.frame_id = "lidar";
+        new_cluster.cloud.header.stamp.fromNSec(original_msg->header.stamp * 1000ull);
         obstacles_list.obstacles.push_back(new_cluster);
     }
     obstacles_list.header.frame_id = "lidar";

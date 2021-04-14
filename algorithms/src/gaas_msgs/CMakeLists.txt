@@ -71,9 +71,11 @@ set(REQUIRED_LIBS
 ## Generate messages in the 'msg' folder
 add_message_files(
     FILES
-    GAASNavigationPath.msg
     GAASPerceptionObstacleCluster.msg
     GAASPerceptionObstacleClustersList.msg
+    GAASNavigationPath.msg
+    GAASNavigationDynamicBlockGrid.msg
+    GAASNavigationDynamicBlockMap.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -94,7 +96,7 @@ add_service_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
    DEPENDENCIES
-   geometry_msgs sensor_msgs visualization_msgs nav_msgs std_msgs gaas_msgs
+   geometry_msgs sensor_msgs visualization_msgs nav_msgs std_msgs
 )
 
 ################################################
