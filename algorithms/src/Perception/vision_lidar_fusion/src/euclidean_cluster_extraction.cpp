@@ -92,7 +92,7 @@ void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::P
         out->height = 1;
         out->width = out->size();
         output.push_back (out);
-        LOG(INFO)<<"[EuclideanClusterExtraction]    cloud size:"<<out->size()<<endl;
+        //LOG(INFO)<<"[EuclideanClusterExtraction]    cloud size:"<<out->size()<<endl;
     }
     LOG(INFO)<<"[EuclideanClusterExtraction] clusters count:"<<cluster_indices.size()<<endl;
     seg_timer.watch("[EuclideanClusterExtraction] generate cluster clouds finished.");

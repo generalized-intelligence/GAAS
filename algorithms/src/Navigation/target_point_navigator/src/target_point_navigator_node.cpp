@@ -93,7 +93,7 @@ public:
                         controller_command.pose.position.x = ct_point.x;
                         controller_command.pose.position.y = ct_point.y;
                         controller_command.pose.position.z = ct_point.z;
-                        while(!finished_current(controller_command)&&ros::ok())
+                        while(!finished_current(controller_command,srv.response.path.path_nodes.size()==2)&&ros::ok())
                         {
                             targetPositionPublisher.publish(controller_command);
                             LOG(INFO)<<"Controller command published! Point:"<<ct_point.x<<";"<<ct_point.y<<";"<<ct_point.z<<endl;
@@ -154,13 +154,16 @@ private:
         }
         return false;
     }
-    bool finished_current(const geometry_msgs::PoseStamped& p2)
+    bool finished_current(const geometry_msgs::PoseStamped& p2,bool isLast = true)
     {
+        const double thres_last = 0.2;
+        const double thres_path = 0.6;
+        double THRES = isLast?thres_last:thres_path;
         currentPoseMutex.lock();
         auto pt = current_point;
         currentPoseMutex.unlock();
         double dist = sqrt(pow(p2.pose.position.x-pt.point.x,2)+pow(p2.pose.position.y-pt.point.y,2)+pow(p2.pose.position.z-pt.point.z,2));
-        if(dist<0.2)
+        if(dist<THRES)
         {
             return true;
         }
