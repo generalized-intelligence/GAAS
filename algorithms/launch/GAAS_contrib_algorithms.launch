@@ -5,4 +5,5 @@
   <include file="$(find px4_mavros_controller)/launch/px4_mavros_controller.launch"/>
   <include file="$(find global_map_planner)/launch/global_astar_planner_node.launch"/>
   <include file="$(find target_point_navigator)/launch/target_point_navigator.launch"/>
+  <include file="$(find obstacle_and_drivable_block_publisher)/launch/dynamic_map_block_generator.launch"/>
 </launch>

@@ -74,8 +74,12 @@ add_message_files(
     GAASPerceptionObstacleCluster.msg
     GAASPerceptionObstacleClustersList.msg
     GAASNavigationPath.msg
+    #dynamic
     GAASNavigationDynamicBlockGrid.msg
     GAASNavigationDynamicBlockMap.msg
+    #const
+    GAASNavigationMapBlockGrid.msg
+    GAASNavigationBlockMap.msg
 )
 
 ## Generate services in the 'srv' folder

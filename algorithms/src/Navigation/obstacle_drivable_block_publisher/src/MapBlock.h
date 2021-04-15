@@ -5,8 +5,8 @@
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
 
-#include "gaas_msgs/GAASNavigationDynamicBlockGrid.h"
-#include "gaas_msgs/GAASNavigationDynamicBlockMap.h"
+#include "gaas_msgs/GAASNavigationMapBlockGrid.h"
+#include "gaas_msgs/GAASNavigationBlockMap.h"
 #include <glog/logging.h>
 
 struct BasicBlock;
@@ -19,9 +19,11 @@ struct BasicBlock
 
     uint status=0;
     int map_point_count = 0;
-    static const uint MAP_OCCUPIED= 1;
-    static const uint PERCEPTION_OCCUPIED = 2;
-    static const uint STATION_OCCUPIED = 4;
+
+    //check typedefs.h!
+//    static const uint MAP_OCCUPIED= 1;
+//    static const uint PERCEPTION_OCCUPIED = 2;
+//    static const uint STATION_OCCUPIED = 4;
     inline bool isOccupied()
     {
         return status!=0;
@@ -42,7 +44,7 @@ struct BasicBlock
         mk.scale.z = grid_size;
 
         mk.color.a = this->status*0.6;
-        mk.color.r = (this->status&this->MAP_OCCUPIED) *0.5 + (this->status&PERCEPTION_OCCUPIED)*0.25 + this->cx*0.05 + 0.1;
+        mk.color.r = (this->status&MAP_OCCUPIED) *0.5 + (this->status&PERCEPTION_OCCUPIED)*0.25 + this->cx*0.05 + 0.1;
         mk.color.g = (this->status&PERCEPTION_OCCUPIED)*0.25 + this->cy*0.05 + 0.1;
         mk.color.b = 0.2+this->cz*0.2;
         if(this->status)
@@ -50,14 +52,14 @@ struct BasicBlock
             mks.markers.push_back(mk);
         }
     }
-    void toROSMsg(gaas_msgs::GAASNavigationDynamicBlockGrid& grid)
+    void toROSMsg(gaas_msgs::GAASNavigationMapBlockGrid& grid)
     {
         grid.center.x = cx;
         grid.center.y = cy;
         grid.center.z = cz;
         grid.occupancy_status = status;
     }
-    void fromROSMsg(const gaas_msgs::GAASNavigationDynamicBlockGrid& grid)
+    void fromROSMsg(const gaas_msgs::GAASNavigationMapBlockGrid& grid)
     {
         this->cx = grid.center.x;
         this->cy = grid.center.y;
@@ -84,9 +86,9 @@ public:
     MapCloudT::Ptr pMapCloud;
 
     //serializing.
-    std::shared_ptr<gaas_msgs::GAASNavigationDynamicBlockMap> toROSMsg(const std_msgs::Header& header)
+    std::shared_ptr<gaas_msgs::GAASNavigationBlockMap> toROSMsg(const std_msgs::Header& header)
     {
-        std::shared_ptr<gaas_msgs::GAASNavigationDynamicBlockMap> retval(new gaas_msgs::GAASNavigationDynamicBlockMap);
+        std::shared_ptr<gaas_msgs::GAASNavigationBlockMap> retval(new gaas_msgs::GAASNavigationBlockMap);
         retval->gridsize = this->grid_size;
 
         retval->x_count = map_size_x;
@@ -109,7 +111,7 @@ public:
         retval->header = header;
         return retval;
     }
-    static std::shared_ptr<MapBlock> fromROSMsg(const gaas_msgs::GAASNavigationDynamicBlockMap& map_msg)
+    static std::shared_ptr<MapBlock> fromROSMsg(const gaas_msgs::GAASNavigationBlockMap& map_msg)
     {
         std::shared_ptr<MapBlock> block(new MapBlock);
         block->grid_size = map_msg.gridsize;
@@ -325,7 +327,7 @@ void MapBlock::setBlockOccupancy(const MapCloudT& mapCloud)
             bb.map_point_count++;
             if(bb.map_point_count>=3)//TODO: 阈值可设置
             {
-                bb.status|=bb.MAP_OCCUPIED;
+                bb.status|=MAP_OCCUPIED;
             }
         }
     }

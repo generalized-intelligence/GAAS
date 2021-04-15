@@ -179,6 +179,14 @@ Visualization Manager:
         visualize_astar_path: true
       Queue Size: 100
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /gaas/visualization/navigation/dynamic_block_map
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -222,10 +230,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9047961235046387
+      Pitch: 0.7047961354255676
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 2.0872626304626465
+      Yaw: 2.247258424758911
     Saved: ~
 Window Geometry:
   Displays:
