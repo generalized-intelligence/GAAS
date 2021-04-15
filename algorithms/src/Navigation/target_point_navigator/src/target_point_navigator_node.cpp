@@ -100,6 +100,10 @@ public:
                             ros::spinOnce();
                             usleep(20000);
                         }
+                        if(srv.response.path.path_nodes.size()==2)//last node
+                        {
+                            break;
+                        }
                     }
                     else
                     {
@@ -126,7 +130,7 @@ public:
             ros::spinOnce();
             usleep(20000);//20 ms.
         }
-        LOG(INFO)<<"Dist < 0.2m, finished!"<<endl;
+        LOG(INFO)<<"Dist < 0.4m, finished!"<<endl;
         return true;
     }
     void currentPoseCallback(const geometry_msgs::PoseStamped::ConstPtr &pose_msg)
@@ -148,7 +152,7 @@ private:
         auto pt = current_point;
         currentPoseMutex.unlock();
         double dist = sqrt(pow(target_point.point.x-pt.point.x,2)+pow(target_point.point.y-pt.point.y,2)+pow(target_point.point.z-pt.point.z,2));
-        if(dist<0.2)
+        if(dist<0.4)
         {
             return true;
         }
@@ -156,7 +160,7 @@ private:
     }
     bool finished_current(const geometry_msgs::PoseStamped& p2,bool isLast = true)
     {
-        const double thres_last = 0.2;
+        const double thres_last = 0.2;//make sure this is smaller than the thres in finishedWholePath!!!!!
         const double thres_path = 0.6;
         double THRES = isLast?thres_last:thres_path;
         currentPoseMutex.lock();
