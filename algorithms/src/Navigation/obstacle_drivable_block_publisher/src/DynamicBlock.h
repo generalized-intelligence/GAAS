@@ -1,11 +1,12 @@
 #ifndef DYNAMIC_BLOCK_GRID_MAP_H
 #define DYNAMIC_BLOCK_GRID_MAP_H
 #include "MapBlock.h"
-
+#include "Timer.h"
 #include "gaas_msgs/GAASNavigationDynamicBlockGrid.h"
 #include "gaas_msgs/GAASNavigationDynamicBlockMap.h"
 #include <visualization_msgs/Marker.h>
 #include <visualization_msgs/MarkerArray.h>
+#include <unordered_map>
 
 struct DynamicGrid;
 class DynamicMap;
@@ -23,6 +24,7 @@ struct DynamicGrid
     double cz;
 
     int obstacle_point_count = 0;
+    float tsdf = -1;    //invalid tsdf:-1.这个值只从外边设置，不使用就用-1填死。
     uint32_t status = 0;
     void toROSMsg(gaas_msgs::GAASNavigationDynamicBlockGrid& grid_msg)
     {
@@ -31,9 +33,14 @@ struct DynamicGrid
         grid_msg.cz = this->cz;
         grid_msg.obstacle_point_count = obstacle_point_count;
         grid_msg.status = status;
+        grid_msg.tsdf = tsdf;
     }
     inline void toROSMarker(visualization_msgs::MarkerArray& mks,double grid_size, const ros::Time& stamp)//把自己放到marker array里面去.
     {
+        if(this->tsdf>0.1)//只把障碍本体放进去，周围的不做可视化
+        {
+            return;
+        }
         visualization_msgs::Marker mk;
         mk.header.frame_id = "map";
         mk.header.stamp = stamp;
@@ -67,7 +74,11 @@ public:
     int map_size_x = 0,map_size_y = 0,map_size_z = 0;
     int xc,yc,zc;//(0,0,0)所占据的MapBlock block_map index.
     double x_min,y_min,z_min,x_max,y_max,z_max;
-    std::map<int,DynamicGrid> indexToGrid;
+
+    typedef std::unordered_map<int,DynamicGrid> MappingT;
+    //typedef std::map<int,DynamicGrid> MappingT;
+
+    MappingT indexToGrid;
 
     void initDynamicMapBasicInfoWithMapBlock(const MapBlock& mb)//只初始化尺寸和基本属性，不记录网格.
     {
@@ -141,7 +152,8 @@ public:
             g.map_index_y = pt_tindex[1];
             g.map_index_z = pt_tindex[2];
             g.obstacle_point_count = 1;
-            g.status|=occupied_status;//TODO:Only when thres = 1.
+            g.tsdf = 0;
+            g.status = 0;//tsdf生成的点不认为被占用，交给下一个逻辑处理.
             indexToGrid[pt_index] = g;
         }
     }
@@ -152,8 +164,69 @@ public:
             addOrUpdateNewBlockByPointPosition(pt.x,pt.y,pt.z);
         }
     }
-    void doConvolutionExpansionToBlock(const TIndex& tIndex)
+    void doCalcTSDF(const int max_tsdf_val)
     {
+        ScopeTimer t("doCalcTSDF");
+        //初始化查找表
+        initDXYZToDist();
+        //暂存集合
+        auto prev_grids = this->indexToGrid;
+        //遍历算tsdf
+        t.watch("finished mapping copy:");
+        LOG(INFO)<<"calc tsdf for:"<<prev_grids.size()<<" grids."<<endl;
+        for(const auto& kv:prev_grids)
+        {
+            TIndex center_xyzindex = indexToTIndex(kv.first);
+            for(int dx = -max_tsdf_val;dx<=max_tsdf_val;dx++)
+            {
+                for(int dy = -max_tsdf_val;dy<=max_tsdf_val;dy++)
+                {
+                    for(int dz = -max_tsdf_val;dz<=max_tsdf_val;dz++)
+                    {
+                        if(dx == 0&&dy==0&&dz ==0)
+                        {
+                            continue;
+                        }
+                        TIndex newtindex{center_xyzindex[0]+dx,center_xyzindex[1]+dy,center_xyzindex[2]+dz};
+                        int index_new = indexFromTIndex(newtindex);
+                        //float dist = calcLongDistByIndex(center_xyzindex,newtindex);
+                        float dist = calcTSDFDistBydxyz(dx,dy,dz);
+                        if(this->indexToGrid.count(index_new))
+                        {//如果存在 检查并更新tsdf.
+                            if(indexToGrid[index_new].tsdf>dist)
+                            {
+                                indexToGrid[index_new].tsdf = dist;
+                            }
+                        }
+                        else
+                        {
+                            DynamicGrid g;
+                            g.cx = this->x_min +  newtindex[0]*grid_size+grid_size*0.5;
+                            g.cy = this->y_min +  newtindex[1]*grid_size+grid_size*0.5;
+                            g.cz = this->z_min +  newtindex[2]*grid_size+grid_size*0.5;
+                            g.map_index_x = newtindex[0];
+                            g.map_index_y = newtindex[1];
+                            g.map_index_z = newtindex[2];
+                            g.obstacle_point_count = 0;
+                            g.tsdf = dist;
+
+                            this->indexToGrid[index_new] = g;
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+    void doConvolutionExpansion(const vector<TIndex>& kernel_shape)
+    {
+        //暂存县有障碍物的index集合
+        //对每个暂存集合元素做扩张.
+    }
+    void doConvolutionExpansionToBlock(const TIndex& tIndex,const vector<TIndex>& kernel_shape)
+    {
+
     }
     bool checkGridValid(int map_ix,int map_iy,int map_iz)//根据地图grid index查询网格在dynamicMap可用状态.
     {
@@ -210,6 +283,33 @@ public:
             }
         }
 
+    }
+private:
+    inline float calcLongDistByIndex(const TIndex& i1,const TIndex& i2)//TODO:消除和AStarLib.h的重复代码.
+    {
+        float x2 = pow(i1[0]-i2[0],2);
+        float y2 = pow(i1[1]-i2[1],2);
+        float z2 = pow(i1[2]-i2[2],2);
+        return sqrt(x2+y2+z2);
+    }
+    inline void initDXYZToDist()
+    {
+        LOG(INFO)<<"in initDXYZToDist()"<<endl;
+        for(int x = 0;x<9;x++)
+        {
+            for(int y = 0;y<9;y++)
+            {
+                for(int z = 0;z<9;z++)
+                {
+                    dxyzToDist[x][y][z] = calcLongDistByIndex(TIndex{x-4,y-4,z-4},TIndex{0,0,0});
+                }
+            }
+        }
+    }
+    float dxyzToDist[9][9][9];
+    inline float calcTSDFDistBydxyz(int dx,int dy,int dz)
+    {
+        return dxyzToDist[dx+4][dy+4][dz+4];
     }
 
 

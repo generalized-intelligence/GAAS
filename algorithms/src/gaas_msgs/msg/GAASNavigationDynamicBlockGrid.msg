@@ -8,3 +8,4 @@ float64 cz
 
 int32 obstacle_point_count
 uint32 status
+float32 tsdf

@@ -142,7 +142,7 @@ public:
         transformMat(2,3) = transformStamped.transform.translation.z;
 
         LidarCloudT::Ptr total_perception_clusters_map_coord(new LidarCloudT);
-
+        //范围约束在body坐标系 xyz +- PERCEPTION_OBSTACLE_RANGE内部.
         pcl::ConditionAnd<LidarPointT>::Ptr range_cond (new pcl::ConditionAnd<LidarPointT>());
         range_cond->addComparison (pcl::FieldComparison<LidarPointT>::ConstPtr (new
                                                                                 pcl::FieldComparison<LidarPointT> ("x", pcl::ComparisonOps::GT, -PERCEPTION_OBSTACLE_RANGE)));
@@ -197,6 +197,8 @@ public:
         dynamic_map.addNewPointCloud(*total_perception_clusters_map_coord);
         t_.watch("till Occupancy set:");
         //dynamic_block.doConvolutionExpansion();//扩张 TODO:这个函数没实现.
+        //改为用tsdf代替扩张卷积.
+        dynamic_map.doCalcTSDF(4); //latency 50ms; total latency: max(perception,localization)(about 100ms) + doTSDF(about 50ms).
         //publish dynamic blocks.
         std::shared_ptr<gaas_msgs::GAASNavigationDynamicBlockMap> p_dynamic_block_map_msg = dynamic_map.toROSMsg(clusters->header);
         t_.watch("till msg generated:");
