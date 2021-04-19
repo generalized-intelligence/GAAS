@@ -187,18 +187,10 @@ int main(int argc,char** argv)
     //    tpn.runTargetPointNavigator(0,30,1);//TODO:重新建图解决这个塔高处看不见的问题.
     while(ros::ok())
     {
-        //TODO:解决低空一直规划贴地的问题，不允许贴地.
-//        tpn.runTargetPointNavigator(0,30,1);//用感知解决塔看不见的问题。
-//        tpn.runTargetPointNavigator(0,0,3);
-//        tpn.runTargetPointNavigator(0,-12,3);
-
         tpn.runTargetPointNavigator(0,0,3);
         tpn.runTargetPointNavigator(0,-12,3);
         tpn.runTargetPointNavigator(0,-12,4);
-        tpn.runTargetPointNavigator(0,8,4);//用感知解决塔看不见的问题。
-
-        //tpn.runTargetPointNavigator(0,0,2);
-        //tpn.runTargetPointNavigator(0,-12,2);
+        tpn.runTargetPointNavigator(0,8,4);//用感知解决塔的上部建图时看不见的问题。
     }
     return 0;
 }

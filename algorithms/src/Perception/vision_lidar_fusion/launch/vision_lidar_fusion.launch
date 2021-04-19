@@ -2,7 +2,7 @@
 <launch>
     <!-- vision lidar fusion launch script -->
     <param name="euclidean_cluster_downsampling_size" type="double" value="0.1"/>
-    <param name="min_cluster_size" type="int" value="100"/>
+    <param name="min_cluster_size" type="int" value="25"/>
     <param name="max_cluster_size" type="int" value="200000"/>
     <param name="cluster_tolerance" type="double" value="0.25"/>
     <node name="vision_lidar_fusion_node" pkg="vision_lidar_fusion" type="vision_lidar_fusion_node" output="screen"> <!--launch-prefix="gdb \-\-args" -->
