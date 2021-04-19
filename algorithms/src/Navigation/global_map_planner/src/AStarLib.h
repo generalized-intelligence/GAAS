@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "../../obstacle_drivable_block_publisher/src/MapBlock.h"
+#include "../../obstacle_drivable_block_publisher/src/DynamicBlock.h"
 #include <glog/logging.h>
 
 class AStarCostMap;
@@ -27,8 +28,8 @@ public:
     uint16_t obstacle_status=status_free;//是否有障碍物.
     static const int status_free = 0;
     static const int status_occupied = 1;
-    static const int status_tsdf_danger = 2;
-    static const int MAX_TSDF_VAL = 5;
+    static const int status_tsdf_danger = TSDF_DANGER;
+    static const int MAX_TSDF_VAL = 4;//适应感知，改成4，原来是5.
 
     float TSDF=MAX_TSDF_VAL;//最近障碍物距离.0-MAX_TSDF_VAL,有障碍物为0;最近障碍在MAX_TSDF_VAL m外为MAX_TSDF_VAL.
 };
@@ -47,6 +48,7 @@ public:
     //之前的方向和现在的3d位置 一起编码进空间里.因此一共是4维, x,y,z,prev_velocity_direction.
     //根据这四个维度进行唯一查找.
     Ptr prev_node;//有向无环图,不必考虑循环引用.
+
     ~PathNode()
     {
         //LOG(INFO)<<"drop ptr"<<endl;
@@ -93,6 +95,7 @@ public:
     vector<AStarCostMapGrid> map_nodes_const;//不变量
     PathNodePtrHeap openList;
     MapBlock::Ptr original_map;
+    std::shared_ptr<DynamicMap> p_dynamic_map=nullptr;
 
     PathNode::Ptr generatePathNode(int x,int y,int z)//设置新PathNode;PathNode的grid双向指针设计好.
     {
@@ -103,6 +106,10 @@ public:
         newNode->pGrid->pNode = newNode.get();
 
         return newNode;
+    }
+    void setNewDynamicMap(std::shared_ptr<DynamicMap> pNewDynamicMap)
+    {
+        this->p_dynamic_map = pNewDynamicMap;
     }
     bool checkXYZLegal(int x,int y,int z)
     {
@@ -134,7 +141,12 @@ public:
                     if(checkXYZLegal(cx,cy,cz)&&map_nodes_const.at(cx*map_size_y*map_size_z+cy*map_size_z+cz).pNode==nullptr)
                     {
                         auto mapConstGrid = map_nodes_const.at(cx*map_size_y*map_size_z+cy*map_size_z+cz);
-                        if(mapConstGrid.pNode == nullptr&&mapConstGrid.obstacle_status == mapConstGrid.status_free)
+                        if(mapConstGrid.pNode == nullptr&&mapConstGrid.obstacle_status == mapConstGrid.status_free &&
+                                (     !(p_dynamic_map->indexToGrid.count(cx*map_size_y*map_size_z+cy*map_size_z+cz)&&
+                                           (p_dynamic_map->indexToGrid.at(cx*map_size_y*map_size_z+cy*map_size_z+cz).status!=0)//不存在感知模块看到的障碍节点.
+                                       )
+                                )
+                          )
                         {
                             auto pNewNode = generatePathNode(cx,cy,cz);
                             pNewNode->prev_node = pCurrent;
@@ -148,9 +160,30 @@ public:
     }
     float calcCostOfPathAndNewAlternativeNode(PathNode::Ptr prev,PathNode::Ptr alternative,const TIndex& targetIndex)
     {
-
+        float current_tsdf_value = 0;
+        if(p_dynamic_map->indexToGrid.count(p_dynamic_map->indexFromTIndex(targetIndex)))//感知地图存在这个点。
+        {
+            float current_tsdf_value = std::min(alternative->pGrid->TSDF,
+                                                p_dynamic_map->indexToGrid.at(p_dynamic_map->indexFromTIndex(targetIndex)).tsdf
+                                                );
+        }
+        else
+        {
+            float current_tsdf_value = alternative->pGrid->TSDF;
+        }
         float heuristic_cost_euclidean = calcLongDistByIndex(alternative->current_block_index,targetIndex);
-        float current_cost_tsdf = 0.4*(alternative->pGrid->MAX_TSDF_VAL - alternative->pGrid->TSDF);
+        float heuristic_cost_euclidean_extra = 0;
+        if(prev->current_block_index[2]!=alternative->current_block_index[2]&&prev->current_block_index[2]>=3)//非低空，高度变化
+        {
+            heuristic_cost_euclidean_extra=0.4;//惩罚高空起高度,因为激光雷达有死角.
+        }
+        else if(prev->current_block_index[2]!=alternative->current_block_index[2]&&prev->current_block_index[2]>=3)//低空，高度不变
+        {
+            heuristic_cost_euclidean_extra=0.5;//惩罚低空贴地.
+        }
+        heuristic_cost_euclidean += heuristic_cost_euclidean_extra;
+        //float current_cost_tsdf = 0.4*(alternative->pGrid->MAX_TSDF_VAL - current_tsdf_value);//TODO:尝试这个参数是否应该调大.
+        float current_cost_tsdf = 1.2*(alternative->pGrid->MAX_TSDF_VAL - current_tsdf_value);//0.4可以,但是看着比较危险.
         float cost_current_step = calcShortDistByIndex(prev->current_block_index,alternative->current_block_index)+prev->toNodeCost+current_cost_tsdf;//如果经过currentNode就必须考虑这个tsdf.
 
         float final_cost = cost_current_step+heuristic_cost_euclidean;
@@ -176,6 +209,9 @@ public:
         if(this->map_nodes_const.at(xi*map_size_y*map_size_z+yi*map_size_z+zi).obstacle_status!=AStarCostMapGrid::status_free
                 ||
                 this->map_nodes_const.at(xf*map_size_y*map_size_z+yf*map_size_z+zf).obstacle_status!=AStarCostMapGrid::status_free
+                ||
+                    (this->p_dynamic_map->indexToGrid.count(xf*map_size_y*map_size_z+yf*map_size_z+zf)&&
+                     this->p_dynamic_map->indexToGrid.at(xf*map_size_y*map_size_z+yf*map_size_z+zf).status!=AStarCostMapGrid::status_free)//检查感知模块是否认为终点被占据.
                 )
         {
             LOG(ERROR)<<"ERROR:target or initial point occupied!"<<endl;
@@ -297,7 +333,7 @@ public:
                                 neighbor_node.TSDF = dist;//更新邻居的tsdf.
                             }
                             //if(neighbor_node.TSDF <=1.8)//max(1.414,1.732)
-                            if(neighbor_node.TSDF <=1)
+                            if(neighbor_node.TSDF <=1) //TSDF设置危险格的逻辑。
                             {
                                 node.obstacle_status |= node.status_tsdf_danger;
                             }
@@ -326,6 +362,11 @@ public:
         }
         //计算类似tsdf的每个block到最近有障碍物block的距离.
 
+        //init dynamic_map_pointer.
+        this->p_dynamic_map = std::shared_ptr<DynamicMap>(new DynamicMap);//保证永远不是空指针。
+        this->p_dynamic_map->map_size_x = mapBlock->map_size_x;
+        this->p_dynamic_map->map_size_y = mapBlock->map_size_y;
+        this->p_dynamic_map->map_size_z = mapBlock->map_size_z;
     }
     //void path_prone()//优化路径，根据记录的"tsdf" 计算是否能避免一些绕路过程.TODO.
 

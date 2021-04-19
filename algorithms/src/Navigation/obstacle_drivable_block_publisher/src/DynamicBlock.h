@@ -11,6 +11,9 @@
 struct DynamicGrid;
 class DynamicMap;
 
+
+const float DIST_DANGER_THRES = 1.8;//因为感知模块在运动中有延迟和畸变，所以安全阈值大一点.
+
 struct DynamicGrid
 {
     //map index.
@@ -37,10 +40,6 @@ struct DynamicGrid
     }
     inline void toROSMarker(visualization_msgs::MarkerArray& mks,double grid_size, const ros::Time& stamp)//把自己放到marker array里面去.
     {
-        if(this->tsdf>0.1)//只把障碍本体放进去，周围的不做可视化
-        {
-            return;
-        }
         visualization_msgs::Marker mk;
         mk.header.frame_id = "map";
         mk.header.stamp = stamp;
@@ -55,6 +54,10 @@ struct DynamicGrid
         mk.scale.z = grid_size;
 
         mk.color.a = this->status*0.6;
+//        if(this->tsdf>DIST_DANGER_THRES)不影响安全但有tsdf的点
+//        {
+//            mk.color.a = 0.001;//透明大一些，不影响什么。
+//        }
         mk.color.r = (this->status&MAP_OCCUPIED) *0.5 + (this->status&PERCEPTION_OCCUPIED)*0.25 + this->cx*0.05 + 0.1;
         mk.color.g = (this->status&PERCEPTION_OCCUPIED)*0.25 + this->cy*0.05 + 0.1;
         mk.color.b = 0.2+this->cz*0.2;
@@ -79,6 +82,8 @@ public:
     //typedef std::map<int,DynamicGrid> MappingT;
 
     MappingT indexToGrid;
+
+
 
     void initDynamicMapBasicInfoWithMapBlock(const MapBlock& mb)//只初始化尺寸和基本属性，不记录网格.
     {
@@ -187,15 +192,26 @@ public:
                         {
                             continue;
                         }
+
                         TIndex newtindex{center_xyzindex[0]+dx,center_xyzindex[1]+dy,center_xyzindex[2]+dz};
+                        if(!checkTIndexLegal(newtindex))
+                        {
+                            continue;//超出地图外，不添加tsdf节点.
+                        }
                         int index_new = indexFromTIndex(newtindex);
                         //float dist = calcLongDistByIndex(center_xyzindex,newtindex);
                         float dist = calcTSDFDistBydxyz(dx,dy,dz);
+
+
                         if(this->indexToGrid.count(index_new))
                         {//如果存在 检查并更新tsdf.
                             if(indexToGrid[index_new].tsdf>dist)
                             {
                                 indexToGrid[index_new].tsdf = dist;
+                                if(dist<DIST_DANGER_THRES)//TODO:与AStarLib逻辑重复，考虑合并。
+                                {
+                                    indexToGrid[index_new].status|=TSDF_DANGER;
+                                }
                             }
                         }
                         else
@@ -209,7 +225,10 @@ public:
                             g.map_index_z = newtindex[2];
                             g.obstacle_point_count = 0;
                             g.tsdf = dist;
-
+                            if(dist<DIST_DANGER_THRES)//TODO:与AStarLib逻辑重复，考虑合并。
+                            {
+                                g.status|=TSDF_DANGER;
+                            }
                             this->indexToGrid[index_new] = g;
                         }
                     }
@@ -264,9 +283,41 @@ public:
         }
         return pMap;
     }
-    void fromROSMsg()
+    void fromROSMsg(const gaas_msgs::GAASNavigationDynamicBlockMap& map_msg)
     {
-        ;
+        this->indexToGrid.clear();//clear all.
+        grid_size = map_msg.grid_size;
+        map_size_x = map_msg.map_size_x;
+        map_size_y = map_msg.map_size_y;
+        map_size_z = map_msg.map_size_z;
+        xc = map_msg.xc;
+        yc = map_msg.yc;
+        zc = map_msg.zc;
+        x_min = map_msg.x_min;
+        x_max = map_msg.x_max;
+
+        y_min = map_msg.y_min;
+        y_max = map_msg.y_max;
+
+        z_min = map_msg.z_min;
+        z_max = map_msg.z_max;
+        for(auto& obj:map_msg.map_grids)
+        {
+            //填充kv pairs.
+            DynamicGrid g;
+            g.cx = obj.cx;
+            g.cy = obj.cy;
+            g.cz = obj.cz;
+
+            g.map_index_x = obj.map_index_x;
+            g.map_index_y = obj.map_index_y;
+            g.map_index_z = obj.map_index_z;
+            g.obstacle_point_count = obj.obstacle_point_count;
+            g.status = obj.status;
+            g.tsdf = obj.tsdf;
+            int index = this->indexFromTIndex(TIndex{g.map_index_x,g.map_index_y,g.map_index_z});
+            this->indexToGrid[index] = g;
+        }
     }
     void toROSMarkers(visualization_msgs::MarkerArray& mks)
     {
@@ -275,7 +326,7 @@ public:
         for(auto& kv:this->indexToGrid)
         {
             DynamicGrid& g = kv.second;
-            if(g.status)
+            if(g.status&&g.tsdf<0.4)
             {
                 g.toROSMarker(mks,grid_size,stamp);//TODO:检查timestamp设置策略.
                 mks.markers.back().id = count;

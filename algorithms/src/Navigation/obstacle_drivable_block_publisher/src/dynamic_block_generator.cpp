@@ -198,7 +198,9 @@ public:
         t_.watch("till Occupancy set:");
         //dynamic_block.doConvolutionExpansion();//扩张 TODO:这个函数没实现.
         //改为用tsdf代替扩张卷积.
+        //TSDF max value=4 与astarlib保持一致.
         dynamic_map.doCalcTSDF(4); //latency 50ms; total latency: max(perception,localization)(about 100ms) + doTSDF(about 50ms).
+
         //publish dynamic blocks.
         std::shared_ptr<gaas_msgs::GAASNavigationDynamicBlockMap> p_dynamic_block_map_msg = dynamic_map.toROSMsg(clusters->header);
         t_.watch("till msg generated:");

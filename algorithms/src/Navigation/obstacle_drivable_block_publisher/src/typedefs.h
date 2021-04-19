@@ -22,5 +22,6 @@ typedef pcl::PointCloud<MapPointT> MapCloudT;
 static const uint MAP_OCCUPIED= 1;
 static const uint PERCEPTION_OCCUPIED = 2;
 static const uint STATION_OCCUPIED = 4;
+static const uint TSDF_DANGER = 8;
 
 #endif

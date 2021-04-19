@@ -25,6 +25,8 @@
 
 #include "gaas_msgs/GAASNavigationPath.h"
 #include "gaas_msgs/GAASGetAStarPath.h"
+#include "gaas_msgs/GAASNavigationDynamicBlockGrid.h"
+#include "gaas_msgs/GAASNavigationDynamicBlockMap.h"
 
 class AStarPlannerNode
 {
@@ -36,6 +38,11 @@ public:
     int path_id=0;
     ros::ServiceServer service_server;
     std::shared_ptr<ros::Publisher> pMapPub,pPathPub;
+
+    ros::Subscriber dynamic_map_subscriber;
+    std::shared_ptr<DynamicMap> pDynamicMap;
+    std::mutex dynamic_map_mutex;
+
     void initAStarPlannerNode(int argc,char** argv)
     {
         ros::init(argc,argv,"astar_planner_node");
@@ -44,6 +51,7 @@ public:
         *pMapPub = pNH->advertise<visualization_msgs::MarkerArray>("/gaas/visualization/navigation/map_blocks",1);
         pPathPub = std::shared_ptr<ros::Publisher>(new ros::Publisher);
         *pPathPub = pNH->advertise<visualization_msgs::Marker>("/gaas/visualization/navigation/astar_planned_path",1);
+        dynamic_map_subscriber = pNH->subscribe<gaas_msgs::GAASNavigationDynamicBlockMap>("/gaas/navigation/dynamic_block_map",1,&AStarPlannerNode::dynamicMapCallback,this);
         string map_path;
         if(!ros::param::get("map_path",map_path))
         {
@@ -67,6 +75,16 @@ public:
         this->service_server = this->pNH->advertiseService("/gaas/navigation/global_planner/astar_planning",&AStarPlannerNode::planningServiceCallback,this);
         ros::spin();
     }
+    void dynamicMapCallback(const gaas_msgs::GAASNavigationDynamicBlockMapConstPtr& dynamic_map_msg)
+    {
+        //3ms.
+        ScopeTimer t("AStarPlannerNode::dynamicMapCallback Timer()");
+        pDynamicMap = std::shared_ptr<DynamicMap>(new DynamicMap);
+        pDynamicMap->fromROSMsg(*dynamic_map_msg);//获取dynamic_map_block_generator的动态地图.
+        dynamic_map_mutex.lock();
+        this->ascm.setNewDynamicMap(pDynamicMap);//mutex set to avoid inconsistency.
+        dynamic_map_mutex.unlock();
+    }
     bool planningServiceCallback(gaas_msgs::GAASGetAStarPath::Request& request,gaas_msgs::GAASGetAStarPath::Response& response)
     {
         ScopeTimer t_("planningServiceCallback() timer");
@@ -82,7 +100,10 @@ public:
         ascm.original_map->getMapBlockIndexByXYZ(i_.x,i_.y,i_.z,ix,iy,iz);//map的初始位置
         ascm.original_map->getMapBlockIndexByXYZ(f_.x,f_.y,f_.z,fx,fy,fz);//map的目标
         t_.watch("before astar:");
+
+        dynamic_map_mutex.lock();//protect astar session.
         vector<TIndex> output_path = ascm.doAstar(ix,iy,iz,fx,fy,fz);
+        dynamic_map_mutex.unlock();
         t_.watch("after astar:");
         if(output_path.size()==0)
         {
