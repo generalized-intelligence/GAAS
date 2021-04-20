@@ -16,6 +16,8 @@ Extra modules of GAAS; Including some amazing lidar-based algorithms!
 
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_dynamic_objects_and_replanning.png)
 
+A video has been uploaded to show the whole pipeline. You may need to download this [video](https://github.com/cyanine-gi/GAAS_contrib_resources/blob/main/demos/gaas_contrib_test1_20210419_compressed.mp4?raw=true).
+
 **这个项目是 GAAS----一套无人机/飞行汽车全自主飞行框架的扩展模块.**
 
 ## 目录 Index
@@ -179,7 +181,9 @@ Checkout simulation/README.md to get more details of simulation env setup.
 
 ##### 7. Refactored px4 offboard commander --Done.
 
-##### 8.Interactive GUI target selector in HD-Map --TODO.
+##### 8. Dynamic Obstacles Generation and Replanning --Done.
+
+##### 9.Interactive GUI target selector in HD-Map --TODO.
 
 
 ---------------
