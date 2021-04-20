@@ -229,7 +229,7 @@ public:
         while(ros::ok()&&!set_mode_client.exists())
         {
             LOG(INFO)<<"Waiting for mavros_set_mode service."<<endl;
-            usleep(200000);
+            usleep(20000);//20ms.
         }
         waitForAll();//等待所有消息都收到一次.
         mavros_msgs::SetMode position_set_mode;
@@ -242,7 +242,20 @@ public:
         arm_cmd.request.value = true;
 
         //Failsafe:先进入POSCTL,这样如果里面OFFBOARD意外掉了是回到POSITION模式.
-        bool position_set_res = set_mode_client.call(position_set_mode);
+	position_set_mode.response.mode_sent = false;
+	bool position_set_res = false;
+	while(!position_set_mode.response.mode_sent&&ros::ok())
+	{
+            position_set_res = set_mode_client.call(position_set_mode);
+	    ros::spinOnce();
+            LOG(INFO)<<"set flight mode service result:"<<position_set_res<<endl;
+            LOG(INFO)<<"set flight mode service mode_sent:"<<(int)position_set_mode.response.mode_sent<<endl;
+	    if(!position_set_mode.response.mode_sent)
+	    {
+                LOG(WARNING)<<"set offboard mode failed; Will retry later."<<endl;
+	    }
+	    usleep(10000);//10ms
+	}
         if(current_state.mode!="OFFBOARD"&&current_state.mode!="POSCTL")//保证任何时候都能重新启动这个服务而不出问题.
         {
             if( position_set_res && position_set_mode.response.mode_sent)
