@@ -6,12 +6,15 @@ Extra modules of GAAS; Including some amazing lidar-based algorithms!
 
 **本项目包含一些 GAAS的扩展模块,包括一些基于激光雷达的优秀算法实现!**
 
+## Previews:
+
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_rviz_preview_20200401.png)
 
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_astar_planning_preview_20210409.png)
 
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_rqt_graph_20200401.png)
 
+![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_dynamic_obstacles_and_planning_20210420.png)
 
 **这个项目是 GAAS----一套无人机/飞行汽车全自主飞行框架的扩展模块.**
 
