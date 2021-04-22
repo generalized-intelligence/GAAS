@@ -9,7 +9,7 @@ add_compile_options(-std=c++11 -O3)
 ## is used, also find other catkin packages
 #set(CMAKE_BUILD_TYPE DEBUG)
 set(CMAKE_BUILD_TYPE RELEASE)
-if(${CMAKE_SYSTEM_PROCESSOR}=="x86_64")
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
     find_package(OpenCV 3.4.5 REQUIRED)
 else()
     set (OpenCV_DIR /home/gi/nvme/opencv-3.4.5/build)
