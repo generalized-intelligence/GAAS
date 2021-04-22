@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(px4_mavros_controller)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
+#add_compile_options(-std=c++11 -O0)
 add_compile_options(-std=c++11 -O3)
 
 ## Find catkin macros and libraries
@@ -9,7 +10,13 @@ add_compile_options(-std=c++11 -O3)
 ## is used, also find other catkin packages
 #set(CMAKE_BUILD_TYPE DEBUG)
 set(CMAKE_BUILD_TYPE RELEASE)
-find_package(OpenCV 3.4.5 REQUIRED)
+
+if(${CMAKE_SYSTEM_PROCESSOR}=="x86_64")
+    find_package(OpenCV 3.4.5 REQUIRED)
+else()
+    set (OpenCV_DIR /home/gi/nvme/opencv-3.4.5/build)
+endif()
+
 find_package(PCL 1.8 REQUIRED)
 #find_package(PCL REQUIRED)
 find_package(Glog REQUIRED)
