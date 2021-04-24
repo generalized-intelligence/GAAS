@@ -60,6 +60,12 @@ public:
         target_point.point.x = target_x;
         target_point.point.y = target_y;
         target_point.point.z = target_z;
+        bool failed = false;
+        bool service_avail = navigation_service_client.waitForExistence(ros::Duration(1.0));//wait for 1s before timeout.
+        if(!service_avail)
+        {
+            LOG(ERROR)<<"GlobalAStarPlanner service not avail! Failed."<<endl;
+        }
         while(!finishedWholePath()&&ros::ok())
         {
             //step<1> get target position in map coordinate.
@@ -74,7 +80,6 @@ public:
                 req.target_point = target_point;
             }
             //    step<2> call a* planning module srv for new path to target.
-            bool failed = false;
             ScopeTimer srv_timer("navigation_srv_calling");
             if (navigation_service_client.call(srv))
             {
@@ -93,12 +98,19 @@ public:
                         controller_command.pose.position.x = ct_point.x;
                         controller_command.pose.position.y = ct_point.y;
                         controller_command.pose.position.z = ct_point.z;
+                        int counter = 0;
                         while(!finished_current(controller_command,srv.response.path.path_nodes.size()==2)&&ros::ok())
                         {
                             targetPositionPublisher.publish(controller_command);
                             LOG(INFO)<<"Controller command published! Point:"<<ct_point.x<<";"<<ct_point.y<<";"<<ct_point.z<<endl;
                             ros::spinOnce();
-                            usleep(20000);
+                            usleep(20000);//20 ms.
+                            counter++;
+                            if(counter>3000);//slower than 1min/1grid
+                            {
+                                LOG(WARNING)<<"Warning target_point_navigator_node detected motion too slow; replaning."<<endl;
+                                break;
+                            }
                         }
                         if(srv.response.path.path_nodes.size()==2)//last node
                         {
@@ -185,12 +197,30 @@ int main(int argc,char** argv)
     tpn.initTargetPointNavigator(argc,argv);
     //    tpn.runTargetPointNavigator(0,0,1);
     //    tpn.runTargetPointNavigator(0,30,1);//TODO:重新建图解决这个塔高处看不见的问题.
+    bool result = false;
+
     while(ros::ok())
     {
-        tpn.runTargetPointNavigator(0,0,3);
-        tpn.runTargetPointNavigator(0,-12,3);
-        tpn.runTargetPointNavigator(0,-12,4);
-        tpn.runTargetPointNavigator(0,8,4);//用感知解决塔的上部建图时看不见的问题。
+        result = tpn.runTargetPointNavigator(0,0,3);
+        if(!result)
+        {
+            LOG(ERROR)<<"Path to target failed!"<<endl;
+        }
+        result = tpn.runTargetPointNavigator(0,-12,3);
+        if(!result)
+        {
+            LOG(ERROR)<<"Path to target failed!"<<endl;
+        }
+        result = tpn.runTargetPointNavigator(0,-12,4);
+        if(!result)
+        {
+            LOG(ERROR)<<"Path to target failed!"<<endl;
+        }
+        result = tpn.runTargetPointNavigator(0,8,4);//用感知解决塔的上部建图时看不见的问题。
+        if(!result)
+        {
+            LOG(ERROR)<<"Path to target failed!"<<endl;
+        }
     }
     return 0;
 }

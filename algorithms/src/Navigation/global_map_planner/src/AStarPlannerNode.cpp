@@ -81,9 +81,11 @@ public:
         ScopeTimer t("AStarPlannerNode::dynamicMapCallback Timer()");
         pDynamicMap = std::shared_ptr<DynamicMap>(new DynamicMap);
         pDynamicMap->fromROSMsg(*dynamic_map_msg);//获取dynamic_map_block_generator的动态地图.
+        LOG(INFO)<<"in GP:dynamicMapCallback(): acquiring lock..."<<endl;
         dynamic_map_mutex.lock();
         this->ascm.setNewDynamicMap(pDynamicMap);//mutex set to avoid inconsistency.
         dynamic_map_mutex.unlock();
+        LOG(INFO)<<"in GP:dynamicMapCallback(): lock released."<<endl;
     }
     bool planningServiceCallback(gaas_msgs::GAASGetAStarPath::Request& request,gaas_msgs::GAASGetAStarPath::Response& response)
     {
@@ -100,13 +102,15 @@ public:
         ascm.original_map->getMapBlockIndexByXYZ(i_.x,i_.y,i_.z,ix,iy,iz);//map的初始位置
         ascm.original_map->getMapBlockIndexByXYZ(f_.x,f_.y,f_.z,fx,fy,fz);//map的目标
         t_.watch("before astar:");
-
+        LOG(INFO)<<"in GlobalPlanner::planningServiceCallback(): acquiring lock..."<<endl;
         dynamic_map_mutex.lock();//protect astar session.
         vector<TIndex> output_path = ascm.doAstar(ix,iy,iz,fx,fy,fz);
         dynamic_map_mutex.unlock();
+        LOG(INFO)<<"in GlobalPlanner::planningServiceCallback(): lock released."<<endl;
         t_.watch("after astar:");
         if(output_path.size()==0)
         {
+            LOG(ERROR)<<"ERROR: in planningServiceCallback(): AStar algorithm failed!"<<endl;
             response.success=false;
         }
         else

@@ -183,7 +183,8 @@ public:
         }
         heuristic_cost_euclidean += heuristic_cost_euclidean_extra;
         //float current_cost_tsdf = 0.4*(alternative->pGrid->MAX_TSDF_VAL - current_tsdf_value);//TODO:尝试这个参数是否应该调大.
-        float current_cost_tsdf = 1.2*(alternative->pGrid->MAX_TSDF_VAL - current_tsdf_value);//0.4可以,但是看着比较危险.
+        //float current_cost_tsdf = 2.2*(alternative->pGrid->MAX_TSDF_VAL - current_tsdf_value);//0.4可以,但是看着比较危险.
+        float current_cost_tsdf = 4.4*(alternative->pGrid->MAX_TSDF_VAL - current_tsdf_value);//0.4可以,但是看着比较危险.
         float cost_current_step = calcShortDistByIndex(prev->current_block_index,alternative->current_block_index)+prev->toNodeCost+current_cost_tsdf;//如果经过currentNode就必须考虑这个tsdf.
 
         float final_cost = cost_current_step+heuristic_cost_euclidean;
@@ -206,15 +207,16 @@ public:
             openList.clear();
             return final_path;
         }
-        if(this->map_nodes_const.at(xi*map_size_y*map_size_z+yi*map_size_z+zi).obstacle_status!=AStarCostMapGrid::status_free
-                ||
+        if(
+	//		this->map_nodes_const.at(xi*map_size_y*map_size_z+yi*map_size_z+zi).obstacle_status!=AStarCostMapGrid::status_free
+        //        ||
                 this->map_nodes_const.at(xf*map_size_y*map_size_z+yf*map_size_z+zf).obstacle_status!=AStarCostMapGrid::status_free
                 ||
                     (this->p_dynamic_map->indexToGrid.count(xf*map_size_y*map_size_z+yf*map_size_z+zf)&&
                      this->p_dynamic_map->indexToGrid.at(xf*map_size_y*map_size_z+yf*map_size_z+zf).status!=AStarCostMapGrid::status_free)//检查感知模块是否认为终点被占据.
                 )
         {
-            LOG(ERROR)<<"ERROR:target or initial point occupied!"<<endl;
+            LOG(ERROR)<<"ERROR:target point occupied!"<<endl;
             openList.clear();
             return final_path;
         }
@@ -243,6 +245,16 @@ public:
             if(currMinCost->current_block_index==final_pos||openList.getSize()>=MAX_SIZE)
             {
                 flag_failed = openList.getSize()>=MAX_SIZE;
+                if(flag_failed)
+                {
+                    LOG(ERROR)<<"AStar failed due to overflow."<<endl;
+                }
+                break;
+            }
+            if(openList.getSize()==0&&currMinCost->current_block_index!=final_pos)
+            {
+                flag_failed = true;
+                LOG(ERROR)<<"AStar failed due to no path(empty openList)."<<endl;
                 break;
             }
             currMinCost->astar_status = currMinCost->state_close;
@@ -252,7 +264,7 @@ public:
 
         if(flag_failed)
         {
-            LOG(ERROR)<<"ERROR:AStar failed by heap overflow."<<endl;
+            LOG(ERROR)<<"ERROR:AStar failed by heap overflow or no valid path."<<endl;
             openList.clear();
             return final_path;
         }
