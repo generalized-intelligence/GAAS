@@ -319,8 +319,17 @@ public:
         LOG(INFO)<<"PX4 Mavros controller ready."<<endl;
         //Controller已经就位,可以根据请求进入循环.
 
-
-
+	//add initial height to avoid terrain obstacle caused astar no path error.
+        if(current_gaas_location.pose.position.z<=0.2)
+        {
+            geometry_msgs::PoseStamped takeoff_initial_pose;
+            takeoff_initial_pose.header.frame_id = "lidar";
+            takeoff_initial_pose.pose.position.x = 0;
+            takeoff_initial_pose.pose.position.y = 0;
+            takeoff_initial_pose.pose.position.z = 2.0;
+            takeoff_initial_pose.pose.orientation.w = 1.0;
+            set_target_local(takeoff_initial_pose);
+        }
     }
     void run_controller_node_loop()
     {
