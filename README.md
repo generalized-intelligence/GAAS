@@ -8,6 +8,8 @@ Extra modules of GAAS; Including some amazing lidar-based algorithms!
 
 ## Previews:
 
+**Get a fast preview without complex simulation configuration works by pulling [GAAS_contrib_resources](https://github.com/cyanine-gi/GAAS_contrib_resources)!**
+
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_rviz_preview_20200401.png)
 
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_astar_planning_preview_20210409.png)
