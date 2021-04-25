@@ -5,7 +5,7 @@
     <param name="min_cluster_size" type="int" value="25"/>
     <param name="max_cluster_size" type="int" value="200000"/>
     <param name="cluster_tolerance" type="double" value="0.25"/>
-    <node name="vision_lidar_fusion_node" pkg="vision_lidar_fusion" type="vision_lidar_fusion_node" output="screen"> <!--launch-prefix="gdb \-\-args" -->
+    <node name="vision_lidar_fusion_node" pkg="vision_lidar_fusion" type="vision_lidar_fusion_node" output="screen">
         <param name="visualize" type="bool" value="true"/>
         <param name="config_file_path" type="string" value="/home/gi/GAAS_contrib/config/camera1_lidar1.yaml"/>
     </node>
