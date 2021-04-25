@@ -275,14 +275,12 @@ else()
     include_directories(
             ${PCL_INCLUDE_DIRS}
             ${catkin_INCLUDE_DIRS}
-            ${CUDA_INCLUDE_DIRS}
             ndt_cpu/ndt_cpu_include
             ${EIGEN3_INCLUDE_DIRS}
     )
 
     add_library(ndt_cpu_lib ${ndt_cpu_srcs})
     set_target_properties(ndt_cpu_lib PROPERTIES LINKER_LANGUAGE CXX)
-    #set_target_properties(ndt_cpu_lib PROPERTIES LINKER_LANGUAGE CUDA)
     target_link_libraries(ndt_cpu_lib
         ${PCL_LIBRARIES}
         ${catkin_LIBRARIES}
