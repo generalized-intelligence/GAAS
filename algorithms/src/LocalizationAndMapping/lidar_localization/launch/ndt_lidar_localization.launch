@@ -6,7 +6,7 @@
    <!--param name="map_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/pcd_original.pcd"/ -->
    <param name="lidar_topic_name" type="string" value="/velodyne_points2"/>
    <param name="ndt_result_visualization" type="bool" value="$(arg do_visualization)" />
-   <param name="lidar_height_to_gps" type="double" value="-2.75"/>
+   <param name="lidar_height_to_gps" type="double" value="0.14"/>
    <param name="ndt_downsample_size" type="double" value="0.7"/>
 
    <node name="ndt_matching_node" pkg="lidar_localization" type="ndt_matching_node" output="screen"/>

@@ -5,7 +5,7 @@ T_cam_lidar: !!opencv-matrix
   cols: 4
   dt: f
   data: [0,-1,0,0,
-        0,0,-1,-0.54081,
+        0,0,-1,-0.14081,
         1,0,0,0,
         0,0,0,1]
 CameraK: !!opencv-matrix

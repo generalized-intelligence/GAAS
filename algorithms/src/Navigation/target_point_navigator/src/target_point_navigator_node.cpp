@@ -201,22 +201,22 @@ int main(int argc,char** argv)
 
     while(ros::ok())
     {
-        result = tpn.runTargetPointNavigator(0,0,3);
+        result = tpn.runTargetPointNavigator(0,0,6.5);
         if(!result)
         {
             LOG(ERROR)<<"Path to target failed!"<<endl;
         }
-        result = tpn.runTargetPointNavigator(0,-12,3);
+        result = tpn.runTargetPointNavigator(0,-12,6.5);
         if(!result)
         {
             LOG(ERROR)<<"Path to target failed!"<<endl;
         }
-        result = tpn.runTargetPointNavigator(0,-12,4);
+        result = tpn.runTargetPointNavigator(0,-12,7.5);
         if(!result)
         {
             LOG(ERROR)<<"Path to target failed!"<<endl;
         }
-        result = tpn.runTargetPointNavigator(0,8,4);//用感知解决塔的上部建图时看不见的问题。
+        result = tpn.runTargetPointNavigator(0,8,7.5);//用感知解决塔的上部建图时看不见的问题。
         if(!result)
         {
             LOG(ERROR)<<"Path to target failed!"<<endl;

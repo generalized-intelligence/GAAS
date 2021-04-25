@@ -147,7 +147,13 @@ void transformMapByInitialOdometryAndGPSCoordinate(const nav_msgs::Odometry& odo
 
     //Eigen::Matrix3d rot = quat.toRotationMatrix();
     //const Eigen::Matrix<Scalar, 3, 1> trans(0,0,0);
-    const Eigen::Vector3d trans(0,0,0);
+    double height_compensation = 0;
+    if(!ros::param::get("lidar_to_ground_height",height_compensation))
+    {
+        LOG(WARNING)<<"WARNING: lidar_to_ground_height not set in launch file!!!"<<endl;
+    }
+    LOG(INFO)<<"Using height_compensation:"<<height_compensation<<endl;
+    const Eigen::Vector3d trans(0,0,height_compensation);
 
     pcl::transformPointCloud(*pMap,*new_map,trans,rot_flu);
 
@@ -198,6 +204,7 @@ int main(int argc,char** argv)
     FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging("map_config_generator_node");
     ros::init(argc,argv,"map_config_generator_node");
+    ros::NodeHandle nh;
     LOG(INFO)<<"Start node map_config_generator"<<endl;
     run_all_pipeline();
 
