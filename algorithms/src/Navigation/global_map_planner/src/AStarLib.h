@@ -225,6 +225,10 @@ public:
         PathNode::Ptr initial = generatePathNode(xi,yi,zi);
         initial->cost = 0;
         this->openList.push_heap(initial);
+        if(getAlternatives(initial).size()==0)
+        {
+            LOG(WARNING)<<"Warning: initial point no valid neighbor!"<<endl;
+        }
         auto current_pos = std::array<int,3>{xi,yi,zi};
         auto final_pos = std::array<int,3>{xf,yf,zf};
         const auto terminalIndex = getIndex(xf,yf,zf);

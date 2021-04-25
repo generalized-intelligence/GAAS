@@ -7,6 +7,7 @@
    <param name="lidar_topic_name" type="string" value="/velodyne_points2"/>
    <param name="ndt_result_visualization" type="bool" value="$(arg do_visualization)" />
    <param name="lidar_height_to_gps" type="double" value="-2.75"/>
+   <param name="ndt_downsample_size" type="double" value="0.7"/>
 
    <node name="ndt_matching_node" pkg="lidar_localization" type="ndt_matching_node" output="screen"/>
    <node name="map_publiser_node" pkg="lidar_localization" type="map_publisher" output="screen"/>

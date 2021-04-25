@@ -7,7 +7,15 @@
 #include <pcl/io/ply_io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/registration/ndt.h>
-#include "../ndt_cpu/ndt_cpu_include/NormalDistributionsTransform.h"
+
+#ifdef CUDA_FOUND
+//    #define EIGEN_DONT_VECTORIZE
+//    #define EIGEN_DISABLE_UNALIGNED_ARRAY_ASSERT
+    #include "../ndt_gpu/ndt_gpu_include/ndt_gpu/NormalDistributionsTransform.h"
+#else
+    #include "../ndt_cpu/ndt_cpu_include/NormalDistributionsTransform.h"
+#endif
+
 #include "Timer.h"
 #include "GPS_AHRS_sync.h"
 #include <opencv2/core/persistence.hpp>
@@ -28,7 +36,10 @@ struct MapGPSInfo
         z = alt-altitude;
     }
 };
-const float DOWNSAMPLE_SIZE = 0.5;//0.2
+float DOWNSAMPLE_SIZE = 0.5;//0.2
+//const float DOWNSAMPLE_SIZE = 50;//0.2
+
+
 
 class NDTAlgo
 {
@@ -38,7 +49,11 @@ public:
 
     //temp!
     bool ever_init = false;
+#ifdef CUDA_FOUND
+    typedef gpu::GNormalDistributionsTransform NDT_CORE;
+#else
     typedef cpu::NormalDistributionsTransform<MapPointT,LidarPointT> NDT_CORE;
+#endif
     typedef Eigen::Matrix<float, 4, 4> RTMatrix4f;
     pcl::NormalDistributionsTransform<MapPointT, LidarPointT>::Matrix4 prev_res; //sb template....
 
@@ -55,11 +70,17 @@ public:
     NDTAlgo(GPS_AHRS_Synchronizer* gps_ahrs_sync_ptr)
     {
         this->p_gps_ahrs_sync = gps_ahrs_sync_ptr;
-        if(ros::param::get("lidar_height_to_gps",lidar_height_to_gps))
+        if(ros::param::get("lidar_height_to_gps",lidar_height_to_gps)&&ros::param::get("ndt_downsample_size",DOWNSAMPLE_SIZE))
         {
             LOG(INFO)<<"LIDAR_GPS_HEIGHT_COMPENSATION ready!"<<endl;
             lidar_height_compensation = true;
         }
+        else
+        {
+            LOG(ERROR)<<"init ndt localizer failed!"<<endl;
+            throw "Error";
+        }
+
     }
 
     bool loadPCDMap()
@@ -106,9 +127,16 @@ public:
             LOG(ERROR)<<"Coordinate mode is not NWU; not supported yet!"<<endl;
             throw "Error";
         }
-        ndt.setInputTarget(pmap_cloud);
+
         ndt.setResolution (3.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
+        LOG(INFO)<<"finished setresolution()"<<endl;
         ndt.setStepSize (0.5);
+        LOG(INFO)<<"finished setStepSize()"<<endl;
+
+        ndt.setInputTarget(pmap_cloud);
+        LOG(INFO)<<"finished setInputTarget()"<<endl;
+
+        LOG(INFO)<<"in NDTAlgo: map loaded!"<<endl;
         return flag_map;
     }
 
@@ -188,7 +216,12 @@ public:
                 return false;
                 initialguess<<1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1;
             }
+#ifdef CUDA_FOUND
+            ndt.align(initialguess);
+#else
             ndt.align(*output_cloud,initialguess);
+#endif
+
         }
 
         else
@@ -197,7 +230,11 @@ public:
             ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
             LOG(INFO)<<"ndt with initial guess"<<endl;
             //ndt.align(*output_cloud,this->prev_res);
+#ifdef CUDA_FOUND
+            ndt.align(gps_ahrs_initial_guess);
+#else
             ndt.align(*output_cloud,gps_ahrs_initial_guess);
+#endif
         }
 
 
@@ -234,6 +271,12 @@ public:
 
 
         //ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
+        LidarCloudT::Ptr cloud_downsampled(new LidarCloudT);
+        pcl::VoxelGrid<LidarPointT> sor;
+        sor.setInputCloud(pcloud_current);
+        sor.setLeafSize(DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE);
+        sor.filter(*cloud_downsampled);
+        pcloud_current = cloud_downsampled;
 
 
 
@@ -249,7 +292,11 @@ public:
             ndt.setMaximumIterations (10);  //Setting max number of registration iterations.
             ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
             LOG(INFO)<<"ndt with prev ndt initial guess"<<endl;
+#ifdef CUDA_FOUND
+            ndt.align(pose_guess);
+#else
             ndt.align(*output_cloud,pose_guess);
+#endif
         }
         else if(initial_guess_type == "ndt_prev")
         {
@@ -258,7 +305,11 @@ public:
             ndt.setMaximumIterations (10);  //Setting max number of registration iterations.
             ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
             LOG(INFO)<<"ndt with prev ndt initial guess"<<endl;
+#ifdef CUDA_FOUND
+            ndt.align(pose_guess);
+#else
             ndt.align(*output_cloud,pose_guess);
+#endif
         }
 
         if(!ndt.hasConverged())

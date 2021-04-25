@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lidar_localization)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11 -O3)
+#add_compile_options(-std=c++11 -O0)
+add_compile_options(-std=c++17 -O3)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -14,10 +15,17 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
 else()
     set (OpenCV_DIR /home/gi/nvme/opencv-3.4.5/build)
 endif()
+
 find_package(PCL 1.8 REQUIRED)
 #find_package(PCL REQUIRED)
 find_package(Glog REQUIRED)
-
+find_package(CUDA) #if you wanna use cpu in a platform with cuda, disable this line.
+if (CUDA_FOUND)
+    add_definitions(-D CUDA_FOUND)
+    MESSAGE("To support cuda: update your eigen to eigen3.3.9;sudo make install&&sudo ldconfig -v")
+    list(APPEND NDT_ACCELERATION_PACKAGE ndt_gpu_lib)
+    set (CMAKE_CUDA_CREATE_SHARED_LIBRARY false)
+endif ()
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
@@ -141,15 +149,6 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-# include
-  ndt_cpu/ndt_cpu_include
-  ${OpenCV_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
-  ${GLOG_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-)
-
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/vision_lidar_fusion.cpp
@@ -163,14 +162,108 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-set(srcs
+
+
+
+
+
+if(CUDA_FOUND)
+    add_definitions(-D CUDA_FOUND)
+    find_package(Eigen3 QUIET)
+
+    if (NOT EIGEN3_FOUND)
+        # Fallback to cmake_modules
+        find_package(cmake_modules REQUIRED)
+        find_package(Eigen REQUIRED)
+        set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+        set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
+        # Possibly map additional variables to the EIGEN3_ prefix.
+    else ()
+        set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+    endif ()
+
+    set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "") 
+    if (NOT DEFINED CUDA_CAPABILITY_VERSION_CHECKER)
+        set(CUDA_CAPABILITY_VERSION_CHECKER
+                "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker")
+    endif ()
+
+    execute_process(COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
+            OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+#    if ("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
+#        set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+#        MESSAGE( "CUDA_ARCH matched: ${CUDA_ARCH}")
+#    else ()
+#        set(CUDA_ARCH "sm_52")
+#        MESSAGE( "CUDA_ARCH set to: ${CUDA_ARCH} by default")
+#        MESSAGE( "CUDA_CAPABILITY_VERSION: ${CUDA_CAPABILITY_VERSION}")
+#    endif ()
+    set(CUDA_ARCH "sm_72")
+
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++14;--ptxas-options=-v)
+
+    set(SUBSYS_DESC "Point cloud ndt gpu library")
+
+    catkin_package(
+            DEPENDS PCL                                #Non-catkin CMake projects
+            INCLUDE_DIRS ndt_gpu/ndt_gpu_include                        #The exported include paths
+            LIBRARIES ndt_gpu_lib                           #The exported libraries from the project
+    )   
+
+    set(ndt_gpu_srcs
+            ./ndt_gpu/ndt_gpu_src/VoxelGrid.cu
+            ./ndt_gpu/ndt_gpu_src/MatrixDevice.cu
+            ./ndt_gpu/ndt_gpu_src/SymmetricEigenSolver.cu
+            ./ndt_gpu/ndt_gpu_src/MatrixHost.cu
+            ./ndt_gpu/ndt_gpu_src/Registration.cu
+            ./ndt_gpu/ndt_gpu_src/NormalDistributionsTransform.cu
+       )
+    set(incs
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/Registration.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/VoxelGrid.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/NormalDistributionsTransform.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/SymmetricEigenSolver.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/MatrixDevice.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/Matrix.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/debug.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/MatrixHost.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/common.h
+       )
+
+    include_directories(
+            ${PCL_INCLUDE_DIRS}
+            ${catkin_INCLUDE_DIRS}
+            ${CUDA_INCLUDE_DIRS}
+            ndt_gpu/ndt_gpu_include
+            ${EIGEN3_INCLUDE_DIRS}
+    )   
+    cuda_add_library(ndt_gpu_lib ${ndt_gpu_srcs} ${incs})
+    target_link_libraries(ndt_gpu_lib
+            ${CUDA_LIBRARIES}
+	    #${CUDA_CUBLAS_LIBRARIES}
+            ${CUDA_curand_LIBRARY}
+            ${PCL_LIBRARIES}
+            ${catkin_LIBRARIES}
+            )
+
+    add_executable(ndt_matching_node src/ndt_matching.cpp)
+    target_link_libraries(ndt_matching_node ${REQUIRED_LIBS} ndt_gpu_lib  
+            ${CUDA_LIBRARIES}
+	    #${CUDA_CUBLAS_LIBRARIES}
+            ${CUDA_curand_LIBRARY}
+            )
+
+else()
+    set(ndt_cpu_srcs
         ndt_cpu/ndt_cpu_src/NormalDistributionsTransform.cpp
         ndt_cpu/ndt_cpu_src/Registration.cpp
         ndt_cpu/ndt_cpu_src/VoxelGrid.cpp
         ndt_cpu/ndt_cpu_src/Octree.cpp
         )
 
-set(incs
+    set(incs
         ndt_cpu/ndt_cpu_include/ndt_cpu/debug.h
         ndt_cpu/ndt_cpu_include/ndt_cpu/NormalDistributionsTransform.h
         ndt_cpu/ndt_cpu_include/ndt_cpu/Registration.h
@@ -179,19 +272,30 @@ set(incs
         ndt_cpu/ndt_cpu_include/ndt_cpu/Octree.h
         )
 
-add_library(ndt_cpu_lib ${srcs})
+    include_directories(
+            ${PCL_INCLUDE_DIRS}
+            ${catkin_INCLUDE_DIRS}
+            ${CUDA_INCLUDE_DIRS}
+            ndt_cpu/ndt_cpu_include
+            ${EIGEN3_INCLUDE_DIRS}
+    )
 
-target_link_libraries(ndt_cpu_lib
+    add_library(ndt_cpu_lib ${ndt_cpu_srcs})
+    set_target_properties(ndt_cpu_lib PROPERTIES LINKER_LANGUAGE CXX)
+    #set_target_properties(ndt_cpu_lib PROPERTIES LINKER_LANGUAGE CUDA)
+    target_link_libraries(ndt_cpu_lib
         ${PCL_LIBRARIES}
         ${catkin_LIBRARIES}
         )
 
+    add_executable(ndt_matching_node src/ndt_matching.cpp)
+    target_link_libraries(ndt_matching_node ${REQUIRED_LIBS} ndt_cpu_lib)
+endif()
 
 add_executable(map_publisher src/map_publisher.cpp)
 target_link_libraries(map_publisher ${REQUIRED_LIBS})
 
-add_executable(ndt_matching_node src/ndt_matching.cpp)
-target_link_libraries(ndt_matching_node ${REQUIRED_LIBS} ndt_cpu_lib)
+
 #add_executable(icp_matching_node src/icp_matching.cpp)
 #target_link_libraries(icp_matching_node ${REQUIRED_LIBS})
 
