@@ -175,7 +175,7 @@ Checkout simulation/README.md to get more details of simulation env setup.
 
 ##### 3.Global coordinate based HD-Map building. --Done. 
 
-##### 4.NDT Lidar Localization --Done.
+##### 4.NDT Lidar Localization(cpu/cuda) --Done.
 
 ##### 5.Downsampling Node --Done.
 
@@ -185,7 +185,9 @@ Checkout simulation/README.md to get more details of simulation env setup.
 
 ##### 8. Dynamic Obstacles Generation and Replanning --Done.
 
-##### 9.Interactive GUI target selector in HD-Map --TODO.
+##### 9. Jetson AGX Xavier Porting --Done.
+
+##### 10.Interactive GUI target selector in HD-Map --TODO.
 
 
 ---------------
