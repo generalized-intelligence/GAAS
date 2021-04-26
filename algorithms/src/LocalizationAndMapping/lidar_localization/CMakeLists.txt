@@ -200,8 +200,13 @@ if(CUDA_FOUND)
 #        MESSAGE( "CUDA_ARCH set to: ${CUDA_ARCH} by default")
 #        MESSAGE( "CUDA_CAPABILITY_VERSION: ${CUDA_CAPABILITY_VERSION}")
 #    endif ()
-    set(CUDA_ARCH "sm_72")
-
+    set(processor_type "${CMAKE_SYSTEM_PROCESSOR}")
+    message("Processor type: ${processor_type}")
+    if("${processor_type}" MATCHES "aarch64") # Jetson AGX Xavier
+        set(CUDA_ARCH "sm_72")
+    else() # x86/other
+        set(CUDA_ARCH "sm_61")
+    endif()
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++14;--ptxas-options=-v)
 
     set(SUBSYS_DESC "Point cloud ndt gpu library")
