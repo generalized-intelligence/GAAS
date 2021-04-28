@@ -19,7 +19,7 @@ endif()
 find_package(PCL 1.8 REQUIRED)
 #find_package(PCL REQUIRED)
 find_package(Glog REQUIRED)
-find_package(CUDA) #if you wanna use cpu in a platform with cuda, disable this line.
+#find_package(CUDA) #if you wanna use cpu in a platform with cuda, disable this line.
 if (CUDA_FOUND)
     add_definitions(-D CUDA_FOUND)
     MESSAGE("To support cuda: update your eigen to eigen3.3.9;sudo make install&&sudo ldconfig -v")

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <mutex>
 #include <opencv2/core.hpp>
 #include <opencv2/highgui.hpp>
@@ -52,7 +54,9 @@ public:
             ros::spinOnce();
             usleep(20000);//20ms.
         }
-        LOG(INFO)<<"Pose ready. Target point navigator stand by!"<<endl;
+        LOG(INFO)<<"Pose ready. Sleep 5s and wait for other nodes."<<endl;
+        sleep(5);
+        LOG(INFO)<<"Target point navigator stand by!"<<endl;
     }
     bool runTargetPointNavigator(double target_x,double target_y,double target_z)
     {
@@ -188,6 +192,34 @@ private:
 };
 
 
+bool CHECK_MOVEMENT(double target_x,double target_y,double target_z,TargetPointNavigator& tpn)
+{
+    bool result = tpn.runTargetPointNavigator(target_x,target_y,target_z);
+    if(!result)
+    {
+        LOG(ERROR)<<"Path to target failed!"<<endl;
+    }
+}
+
+typedef std::array<double,3> Target3D;
+
+std::vector<Target3D> getTargetsByFile()
+{
+    std::vector<Target3D> retval;
+    std::ifstream ifs("selected_targets.txt",std::ios::in);
+    std::string line;
+    while(std::getline(ifs,line))
+    {
+        std::stringstream ss(line);
+        Target3D t;
+        ss>>t[0];
+        ss>>t[1];
+        ss>>t[2];
+        retval.push_back(t);
+    }
+    return retval;
+}
+
 
 int main(int argc,char** argv)
 {
@@ -197,29 +229,42 @@ int main(int argc,char** argv)
     tpn.initTargetPointNavigator(argc,argv);
     //    tpn.runTargetPointNavigator(0,0,1);
     //    tpn.runTargetPointNavigator(0,30,1);//TODO:重新建图解决这个塔高处看不见的问题.
-    bool result = false;
+//    bool result = false;
 
+//    while(ros::ok())
+//    {
+//        result = tpn.runTargetPointNavigator(0,0,3);
+//        if(!result)
+//        {
+//            LOG(ERROR)<<"Path to target failed!"<<endl;
+//        }
+//        result = tpn.runTargetPointNavigator(0,-12,3);
+//        if(!result)
+//        {
+//            LOG(ERROR)<<"Path to target failed!"<<endl;
+//        }
+//        result = tpn.runTargetPointNavigator(0,-12,4);
+//        if(!result)
+//        {
+//            LOG(ERROR)<<"Path to target failed!"<<endl;
+//        }
+//        result = tpn.runTargetPointNavigator(0,8,4);//用感知解决塔的上部建图时看不见的问题。
+//        if(!result)
+//        {
+//            LOG(ERROR)<<"Path to target failed!"<<endl;
+//        }
+//    }
+    auto targets = getTargetsByFile();
+    if(targets.size() == 0)
+    {
+        LOG(ERROR)<<"ERROR: Empty targets file. Target point navigator will quit."<<endl;
+        exit(-1);
+    }
     while(ros::ok())
     {
-        result = tpn.runTargetPointNavigator(0,0,6.5);
-        if(!result)
+        for(auto t:targets)
         {
-            LOG(ERROR)<<"Path to target failed!"<<endl;
-        }
-        result = tpn.runTargetPointNavigator(0,-12,6.5);
-        if(!result)
-        {
-            LOG(ERROR)<<"Path to target failed!"<<endl;
-        }
-        result = tpn.runTargetPointNavigator(0,-12,7.5);
-        if(!result)
-        {
-            LOG(ERROR)<<"Path to target failed!"<<endl;
-        }
-        result = tpn.runTargetPointNavigator(0,8,7.5);//用感知解决塔的上部建图时看不见的问题。
-        if(!result)
-        {
-            LOG(ERROR)<<"Path to target failed!"<<endl;
+            CHECK_MOVEMENT(t[0],t[1],t[2],tpn);
         }
     }
     return 0;
