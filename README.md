@@ -161,33 +161,41 @@ Checkout simulation/README.md to get more details of simulation env setup.
 
 ### 1.实现gazebo 仿真环境的搭建,包括重复扫描式激光雷达和非重复扫描式激光雷达与双目相机的多种组合方式. Gazebo simulation env construction, including spinning lidars and non-repetitive lidars and stereo cameras.
 
-##### 1.Livox Horizon + Forward Stereo Camera --Done.
+##### 1.Livox Horizon + Forward Stereo Camera    Livox Horizon雷达和前向双目相机 --Done.
 
-##### 2.Velodyne HDL-32 + Forward Stereo Camera --Done.
+##### 2.Velodyne HDL-32 + Forward Stereo Camera    Velodyne HDL-32雷达和前向双目相机 --Done.
 
 ### 2.方便的部署脚本,解决GAAS从头编译安装较为复杂的问题. Some scripts to accelerate compiling and deployment.
 
 ### 3.实现一些以激光雷达(机械/固态)为主的算法,并在仿真环境中实现一键启动. Algorithms based on lidars and scripts to start everything in simulation env.
 
-##### 1.Lidar Camera 前融合 点云投影到图像 --完成.
+##### 1. Lidar Camera    前融合 点云投影到图像 --完成.
 
-##### 2.Euclidean Cluster Extraction. --Done.
+##### 2. Euclidean Cluster Extraction.    基于距离聚类的障碍物检测提取 --Done.
 
-##### 3.Global coordinate based HD-Map building. --Done. 
+##### 3. Global coordinate based HD-Map building.    世界坐标系下的高精地图 --Done. 
 
-##### 4.NDT Lidar Localization(cpu/cuda) --Done.
+##### 4. NDT Lidar Localization(cpu/cuda)    NDT激光雷达定位(cpu/cuda实现) --Done.
 
-##### 5.Downsampling Node --Done.
+##### 5. Downsampling Node    下采样节点 --Done.
 
-##### 6. A* path planner --Done.
+##### 6. A* path planner    A* 路径规划 --Done.
 
-##### 7. Refactored px4 offboard commander --Done.
+##### 7. Refactored px4 offboard commander    重构px4 离版控制模块 --Done.
 
-##### 8. Dynamic Obstacles Generation and Replanning --Done.
+##### 8. Dynamic Obstacles Generation and Replanning    动态障碍物生成和路径重规划 --Done.
 
-##### 9. Jetson AGX Xavier Porting --Done.
+##### 9. Jetson AGX Xavier Porting    Jetson AGX Xavier平台代码移植 --Done.
 
-##### 10.Interactive GUI target selector in HD-Map --TODO.
+##### 10. Interactive GUI target selector in HD-Map    高精地图中图形界面交互选择目标点 --Done.
+
+##### 11. Multiple Submaps Switching    多张子地图切换支持 --TODO
+
+##### 12. IMU-Preintegration and High-Frequency Localization    IMU预积分与高频率定位插值 --TODO.
+
+##### 13. VTOL Mode Switching    垂直起降飞行器飞行模式切换 --TODO.
+
+##### 14. Decentralized Robust Ground Controller Station    稳健去中心化地面控制站服务 --TODO.
 
 
 ---------------
