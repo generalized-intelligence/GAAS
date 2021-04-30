@@ -78,7 +78,10 @@ public:
         cv::Mat rvec=(cv::Mat_<double>(3,1) <<0,0,0);
         cv::Mat tvec=(cv::Mat_<double>(3,1) <<0,0,0);
         cv::Mat distortvec=(cv::Mat_<double>(4,1) <<0,0,0,0);
-        cv::projectPoints(vPt3ds_z_gt_0,rvec,tvec,camera_K,distortvec,vPt2ds_projected);
+        if(vPt3ds_z_gt_0.size()>0)
+        {
+            cv::projectPoints(vPt3ds_z_gt_0,rvec,tvec,camera_K,distortvec,vPt2ds_projected);
+        }
         vPt2ds_output = vPt2ds_projected;
         LOG(INFO)<<"p2d.size():"<<vPt2ds_output.size()<<endl;
         if(do_visualize)
