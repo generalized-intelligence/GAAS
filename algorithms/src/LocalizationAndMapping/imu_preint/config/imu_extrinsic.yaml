@@ -1,0 +1,10 @@
+%YAML:1.0
+---
+T_imu_lidar: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: f
+  data: [1,0,0,0,
+        0,1,0,0,
+        0,0,1,0,
+        0,0,0,1]

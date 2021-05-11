@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>lidar_localization</name>
+  <name>imu_preint</name>
   <version>0.0.0</version>
-  <description>The lidar_localization package</description>
+  <description>The imu_preint package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -48,8 +48,8 @@
   <!--   <test_depend>gtest</test_depend> -->
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
-  <depend>gaas_msgs</depend>
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>rosbag</depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>image_transport</build_depend>
@@ -88,3 +88,4 @@
 
   </export>
 </package>
+
