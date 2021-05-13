@@ -10,6 +10,8 @@ Extra modules of GAAS; Including some amazing lidar-based algorithms!
 
 **Get a fast preview without complex simulation configuration works by pulling [GAAS_contrib_resources](https://github.com/cyanine-gi/GAAS_contrib_resources)!**
 
+**通过访问 [GAAS_contrib_resources](https://github.com/cyanine-gi/GAAS_contrib_resources) 快速预览GAAS_contrib 的算法效果而无需复杂的环境配置.**
+
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_rviz_preview_20200401.png)
 
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_astar_planning_preview_20210409.png)
@@ -191,7 +193,7 @@ Checkout simulation/README.md to get more details of simulation env setup.
 
 ##### 11. Multiple Submaps Switching    多张子地图切换支持 --TODO
 
-##### 12. IMU-Preintegration and High-Frequency Localization    IMU预积分与高频率定位插值 --TODO.
+##### 12. IMU-Preintegration and High-Frequency Localization    IMU预积分与高频率定位插值 --Done.
 
 ##### 13. VTOL Mode Switching    垂直起降飞行器飞行模式切换 --TODO.
 
