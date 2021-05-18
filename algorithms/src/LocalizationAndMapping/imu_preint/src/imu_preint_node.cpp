@@ -8,6 +8,9 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <tf2/transform_datatypes.h>
+
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/transform_broadcaster.h>
@@ -39,7 +42,7 @@ public:
 
         //读入外参数,并发布imu到lidar的静态tf.
         tf2_ros::StaticTransformBroadcaster tf_static_publisher;
-        auto lidar_imu_static_tf = getIMULidarTransformStatic();
+        lidar_imu_static_tf = getIMULidarTransformStatic();
         tf_static_publisher.sendTransform(lidar_imu_static_tf);
 
         //init subscribers.
@@ -86,7 +89,8 @@ public:
     {
         LOG(INFO)<<"In lidar pose callback"<<endl;
         this->pose_mutex.lock();
-        this->curr_pose = *pose_msg;
+        tf2::doTransform(*pose_msg,this->curr_pose,lidar_imu_static_tf);//转到imu坐标系下.
+        //this->curr_pose = *pose_msg;
         if(!this->pose_ever_init)//第一帧的情况
         {
             this->pose_ever_init = true;
@@ -95,11 +99,14 @@ public:
             return;
         }
         this->pose_ever_init = true;
+
+
         //普通帧的情况
         this->curr_pose = *pose_msg;
         geometry_msgs::PoseStamped frame1,frame2;
-        frame1 = this->prev_pose;
+        frame1 = this->prev_pose; //input_msg = T_lidar_map; frame1 = T_imu_map --> T_imu_map = T_imu_lidar * T_lidar_map;
         frame2 = this->curr_pose;
+
         this->pose_mutex.unlock();
 
         LOG(INFO)<<"preparing for preint oper."<<endl;
@@ -213,7 +220,26 @@ public:
 
         return retval;
     }
+    Matrix4 getMat44FromPoseStamped(const geometry_msgs::PoseStamped& msg)
+    {
+        return this->sip.poseFromMsg(msg).matrix();
+    }
+    geometry_msgs::PoseStamped getNewPoseMsg(const geometry_msgs::PoseStamped& original_msg,const Matrix4& new_pose)
+    {
+        geometry_msgs::PoseStamped retval = original_msg;
+        retval.pose.position.x = new_pose(0,3);
+        retval.pose.position.y = new_pose(1,3);
+        retval.pose.position.z = new_pose(2,3);
+        Eigen::Matrix3d rot_eigen = new_pose.block(0,0,3,3);
+        Eigen::Quaterniond quat(rot_eigen);
 
+        retval.pose.orientation.w = quat.w();
+        retval.pose.orientation.x = quat.x();
+        retval.pose.orientation.y = quat.y();
+        retval.pose.orientation.z = quat.z();
+
+        return retval;
+    }
 private:
     SequentialIMUPreintegrator sip;
     Vector3d prev_velocity;
@@ -233,6 +259,8 @@ private:
     std::shared_ptr<ros::NodeHandle> pNH = nullptr;
     std::shared_ptr<ros::Publisher> pIMUPosePub = nullptr;
     std::shared_ptr<tf2_ros::TransformBroadcaster> pIMUTFbroadcaster = nullptr;
+    geometry_msgs::TransformStamped lidar_imu_static_tf;
+
     ros::Subscriber lidar_pose_sub,imu_msg_sub;
 
 };

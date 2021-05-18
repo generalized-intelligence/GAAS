@@ -69,6 +69,7 @@ public:
         if(!service_avail)
         {
             LOG(ERROR)<<"GlobalAStarPlanner service not avail! Failed."<<endl;
+            return false;
         }
         while(!finishedWholePath()&&ros::ok())
         {

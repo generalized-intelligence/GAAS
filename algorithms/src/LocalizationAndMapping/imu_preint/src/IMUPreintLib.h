@@ -289,7 +289,7 @@ public:
         curr_pose_index++;
         return true;
     }
-private:
+//private:
     Pose3 poseFromMsg(const geometry_msgs::PoseStamped& pose)
     {
         Rot3 _rotation = Rot3::Quaternion(pose.pose.orientation.w, pose.pose.orientation.x,
