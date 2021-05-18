@@ -6,8 +6,6 @@
 
 :star: Star us on GitHub — it helps!      
 
-[Support us on Patreon](https://www.patreon.com/gaas) Or [Post on Our Forum](https://www.gaas.dev/forum)
-
   [![Join Facebook Group at https://www.facebook.com/groups/300340454189266/?ref=bookmarks](https://img.shields.io/badge/Group-Facebook-blue.svg)](https://www.facebook.com/groups/300340454189266/?ref=bookmarks) [![twitter](https://img.shields.io/twitter/follow/GAAS_dev.svg?style=social)](https://twitter.com/GAAS_dev)   [![Follow Medium at https://medium.com/generalized-intelligence](https://img.shields.io/badge/Medium-Blogs-black.svg)](https://medium.com/generalized-intelligence)
   
   
@@ -19,6 +17,11 @@
 <img src="https://s2.ax1x.com/2019/09/20/nXrXjK.png">
 
 [Progress Report 2019.08.01-2019.08.28](https://forum.gaas.dev/t/progress-update-2019-08-01-2019-08-28/30)
+
+# We have just completed the development of version 2.0 and will open source it soon :) 
+
+# 我们刚刚完成了 2.0 版本的开发，即将开源:)
+
 # What's new:
 
 ## Towards L5 Autonomous Flying Car: GAAS_contrib, A Robust Framework Extends GAAS with Lidars.
