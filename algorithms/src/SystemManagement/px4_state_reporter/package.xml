@@ -50,6 +50,7 @@
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <depend>rosbag</depend>
+  <depend>mavros_msgs</depend>
   <build_depend>cv_bridge</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>image_transport</build_depend>

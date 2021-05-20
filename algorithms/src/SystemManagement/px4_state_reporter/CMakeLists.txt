@@ -10,6 +10,10 @@ add_compile_options(-std=c++17 -O3)
 ## is used, also find other catkin packages
 #set(CMAKE_BUILD_TYPE DEBUG)
 set(CMAKE_BUILD_TYPE RELEASE)
+
+
+
+catkin_package()
 find_package(OpenCV 3.4.5 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
 find_package(Glog REQUIRED)
@@ -27,13 +31,14 @@ find_package(catkin REQUIRED COMPONENTS
   tf2
   tf2_ros
   visualization_msgs
+  mavros_msgs
 )
 include_directories(
         ${catkin_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}
         ${GTSAM_INCLUDE_DIR}
 )
-catkin_package()
+
 set(REQUIRED_LIBS
         ${OpenCV_LIBS}
         ${GLOG_LIBRARY}
