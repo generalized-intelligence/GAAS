@@ -3,9 +3,9 @@
 
 #include <iostream>
 #include <mutex>
+#include "third_party/nlohmann_json/single_include/nlohmann/json.hpp"
 
-
-
+using json = nlohmann::json;
 using std::string;
 using std::endl;
 
