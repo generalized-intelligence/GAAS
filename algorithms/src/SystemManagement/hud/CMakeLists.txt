@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(state_surveillance)
+project(hud)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 #add_compile_options(-std=c++11 -O0)
@@ -10,11 +10,17 @@ add_compile_options(-std=c++17 -O3)
 ## is used, also find other catkin packages
 #set(CMAKE_BUILD_TYPE DEBUG)
 set(CMAKE_BUILD_TYPE RELEASE)
-find_package(OpenCV 3.4.5 REQUIRED)
+
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
+    find_package(OpenCV 3.4.5 REQUIRED)
+else()
+    set (OpenCV_DIR /home/gi/nvme/opencv-3.4.5/build)
+endif()
+
+
 find_package(PCL 1.8 REQUIRED)
 find_package(Glog REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(GTSAM REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   gaas_msgs
   cv_bridge
@@ -44,10 +50,9 @@ set(REQUIRED_LIBS
         ${PCL_LIBRARIES}
         ${GTSAM_LIBRARIES}
         glog
-        gtsam
 )
-add_executable(state_surveillance_node src/state_surveillance_node.cpp)
-target_link_libraries(state_surveillance_node ${REQUIRED_LIBS})
+add_executable(HUD_node src/HUD_node.cpp)
+target_link_libraries(HUD_node ${REQUIRED_LIBS})
 
 
 

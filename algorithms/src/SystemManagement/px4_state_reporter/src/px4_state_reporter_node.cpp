@@ -31,6 +31,20 @@ public:
     FlightControllerState getStateFromPX4State(const mavros_msgs::State& px4_state);
     std::shared_ptr<ros::Publisher> pFCStatePub;
 
+    void publishPX4ControllerState(const ros::Time& stamp)
+    {
+        if(!whole_node_init)//TODO.适配真机无gps调试...
+        {
+            LOG(WARNING)<<"Node not initialized; can not publish state."<<endl;
+            return;
+        }
+        gaas_msgs::GAASSystemManagementFlightControllerState gaas_state;
+        gaas_state.header.stamp = stamp;
+        gaas_state.header.frame_id = "gaas_system_management";
+        curr_state.toROSMsg(gaas_state);
+        pFCStatePub->publish(gaas_state);
+        LOG(INFO)<<"px4 flight controller state published!"<<endl;
+    }
     void px4StateCallback(const mavros_msgs::StateConstPtr& p_px4_state_msg)
     {
         px4_state_init = true;
@@ -57,13 +71,7 @@ public:
         {
             curr_state.flight_mode = curr_state.FLIGHCONTROLLER_AUTO_MODE; // 飞控自动模式,飞行器不受GAAS控制.
         }
-
-        gaas_msgs::GAASSystemManagementFlightControllerState gaas_state;
-        gaas_state.header.stamp = p_px4_state_msg->header.stamp;
-        gaas_state.header.frame_id = "gaas_system_management";
-        curr_state.toROSMsg(gaas_state);
-        pFCStatePub->publish(gaas_state);
-        LOG(INFO)<<"px4 flight controller state published!"<<endl;
+        publishPX4ControllerState(p_px4_state_msg->header.stamp);
     }
     void px4BatteryStateCallback(const sensor_msgs::BatteryStateConstPtr& p_battery_msg)
     {
@@ -109,6 +117,7 @@ public:
         curr_state.imu_filtered_qy = p_imu_msg->orientation.y;
         curr_state.imu_filtered_qz = p_imu_msg->orientation.z;
         curr_state.imu_filtered_qw = p_imu_msg->orientation.w;
+        publishPX4ControllerState(p_imu_msg->header.stamp);//加快发布的频率让HUD更流畅.
     }
     void px4VelocityEstimationCallback(const geometry_msgs::TwistStampedConstPtr& p_velocity_local)// /mavros/local_position/velocity_body  / velocity_local; //TODO:这个是什么坐标系？
     {//TODO:确认坐标系约定.
@@ -126,7 +135,8 @@ public:
     {
         LOG(INFO)<<"In waitForAll()..."<<endl;
         while(
-              !(px4_state_init && px4_battery_state_init && px4_GPSNavSatFix_init &&
+              !(px4_state_init && px4_battery_state_init &&
+                px4_GPSNavSatFix_init &&
                 px4_imutemperature_init && px4_imu_filtered_init && px4_velocity_estimation_init &&
                 px4_gps_satellites_count_init)&&ros::ok()
               )
@@ -154,7 +164,7 @@ public:
         pNH = std::shared_ptr<ros::NodeHandle>(new ros::NodeHandle);
         px4_state_sub = pNH->subscribe<mavros_msgs::State>("/mavros/state",1,&PX4StateReporter::px4StateCallback,this);
         px4_battery_state_sub = pNH->subscribe<sensor_msgs::BatteryState>("/mavros/battery",1,&PX4StateReporter::px4BatteryStateCallback,this);
-        px4_GPSNavSatFix_sub = pNH->subscribe<sensor_msgs::NavSatFix>("/mavros/global_position/global",1,&PX4StateReporter::px4GPSNavSatFixCallback,this);//TODO:换成raw/fix试试？
+        px4_GPSNavSatFix_sub = pNH->subscribe<sensor_msgs::NavSatFix>("/mavros/global_position/raw/fix",1,&PX4StateReporter::px4GPSNavSatFixCallback,this);//global_position/global不可用.
         px4_imutemperature_sub = pNH->subscribe<sensor_msgs::Temperature>("/mavros/imu/temperature_imu",1,&PX4StateReporter::px4IMUTemperatureCallback,this);
         px4_imu_filtered_sub = pNH->subscribe<sensor_msgs::Imu>("/mavros/imu/data",1,&PX4StateReporter::px4IMUFilteredCallback,this);
         px4_velocity_estimation_sub = pNH->subscribe<geometry_msgs::TwistStamped>("/mavros/local_position/velocity_body",1,&PX4StateReporter::px4VelocityEstimationCallback,this);

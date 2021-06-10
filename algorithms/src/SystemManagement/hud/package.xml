@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>state_surveillance</name>
+  <name>hud</name>
   <version>0.0.0</version>
-  <description>The state_surveillance package</description>
+  <description>The hud package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
