@@ -175,21 +175,21 @@ Checkout simulation/README.md to get more details of simulation env setup.
 
 ##### 2. Euclidean Cluster Extraction.    基于距离聚类的障碍物检测提取 --Done.
 
-##### 3. Global coordinate based HD-Map building.    世界坐标系下的高精地图 --Done. 
+##### 3. Global Coordinate based HD-Map Building.    世界坐标系下的高精地图 --Done. 
 
 ##### 4. NDT Lidar Localization(cpu/cuda)    NDT激光雷达定位(cpu/cuda实现) --Done.
 
 ##### 5. Downsampling Node    下采样节点 --Done.
 
-##### 6. A* path planner    A* 路径规划 --Done.
+##### 6. A* Path Planner    A* 路径规划 --Done.
 
-##### 7. Refactored px4 offboard commander    重构px4 离版控制模块 --Done.
+##### 7. Refactored px4 Offboard Commander    重构px4 离版控制模块 --Done.
 
 ##### 8. Dynamic Obstacles Generation and Replanning    动态障碍物生成和路径重规划 --Done.
 
 ##### 9. Jetson AGX Xavier Porting    Jetson AGX Xavier平台代码移植 --Done.
 
-##### 10. Interactive GUI target selector in HD-Map    高精地图中图形界面交互选择目标点 --Done.
+##### 10. Interactive GUI Target Selector in HD-Map    高精地图中图形界面交互选择目标点 --Done.
 
 ##### 11. Multiple Submaps Switching    多张子地图切换支持 --TODO
 
@@ -198,6 +198,12 @@ Checkout simulation/README.md to get more details of simulation env setup.
 ##### 13. VTOL Mode Switching    垂直起降飞行器飞行模式切换 --TODO.
 
 ##### 14. Decentralized Robust Ground Controller Station    稳健去中心化地面控制站服务 --TODO.
+
+##### 15. Generalized Flight Controller State Management    通用飞控系统状态管理 --Done.
+
+##### 16. PX4 State Reporter    兼容px4 飞控的状态汇报模块  --Done.
+
+##### 17. HUD Module    仪表数据抬显模块  --Done.
 
 
 ---------------
