@@ -1,0 +1,4 @@
+<launch>
+    <param name="fpv_image_topic" type="string" value="/gi/simulation/left/image_raw"/>
+    <node name="HUD_node" pkg="hud" type="HUD_node" output="screen" /> <!--launch-prefix="gdb args"-->
+</launch>

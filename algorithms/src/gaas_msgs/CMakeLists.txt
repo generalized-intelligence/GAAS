@@ -80,6 +80,7 @@ add_message_files(
     #const
     GAASNavigationMapBlockGrid.msg
     GAASNavigationBlockMap.msg
+    GAASSystemManagementFlightControllerState.msg
 )
 
 ## Generate services in the 'srv' folder
