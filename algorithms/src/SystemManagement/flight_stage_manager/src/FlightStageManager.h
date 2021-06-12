@@ -6,8 +6,6 @@
 #include "../../basic_state_libs/src/VehicleStaticInfo.h"
 
 
-#include <opencv2/core.hpp>
-#include <opencv2/highgui.hpp>
 
 namespace GAASManagement {
 class GAASFlightStageManager
