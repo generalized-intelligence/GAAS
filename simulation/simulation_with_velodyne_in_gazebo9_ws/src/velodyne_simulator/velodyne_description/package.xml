@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>velodyne_description</name>
+  <version>1.0.9</version>
+  <description>
+    URDF and meshes describing Velodyne laser scanners.
+  </description>
+
+  <license>BSD</license>
+  <author>Kevin Hallenbeck</author>
+  <maintainer email="khallenbeck@dataspeedinc.com">Kevin Hallenbeck</maintainer>
+  <url type="website">http://wiki.ros.org/velodyne_description</url>
+  <url type="repository">https://bitbucket.org/dataspeedinc/velodyne_simulator</url>
+  <url type="bugtracker">https://bitbucket.org/dataspeedinc/velodyne_simulator/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>urdf</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+</package>

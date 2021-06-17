@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>velodyne_simulator</name>
+  <version>1.0.9</version>
+  <description>
+    Metapackage allowing easy installation of Velodyne simulation components.
+  </description>
+
+  <license>BSD</license>
+  <author>Kevin Hallenbeck</author>
+  <maintainer email="khallenbeck@dataspeedinc.com">Kevin Hallenbeck</maintainer>
+  <url type="website">http://wiki.ros.org/velodyne_simulator</url>
+  <url type="repository">https://bitbucket.org/dataspeedinc/velodyne_simulator</url>
+  <url type="bugtracker">https://bitbucket.org/dataspeedinc/velodyne_simulator/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <exec_depend>velodyne_description</exec_depend>
+  <exec_depend>velodyne_gazebo_plugins</exec_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+
+</package>

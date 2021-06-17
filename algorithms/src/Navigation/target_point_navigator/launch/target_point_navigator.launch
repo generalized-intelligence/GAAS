@@ -1,0 +1,3 @@
+<launch>
+    <node name="target_point_navigator_node" type="target_point_navigator_node" pkg="target_point_navigator" output="screen"/>
+</launch>

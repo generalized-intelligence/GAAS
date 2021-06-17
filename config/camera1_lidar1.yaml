@@ -1,0 +1,18 @@
+%YAML:1.0
+---
+T_cam_lidar: !!opencv-matrix
+  rows: 4
+  cols: 4
+  dt: f
+  data: [0,-1,0,0,
+        0,0,-1,-0.14081,
+        1,0,0,0,
+        0,0,0,1]
+CameraK: !!opencv-matrix
+  rows: 3
+  cols: 3
+  dt: f
+  data: [376,0,370,0,376,240,0,0,1]
+
+
+

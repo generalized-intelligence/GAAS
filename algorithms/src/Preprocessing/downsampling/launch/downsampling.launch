@@ -1,0 +1,4 @@
+<launch>
+    <param name="preprocessing_module_downsampling_size" type="double" value="0.1"/>
+    <node name="downsampling_node" pkg="downsampling" type="downsampling_node" output="screen"/>
+</launch>

@@ -1,0 +1,3 @@
+<launch>
+    <node name="px4_state_reporter_node" type="px4_state_reporter_node" pkg="px4_state_reporter" output="screen"/>
+</launch>

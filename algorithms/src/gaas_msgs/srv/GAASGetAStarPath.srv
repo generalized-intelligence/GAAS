@@ -1,0 +1,6 @@
+std_msgs/Header header
+geometry_msgs/PointStamped current_point
+geometry_msgs/PointStamped target_point
+---
+GAASNavigationPath path
+bool success

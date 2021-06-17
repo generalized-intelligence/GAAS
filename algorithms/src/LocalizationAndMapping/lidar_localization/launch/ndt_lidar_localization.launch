@@ -1,0 +1,17 @@
+<launch>
+   <arg name="do_visualization" value="true"/>
+
+   <param name="use_sim_time" type="bool" value="true"/>
+   <param name="map_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/map_global_registered.pcd"/>
+   <!--param name="map_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/pcd_original.pcd"/ -->
+   <param name="lidar_topic_name" type="string" value="/velodyne_points2"/>
+   <param name="ndt_result_visualization" type="bool" value="$(arg do_visualization)" />
+   <param name="lidar_height_to_gps" type="double" value="0.14"/>
+   <param name="ndt_downsample_size" type="double" value="0.7"/>
+
+   <node name="ndt_matching_node" pkg="lidar_localization" type="ndt_matching_node" output="screen"/>
+   <node name="map_publiser_node" pkg="lidar_localization" type="map_publisher" output="screen"/>
+   <group if="$(arg do_visualization)">
+       <node name="rviz" pkg="rviz" type="rviz" args="-d $(find lidar_localization)/launch/ndt_localization.rviz" required="false"/>
+   </group>
+</launch>

@@ -1,6 +1,4 @@
 # Big files
-*.png
-*.jpg
 *.log
 *.bag
 
@@ -55,3 +53,6 @@ __pycache__/
 *.out
 *.app
 *.so
+*.bag
+*.log
+

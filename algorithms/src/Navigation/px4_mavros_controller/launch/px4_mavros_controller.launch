@@ -1,0 +1,4 @@
+<launch>
+    <param name="map_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/map_global_registered.pcd"/>
+    <node name="px4_mavros_controller_node" type="px4_mavros_controller" pkg="px4_mavros_controller" output="screen"/>
+</launch>
