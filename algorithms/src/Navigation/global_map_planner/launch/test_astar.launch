@@ -1,5 +1,4 @@
 <launch>
-    <param name="map_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/map_global_registered.pcd"/>
     <node name="astar_debug_node" pkg="global_map_planner" type="AStarLibDebug" output="screen"/>
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find global_map_planner)/launch/test_astar.rviz" required="false"/>
 </launch>

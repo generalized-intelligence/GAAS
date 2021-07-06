@@ -56,7 +56,7 @@ bool loadFirstOdometryFromROSBagFile(nav_msgs::Odometry& ahrs_msg,sensor_msgs::N
     rosbag::Bag bag;
     bag.open(bag_path);
     vector<string> topics;
-    string ahrs_local_topic = "/mavros/global_position/local";
+    string ahrs_local_topic = "/mavros/local_position/odom";//"/mavros/global_position/local" global_position/local is for simulation only.
     string gps_global_topic = "/mavros/global_position/raw/fix";
     topics.push_back(ahrs_local_topic);
     topics.push_back(gps_global_topic);
@@ -140,7 +140,21 @@ void transformMapByInitialOdometryAndGPSCoordinate(const nav_msgs::Odometry& odo
         Eigen::Matrix3d rot_original = quat.toRotationMatrix();
         Eigen::Matrix3d rot_transformed_ = R_flu_luf.inverse()*rot_original.inverse()*(R_flu_luf);
         Eigen::Matrix3d rot_LUF = rot_transformed_.inverse();
-        Eigen::Quaterniond rot_flu (R_flu_luf*rot_LUF);
+
+
+    double z_comps = 0; //z_angle_compensation
+    if(!ros::param::get("z_angle_compensation",z_comps))
+    {
+        LOG(WARNING)<<"WARNING: z_angle_compensation not set in launch file!!!"<<endl;
+    }
+    else
+    {
+        LOG(INFO)<<"Using z_angle_compensation of "<<z_comps<<"deg!"<<endl;
+    }
+    z_comps*=(3.1415926535/180.0);
+
+        Eigen::Matrix3d rot_z_compensation;
+        rot_z_compensation<<cos(z_comps),-sin(z_comps),0,sin(z_comps),cos(z_comps),0,0,0,1;
 
 
     //Eigen::Quaterniond quat_inv = quat;
@@ -153,6 +167,7 @@ void transformMapByInitialOdometryAndGPSCoordinate(const nav_msgs::Odometry& odo
         LOG(WARNING)<<"WARNING: lidar_to_ground_height not set in launch file!!!"<<endl;
     }
     LOG(INFO)<<"Using height_compensation:"<<height_compensation<<endl;
+            Eigen::Quaterniond rot_flu (rot_z_compensation*R_flu_luf*rot_LUF);
     const Eigen::Vector3d trans(0,0,height_compensation);
 
     pcl::transformPointCloud(*pMap,*new_map,trans,rot_flu);

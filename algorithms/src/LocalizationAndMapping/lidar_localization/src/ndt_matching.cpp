@@ -32,12 +32,37 @@
 NDTAlgo* pNDT;
 tf2_ros::TransformBroadcaster* pTFbroadcaster;
 bool ndt_result_visualization = false;
-ros::Publisher pose_pub;
+ros::Publisher pose_pub,gps_ahrs_pose_pub;
 ros::Publisher aligned_cloud_pub;
 void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 {
     ScopeTimer timer("callback_timer");
-    pNDT->initializeNDTPoseGuess();//测试是否能获取gps-ahrs消息.
+    if(pNDT->initializeNDTPoseGuess())//测试是否能获取gps-ahrs消息.
+    {
+
+        Eigen::Matrix4f gps_ahrs_initial_guess = pNDT->gps_ahrs_initial_guess;
+        Eigen::Matrix3f rotmat = gps_ahrs_initial_guess.block(0,0,3,3);
+        Eigen::Quaternionf quat(rotmat);
+        geometry_msgs::PoseStamped gps_ahrs_pose_msg;
+
+        gps_ahrs_pose_msg.header.frame_id="map";//地图坐标系的定位.
+        gps_ahrs_pose_msg.header.stamp = cloud_msg->header.stamp;//与gps同步.
+
+        auto& pos = gps_ahrs_pose_msg.pose.position;
+        auto& orient = gps_ahrs_pose_msg.pose.orientation;
+        orient.x = quat.x();
+        orient.y = quat.y();
+        orient.z = quat.z();
+        orient.w = quat.w();
+
+        pos.x = gps_ahrs_initial_guess(0,3);
+        pos.y = gps_ahrs_initial_guess(1,3);
+        pos.z = gps_ahrs_initial_guess(2,3);
+
+        gps_ahrs_pose_pub.publish(gps_ahrs_pose_msg);
+        LOG(INFO)<<"GPS AHRS pose published!"<<endl;
+
+    }
     cout <<"callback"<<endl;
     LOG(INFO)<<"In lidar callback:"<<endl;
     LidarCloudT::Ptr pInputCloud(new LidarCloudT);
@@ -155,15 +180,16 @@ int main(int argc,char** argv)
     ros::param::get("ndt_result_visualization",ndt_result_visualization);
     LOG(INFO)<<"Subscribing lidar topic name:"<<lidar_topic_name<<endl;
     pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/ndt_pose",1);
+    gps_ahrs_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/original_gps_ahrs_pose",1);
     if(ndt_result_visualization)
     {
         aligned_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("/gaas/visualization/localization/ndt_merged_cloud",1);
     }
     ros::Subscriber lidar_sub = nh.subscribe("/gaas/preprocessing/velodyne_downsampled",1,lidar_callback);
 
-    //message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/raw/fix", 1);
-    message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/global", 1);
-    message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/global_position/local", 1);
+    message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/raw/fix", 1);
+    //message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/global", 1);
+    message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/local_position/odom", 1);
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::NavSatFix, nav_msgs::Odometry> MySyncPolicy;
     // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(3), gps_sub, ahrs_sub);

@@ -59,7 +59,7 @@ int main(int argc,char **argv)
 
     ros::Publisher pub = nh.advertise<MessageCloudT>("/gaas/preprocessing/velodyne_downsampled",10);
     pPub = &pub;
-    ros::Subscriber sub = nh.subscribe<MessageCloudT>("velodyne_points2",1,callback);
+    ros::Subscriber sub = nh.subscribe<MessageCloudT>("/os_cloud_node/points",1,callback);
     ros::spin();
     return 0;
 }

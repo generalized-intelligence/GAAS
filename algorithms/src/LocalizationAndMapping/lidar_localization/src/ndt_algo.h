@@ -36,7 +36,7 @@ struct MapGPSInfo
         z = alt-altitude;
     }
 };
-float DOWNSAMPLE_SIZE = 0.5;//0.2
+float DOWNSAMPLE_SIZE = 0.3;//0.2
 //const float DOWNSAMPLE_SIZE = 50;//0.2
 
 
@@ -128,9 +128,11 @@ public:
             throw "Error";
         }
 
-        ndt.setResolution (3.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
+        //ndt.setResolution (3.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
+        ndt.setResolution (10.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
         LOG(INFO)<<"finished setresolution()"<<endl;
-        ndt.setStepSize (0.5);
+        //ndt.setStepSize (0.5);
+        ndt.setStepSize (2.0);
         LOG(INFO)<<"finished setStepSize()"<<endl;
 
         ndt.setInputTarget(pmap_cloud);
@@ -140,7 +142,7 @@ public:
         return flag_map;
     }
 
-    void initializeNDTPoseGuess()
+    bool initializeNDTPoseGuess()
     {
         sensor_msgs::NavSatFix gps;
         nav_msgs::Odometry ahrs;
@@ -174,10 +176,12 @@ public:
             LOG(INFO)<<"GPS_AHRS_INITIAL:"<<endl<<gps_ahrs_initial_guess<<endl;
 
             gps_ahrs_initial_avail = true;
+            return true;
         }
         else
         {
             LOG(INFO)<<"gps_ahrs not initialized."<<endl;
+            return false;
         }
     }
 

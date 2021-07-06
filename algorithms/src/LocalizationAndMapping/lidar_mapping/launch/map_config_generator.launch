@@ -1,8 +1,9 @@
 <launch>
    <param name="use_sim_time" type="bool" value="true"/>
-   <param name="map_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/pcd_original.pcd"/>
-   <param name="rosbag_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/original.bag"/>
-   <param name="output_map_path" type="string" value="/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/map_global_registered.pcd"/>
-   <param name="lidar_to_ground_height" type="double" value="3.50"/>
+   <param name="map_path" type="string" value="/home/gi/Documents/SCLEGOLOAM_ENV/zjkd1/1624510706.813650131.pcd"/>
+   <param name="rosbag_path" type="string" value="/home/gi/GAAS_contrib/simulation/2021-06-23-21-39-46.bag"/>
+   <param name="output_map_path" type="string" value="/home/gi/Documents/SCLEGOLOAM_ENV/zjkd1/zjkd_output1.pcd"/>
+   <param name="lidar_to_ground_height" type="double" value="1.50"/>
+   <param name="z_angle_compensation" type="double" value="15"/><!--20 seems good-->
    <node name="map_config_generator" pkg="lidar_mapping" type="map_config_generator" output="screen"/>
 </launch>

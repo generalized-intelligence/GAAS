@@ -5,6 +5,9 @@
 
 class StateSurveillanceManager
 {
+private:
+    std::shared_ptr<ros::NodeHandle> pNH = nullptr;
+
 public:
     //定义监控其他模块的callback
     //Surveillance callbacks of other modules' status.
@@ -13,9 +16,20 @@ public:
     void localizationStatusCallback();//定位模块状态
     void perceptionStatusCallback();//感知模块状态
     void navigatorStatusCallback();//导航模块状态
+
+    void initStateSurveillanceManagerNode(int argc,char** argv)
+    {
+        ros::init(argc,argv,"px4_state_reporter_node");
+        pNH = std::shared_ptr<ros::NodeHandle>(new ros::NodeHandle);
+        node
+    }
 };
 
 int main(int argc,char** argv)
 {
+    FLAGS_alsologtostderr = 1;
+    google::InitGoogleLogging("px4_state_reporter_node");
+    StateSurveillanceManager ssm;
+    ssm.initStateSurveillanceManagerNode(argc,argv);
     return 0;
 }
