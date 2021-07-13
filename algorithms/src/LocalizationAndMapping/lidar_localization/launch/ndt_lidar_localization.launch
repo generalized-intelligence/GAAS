@@ -7,6 +7,15 @@
    <param name="lidar_height_to_gps" type="double" value="0.14"/>
    <param name="ndt_downsample_size" type="double" value="0.5"/>
 
+   <!--ndt params-->
+
+   <param name="ndt_transformation_epsilon" type="double" value="0.1"/>
+   <!-- param name="ndt_step_size" type="double" value="2.0" -->
+   <!-- param name="ndt_resolution" type="double" value="10.0" -->
+
+   <param name="ndt_step_size" type="double" value="2.0"/>
+   <param name="ndt_resolution" type="double" value="8.0"/>
+
    <node name="ndt_matching_node" pkg="lidar_localization" type="ndt_matching_node" output="screen"/>
    <node name="map_publiser_node" pkg="lidar_localization" type="map_publisher" output="screen"/>
    <group if="$(arg do_visualization)">

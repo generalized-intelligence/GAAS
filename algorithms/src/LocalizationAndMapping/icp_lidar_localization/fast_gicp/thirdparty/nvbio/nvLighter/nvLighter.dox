@@ -1,0 +1,100 @@
+/*
+ * nvbio
+ * Copyright (c) 2011-2014, NVIDIA CORPORATION. All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * Neither the name of the NVIDIA CORPORATION nor the
+ *      names of its contributors may be used to endorse or promote products
+ *      derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/// \page nvlighter_page nvLighter
+///
+///\htmlonly
+/// <img src="nvidia_cubes.png" style="position:relative; bottom:-10px; border:0px;"/>
+///\endhtmlonly
+///
+///\par
+///\n
+/// <a href="https://github.com/NVlabs/nvbio/tree/master/nvLighter">nvLighter</a> is a GPU-accelerated re-engineering of
+/// <a href="https://github.com/mourisl/Lighter">Lighter</a>, a very low memory footprint error corrector, implementing
+/// the algorithms described in: \n \n
+///   <a href="http://genomebiology.com/2014/15/11/509">Lighter: fast and memory-efficient sequencing error correction without counting</a> \n
+///   Li Song, Liliana Florea and Ben Langmead \n
+///   <i>Genome Biology</i>, 2014, 15:509
+///\par
+/// nvLighter can use both multiple CPU threads as well as multiple GPUs to concurrently
+/// correct large sets of reads.
+/// In practice, the error correction algorithm is so fast it can be easily bottlenecked by I/O:
+/// hence, we recommend using nvLighter on an SSD-equipped system in order to appreciate
+/// maximum acceleration.
+///
+/// \section nvLighterUsage Usage
+///
+///\par
+/// At the moment, the command line options of nvLighter differ from those of Lighter,
+/// as nvLighter is designed to handle a single input file at the time.
+/// Moreover, nvLighter supports many file formats for both input and output, among which
+/// plain .txt files (with one read per row), FASTA, and FASTQ.
+/// Additionally, as <i>slow gzip compression</i> can quickly become a bottleneck, nvLighter supports
+/// LZ4 compression on any of the above formats.
+///
+///\verbatim
+/// ./nvLighter --help
+///
+/// nvLighter - Copyright 2015, NVIDIA Corporation
+/// usage:
+///    nvLighter [options] input_file output_file
+///    options:
+///     -v         int (0-6) [5]              # verbosity level
+///     -zlib      string    [1R]             # e.g. "1", ..., "9", "1R"
+///     -t         int       [auto]           # number of CPU threads
+///     -d         int       [0]              # add the specified GPU device
+///     -k         k-mer genome-size alpha    # error correction parameters
+///     -K         k-mer genome-size          # error correction parameters
+///     -maxcor                               # maximum correction factor
+///     -newQual                              # new quality score value
+///     -no-cpu                               # disable CPU usage
+///     -no-gpu                               # disable GPU usage
+///\endverbatim
+///\par
+/// For example:
+///
+///\verbatim
+/// nvLighter -t 20 -d 0 -d 1 -k 31 3500000000 0.2 NA12878.fq.gz NA12878.corrected.fq.lz4
+///\endverbatim
+///\par
+/// will use 20 CPU threads and GPU 0 and 1 to correct a 35x coverage human dataset and output the result to an LZ4-compressed FASTQ file;
+/// whereas the command:
+///
+///\verbatim
+/// nvLighter -no-cpu -d 0 -k 31 3500000000 0.2 NA12878.fq.gz NA12878.corrected.txt.lz4
+///\endverbatim
+///\par
+/// will use only GPU 0 to correct the same 35x coverage human reads and output the result to an LZ4-compressed .txt file.
+///\par
+/// As described in the original paper, the <i>alpha</i> parameter should be generally set as 7.0/C, where C is the coverage of the genome.
+/// If alpha is not specified, it will be computed with an additional streaming pass through the input reads.
+///
+///
+/// \section nvLighterArchitecture Architecture
+///
+/// nvLighter's class hierarchy is documented in the \ref nvLighterModule "nvLighter module".
+///

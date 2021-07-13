@@ -1,0 +1,6 @@
+<launch>
+    <param name="velodyne_downsampling_size" type="double" value="0.2"/>
+    <param name="livox_downsampling_size" type="double" value="0.3"/>
+    <node name="lidar_points_integration_node" pkg="lidar_points_integration" type="lidar_points_integration_node" output="screen"/>
+</launch>
+

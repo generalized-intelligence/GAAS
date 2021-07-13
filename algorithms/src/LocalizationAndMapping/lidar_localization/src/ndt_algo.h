@@ -118,6 +118,11 @@ public:
         }
         cv::FileStorage map_gps_config;
         map_gps_config.open(map_path+".yaml",cv::FileStorage::READ);
+        if(!map_gps_config.isOpened())
+        {
+            LOG(ERROR)<<"Map config file not found!"<<endl;
+            throw "Error";
+        }
         map_gps_config["initial_longitude"]>>this->map_gps_info.longitude;
         map_gps_config["initial_latitude"]>>this->map_gps_info.latitude;
         map_gps_config["initial_altitude"]>>this->map_gps_info.altitude;
@@ -129,10 +134,24 @@ public:
         }
 
         //ndt.setResolution (3.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
-        ndt.setResolution (10.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
+
+        double step_size_in=2.0;
+        double resolution_in = 10.0;
+
+        if(ros::param::get("ndt_step_size",step_size_in)&&ros::param::get("ndt_resolution",resolution_in))
+        {
+            LOG(INFO)<<"NDT step size:"<<step_size_in<<"; resolution:"<<resolution_in<<endl;
+        }
+        else
+        {
+            LOG(ERROR)<<"Can not get step size and resolution in launch file!"<<endl;
+            throw "Error!";
+        }
+
+        ndt.setResolution (step_size_in);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
         LOG(INFO)<<"finished setresolution()"<<endl;
         //ndt.setStepSize (0.5);
-        ndt.setStepSize (2.0);
+        ndt.setStepSize (resolution_in);
         LOG(INFO)<<"finished setStepSize()"<<endl;
 
         ndt.setInputTarget(pmap_cloud);

@@ -1,0 +1,79 @@
+/*
+ * nvbio
+ * Copyright (c) 2011-2014, NVIDIA CORPORATION. All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * Neither the name of the NVIDIA CORPORATION nor the
+ *      names of its contributors may be used to endorse or promote products
+ *      derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+///\page nvbwt_page nvBWT
+///\htmlonly
+/// <img src="nvidia_cubes.png" style="position:relative; bottom:-10px; border:0px;"/>
+///\endhtmlonly
+///\par
+///\n
+/// <b>nvBWT</b> is an application built on top of \ref nvbio_page to perform BWT-based
+/// reference indexing for nvBowtie and potentially other FM-index based applications.
+///\par
+/// Given one or multiple fasta files, it will create both the forward and reverse
+/// BWT as well as 2-bit packed representation of the files and a few other auxiliary indices:
+///
+///\verbatim
+/// ./nvBWT my-reference.fasta my-index
+///\endverbatim
+///\par
+/// will generate the following files:
+///
+///\verbatim
+/// my-index.pac
+/// my-index.rpac
+/// my-index.bwt
+/// my-index.rbwt
+/// my-index.sa
+/// my-index.rsa
+/// my-index.ann
+/// my-index.amb
+///\endverbatim
+///
+/// \section PerformanceSection Performance
+///\par
+/// nvBWT runs the BWT construction on the GPU, using newly developed parallel algorithms.
+/// Here's a graph showing its superior performance compared to two other popular CPU based
+/// BWT builders:
+///
+/// <img src="benchmark-bwt.png" style="position:relative; bottom:-10px; border:0px;" width="80%" height="80%"/>
+///
+///\section OptionsSection Options
+///\par
+/// nvBWT supports the following command options:
+///
+///\verbatim
+///   nvBWT [options] input_file output-prefix
+///   options:
+///    -v       | --verbosity     int (0-6) [5]		// select the verbosity level
+///    -m       | --max-length    int       [inf]   // clamp input length
+///    -b       | --byte-packing                    // output a byte-encoded .pac file
+///    -w       | --word-packing                    // output a word-encoded .wpac file (more efficient)
+///    -c       | --crc                             // compute CRCs
+///    -d		| --device							// select a cuda device
+///\endverbatim
+///

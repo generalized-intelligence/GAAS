@@ -1,0 +1,113 @@
+/*
+ * nvbio
+ * Copyright (c) 2011-2014, NVIDIA CORPORATION. All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * Neither the name of the NVIDIA CORPORATION nor the
+ *      names of its contributors may be used to endorse or promote products
+ *      derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+///\page nvsetbwt_page nvSetBWT
+///\htmlonly
+/// <img src="nvidia_cubes.png" style="position:relative; bottom:-10px; border:0px;"/>
+///\endhtmlonly
+///\par
+///\n
+/// <b>nvSetBWT</b> is an application built on top of \ref nvbio_page to build the BWT of
+/// a <i>set</i> of strings, typically reads.
+///\par
+/// Given an input fastq or text file with one read per line, it will create a file
+/// containing the BWT of their forward and reverse-complemented strands.
+/// Alongside with the main BWT file, a file containing the mapping between the primary
+/// dollar tokens and their position in the BWT will be generated.
+/// e.g.
+///
+///\verbatim
+/// ./nvSetBWT my-reads.fastq my-reads.bwt
+///\endverbatim
+///\par
+/// will generate the following files:
+///
+///\verbatim
+/// my-reads.bwt
+/// my-reads.pri
+///\endverbatim
+///
+///\section OptionsSection Options
+///\par
+/// nvSetBWT supports the following command options:
+///
+///\verbatim
+///   nvSetBWT [options] input_file output_file
+///   options:
+///    -v       | --verbosity     int (0-6) [5]
+///    -c       | --compression   string    [1R]   (e.g. \"1\", ..., \"9\", \"1R\")
+///    -F       | --skip-forward
+///    -R       | --skip-reverse
+///\endverbatim
+///
+///\section FormatsSection File Formats
+///\par
+/// The output BWT can be saved in one of the following formats:
+///
+///\verbatim
+/// .txt        ASCII
+/// .txt.gz     ASCII, gzip compressed
+/// .txt.bgz    ASCII, block-gzip compressed
+/// .bwt        2-bit packed binary
+/// .bwt.gz     2-bit packed binary, gzip compressed
+/// .bwt.bgz    2-bit packed binary, block-gzip compressed
+/// .bwt4       4-bit packed binary
+/// .bwt4.gz    4-bit packed binary, gzip compressed
+/// .bwt4.bgz   4-bit packed binary, block-gzip compressed
+///\endverbatim
+///\par
+/// The accompanying primary map file (.pri|.pri.gz|.pri.bgz), is a plain list of (position,string-id) pairs,
+/// either in ASCII or binary form.
+/// The ASCII file has the form:
+///
+///\verbatim
+///  #PRI
+///  position[1] string[1]
+///  ...
+///  position[n] string[n]
+///\endverbatim
+///\par
+/// The binary file has the format:
+///
+///\verbatim
+///  char[4] header = "PRIB";
+///  struct { uint64 position; uint32 string_id; } pairs[n];
+///\endverbatim
+///
+///\section DetailsSection Details
+///\par
+/// nvSetBWT implements a novel algorithm for the BWT construction of very large string sets,
+/// called <b>set-bwte</b>:
+///
+///  http://arxiv.org/pdf/1410.0562.pdf
+///
+///\par
+/// The algorithm can be considered an adaptation of Ferragina's serial <b>bwte</b> algorithm
+/// to string sets and massive parallelism.
+/// Among its properties, it is well suited to process reads of arbitrary length, and it allows incremental
+/// updates (though this option is not yet implemented).
+///

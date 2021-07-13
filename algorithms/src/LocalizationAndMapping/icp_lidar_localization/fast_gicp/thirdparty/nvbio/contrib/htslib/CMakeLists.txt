@@ -1,0 +1,87 @@
+project(htslib)
+cmake_minimum_required(VERSION 2.8)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${NVBIO_SOURCE_ROOT}/nvbio)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${NVBIO_SOURCE_ROOT}/contrib/zlib)
+add_definitions(-DSAMTOOLS)
+
+set(HTSLIB_SRCS
+    bgzf.c
+    hfile.c
+    hts.c
+    kstring.c
+    vcfutils.c
+    bgzip.c
+    hfile_internal.h
+    kfunc.c
+    sam.c
+    tabix.c
+    vcf.c
+    config.h
+    faidx.c
+    hfile_net.c
+    knetfile.c
+    synced_bcf_reader.c
+    tbx.c
+    vcf_sweep.c
+    version.h
+    htslib/bgzf.h
+    htslib/hfile.h
+    htslib/hts.h
+    htslib/khash.h
+    htslib/klist.h
+    htslib/kseq.h
+    htslib/kstdint.h
+    htslib/sam.h
+    htslib/tbx.h
+    htslib/vcf_sweep.h
+    htslib/faidx.h
+    htslib/hts_defs.h
+    htslib/kfunc.h
+    htslib/khash_str2int.h
+    htslib/knetfile.h
+    htslib/ksort.h
+    htslib/kstring.h
+    htslib/synced_bcf_reader.h
+    htslib/vcf.h
+    htslib/vcfutils.h
+    cram/cram_codecs.c
+    cram/cram_encode.c
+    cram/cram_index.h
+    cram/cram_samtools.h
+    cram/files.c
+    cram/mFILE.h            
+    cram/os.h            
+    cram/sam_header.h    
+    cram/thread_pool.h  
+    cram/zfio.h
+    cram/cram_codecs.h  
+    cram/cram_encode.h  
+    cram/cram_io.c        
+    cram/cram_stats.c     
+    cram/md5.c    
+    cram/misc.h             
+    cram/pooled_alloc.c  
+    cram/string_alloc.c  
+    cram/vlen.c
+    cram/cram_decode.c  
+    cram/cram.h         
+    cram/cram_io.h        
+    cram/cram_stats.h     
+    cram/md5.h    
+    cram/open_trace_file.c  
+    cram/pooled_alloc.h  
+    cram/string_alloc.h  
+    cram/vlen.h
+    cram/cram_decode.h  
+    cram/cram_index.c   
+    cram/cram_samtools.c  
+    cram/cram_structs.h   
+    cram/mFILE.c  
+    cram/open_trace_file.h  
+    cram/sam_header.c    
+    cram/thread_pool.c   
+    cram/zfio.c
+)
+
+add_library(htslib STATIC ${HTSLIB_SRCS})

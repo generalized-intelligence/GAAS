@@ -189,7 +189,8 @@ int main(int argc,char** argv)
 
     message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/raw/fix", 1);
     //message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/global", 1);
-    message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/local_position/odom", 1);
+    //message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/local_position/odom", 1);
+    message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/global_position/local", 1);
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::NavSatFix, nav_msgs::Odometry> MySyncPolicy;
     // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
     message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(3), gps_sub, ahrs_sub);

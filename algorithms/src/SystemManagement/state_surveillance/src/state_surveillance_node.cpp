@@ -21,7 +21,7 @@ public:
     {
         ros::init(argc,argv,"px4_state_reporter_node");
         pNH = std::shared_ptr<ros::NodeHandle>(new ros::NodeHandle);
-        node
+
     }
 };
 

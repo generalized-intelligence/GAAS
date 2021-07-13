@@ -1,0 +1,7 @@
+htslib source obtained from:
+https://github.com/samtools/htslib.git
+commit 049f877de780bf72c4b12a7d9f05b6ae984715be
+
+note that the 'test' subdirectory in htslib was removed due to file name
+conflicts with perforce
+
