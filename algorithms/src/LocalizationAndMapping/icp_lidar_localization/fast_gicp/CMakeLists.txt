@@ -58,23 +58,6 @@ target_include_directories(fast_gicp PUBLIC
   ${EIGEN3_INCLUDE_DIR}
 )
 
-### APPS ###
-if(BUILD_apps)
-  add_executable(gicp_align src/align.cpp)
-  add_dependencies(gicp_align fast_gicp)
-  target_link_libraries(gicp_align
-    ${PCL_LIBRARIES}
-    fast_gicp
-  )
-
-  add_executable(gicp_kitti src/kitti.cpp)
-  add_dependencies(gicp_kitti fast_gicp)
-  target_link_libraries(gicp_kitti
-    ${PCL_LIBRARIES}
-    fast_gicp
-  )
-endif()
-
 
 ### CUDA ###
 if(CUDA_FOUND)
