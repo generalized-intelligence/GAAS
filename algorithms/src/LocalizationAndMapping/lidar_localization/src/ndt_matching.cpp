@@ -179,7 +179,7 @@ int main(int argc,char** argv)
     ros::param::get("lidar_topic_name",lidar_topic_name);
     ros::param::get("ndt_result_visualization",ndt_result_visualization);
     LOG(INFO)<<"Subscribing lidar topic name:"<<lidar_topic_name<<endl;
-    pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/ndt_pose",1);
+    pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/registration_pose",1);
     gps_ahrs_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/original_gps_ahrs_pose",1);
     if(ndt_result_visualization)
     {

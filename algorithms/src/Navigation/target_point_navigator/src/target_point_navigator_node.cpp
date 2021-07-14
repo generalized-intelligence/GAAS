@@ -46,7 +46,7 @@ public:
         navigation_service_client = pNH->serviceClient<gaas_msgs::GAASGetAStarPath>
                 ("/gaas/navigation/global_planner/astar_planning");
         currentPoseSubscriber = pNH->subscribe<geometry_msgs::PoseStamped>
-                ("/gaas/localization/ndt_pose",1,
+                ("/gaas/localization/registration_pose",1,
                  &TargetPointNavigator::currentPoseCallback,this);
         targetPositionPublisher = pNH->advertise<geometry_msgs::PoseStamped>("/gaas/navigation/target_position",1);
         while(!pose_ready)

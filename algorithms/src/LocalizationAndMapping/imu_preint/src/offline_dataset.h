@@ -77,7 +77,7 @@ void loadDatasetFromBag(SequenceDataset& sd)
     rosbag::Bag bag;
     bag.open("/home/gi/Downloads/imu_localization.bag");
     vector<string> topics;
-    topics.push_back(std::string("/gaas/localization/ndt_pose"));
+    topics.push_back(std::string("/gaas/localization/registration_pose"));
     topics.push_back(std::string("/external_imu"));
     rosbag::View view(bag, rosbag::TopicQuery(topics));
 

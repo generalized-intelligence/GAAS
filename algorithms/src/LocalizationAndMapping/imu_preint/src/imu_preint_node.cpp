@@ -47,7 +47,7 @@ public:
 
         //init subscribers.
 
-        lidar_pose_sub = pNH->subscribe<geometry_msgs::PoseStamped>("/gaas/localization/ndt_pose",1,&IMUPreintManager::LidarPoseCallback,this);
+        lidar_pose_sub = pNH->subscribe<geometry_msgs::PoseStamped>("/gaas/localization/registration_pose",1,&IMUPreintManager::LidarPoseCallback,this);
 
         string imu_topic_name;
         if(!ros::param::get("imu_topic_name",imu_topic_name))

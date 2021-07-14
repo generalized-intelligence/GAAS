@@ -214,7 +214,7 @@ public:
                                                                                        &PX4MavrosController::target_position_callback,this);
         gaas_target_yaw_sub = pnode_handle->subscribe<std_msgs::Float32>("/gaas/navigation/target_enu_yaw",1,
                                                                          &PX4MavrosController::target_yaw_callback,this);
-        gaas_localization_sub = pnode_handle->subscribe<geometry_msgs::PoseStamped>("/gaas/localization/ndt_pose",1,&PX4MavrosController::current_gaas_location_callback,this);
+        gaas_localization_sub = pnode_handle->subscribe<geometry_msgs::PoseStamped>("/gaas/localization/registration_pose",1,&PX4MavrosController::current_gaas_location_callback,this);
         mavros_target_position_pub = pnode_handle->advertise<mavros_msgs::PositionTarget>("/mavros/setpoint_raw/local",1);
         arming_client = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
         set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");

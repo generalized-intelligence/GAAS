@@ -139,7 +139,7 @@ Visualization Manager:
       Shaft Length: 2
       Shaft Radius: 0.05000000074505806
       Shape: Axes
-      Topic: /gaas/localization/icp_pose
+      Topic: /gaas/localization/registration_pose
       Unreliable: false
       Value: true
     - Alpha: 1
