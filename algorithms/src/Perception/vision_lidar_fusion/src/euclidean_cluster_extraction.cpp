@@ -41,7 +41,7 @@ int max_cluster_size = 200000;
 double cluster_tolerance = 0.25;
 
 
-void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::Ptr> &output,
+void doEuclideanSegment (const LidarCloudT::ConstPtr &cloud_in, vector<LidarCloudT::Ptr> &output,
                          int min_cluster_size, int max_cluster_size, double cluster_tolerance)
 {
     // Convert data to PointCloud<T>
@@ -55,9 +55,15 @@ void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::P
     LOG(INFO)<<"In doEuclideanSegment()."<<endl;
     ScopeTimer seg_timer("[EuclideanClusterExtraction] in doEuclideanSegment()");
     // Creating the KdTree object for the search method of the extraction
+    if(cloud_in->empty())
+    {
+        LOG(INFO)<<"[euclidean_cluster_extraction] Empty point cloud input! Continue."<<endl;
+        return;
+    }
 
     LidarCloudT::Ptr downsampled_input(new LidarCloudT);
     pcl::VoxelGrid<PointT> sor;
+
     sor.setInputCloud(cloud_in);
     sor.setLeafSize(EUCLIDEAN_DOWNSAMPLING_SIZE, EUCLIDEAN_DOWNSAMPLING_SIZE, EUCLIDEAN_DOWNSAMPLING_SIZE);
     sor.filter(*downsampled_input);
@@ -76,8 +82,12 @@ void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::P
     ec.setInputCloud(downsampled_input);
     ec.extract (cluster_indices);
     seg_timer.watch("[EuclideanClusterExtraction] extract clusters finished.");
-
-    output.reserve (cluster_indices.size ());
+    if(cluster_indices.size() == 0)
+    {
+        LOG(INFO)<<"[euclidean_cluster_extraction] No cluster found. Continue."<<endl;
+        return;
+    }
+    output.reserve (cluster_indices.size());
     for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
     {
 //        pcl::ExtractIndices<LidarCloudT> extract;
@@ -91,7 +101,7 @@ void doEuclideanSegment (const LidarCloudT::Ptr &cloud_in, vector<LidarCloudT::P
         }
         out->height = 1;
         out->width = out->size();
-        output.push_back (out);
+        output.push_back(out);
         //LOG(INFO)<<"[EuclideanClusterExtraction]    cloud size:"<<out->size()<<endl;
     }
     LOG(INFO)<<"[EuclideanClusterExtraction] clusters count:"<<cluster_indices.size()<<endl;
@@ -164,6 +174,11 @@ void callback(const pcl::PCLPointCloud2::ConstPtr &cloud_msg)
     vector<LidarCloudT::Ptr> output_clusters;
     LidarCloudT::Ptr pCurrentCloud(new LidarCloudT);
     pcl::fromPCLPointCloud2(*cloud_msg,*pCurrentCloud);
+    if(pCurrentCloud->empty())
+    {
+        LOG(WARNING)<<"[euclidean_cluster_extraction] Empty point cloud input! Continue."<<endl;
+        return;
+    }
     doEuclideanSegment(pCurrentCloud,output_clusters,min_cluster_size,max_cluster_size,cluster_tolerance);
     publishPerceptionObstaclesList(output_clusters,cloud_msg);
     visualizeClusters(output_clusters,cloud_msg);

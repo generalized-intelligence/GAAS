@@ -9,6 +9,6 @@
         <param name="visualize" type="bool" value="true"/>
         <param name="config_file_path" type="string" value="/home/gi/GAAS_contrib/config/camera1_lidar1.yaml"/>
     </node>
-    <node name="euclidean_cluster_extration_node" pkg="vision_lidar_fusion" type="euclidean_cluster_extraction" output="screen"/>
+    <node name="euclidean_cluster_extration_node" pkg="vision_lidar_fusion" type="euclidean_cluster_extraction" output="screen"/> <!--launch-prefix="stterm -g 200x60 -e gdb -ex run \-\-args"-->
 </launch>
 

@@ -333,7 +333,7 @@ public:
                 count++;
             }
         }
-
+        LOG(INFO)<<"Obstacle markers count:"<<count;
     }
 private:
     inline float calcLongDistByIndex(const TIndex& i1,const TIndex& i2)//TODO:消除和AStarLib.h的重复代码.
