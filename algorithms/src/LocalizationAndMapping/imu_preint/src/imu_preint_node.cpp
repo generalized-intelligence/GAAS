@@ -56,7 +56,7 @@ public:
             throw "ERROR!";
         }
 
-        imu_msg_sub = pNH->subscribe<sensor_msgs::Imu>(imu_topic_name,1,&IMUPreintManager::IMUInfoCallback,this);
+        imu_msg_sub = pNH->subscribe<sensor_msgs::Imu>(imu_topic_name,100,&IMUPreintManager::IMUInfoCallback,this);
         waitForFirstLidarPose();
 
         //register callback
@@ -76,9 +76,12 @@ public:
             //    return;//break;
             //}
             //反复spinOnce等这个消息到.
-            ros::spinOnce();
+            for(int i = 0;i<10;i++)
+            {
+                ros::spinOnce();
+            }
             LOG(INFO)<<"waiting for first lidar pose..."<<endl;
-            usleep(2000);//20ms.
+            //usleep(1000);//10ms.
         }
         if(ros::ok())
         {
@@ -157,9 +160,18 @@ public:
 
         LOG(INFO)<<"lidar pose callback finished."<<endl;
     }
+    void normalize_quaternion(geometry_msgs::TransformStamped& transform_)
+    {
+        auto& q_ = transform_.transform.rotation;
+        Eigen::Quaternionf qf(q_.w,q_.x,q_.y,q_.z);
+        qf.normalize();
+        q_.w = qf.w();q_.x = qf.x();q_.y = qf.y();q_.z = qf.z();
+    }
     void IMUInfoCallback(const sensor_msgs::ImuConstPtr& imu_msg)
     {//发布imu到Lidar preint变换系.
         //LOG(INFO)<<"In IMUMsgCallback()"<<endl;
+        ros::Time t_now = ros::Time::now();
+
         this->pose_mutex.lock();
         if(!this->pose_ever_init)
         {
@@ -172,10 +184,37 @@ public:
         imu_msg_mutex.lock();
         this->imu_buffer.push_back(*imu_msg);
         imu_msg_mutex.unlock();
+        //check timeout.
+        if((t_now-imu_msg->header.stamp).toSec()>0.050||(t_now-this->sip.prev_stamp).toSec()>0.4)
+        {
+            LOG(WARNING)<<"Time out detected;reset imu preint"<<endl;
+            resetIMUPreint();
+            return;
+        }
+
         geometry_msgs::PoseStamped p_preint;
         this->sip.do_prop(*imu_msg,p_preint);
         p_preint.header.frame_id = "map";
-        this->pIMUPosePub->publish(p_preint);
+
+
+        double dt = (imu_msg->header.stamp - this->sip.prev_stamp).toSec();
+        if(dt<0.10) //150ms maximum.
+        {
+            this->pIMUPosePub->publish(p_preint);
+            geometry_msgs::TransformStamped tf_stamped;
+            tf_stamped.header.stamp = imu_msg->header.stamp;
+            tf_stamped.header.frame_id = "map";
+            tf_stamped.child_frame_id = "imu_preint";
+            auto& r = tf_stamped.transform.rotation;
+            auto& t = tf_stamped.transform.translation;
+            const auto& r_ = p_preint.pose.orientation;
+            const auto& t_ = p_preint.pose.position;
+            r.w=r_.w; r.x=r_.x; r.y=r_.y; r.z=r_.z;
+            t.x=t_.x; t.y=t_.y; t.z=t_.z;
+            //sometimes the quaternion output by gtsam optimizer is not normalized, so we do this manually to avoid ros tf2 error.
+            normalize_quaternion(tf_stamped);
+            this->pIMUTFbroadcaster->sendTransform(tf_stamped);
+        }
         return;
 
     }
@@ -239,6 +278,24 @@ public:
         retval.pose.orientation.z = quat.z();
 
         return retval;
+    }
+    void resetIMUPreint()
+    {
+        this->pose_mutex.lock();
+        this->imu_msg_mutex.lock();
+        Vector3d prev_velocity_new;
+        this->prev_velocity = prev_velocity_new;
+        SequentialIMUPreintegrator::IMUBiasType imu_bias_new;
+        this->imu_bias = imu_bias_new;
+        geometry_msgs::PoseStamped pose_reset;
+        this->prev_pose = pose_reset;
+        this->curr_pose = pose_reset;
+        this->imu_buffer.clear();
+        SequentialIMUPreintegrator new_sip;
+        this->sip = new_sip;
+        this->imu_msg_mutex.unlock();
+        this->pose_mutex.unlock();
+        return;
     }
 private:
     SequentialIMUPreintegrator sip;

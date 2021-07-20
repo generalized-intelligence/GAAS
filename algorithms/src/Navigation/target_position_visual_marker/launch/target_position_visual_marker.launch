@@ -1,3 +1,4 @@
 <launch>
+    <param name="map_path" type="string" value="/home/gi/Documents/SCLEGOLOAM_ENV/park_map/output_aligned.pcd"/>
     <node name="target_position_visual_marker" pkg="target_position_visual_marker" type="target_position_visual_marker" output="screen"/>
 </launch>

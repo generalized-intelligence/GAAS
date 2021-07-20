@@ -1,6 +1,21 @@
 #ifndef LIDAR_LOCALIZATION_NDT_ALGO_H
 #define LIDAR_LOCALIZATION_NDT_ALGO_H
 
+#include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/transform_datatypes.h>
+
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+
+#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
+
+#include <geometry_msgs/TransformStamped.h>
+
+
 #include "typedefs.h"
 #include <glog/logging.h>
 #include <ros/ros.h>
@@ -58,23 +73,31 @@ public:
 
     bool lidar_height_compensation = false;
     double lidar_height_to_gps=0;
+    bool enable_imu_preint;
     ICP_CORE icp;
 
+    tf2_ros::Buffer tf2_buffer;
+    std::shared_ptr<tf2_ros::TransformListener> pTFListener;
 
     ICPAlgo(GPS_AHRS_Synchronizer* gps_ahrs_sync_ptr)
     {
         this->p_gps_ahrs_sync = gps_ahrs_sync_ptr;
-        if(ros::param::get("lidar_height_to_gps",lidar_height_to_gps)&&ros::param::get("icp_downsample_size",DOWNSAMPLE_SIZE))
+        if(ros::param::get("lidar_height_to_gps",lidar_height_to_gps)&&ros::param::get("icp_downsample_size",DOWNSAMPLE_SIZE)
+                &&ros::param::get("enable_imu_preint_initial_guess",enable_imu_preint))
         {
-            LOG(INFO)<<"LIDAR_GPS_HEIGHT_COMPENSATION ready!"<<endl;
+            LOG(INFO)<<"[icp_matching] LIDAR_GPS_HEIGHT_COMPENSATION ready!"<<endl;
             lidar_height_compensation = true;
+            if(enable_imu_preint)
+            {
+                pTFListener = std::shared_ptr<tf2_ros::TransformListener>(new tf2_ros::TransformListener(this->tf2_buffer));
+                LOG(INFO)<<"[icp_matching] Enable IMU Preint."<<endl;
+            }
         }
         else
         {
             LOG(ERROR)<<"init icp localizer failed!"<<endl;
             throw "Error";
         }
-
     }
 
     bool loadPCDMap()
@@ -198,7 +221,7 @@ public:
             Eigen::Matrix3f NWU_R = (R_nwu_enu*original.toRotationMatrix());
 
             Eigen::Quaternionf NWU_orient(NWU_R);
-            LOG(INFO)<<"NWU coord quaternion initial guess = "<<NWU_orient.x()<<","<<NWU_orient.y()<<","<<NWU_orient.z()<<","<<NWU_orient.w()<<endl;
+            LOG(INFO)<<"[icp_matching] NWU coord quaternion initial guess = "<<NWU_orient.x()<<","<<NWU_orient.y()<<","<<NWU_orient.z()<<","<<NWU_orient.w()<<endl;
             gps_ahrs_initial_guess.block(0,0,3,3) = NWU_R;
             Eigen::Vector3f xyz_(x,y,z);
 
@@ -206,7 +229,7 @@ public:
             gps_ahrs_initial_guess(1,3) = xyz_(1);
             gps_ahrs_initial_guess(2,3) = xyz_(2) - lidar_height_compensation;
             gps_ahrs_initial_guess(3,3) = 1;
-            LOG(INFO)<<"GPS_AHRS_INITIAL:"<<endl<<gps_ahrs_initial_guess<<endl;
+            LOG(INFO)<<"[icp_matching] GPS_AHRS_INITIAL:"<<endl<<gps_ahrs_initial_guess<<endl;
 
             gps_ahrs_initial_avail = true;
             return true;
@@ -300,7 +323,7 @@ public:
     bool doICPWithInitialPoseGuess (LidarCloudT::Ptr pcloud_current,
                                     Eigen::Matrix4f& pose_guess,
                                     Eigen::Matrix4f& output_pose,
-                                    string initial_guess_type="gps_ahrs"//"gps_ahrs","icp_prev","imu_integrated"
+                                    string initial_guess_type="gps_ahrs"//"gps_ahrs","icp_prev","imu_preint"
             )
     {
         ScopeTimer icp_timer("icp_timer");
@@ -326,21 +349,27 @@ public:
         {
             //icp.setResolution (3.0);  //Setting Resolution of ICP grid structure (VoxelGridCovariance).
             //icp.setStepSize (0.5);
-            icp.setMaximumIterations (10);  //Setting max number of registration iterations.
+            icp.setMaximumIterations (20);  //Setting max number of registration iterations.
             //icp.setTransformationEpsilon (0.01); // Setting maximum step size  for More-Thuente line search. Set by config file.
-            LOG(INFO)<<"icp with prev icp initial guess"<<endl;
+            LOG(INFO)<<"[ICP Matching] icp with gps_ahrs initial guess"<<endl;
             icp.align(*output_cloud,pose_guess);
         }
         else if(initial_guess_type == "icp_prev")
         {
             //icp.setResolution (2.0);  //Setting Resolution of ICP grid structure (VoxelGridCovariance).
             //icp.setStepSize (0.5);
-            //icp.setMaximumIterations (10);  //Setting max number of registration iterations.
+            icp.setMaximumIterations (10);  //Setting max number of registration iterations.
             //icp.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
-            LOG(INFO)<<"icp with prev icp initial guess"<<endl;
+            LOG(INFO)<<"[ICP Matching] icp with prev icp initial guess"<<endl;
             //icp.align(pose_guess);
             icp.align(*output_cloud,pose_guess);
 
+        }
+        else if(initial_guess_type == "imu_preint")
+        {
+            icp.setMaximumIterations (5);  //Setting max number of registration iterations.
+            LOG(INFO)<<"[ICP Matching] icp with imu preint initial guess"<<endl;
+            icp.align(*output_cloud,pose_guess);
         }
 
         if(!icp.hasConverged()&&icp.getFitnessScore()>5.0)
@@ -354,12 +383,83 @@ public:
         return true;
     }
 
-    bool doICPMatching(LidarCloudT::Ptr pcloud_current,Eigen::Matrix4f& output_pose,LidarCloudT::Ptr& transformed_cloud_ptr,bool need_transformed_cloud = false)
+    bool get_imu_preint_odometry(const ros::Time& cloud_stamp, Eigen::Matrix4f& output_pose)
+    {//使用tf变换获取当前时刻 imu_preint 位置预测.
+        if(!this->ever_init)
+        {
+            return false;
+        }
+        geometry_msgs::TransformStamped tf_stamped;
+        try
+        {
+            std::string canTransform_error_str;
+            if(!tf2_buffer.canTransform("map","imu_preint",cloud_stamp,ros::Duration(0.001),&canTransform_error_str))
+            {
+                LOG(WARNING)<<"[ICP Matching] in canTransform(): not avail! Reason:"<<canTransform_error_str<<endl;
+                return false;
+            }
+            tf_stamped = this->tf2_buffer.lookupTransform("map","imu_preint",cloud_stamp,ros::Duration(0.001));//1ms timeout. Ensure the procedure is realtime.
+        }
+        catch (const std::exception e)
+        {
+            LOG(WARNING)<<"[ICP Matching] Exception caught in get_imu_preint_odometry() while looking up imu_preint transformation."<<endl;
+            return false;
+        }
+        if( fabs((tf_stamped.header.stamp - cloud_stamp).toSec())>0.06 )
+        {
+            LOG(WARNING)<<"[ICP Matching] imu_preint and lidar cloud latency>60ms, imu_preint rejected."<<endl;
+            return false;
+        }
+        {
+            Eigen::Matrix4f prev_res_copy = this->prev_res;
+            const auto& R = tf_stamped.transform.rotation;
+            const auto& t = tf_stamped.transform.translation;
+            Eigen::Quaternionf q(R.w,R.x,R.y,R.z);
+            output_pose.block(0,0,3,3) = q.toRotationMatrix();
+            output_pose(0,3) = t.x;
+            output_pose(1,3) = t.y;
+            output_pose(2,3) = t.z;//TODO: see if rotation-only setting will work?
+            double position_error_square = pow( t.x- prev_res_copy(0,3) ,2) + pow( t.y - prev_res_copy(1,3) ,2) + pow( t.z - prev_res_copy(2,3) ,2);
+            if( position_error_square > 4.5*4.5)//4.5m in 0.5s  --> 162 km/h
+            {
+                LOG(WARNING)<<"[ICP Matching] Estimated velocity too large, ignore imu preint result.Position error:"<<sqrt(position_error_square)<<endl;
+                return false;
+            }
+            Eigen::Matrix3f prev_rot = prev_res_copy.block(0,0,3,3);
+            Eigen::Quaternionf f2(prev_rot);
+            const float ROTATION_THRES = 45*3.1415926/180; // 45 deg.
+            if(f2.angularDistance(q)>ROTATION_THRES) // check rotation.
+            {
+                LOG(WARNING)<<"[ICP Matching] Estimated angular rate too large, ignore imu preint result.Rot error:"<<f2.angularDistance(q)*180.0/3.14<<"deg."<<endl;
+                return false;
+            }
+            LOG(INFO)<<"[ICP Matching] Using imu_preint result which was checked."<<endl;
+
+
+            //Using rotation only.
+            LOG(INFO)<<"[ICP Matching] Using imu predicted rotation only."<<endl;
+            output_pose(0,3) = prev_res_copy(0,3);
+            output_pose(1,3) = prev_res_copy(1,3);
+            output_pose(2,3) = prev_res_copy(2,3);
+            return true;
+        }
+    }
+
+    bool doICPMatching(LidarCloudT::Ptr pcloud_current,Eigen::Matrix4f& output_pose,LidarCloudT::Ptr& transformed_cloud_ptr,
+                       bool need_transformed_cloud,const ros::Time& cloud_stamp)
     {
         bool flag_icp_success = false;
         if(ever_init)
         {//使用上次icp初始值进行初始化.
-            flag_icp_success = doICPWithInitialPoseGuess(pcloud_current,this->prev_res,output_pose,"icp_prev");
+            Eigen::Matrix4f imu_preint_pose_initial_guess;
+            if(enable_imu_preint&&get_imu_preint_odometry(cloud_stamp,imu_preint_pose_initial_guess))
+            {
+                flag_icp_success = doICPWithInitialPoseGuess(pcloud_current,imu_preint_pose_initial_guess,output_pose,"imu_preint");
+            }
+            else
+            {
+                flag_icp_success = doICPWithInitialPoseGuess(pcloud_current,this->prev_res,output_pose,"icp_prev");
+            }
         }
         else
         {//尝试使用GPS_AHRS初始化.

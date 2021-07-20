@@ -134,18 +134,36 @@ void transformMapByInitialOdometryAndGPSCoordinate(const nav_msgs::Odometry& odo
         quat.w() = ps.w;
 
         Eigen::Matrix3d R_flu_luf;
-        R_flu_luf<<1,0,0,0,0,-1,0,1,0;//正确.
 
-
+        bool using_liosam_coordinate = false;
+        if(!ros::param::get("using_liosam_coordinate",using_liosam_coordinate))
+        {
+            LOG(ERROR)<<"Error: Using_liosam_coordinate param not found in launch file!"<<endl;
+            throw "Error!";
+        }
+        if(using_liosam_coordinate)
+        {
+            R_flu_luf<<1,0,0,0,1,0,0,0,1;//LIO_SAM Only
+        }
+        else
+        {
+            R_flu_luf<<1,0,0,0,0,-1,0,1,0;//For LOAM LeGO_LOAM and SC_LeGOLOAM.
+        }
         Eigen::Matrix3d rot_original = quat.toRotationMatrix();
         Eigen::Matrix3d rot_transformed_ = R_flu_luf.inverse()*rot_original.inverse()*(R_flu_luf);
         Eigen::Matrix3d rot_LUF = rot_transformed_.inverse();
 
 
     double z_comps = 0; //z_angle_compensation
+    if(using_liosam_coordinate)
+    {
+        z_comps-=90;
+        LOG(INFO)<<"z_angle_compensation -=90 deg for using liosam coordinate!"<<endl;
+    }
     if(!ros::param::get("z_angle_compensation",z_comps))
     {
-        LOG(WARNING)<<"WARNING: z_angle_compensation not set in launch file!!!"<<endl;
+        LOG(ERROR)<<"ERROR: z_angle_compensation not set in launch file!!!"<<endl;
+        throw "Error!";
     }
     else
     {

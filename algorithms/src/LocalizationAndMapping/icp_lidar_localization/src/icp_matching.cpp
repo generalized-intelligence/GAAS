@@ -81,8 +81,9 @@ void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
 
     bool need_transformed_pointcloud = (icp_result_visualization&&aligned_cloud_pub.getNumSubscribers()>0);
     LidarCloudT::Ptr transformed_cloud=nullptr;
-    bool icp_success = pICP->doICPMatching(downsampled,output_icp_pose,transformed_cloud,need_transformed_pointcloud);
-
+    bool icp_success = pICP->doICPMatching(downsampled,output_icp_pose,transformed_cloud,
+                                           need_transformed_pointcloud,cloud_msg->header.stamp);
+    timer.watch("till icp finished:");
 
 
     if(icp_success)
@@ -106,7 +107,10 @@ void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg)
         pos.y = output_icp_pose(1,3);
         pos.z = output_icp_pose(2,3);
 
+        timer.watch("before publishing pose:");
         pose_pub.publish(icp_pose_msg);
+
+        timer.watch("till pose published:");
 
         //publish tf2 transfrom.
         Eigen::Matrix4f lidar_to_map = output_icp_pose.inverse();

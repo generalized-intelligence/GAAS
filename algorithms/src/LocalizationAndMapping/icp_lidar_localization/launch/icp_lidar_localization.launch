@@ -1,6 +1,7 @@
 <launch>    
    <arg name="do_visualization" value="true"/>
-
+   <arg name="enable_imu_preint_initial_guess" value="true"/>
+   <param name="enable_imu_preint_initial_guess" type="bool" value="$(arg enable_imu_preint_initial_guess)"/>
    <param name="use_sim_time" type="bool" value="true"/>
    <param name="lidar_topic_name" type="string" value="/velodyne_points2"/>
    <param name="icp_result_visualization" type="bool" value="$(arg do_visualization)" />
@@ -9,7 +10,7 @@
 
    <!--icp params-->
 
-   <param name="icp_transformation_epsilon" type="double" value="0.01"/>
+   <param name="icp_transformation_epsilon" type="double" value="0.05"/>
    <param name="icp_resolution" type="double" value="10.0"/>
    <param name="icp_max_correspondence_distance" value="8.0"/>
    <param name="icp_euclidean_fitness_epsilon" value="0.5"/>

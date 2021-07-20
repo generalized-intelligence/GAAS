@@ -226,11 +226,18 @@ public:
         Pose3 propagated_pose = prop_state.pose();
         Vector3 prop_position = propagated_pose.translation();
 
+
+        //gtsam::LevenbergMarquardtParams params_lm;
+        //params_lm.setVerbosity("ERROR");
+        //params_lm.setMaxIterations(30);
+        //params_lm.setLinearSolverType("MULTIFRONTAL_CHOLESKY");
+
         LevenbergMarquardtOptimizer optimizer(*new_graph, initial_values);
+        //LevenbergMarquardtOptimizer optimizer(*new_graph, initial_values,params_lm);
         Values result;
         LOG(INFO)<<"before optimization..."<<endl;
         result = optimizer.optimize();//replace global optimization with local ones.
-        LOG(INFO)<<"after optimization..."<<endl;
+        LOG(INFO)<<"after "<<optimizer.getInnerIterations()<<" times optimization..."<<endl;
         // Overwrite the beginning of the preintegration for the next step.
         prev_state = NavState(poseFromMsg(curr_pose),
                               result.at<Vector3>(V(1)));
