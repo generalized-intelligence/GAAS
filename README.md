@@ -83,7 +83,7 @@ PX4(simulation only) 1.8.0
 
 ## Getting Started
 
-To build the project, setup all dependencies and run:
+To build the project, setup all dependencies, run:
 
     ./build_all.sh
 
