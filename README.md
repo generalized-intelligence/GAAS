@@ -98,8 +98,56 @@ To run GAAS_contrib algorithms:
 
 GAAS is under BSD 3-Clause License.
 
-## Features and Roadmap
+## Features
 
-Please Checkout by this link
+1. Simulation env with 32 lines lidar and stereo cameras.
 
+2. Spinning lidar mapping and NDT matching localization.
 
+Check out simulation/README.md to get more details of simulation env setup.
+
+## Roadmap:
+
+#### 1.  Gazebo simulation env construction, including spinning lidars and non-repetitive lidars and stereo cameras.
+
+(1). Livox Horizon + Forward Stereo Camera --Done.
+
+(2). Velodyne HDL-32 + Forward Stereo Camera --Done.
+
+#### 2. Accelerate compiling and deployment of GAAS.
+
+#### 3. Implement some LIDAR (mechanical/solid-state) based algorithms, and implement one key start in the simulation environment.
+
+(1). Lidar Points to Image Projection-- Done.
+
+(2). Euclidean Cluster Extraction. --Done.
+
+(3). Global Coordinate based HD-Map Building. --Done.
+
+(4). NDT Lidar Localization(CPU/Cuda) --Done.
+
+(5). Downsampling Node --Done.
+
+(6). A* Path Planner --Done.
+
+(7). Refactored px4 Offboard Commander --Done.
+
+(8). Dynamic Obstacles Generation and Replanning --Done.
+
+(9). Jetson AGX Xavier Adaptation --Done.
+
+(10). Interactive GUI Target Selector in HD-maps --Done.
+
+(11). Multiple Submaps Switching --TODO
+
+(12). IMU-Preintegration and High-Frequency Localization--Done.
+
+(13). VTOL Mode Switching --TODO.
+
+(14). Decentralized Robust Ground Controller Station --TODO.
+
+(15). Generalized Flight Controller State Management --Done.
+
+(16). PX4 State Reporter --Done.
+
+(17). HUD Module --Done.
