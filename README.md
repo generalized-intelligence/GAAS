@@ -7,7 +7,7 @@
 
 **GAAS is an open-source program designed for fully autonomous VTOL(a.k.a flying cars) and drones.** GAAS stands for Generalized Autonomy Aviation System. We hope to accelerate human use of the sky through the full autonomy of flying vehicles. This project started in 2016 as a hobby for two students. 2019 we open-source the project and hope to develop GAAS full time in the long term.
 
-**GAAS provides a fully autonomous flight platform based on lidar, HD-map relocalization, path planning, and other modules for aircraft.** In contrast to the autopilot technology previously available only for consumer-grade drones, GAAS aims for robust  fully autonomous flight for human-carrying, and can be easily combined with national air traffic control. At GAAS you can see many of the automotive-grade(AG) technologies that were previously only available in self-driving cars. And there is a wealth of extensibility to help you customize your development to your goals.
+**GAAS provides a fully autonomous flight platform based on lidar, HD-map relocalization, path planning, and other modules for aircraft.** In contrast to the autopilot technology previously available only for consumer-grade drones, GAAS aims for robust  fully autonomous flight for human-carrying, and can be easily combined with national air traffic control. At GAAS you can see many of the automotive-grade(AG) technologies that were previously only available in self-driving cars. The whole framework is coupled loosely so you can customize your own modules and easily add them to GAAS.
 
 ## Previews:
 
