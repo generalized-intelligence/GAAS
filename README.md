@@ -1,16 +1,15 @@
-# GAAS_contrib: 向完全取代驾驶员的自主驾驶飞行汽车进发————一组稳健的 GAAS 激光雷达扩展框架!
+# GAAS: Towards L5 Autonomous Flying Cars, a Robust Framework Extends GAAS with Lidars!
 
-# GAAS_contrib: Towards L5 Autonomous Flying Cars, a Robust Framework Extends GAAS with Lidars!
+![Star](https://img.shields.io/github/stars/generalized-intelligence/gaas?style=flat-square)![fork](https://img.shields.io/github/forks/generalized-intelligence/gaas?style=flat-square)![watch](https://img.shields.io/github/watchers/generalized-intelligence/gaas?style=flat-square)![BSD-3](https://img.shields.io/github/license/generalized-intelligence/gaas?style=flat-square)![twitter](https://img.shields.io/twitter/follow/GAAS_dev?style=social)
 
-Extra modules of GAAS; Including some amazing lidar-based algorithms!
 
-**本项目包含一些 GAAS的扩展模块,包括一些基于激光雷达的优秀算法实现!**
+## About GAAS
+
+**GAAS is an open-source program designed for fully autonomous VTOL(a.k.a flying cars) and drones.** GAAS stands for Generalized Autonomy Aviation System. We hope to accelerate human use of the sky through the full autonomy of flying vehicles. This project started in 2016 as a hobby for two students. 2019 we open-source the project and hope to develop GAAS full time in the long term.
+
+**GAAS provides a fully autonomous flight platform based on lidar, HD-map relocalization, path planning, and other modules for aircraft.** In contrast to the autopilot technology previously available only for consumer-grade drones, GAAS aims for robust  fully autonomous flight for human-carrying, and can be easily combined with national air traffic control. At GAAS you can see many of the automotive-grade(AG) technologies that were previously only available in self-driving cars. The whole framework is coupled loosely so you can customize your own modules and easily add them to GAAS.
 
 ## Previews:
-
-**Get a fast preview without complex simulation configuration works by pulling [GAAS_contrib_resources](https://github.com/cyanine-gi/GAAS_contrib_resources)!**
-
-**通过访问 [GAAS_contrib_resources](https://github.com/cyanine-gi/GAAS_contrib_resources) 快速预览GAAS_contrib 的算法效果而无需复杂的环境配置.**
 
 ![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/algorithms/preview_imgs/gaas_algorithms_rviz_preview_20200401.png)
 
@@ -22,200 +21,173 @@ Extra modules of GAAS; Including some amazing lidar-based algorithms!
 
 A video has been uploaded to show the whole pipeline. You may need to download this [video](https://github.com/cyanine-gi/GAAS_contrib_resources/blob/main/demos/gaas_contrib_test1_20210419_compressed.mp4?raw=true).
 
-**这个项目是 GAAS----一套无人机/飞行汽车全自主飞行框架的扩展模块.**
 
-## 目录 Index
+## Differences between GAAS deprecated and new GAAS:
 
-1.使用说明 Usage
+We use lidars, as main sensor, rather than vision algorithms.
 
-2.开启项目的原因以及作者想说的 The reason why GAAS_contrib was created and the words by the author
 
-3.现在已完成的部分 Finished tasks by now
+GAAS deprecated is based on computer vision(CV), but fully vision-algorithms-based framework is not robust enough for autonomous flying.
 
-4.开发路线图 Roadmap
+For flying cars and large cargo drones, vision-based algorithms suffer from:
 
-## 1.使用说明 Usage
+1. Lack of robustness, especially at night or over-exposed conditions. When air vehicles are flying at high speed, the localization is not stable enough which may cause severe accidents(vital to large air vehicles).
 
-###     1.编译工程 Build the project:
+2. Computer vision is computationally expensive and does not easily run in real-time on mobile devices.
 
-To build the project, setup all dependencies and run:
+3. The neural network-based approach is accident-prone in extreme scenarios, and the failures are not easily reproducible.
+
+These problems are not allowed to occur in manned flight scenarios.
+
+Therefore, the introduction of LIDAR seems to be necessary at present. That's why we make new GAAS from scratch, and refactored all modules in cpp.
+
+## Build with:
+
+Tested on OS: Ubuntu 18.04; PX4(for simulation only) 1.8.0.
+
+### step<1> Check your network status
+
+    ping github.com
+
+### step<2> tools
+
+    sudo apt install vim bwm-ng htop tmux git net-tools cmake-gui
+    
+(optional) install **cuda 10.2** for all **gpu-based** algorithms, like icp_lidar_localization and the gpu version of ndt_localization.
+
+You may need to **upgrade cmake to at least 3.13** for building package icp_lidar_localization.
+
+### step<3> docker(for simulation only)
+
+    curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
+
+    sudo usermod -aG docker [your username]
+
+    docker pull gaas/mavros-gazebo7-px4
+
+### step<4> ros_melodic
+
+    ./install_ros_melodic.sh
+
+### step<5> opencv 3.4.5
+
+    sudo apt install cmake-qt-gui
+    
+[Download opencv 3.4.5 and unzip]
+
+    cd opencv-3.4.5/
+    mkdir build&&cd build&&cmake-gui ..
+    
+[Configure your opencv cmake options in cmake-gui]
+    
+    make -j4&&sudo make install
+
+### step<6> glog
+
+    git clone https://github.com/google/glog.git
+    cd glog
+    git checkout -b v0.4.0
+    mkdir build&&cd build
+    cmake ..
+    make 
+    sudo make install
+
+### step<7> pcl 1.8.0 build from source
+
+[Download pcl 1.8.0 and unzip]
+
+    cd pcl-1.8.0
+    mkdir build&&cd build&&cmake-gui ..
+
+[Configure your pcl cmake options in cmake-gui]
+
+    make -j4
+    sudo make install
+
+### step<8> (optional) upgrade your gazebo for simulation
+
+    cd GAAS/simulation
+    ./upgrade_gazebo.sh
+
+
+
+## Getting Started
+
+To build the project, setup all dependencies, run:
 
     ./build_all.sh
 
-###     2.仿真环境 Simulation:
-
-To start simulation, check out simulation/README.md to setup everything;
-
-run:
-
-    ./scripts/prepare_simulation.sh
-    
-to start your gazebo simulation.    
-
-###     3.算法 GAAS_contrib_algorithms.
-
-To run GAAS_contrib algorithms, just:
+To run GAAS_contrib algorithms:
 
     cd algorithms
     ./run_gaas_contrib_algorithms.sh
 
-## 2.开启项目的原因以及作者想说的 The reason why GAAS_contrib was created and the words by the author
+Start simulation (or play a rosbag instead):
 
-开启此项目的原因是: GAAS基于纯视觉算法的思路,目前看来并不是很好地适应无人驾驶行业发展的现状.GAAS本身设计之初,并不是纯粹为载人自主飞行器(以下统称:飞行汽车)和货运无人机场景设计的,因此不可避免有一些问题.
+    cd simulation&&./scripts/prepare_simulation.sh
+    
+or:
 
-The reason why this project is created is that GAAS is a fully vision-algorithms based framework which is not that robust for autonomous-driving. GAAS is not purely designed for flying cars and large cargo drones.
+    rosbag play --clock [path_to_your_rosbag]
 
-对于大型货运无人机和飞行汽车而言,纯视觉的技术路线缺点是:
+**And checkout your L5 flying car demo in simulation environment!**
 
-For flying cars and large cargo drones, pure vision-based algorithms suffers from:
+## License
 
-1.鲁棒性不够,不能针对夜间或逆光等场景有较好的适应性,飞行器高速移动时定位也容易丢失,容易引发恶性事故.**这是大型飞行器绝对不能接受的.**
+GAAS is under BSD 3-Clause License.
 
-Lack of robustness, especially at night or over-exposed conditions. When vehicles are flying with high speed, the localization is not stable enough, which may cause severe accidents. **(vital to large vehicles)**
+## Features
 
-2.计算量比较大.在移动设备上不容易实现实时运行.
+1. Simulation env with 32 lines lidar and stereo cameras.
 
-Too much computational cost, which can hardly be deployed on mobile devices.
+2. Spinning lidar mapping and NDT matching localization.
 
-3.基于神经网络的方法在极端场景下容易出现事故,且故障不易复现.
+Check out simulation/README.md to get more details of simulation env setup.
 
-Neural Network based algorithms can cause accidents in corner case, which is hard to debug and analyze.
+## Roadmap:
 
-这些问题都是载人飞行场景下不允许发生的.
+#### 1.  Gazebo simulation env construction, including spinning lidars and non-repetitive lidars and stereo cameras.
 
-These kind of problems are not allowed to occur on autonomous flying cars.
+(1). Livox Horizon + Forward Stereo Camera --Done.
 
-因此,**引入激光雷达目前看来是十分必要的.**
+(2). Velodyne HDL-32 + Forward Stereo Camera --Done.
 
-so that **lidars are vital to L5 autonomous flying cars**.
+#### 2. Accelerate compiling and deployment of GAAS.
 
-考虑备选的型号主要是:
+#### 3. Implement some LIDAR (mechanical/solid-state) based algorithms, and implement one key start in the simulation environment.
 
-We consider lidars like:
+## Checklist:
 
-Livox TELE-15
+(1). Lidar Points to Image Projection-- Done.
 
-Velodyne Velarray
+(2). Euclidean Cluster Extraction. --Done.
 
+(3). Global Coordinate based HD-Map Building. --Done.
 
-考虑获取的点云的稠密性和大量应用的成本,固态激光雷达显然是未来更有前景的方向.
+(4). NDT Lidar Localization(CPU/Cuda) --Done.
 
-Lidars without spinning components are more economical and robust.
+(5). Downsampling Node --Done.
 
-使用激光雷达将大大减少感知,定位模块中一些算法的复杂程度,提高稳健性;实现建图及自动降落等功能也较为容易.
+(6). A* Path Planner --Done.
 
-By utilizing lidars the complexity of perception and localization modules can be reduced and the robustness can be improved obviously.
+(7). Refactored px4 Offboard Commander --Done.
 
-It is also easier to build HD-map and implement precise landing by lidars.
+(8). Dynamic Obstacles Generation and Replanning --Done.
 
+(9). Jetson AGX Xavier Adaptation --Done.
 
-主要考虑添加的算法有:
+(10). Interactive GUI Target Selector in HD-maps --Done.
 
-Algorithms to be implemented is mainly:
+(11). Multiple Submaps Switching --TODO
 
-1.点云匹配. ICP + Graph Optimization 算法.用于离线激光建图,在线激光 SLAM定位,激光重定位等.
+(12). IMU-Preintegration and High-Frequency Localization--Done.
 
-Pointcloud registration. For mapping & matching.
+(13). VTOL Mode Switching --TODO.
 
-2.点云结合视觉的运动中障碍物检测.可以解决视觉难以解决的线状物体检测问题和深度恢复问题,规划更稠密精准的可行驶区域.
+(14). Decentralized Robust Ground Controller Station --TODO.
 
-Obstacle detection. Solve the problem of detecting line-shaped objects which are hard to find out by visual features, and plan a more accurated drivable space.
+(15). Generalized Flight Controller State Management --Done.
 
-3.激光雷达地障检测.在未知场地备降.
+(16). PX4 State Reporter --Done.
 
-Lidar terrain detection. For landing in unknown places.
-
-
-模拟器仍考虑使用 Gazebo.
-
-Still consider gazebo as the simulator.
-
-目标平台暂定x86 i7级别处理器(如upextreme平台),用于基础算法的部署,便于开发和仿真测试; Nvidia Jetson AGX Xavier(32GB RAM,30TOPs),用于基于神经网络算法/需要 CUDA加速算法的部署;这两款平台也有充足的性能冗余,能保证算法运行的稳健性.
-
-Target hardware platform will be something like upextreme with x86 i7 processors for developing and simulation.
-
-Nvidia Jetson AGX Xavier may be used for deploying neural networks/cuda acceleration based algorithms.
-
-更低端的 Jetson tx2, Raspberry pi, Odroid等性能太差,在大型飞行器场景成本对计算单元成本要求不高的场景下,不予考虑.
-
-Chips like Jetson tx2 or Raspberry pi, Odroid will not be supported due to their extremely low performance. Flying cars and large cargo drones are not sensitive to the cost of computation units.
-
-## 3.现在已完成的部分 Finished tasks by now
-
-包含32线激光雷达和双目摄像头的仿真环境初步搭建.
-
-Simulation env with 32 lines lidar and stereo camera.
-
-32线Lidar+Stereo camera 效果如下图.
-![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Velodyne_HDL32E_sim.jpg)
-
-Livox Horizon的模拟:
-![image](https://github.com/cyanine-gi/GAAS_contrib/raw/main/simulation/preview_imgs/Livox_sim.jpg)
-(图像较大,请耐心等待加载)
-
-32线旋转式Lidar建图 & NDT定位. Spinning lidar mapping and ndt matching localization.
-
-仿真环境运行详细说明见simulation/README.md.
-
-Checkout simulation/README.md to get more details of simulation env setup.
-
-## 4.开发路线图 Roadmap
-
-### 1.实现gazebo 仿真环境的搭建,包括重复扫描式激光雷达和非重复扫描式激光雷达与双目相机的多种组合方式. Gazebo simulation env construction, including spinning lidars and non-repetitive lidars and stereo cameras.
-
-##### 1.Livox Horizon + Forward Stereo Camera    Livox Horizon雷达和前向双目相机 --Done.
-
-##### 2.Velodyne HDL-32 + Forward Stereo Camera    Velodyne HDL-32雷达和前向双目相机 --Done.
-
-### 2.方便的部署脚本,解决GAAS从头编译安装较为复杂的问题. Some scripts to accelerate compiling and deployment.
-
-### 3.实现一些以激光雷达(机械/固态)为主的算法,并在仿真环境中实现一键启动. Algorithms based on lidars and scripts to start everything in simulation env.
-
-##### 1. Lidar Camera    前融合 点云投影到图像 --完成.
-
-##### 2. Euclidean Cluster Extraction.    基于距离聚类的障碍物检测提取 --Done.
-
-##### 3. Global Coordinate based HD-Map Building.    世界坐标系下的高精地图 --Done. 
-
-##### 4. NDT Lidar Localization(cpu/cuda)    NDT激光雷达定位(cpu/cuda实现) --Done.
-
-##### 5. Downsampling Node    下采样节点 --Done.
-
-##### 6. A* Path Planner    A* 路径规划 --Done.
-
-##### 7. Refactored px4 Offboard Commander    重构px4 离版控制模块 --Done.
-
-##### 8. Dynamic Obstacles Generation and Replanning    动态障碍物生成和路径重规划 --Done.
-
-##### 9. Jetson AGX Xavier Porting    Jetson AGX Xavier平台代码移植 --Done.
-
-##### 10. Interactive GUI Target Selector in HD-Map    高精地图中图形界面交互选择目标点 --Done.
-
-##### 11. Multiple Submaps Switching    多张子地图切换支持 --TODO
-
-##### 12. IMU-Preintegration and High-Frequency Localization    IMU预积分与高频率定位插值 --Done.
-
-##### 13. VTOL Mode Switching    垂直起降飞行器飞行模式切换 --TODO.
-
-##### 14. Decentralized Robust Ground Controller Station    稳健去中心化地面控制站服务 --TODO.
-
-##### 15. Generalized Flight Controller State Management    通用飞控系统状态管理 --Done.
-
-##### 16. PX4 State Reporter    兼容px4 飞控的状态汇报模块  --Done.
-
-##### 17. HUD Module    仪表数据抬显模块  --Done.
-
-
----------------
-
-## GAAS_contrib目前主要分为两个部分:算法和仿真.
-
-### **1.仿真部分**
-
-实现带有双目摄像头和激光雷达的飞行器模拟,将包含非重复扫描的激光雷达模拟实现,以帮助开发者在模拟器环境中仿真类似Livox mid40/Horizon一类的非重复扫描雷达.
-
-### **2.算法部分**
-
-负责实现基于激光雷达和摄像头的感知,建图和定位方案.
-
-负责实现空域动态分配算法.
+(17). HUD Module --Done.
