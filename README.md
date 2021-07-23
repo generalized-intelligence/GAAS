@@ -43,6 +43,8 @@ Therefore, the introduction of LIDAR seems to be necessary at present. That's wh
 
 ## Build with:
 
+Tested on OS: Ubuntu 18.04; PX4(for simulation only) 1.8.0.
+
 ### step<1> Check your network status
 
     ping github.com
@@ -50,12 +52,16 @@ Therefore, the introduction of LIDAR seems to be necessary at present. That's wh
 ### step<2> tools
 
     sudo apt install vim bwm-ng htop tmux git net-tools cmake-gui
+    
+(optional) install **cuda 10.2** for all **gpu-based** algorithms, like icp_lidar_localization and the gpu version of ndt_localization.
+
+You may need to **upgrade cmake to at least 3.13** for building package icp_lidar_localization.
 
 ### step<3> docker(for simulation only)
 
     curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
 
-    sudo usermod -aG docker gi
+    sudo usermod -aG docker [your username]
 
     docker pull gaas/mavros-gazebo7-px4
 
@@ -65,21 +71,45 @@ Therefore, the introduction of LIDAR seems to be necessary at present. That's wh
 
 ### step<5> opencv 3.4.5
 
-install cmake-gui make sudo make install
+    sudo apt install cmake-qt-gui
+    
+[Download opencv 3.4.5 and unzip]
+
+    cd opencv-3.4.5/
+    mkdir build&&cd build&&cmake-gui ..
+    
+[Configure your opencv cmake options in cmake-gui]
+    
+    make -j4&&sudo make install
 
 ### step<6> glog
 
-https://github.com/google/glog.git  git checkout -b v0.4.0 
+    git clone https://github.com/google/glog.git
+    cd glog
+    git checkout -b v0.4.0
+    mkdir build&&cd build
+    cmake ..
+    make 
+    sudo make install
 
-cmake  make  make install
+### step<7> pcl 1.8.0 build from source
 
-### step<7> pcl 1.8 build from source
+[Download pcl 1.8.0 and unzip]
 
-### step<8>(for icp cuda only) update your cmake to 3.14.7 and install cuda 10.2
+    cd pcl-1.8.0
+    mkdir build&&cd build&&cmake-gui ..
 
-OS: Ubuntu 18.04
+[Configure your pcl cmake options in cmake-gui]
 
-PX4(simulation only) 1.8.0
+    make -j4
+    sudo make install
+
+### step<8> (optional) upgrade your gazebo for simulation
+
+    cd GAAS/simulation
+    ./upgrade_gazebo.sh
+
+
 
 ## Getting Started
 
@@ -91,6 +121,14 @@ To run GAAS_contrib algorithms:
 
     cd algorithms
     ./run_gaas_contrib_algorithms.sh
+
+Start simulation (or play a rosbag instead):
+
+    cd simulation&&./scripts/prepare_simulation.sh
+    
+or:
+
+    rosbag play --clock [path_to_your_rosbag]
 
 **And checkout your L5 flying car demo in simulation environment!**
 
@@ -117,6 +155,8 @@ Check out simulation/README.md to get more details of simulation env setup.
 #### 2. Accelerate compiling and deployment of GAAS.
 
 #### 3. Implement some LIDAR (mechanical/solid-state) based algorithms, and implement one key start in the simulation environment.
+
+## Checklist:
 
 (1). Lidar Points to Image Projection-- Done.
 
