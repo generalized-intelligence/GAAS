@@ -15,6 +15,7 @@ find_package(PCL 1.8 REQUIRED)
 find_package(Glog REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(GTSAM REQUIRED)
+find_package(Boost 1.65 COMPONENTS filesystem iostreams timer REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   geometry_msgs
@@ -40,6 +41,7 @@ set(REQUIRED_LIBS
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
         ${GTSAM_LIBRARIES}
+        ${Boost_LIBRARIES}
         glog
         gtsam
 )

@@ -14,7 +14,7 @@ find_package(OpenCV 3.4.5 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
 #find_package(PCL REQUIRED)
 find_package(Glog REQUIRED)
-
+find_package(Boost 1.65 COMPONENTS filesystem iostreams timer REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
   gaas_msgs
@@ -34,6 +34,7 @@ set(REQUIRED_LIBS
         ${GLOG_LIBRARY}
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
+        ${Boost_LIBRARIES}
         glog
 )
 
