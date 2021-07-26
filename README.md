@@ -47,15 +47,15 @@ Tested on OS: Ubuntu 18.04; PX4(for simulation only) 1.8.0.
 
 ### step<1> Check your network status
 
-    ping github.com
+    wget www.google.com
 
 ### step<2> tools
 
-    sudo apt install vim bwm-ng htop tmux git net-tools cmake-gui
-    
 (optional) install **cuda 10.2** for all **gpu-based** algorithms, like icp_lidar_localization and the gpu version of ndt_localization.
 
 You may need to **upgrade cmake to at least 3.13** for building package icp_lidar_localization.
+
+    sudo apt install vim bwm-ng htop tmux git net-tools cmake-gui iotop curl
 
 ### step<3> docker(for simulation only)
 
