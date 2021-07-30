@@ -191,3 +191,9 @@ Check out simulation/README.md to get more details of simulation env setup.
 (16). PX4 State Reporter --Done.
 
 (17). HUD Module --Done.
+
+(18). Cuda-based Multiple Lidar Pointclouds ICP Localization --Done.
+
+(19). Ground Points Removal Preprocessing --TODO.
+
+(20). System State Surveillance Service --TODO.
