@@ -11,14 +11,14 @@ export DRONE_ITEM="iris_stereo_rgb_gpulidar_gps"
 #export DRONE_ITEM="standard_vtol"
 #export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/obstacle_avoidance.world
 #export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/obstacle_avoidance_without_iris.world
-export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/obstacle_avoidance_with_unknown_obstacle.world
+#export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/obstacle_avoidance_with_unknown_obstacle.world
 
 #source /usr/local/share/citysim/setup.sh
 #export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/simple_city.world  # need to run 'source /usr/local/share/citysim/setup.sh'
 
 
 #export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/park_large.world
-#export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/park_large_without_iris.world
+export WORLD_ITEM=$PX4_ENV_PATH$SF/Tools/sitl_gazebo/worlds/park_large_without_iris.world
 #To use iris_vision, you need to copy files from GAAS. See Readme.md.
 
 echo "COMMAND: roslaunch px4 $LAUNCH_FILE vehicle:=$DRONE_ITEM"

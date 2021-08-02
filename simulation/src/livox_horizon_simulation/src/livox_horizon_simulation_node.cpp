@@ -145,10 +145,10 @@ LidarCloudT::Ptr toPointCloud(cv::Mat& depth_masked)
 //            x*=z/len;
 //            y*=z/len;
 //            z*=z/len;
-            PointT pt;
-            pt.x = x;
-            pt.y = y;
-            pt.z = z;
+            PointT pt;//For downward lidar placing:
+            pt.x = -y;
+            pt.y = -x;
+            pt.z = -z;
             newcloud->push_back(pt);
         }
     }
@@ -178,7 +178,7 @@ void callback(const sensor_msgs::ImageConstPtr& img_msg)
     sensor_msgs::PointCloud2 cloud_msg;
     pcl::toROSMsg(*pCloud,cloud_msg);
     cloud_msg.header.stamp = ros::Time::now();
-    cloud_msg.header.frame_id = "livox";
+    cloud_msg.header.frame_id = "lidar";//"livox";
     pPub->publish(cloud_msg);
 
 }
@@ -186,8 +186,8 @@ int main(int argc,char** argv)
 {
     FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
-    LOG(INFO)<<"Start vision_lidar_fusion_node."<<endl;
-    ros::init(argc,argv,"vision_lidar_fusion_node");
+    LOG(INFO)<<"Start livox_horizon_sim_node."<<endl;
+    ros::init(argc,argv,"livox_horizon_sim_node");
     ros::NodeHandle nh;
     pNH=&nh;
     LivoxHorizonSim liv;
