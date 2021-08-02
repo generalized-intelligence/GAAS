@@ -455,6 +455,14 @@ public:
             if(enable_imu_preint&&get_imu_preint_odometry(cloud_stamp,imu_preint_pose_initial_guess))
             {
                 flag_icp_success = doICPWithInitialPoseGuess(pcloud_current,imu_preint_pose_initial_guess,output_pose,"imu_preint");
+                int counter = 2;
+                while(!flag_icp_success&&counter)
+                {//retry once since we are using imu_preint result...
+                    LOG(WARNING)<<"[ICP Matching] Retry once, do icp for 5 more times due to using inaccurate imu_preint initial guess."<<endl;
+                    Eigen::Matrix4f guess = output_pose;
+                    flag_icp_success = doICPWithInitialPoseGuess(pcloud_current,guess,output_pose,"imu_preint");
+                    counter--;
+                }
             }
             else
             {

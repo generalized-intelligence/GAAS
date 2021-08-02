@@ -102,6 +102,7 @@ public:
             return;
         }
         this->pose_ever_init = true;
+        this->pose2_ready = true;
 
 
         //普通帧的情况
@@ -179,13 +180,20 @@ public:
             LOG(INFO)<<"pose not initialized, still waiting..."<<endl;
             return;
         }
+        bool pose2_ready_copy = this->pose2_ready;
         this->pose_mutex.unlock();
         //作预积分运算,发布pose.
         imu_msg_mutex.lock();
         this->imu_buffer.push_back(*imu_msg);
         imu_msg_mutex.unlock();
+        if(!pose2_ready_copy)
+        {
+            return;
+        }
         //check timeout.
-        if((t_now-imu_msg->header.stamp).toSec()>0.050||(t_now-this->sip.prev_stamp).toSec()>0.4)
+        if((t_now-imu_msg->header.stamp).toSec()>0.100||(t_now-this->sip.prev_stamp).toSec()>0.4
+                || (t_now- this->curr_pose.header.stamp).toSec()>0.2 //dead-reckoning for more than 0.2s.
+                )
         {
             LOG(WARNING)<<"Time out detected;reset imu preint"<<endl;
             resetIMUPreint();
@@ -291,6 +299,8 @@ public:
         this->prev_pose = pose_reset;
         this->curr_pose = pose_reset;
         this->imu_buffer.clear();
+        this->pose_ever_init = false;
+        this->pose2_ready = false;
         SequentialIMUPreintegrator new_sip;
         this->sip = new_sip;
         this->imu_msg_mutex.unlock();
@@ -311,6 +321,7 @@ private:
     std::mutex imu_msg_mutex;
 
     bool pose_ever_init = false;
+    bool pose2_ready = false;
 
     //about ros
     std::shared_ptr<ros::NodeHandle> pNH = nullptr;
