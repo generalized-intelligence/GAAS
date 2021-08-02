@@ -14,7 +14,7 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <glog/logging.h>
 #include "../../downsampling/src/Timer.h"
-
+#include "../../ground_point_removal/src/ground_point_removal.h"
 
 using std::string;
 using std::vector;
@@ -53,10 +53,17 @@ private:
         sor_livox.filter(*pLivoxDownsampled);
 
 
-        LidarCloudT::Ptr pFinal(new LidarCloudT);
-        *pFinal = (*pVelodyneDownsampled) + (*pLivoxDownsampled);
+        LidarCloudT::Ptr pIntegrated(new LidarCloudT);
+        *pIntegrated = (*pVelodyneDownsampled) + (*pLivoxDownsampled);
+        LidarCloudT::Ptr pGroundRemoved(new LidarCloudT);
+        {
+            ScopeTimer t("[lidar_points_integration] Ground removal timer:");
+            removeGround(pIntegrated,pGroundRemoved);
+        }
         MessageCloudT pc;
-        pcl::toROSMsg(*pFinal,pc);
+        pcl::toROSMsg(*pGroundRemoved,pc);
+//        MessageCloudT pc;
+//        pcl::toROSMsg(*pIntegrated,pc);
         pc.header.frame_id = "lidar";
         pc.header.stamp = velodyne_cloud_msg->header.stamp;
         merged_cloud_pub.publish(pc);
