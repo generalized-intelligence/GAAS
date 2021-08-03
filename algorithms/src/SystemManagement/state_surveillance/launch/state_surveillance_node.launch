@@ -1,0 +1,5 @@
+<launch>
+
+    <node name="state_surveillance_node" pkg="state_surveillance" type="state_surveillance_node"/>
+
+</launch>
