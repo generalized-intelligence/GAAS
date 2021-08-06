@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.2)  # For cuda libs we have to ensure using a higher version.
+cmake_minimum_required(VERSION 2.8.3)  # For cuda libs we have to ensure using a higher version than  3.12.2.
 project(icp_lidar_localization)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
