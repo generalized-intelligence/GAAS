@@ -3,11 +3,13 @@
 
 #include "FlightStage.h"
 #include "location_and_coordinates/LocationT.h"
+#include "../../json_request_response_lib/src/JSONSerializableAbstract.h"
 
 namespace GAASManagement {
 
-struct GAASFlightStatusT//用于和地面同步飞行状态.
+class GAASFlightStatusT:public JSONSerializableAbstract//用于和地面同步飞行状态.
 {
+public:
     string current_map_name;
     FlightStageT current_mode = FlightStage::IDLE_STAGE;
     LocationT currentLocation,TargetLocation;
@@ -19,6 +21,7 @@ struct GAASFlightStatusT//用于和地面同步飞行状态.
     LocationT getTargetLocation();
     void serialize();
     void deserialize();
+    json getJSONObject();
 };
 
 

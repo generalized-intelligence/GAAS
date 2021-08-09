@@ -37,13 +37,13 @@ struct EncryptedJSONResponse
     std::shared_ptr<json> pResponse_json;
 };
 
-static std::string request_function(const json& j_)//,std::promise<EncryptedJSONResponse::Ptr>& promise)
+static std::string request_function(const json& j_,const string& api_url)//,std::promise<EncryptedJSONResponse::Ptr>& promise)
 {
     try{
         httplib::Client cli("localhost", 8080);
         std::string json_str = j_.dump(4);
         httplib::Headers header;
-        auto res = cli.Post("/api/fetchJSONObjectResponse",header,json_str,"text/plain; charset=utf-8");
+        auto res = cli.Post(api_url.c_str(),header,json_str,"text/plain; charset=utf-8");
         if(res)
         {
             LOG(INFO) << "Received HTTP response with status:"<< res->status << endl;
@@ -78,15 +78,15 @@ class EncryptedJSONRequest
 {
 public:
     typedef std::chrono::time_point<std::chrono::high_resolution_clock> ChronoTimeT;
-    void start_request(const json& request_json)
+    void start_request(const json& request_json,const string& api_url)
     {
         //        this->request_future = this->request_promise.get_future();
         //        //this->pThread = std::shared_ptr<std::thread>(new std::thread(request_function,std::cref(request_json),std::ref(this->request_promise)));
         //        this->pAsync = std::shared_ptr<std::async>( new std::async(std::launch::async,request_function,std::cref(request_json))//,std::ref(this->request_promise))
         //                );
-
+        this->api_url = api_url;
         this->t_start = std::chrono::system_clock::now();
-        this->request_future = std::async(std::launch::async,request_function,std::cref(request_json));
+        this->request_future = std::async(std::launch::async,request_function,std::cref(request_json),std::cref(api_url));
     }
 
     bool getResponseSafe(EncryptedJSONResponse::Ptr& ptr_output)
@@ -115,9 +115,14 @@ public:
         }
         return false;
     }
+    std::string getCurrentApiUrl()
+    {
+        return this->api_url;
+    }
 
 
 private:
+    std::string api_url;
     std::future<std::string> request_future;
     ChronoTimeT t_start;
     //std::shared_ptr<std::async> pAsync;
@@ -125,7 +130,7 @@ private:
     {
         std::future_status status;
         status = this->request_future.wait_for(std::chrono::seconds(0));
-        if (status == std::future_status::deferred)
+        if(status == std::future_status::deferred)
         {
             return false;//未开始.
         }
@@ -133,7 +138,8 @@ private:
         {
             return false;//尚未结束.
         }
-        else if  (status == std::future_status::ready) {
+        else if(status == std::future_status::ready)
+        {
             return true;
         }
 

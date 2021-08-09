@@ -28,7 +28,7 @@ int main(int argc,char** argv)
         json j;
         std::stringstream ss("{\"function\": \"query\"}");
         ss>>j;
-        json_req.start_request(j);
+        json_req.start_request(j,"/api/ping");
         EncryptedJSON::EncryptedJSONResponse::Ptr pRes;
         while(!json_req.getResponseSafe(pRes)&&!json_req.everTimeout())
         {
