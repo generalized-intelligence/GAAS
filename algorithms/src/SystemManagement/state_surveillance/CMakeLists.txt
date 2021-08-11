@@ -15,6 +15,7 @@ find_package(PCL 1.8 REQUIRED)
 find_package(Glog REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(GTSAM REQUIRED)
+find_package(Boost REQUIRED timer)
 find_package(catkin REQUIRED COMPONENTS
   gaas_msgs
   cv_bridge
@@ -43,6 +44,7 @@ set(REQUIRED_LIBS
         ${catkin_LIBRARIES}
         ${PCL_LIBRARIES}
         ${GTSAM_LIBRARIES}
+        ${Boost_LIBRARIES}
         glog
         gtsam
 )

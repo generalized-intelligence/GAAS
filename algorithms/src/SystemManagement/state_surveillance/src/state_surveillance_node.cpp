@@ -35,7 +35,7 @@ private:
         flightControllerStateSubscriber = pNH->subscribe<gaas_msgs::GAASSystemManagementFlightControllerState>
                 ("/gaas/system_management/flight_controller_state",1,&StateSurveillanceManager::flightControllerStatusCallback,this);
         localizationNDTStatusSubscriber = pNH->subscribe<geometry_msgs::PoseStamped>
-                ("/gaas/localization/ndt_pose",1,&StateSurveillanceManager::localizationNDTStatusCallback,this);
+                ("/gaas/localization/registration_pose",1,&StateSurveillanceManager::localizationNDTStatusCallback,this);
         perceptionStatusSubscriber = pNH->subscribe<gaas_msgs::GAASPerceptionObstacleClustersList>
                 ("/gaas/perception/euclidean_original_clusters_list",1,&StateSurveillanceManager::perceptionStatusCallback,this);
         mavrosOffboardCommandSubscriber = pNH->subscribe<mavros_msgs::PositionTarget>
@@ -75,18 +75,34 @@ public:
     {
         ros::Time time_now = ros::Time::now();
         const double TIMEOUT_THRES = 0.5;
-        if((time_now - this->t_last_fc).toSec()> TIMEOUT_THRES)
+        double time_cost_fc = (time_now - this->t_last_fc).toSec();
+        if(time_cost_fc > TIMEOUT_THRES&&!t_last_fc.isZero())
         {
-            LOG(ERROR)<<"Flight Controller State msg timed out!"<<endl;
+            LOG(ERROR)<<"Flight Controller State msg timed out! "<<time_cost_fc<<"sec."<<endl;
         }
-        if((time_now  - this->t_last_ndt_localization).toSec()> TIMEOUT_THRES)
+        else if(t_last_fc.isZero())
         {
-            LOG(ERROR)<<"Registration localization msg timed out!"<<endl;
+            LOG(WARNING)<<"FCState surveillance still initializing!"<<endl;
         }
-        if((time_now - this->t_last_perception).toSec()> TIMEOUT_THRES)
+        double time_cost_localization = (time_now  - this->t_last_ndt_localization).toSec();
+        if(time_cost_localization > TIMEOUT_THRES&&!t_last_ndt_localization.isZero())
         {
-            LOG(ERROR)<<"Perception Obstacle Clusters timed out!"<<endl;
+            LOG(ERROR)<<"Registration localization msg timed out! "<<time_cost_localization<<"sec."<<endl;
         }
+        else if(t_last_ndt_localization.isZero())
+        {
+            LOG(WARNING)<<"Registration pose still initializing!"<<endl;
+        }
+        double time_cost_perception = (time_now - this->t_last_perception).toSec();
+        if(time_cost_perception > TIMEOUT_THRES&&!t_last_perception.isZero())
+        {
+            LOG(ERROR)<<"Perception Obstacle Clusters timed out! "<<time_cost_perception<<"sec."<<endl;
+        }
+        else if(t_last_perception.isZero())
+        {
+            LOG(WARNING)<<"Perception clusters still initializing!"<<endl;
+        }
+
     }
 
 
@@ -131,6 +147,7 @@ int main(int argc,char** argv)
 {
     FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging("state_surveillance_node");
+    //usleep(1000000);//wait 1s.
     StateSurveillanceManager ssm;
     ssm.initStateSurveillanceManagerNode(argc,argv);
 

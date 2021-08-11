@@ -25,6 +25,11 @@ public:
     {
         cv::FileStorage fs;
         fs.open(file_path,cv::FileStorage::READ);
+        if(!fs.isOpened())
+        {
+            LOG(ERROR)<<"File "<< file_path<<" not found!"<<endl;
+            exit(-1);
+        }
         fs["CameraK"]>>camera_K;
         fs["T_cam_lidar"]>>T_cam_lidar;
         assert(camera_K.cols == 3 && camera_K.rows==3 && camera_K.type()==CV_32F);

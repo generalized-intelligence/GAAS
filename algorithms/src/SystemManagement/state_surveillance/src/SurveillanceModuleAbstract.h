@@ -30,15 +30,15 @@ public:
     {
         if(current_status == STATUS_NOT_SURE)
         {
-            LOG(INFO)<<module_name<<"state: STATUS_NOT_SURE"<<" "<<state_description;
+            LOG(INFO)<<module_name<<" state: STATUS_NOT_SURE"<<" "<<state_description;
         }
         else if(current_status == STATUS_WARNING)
         {
-            LOG(WARNING)<<module_name<<"state: STATUS_WARNING"<<" "<<state_description;
+            LOG(WARNING)<<module_name<<" state: STATUS_WARNING"<<" "<<state_description;
         }
         else if(current_status == STATUS_ERROR)
         {
-            LOG(ERROR)<<module_name<<"state: STATUS_ERROR"<<" "<<state_description;
+            LOG(ERROR)<<module_name<<" state: STATUS_ERROR"<<" "<<state_description;
         }
     }
 };
