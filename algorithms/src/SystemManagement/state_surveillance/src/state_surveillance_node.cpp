@@ -21,6 +21,7 @@
 #include "PerceptionSurveillance.h"
 #include "LocalizationSurveillance.h"
 #include "NavigationSurveillance.h"
+#include "FlightControllerSurveillance.h"
 
 
 class StateSurveillanceManager
@@ -39,6 +40,14 @@ private:
                 ("/gaas/perception/euclidean_original_clusters_list",1,&StateSurveillanceManager::perceptionStatusCallback,this);
         mavrosOffboardCommandSubscriber = pNH->subscribe<mavros_msgs::PositionTarget>
                 ("/mavros/setpoint_raw/local",1,&StateSurveillanceManager::mavrosOffboardCommandCallback,this);
+
+        flightControllerStateModule = std::dynamic_pointer_cast<SurveillanceModuleAbstract>(std::make_shared<FlightControllerModule>());
+        flightControllerStateModule->initSurveillanceModule();
+        localizationStateModule = std::dynamic_pointer_cast<SurveillanceModuleAbstract>(std::make_shared<LocalizationSurveillanceModule>());
+        localizationStateModule->initSurveillanceModule();
+        perceptionStateModule = std::dynamic_pointer_cast<SurveillanceModuleAbstract>(std::make_shared<PerceptionSurveillanceModule>());
+        perceptionStateModule->initSurveillanceModule();
+
 
     }
 public:
@@ -99,10 +108,14 @@ void StateSurveillanceManager::flightControllerStatusCallback(const gaas_msgs::G
 void StateSurveillanceManager::localizationNDTStatusCallback(const geometry_msgs::PoseStampedConstPtr& pNDTPose)
 {
     t_last_ndt_localization = pNDTPose->header.stamp;
+    auto pLocalizationModule = std::dynamic_pointer_cast<LocalizationSurveillanceModule>(localizationStateModule);
+    pLocalizationModule->runPipelineAndGetState(pNDTPose);
 }
 void StateSurveillanceManager::perceptionStatusCallback(const gaas_msgs::GAASPerceptionObstacleClustersListConstPtr& pPerceptionObsList)
 {
     t_last_perception = pPerceptionObsList->header.stamp;
+    auto pPerceptionModule = std::dynamic_pointer_cast<PerceptionSurveillanceModule>(perceptionStateModule);
+    pPerceptionModule->runPipelineAndGetState(pPerceptionObsList);
 }
 //void StateSurveillanceManager::navigatorPathStatusCallback(const gaas_msgs::GAASNavigationPathConstPtr& pPath)
 //{

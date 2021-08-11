@@ -4,14 +4,14 @@
 
 
 
-class NavigationSurveillanceModule:SurveillanceModuleAbstract
+class NavigationSurveillanceModule:public SurveillanceModuleAbstract
 {
 
-    void initSurveillanceModule()
+    virtual void initSurveillanceModule()
     {
         setModuleName("Navigation Module");
     }
-    int checkStateLegal()
+    virtual int checkStateLegal()
     {
         return this->current_status;
     }

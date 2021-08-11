@@ -22,7 +22,10 @@ public:
     }
     virtual void initSurveillanceModule()=0;
     virtual int checkStateLegal()=0;
-    virtual ~SurveillanceModuleAbstract();
+    virtual ~SurveillanceModuleAbstract()
+    {
+        ;
+    }
     virtual void SURVEILLANCE_LOG_STATUS(const std::string& state_description)
     {
         if(current_status == STATUS_NOT_SURE)

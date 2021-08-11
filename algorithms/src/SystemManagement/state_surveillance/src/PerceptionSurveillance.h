@@ -4,7 +4,7 @@
 #include "gaas_msgs/GAASPerceptionObstacleClustersList.h"
 #include <sstream>
 
-class PerceptionSurveillanceModule:SurveillanceModuleAbstract
+class PerceptionSurveillanceModule:public SurveillanceModuleAbstract
 {
 public:
     int runPipelineAndGetState(const gaas_msgs::GAASPerceptionObstacleClustersListConstPtr& pPerceptionObsList)
@@ -39,11 +39,11 @@ public:
         this->SURVEILLANCE_LOG_STATUS(log_string);
         return checkStateLegal();
     }
-    void initSurveillanceModule()
+    virtual void initSurveillanceModule()
     {
         setModuleName("Perception Module");
     }
-    int checkStateLegal()
+    virtual int checkStateLegal()
     {//无上下文依赖.直接返回.
         return this->current_status;
     }

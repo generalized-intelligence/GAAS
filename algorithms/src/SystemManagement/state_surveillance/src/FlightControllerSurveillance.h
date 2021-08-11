@@ -4,15 +4,16 @@
 #include "SurveillanceModuleAbstract.h"
 #include "gaas_msgs/GAASSystemManagementFlightControllerState.h"
 #include <geometry_msgs/PoseStamped.h>
+#include "utils.h"
 
-class FlightControllerModule:SurveillanceModuleAbstract
+class FlightControllerModule:public SurveillanceModuleAbstract
 {
     int runPipelineAndGetState(const gaas_msgs::GAASSystemManagementFlightControllerStateConstPtr& pFCState)
     //int runPipelineAndGetState(const geometry_msgs::PoseStampedConstPtr& pFCPose)
     {
         if(!this->ever_init)
         {
-            this->lastFCState = *pFCPose;
+            this->lastFCState = *pFCState;
             this->current_status = this->STATUS_NOT_SURE;
             this->ever_init = true;
             return this->current_status;
@@ -30,11 +31,11 @@ class FlightControllerModule:SurveillanceModuleAbstract
         return this->current_status;
 
     }
-    void initSurveillanceModule()
+    virtual void initSurveillanceModule()
     {
         setModuleName("Flight Controller Module");
     }
-    int checkStateLegal()
+    virtual int checkStateLegal()
     {
         return this->current_status;
     }
