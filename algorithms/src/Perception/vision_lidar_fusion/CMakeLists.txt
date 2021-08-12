@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(vision_lidar_fusion)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-#add_compile_options(-std=c++11 -O0)
-add_compile_options(-std=c++11 -O3)
+#add_compile_options(-std=c++17 -O0)
+add_compile_options(-std=c++17 -O3)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -12,7 +12,7 @@ add_compile_options(-std=c++11 -O3)
 set(CMAKE_BUILD_TYPE RELEASE)
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
     find_package(OpenCV 3.4.5 REQUIRED)
-    set (CMAKE_CXX_FLAGS "-march=native -msse4.2 -mfpmath=sse")  # To fix pcl segmentation faults.
+    #set (CMAKE_CXX_FLAGS "-march=native -msse4.2 -mfpmath=sse")  # To fix pcl segmentation faults.
 else()
     set (OpenCV_DIR /home/gi/nvme/opencv-3.4.5/build)
 endif()
