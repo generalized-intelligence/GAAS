@@ -43,7 +43,7 @@ Therefore, the introduction of LIDAR seems to be necessary at present. That's wh
 
 ## Build with:
 
-Tested on OS: Ubuntu 18.04; PX4(for simulation only) 1.8.0.
+**Tested on OS: Ubuntu 18.04; PX4(for simulation only) 1.8.0.**
 
 ### step<1> Check your network status
 
@@ -184,7 +184,7 @@ Check out simulation/README.md to get more details of simulation env setup.
 
 (13). VTOL Mode Switching --TODO.
 
-(14). Decentralized Robust Ground Controller Station --TODO.
+(14). Decentralized Robust Ground Control Station --TODO.
 
 (15). Generalized Flight Controller State Management --Done.
 
@@ -194,6 +194,8 @@ Check out simulation/README.md to get more details of simulation env setup.
 
 (18). Cuda-based Multiple Lidar Pointclouds ICP Localization --Done.
 
-(19). Ground Points Removal Preprocessing --TODO.
+(19). Ground Points Removal Preprocessing --Done.
 
-(20). System State Surveillance Service --TODO.
+(20). System State Surveillance Service --Done.
+
+(21). HTTP Server on Ground Control Station --TODO.
