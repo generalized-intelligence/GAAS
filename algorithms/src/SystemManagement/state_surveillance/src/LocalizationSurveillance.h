@@ -33,7 +33,7 @@ public:
         if(!speed_and_angular_rate_correct)
         {
             //LOG(ERROR)<<"[LocalizationSurveillance] Check speed and angular rate!"<<endl;
-            this->current_status = this->STATUS_ERROR;
+            this->current_status = this->STATUS_WARNING;
             SURVEILLANCE_LOG_STATUS("Check speed and angular rate!");
         }
         else
@@ -75,11 +75,19 @@ private:
         double angular_rate_deg = ((angle_rad*180)/3.1415926535)/dt;
 
         const double THRES_SPEED = 8;// 8m/s
-        const double THRES_ANGULAR_RATE_DEG = 30;//30deg/s
+        const double THRES_ANGULAR_RATE_DEG = 60;//60deg/s
 
         if(speed< THRES_SPEED && angular_rate_deg<THRES_ANGULAR_RATE_DEG)
         {
             return true;
+        }
+        if(speed>=THRES_SPEED)
+        {
+            LOG(WARNING)<<"Speed is:"<<speed<<" while threshold is:"<<THRES_SPEED<<endl;
+        }
+        if(angular_rate_deg>=THRES_ANGULAR_RATE_DEG)
+        {
+            LOG(WARNING)<<"AngularRate is:"<<angular_rate_deg<<" deg/s while threshold is:"<<THRES_ANGULAR_RATE_DEG<<" deg/s."<<endl;
         }
         return false;
     }

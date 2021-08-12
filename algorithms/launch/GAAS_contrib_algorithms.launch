@@ -13,4 +13,5 @@
   <include file="$(find target_point_navigator)/launch/target_point_navigator.launch"/>
   <include file="$(find obstacle_and_drivable_block_publisher)/launch/dynamic_map_block_generator.launch"/>
   <include file="$(find px4_state_reporter)/launch/px4_state_reporter.launch"/>
+  <include file="$(find state_surveillance)/launch/state_surveillance_node.launch"/>
 </launch>

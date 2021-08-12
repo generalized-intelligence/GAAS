@@ -8,8 +8,8 @@ add_compile_options(-std=c++17 -O3)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-set(CMAKE_BUILD_TYPE DEBUG)
-#set(CMAKE_BUILD_TYPE RELEASE)
+#set(CMAKE_BUILD_TYPE DEBUG)
+set(CMAKE_BUILD_TYPE RELEASE)
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "x86_64")
     find_package(OpenCV 3.4.5 REQUIRED)
     #set (CMAKE_CXX_FLAGS "-march=native -msse4.2 -mfpmath=sse")  # To fix pcl segmentation faults.
