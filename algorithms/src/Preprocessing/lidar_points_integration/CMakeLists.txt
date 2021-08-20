@@ -2,13 +2,14 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lidar_points_integration)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11 -O3)
+#add_compile_options(-std=c++11 -O3)
+add_compile_options(-std=c++11 -O0)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-#set(CMAKE_BUILD_TYPE DEBUG)
-set(CMAKE_BUILD_TYPE RELEASE)
+set(CMAKE_BUILD_TYPE DEBUG)
+#set(CMAKE_BUILD_TYPE RELEASE)
 find_package(OpenCV 3.4.5 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
 #find_package(PCL REQUIRED)
@@ -158,6 +159,8 @@ include_directories(
 add_executable(lidar_points_integration_node src/lidar_points_integration_node.cpp)
 target_link_libraries(lidar_points_integration_node ${REQUIRED_LIBS})
 
+add_executable(lidar_points_integration_with_tf_node src/lidar_points_integration_with_tf_node.cpp)
+target_link_libraries(lidar_points_integration_with_tf_node ${REQUIRED_LIBS})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
