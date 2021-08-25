@@ -1,0 +1,61 @@
+{
+    "SettingsVersion": 1.2,
+    "SimMode": "Multirotor",
+    "ClockType": "SteppableClock",
+    "Vehicles": {
+        "PX4": {
+            "VehicleType": "PX4Multirotor",
+            "UseSerial": false,
+            "LockStep": true,
+            "UseTcp": true,
+            "TcpPort": 4560,
+            "ControlPortLocal": 14540,
+            "ControlPortRemote": 14580,
+            "Sensors":{
+                "Barometer":{
+                    "SensorType": 1,
+                    "Enabled": true,
+                    "PressureFactorSigma": 0.0001825
+                },
+
+            "Imu": {
+               "SensorType": 2,
+               "Enabled": true
+            },
+            "Gps": {
+               "SensorType": 3,
+               "Enabled": false
+            },
+            "Magnetometer": {
+               "SensorType": 4,
+               "Enabled": true
+            },
+            "Distance": {
+               "SensorType": 5,
+               "Enabled": true
+            },
+            "Lidar1": {
+               "SensorType": 6,
+                "Enabled": true,
+                "NumberOfChannels": 32,
+                "PointsPerSecond": 57600,
+                "RotationsPerSecond": 10,
+                "VerticalFOVUpper": 45,
+                "VerticalFOVLower": -45,
+                "Range": 110,
+                "ExternalController": false,
+                "DataFrame": "SensorLocalFrame",
+                "DrawDebugPoints": true
+            }
+
+            },
+            "Parameters": {
+                "NAV_RCL_ACT": 0,
+                "NAV_DLL_ACT": 0,
+                "COM_OBL_ACT": 1,
+                "LPE_LAT": 47.641468,
+                "LPE_LON": -122.140165
+            }
+        }
+    }
+}
