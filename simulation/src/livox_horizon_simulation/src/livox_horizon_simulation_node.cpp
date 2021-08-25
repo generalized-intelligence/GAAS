@@ -177,7 +177,7 @@ void callback(const sensor_msgs::ImageConstPtr& img_msg)
     LidarCloudT::Ptr pCloud = toPointCloud(depth);
     sensor_msgs::PointCloud2 cloud_msg;
     pcl::toROSMsg(*pCloud,cloud_msg);
-    cloud_msg.header.stamp = ros::Time::now();
+    cloud_msg.header.stamp = img_msg->header.stamp;
     cloud_msg.header.frame_id = "lidar";//"livox";
     pPub->publish(cloud_msg);
 
