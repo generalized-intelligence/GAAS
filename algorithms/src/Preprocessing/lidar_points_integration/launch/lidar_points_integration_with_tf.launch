@@ -1,0 +1,7 @@
+<launch>
+    <param name="velodyne_downsampling_size" type="double" value="0.2"/>
+    <param name="livox_downsampling_size" type="double" value="0.3"/>
+    <param name="lidar_config_file_path" type="string" value="/home/gi/GAAS/config/lidar_config_sim_airsim_2velodyne.yaml"/>
+    <node name="lidar_points_integration_with_tf_node" pkg="lidar_points_integration" type="lidar_points_integration_with_tf_node" output="screen"/>
+</launch>
+

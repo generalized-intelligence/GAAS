@@ -1,10 +1,11 @@
 <launch>
-  <arg name="gaas_map_path" default="/home/gi/Documents/SCLEGOLOAM_ENV/park_map/output_aligned.pcd"/><!--"/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/map_global_registered.pcd"-->
+  <!-- arg name="gaas_map_path" default="/home/gi/Documents/SCLEGOLOAM_ENV/park_map/output_aligned.pcd" --><!--"/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/map_global_registered.pcd"-->
+  <arg name="gaas_map_path" default="/home/gi/Documents/HDL_SLAM/airsim_msbuilding/output.pcd"/>
   <arg name="do_visualization" default="true"/>
   <param name="map_path" type="string" value="$(arg gaas_map_path)"/>
-  <include file="$(find icp_lidar_localization)/launch/icp_lidar_localization.launch"/>
-  <!--include file="$(find lidar_localization)/launch/ndt_lidar_localization.launch"-->
-  <include file="$(find lidar_points_integration)/launch/lidar_points_integration.launch"/>   <!-- for livox + velodyne -->
+  <!--include file="$(find icp_lidar_localization)/launch/icp_lidar_localization.launch"-->
+  <include file="$(find lidar_localization)/launch/ndt_lidar_localization.launch"/>
+  <!-- include file="$(find lidar_points_integration)/launch/lidar_points_integration.launch" -->   <!-- for livox + velodyne -->
   <!--include file="$(find downsampling)/launch/downsampling.launch"-->                               <!-- for velodyne only -->
   <!--include file="$(find imu_preint)/launch/imu_preint.launch"-->
   <include file="$(find vision_lidar_fusion)/launch/vision_lidar_fusion.launch"/>

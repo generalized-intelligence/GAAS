@@ -1,0 +1,33 @@
+%YAML:1.0
+---
+Lidars:
+  - Lidar_1:
+      topic: "/os_cloud_node/points"
+      type: "os1_128"
+      T_FLUBaselink_Lidar: !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: f
+        data: [1,0,0,0,
+              0,1,0,0,
+              0,0,1,0,
+              0,0,0,1]
+    
+  - Lidar_2:
+      topic: "/livox"
+      type: "livox_mid70"
+      T_FLUBaselink_Lidar: !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: f
+        data: [
+              0,0,1,0,
+              0,1,0,0,
+              -1,0,0,0,
+              0,0,0,1
+              ]
+
+#Lidar Extrinsic
+#Lidar Intrinsic (FOV,Cloud density)
+
+

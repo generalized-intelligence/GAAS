@@ -33,7 +33,7 @@ private:
 
     //fx = fy = 619/2; cx = width/2 cy = height/2
     const int image_width = 619;
-    const int image_height = 215;
+    const int image_height = 619;
     const int inner_loop_size = 1;//10 Hz for inner loop(24,000 points/0.1s). 32 lines. We just caught depth image for 10Hz to reduce performance cost, and reduce the number of points.
                                   // while preserving the same scanning pattern.
     const int outer_loop_size = 360;//36s per round. Pseudo non-repetitive mode.
@@ -124,7 +124,7 @@ void utilizeMask(cv::Mat& depth,cv::Mat& mask)
 LidarCloudT::Ptr toPointCloud(cv::Mat& depth_masked)
 {
     const float cx = 619/2;
-    const float cy = 215/2;
+    const float cy = 619/2;
     const float fx = 619/2;
     const float fy = 619/2;
     LidarCloudT::Ptr newcloud(new LidarCloudT());
@@ -177,7 +177,7 @@ void callback(const sensor_msgs::ImageConstPtr& img_msg)
     LidarCloudT::Ptr pCloud = toPointCloud(depth);
     sensor_msgs::PointCloud2 cloud_msg;
     pcl::toROSMsg(*pCloud,cloud_msg);
-    cloud_msg.header.stamp = ros::Time::now();
+    cloud_msg.header.stamp = img_msg->header.stamp;
     cloud_msg.header.frame_id = "lidar";//"livox";
     pPub->publish(cloud_msg);
 

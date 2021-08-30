@@ -12,6 +12,7 @@
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 #include <pcl/common/transforms.h>
+#include <pcl/filters/voxel_grid.h>
 
 //#define foreach_boost BOOST_FOREACH
 
@@ -190,7 +191,23 @@ void transformMapByInitialOdometryAndGPSCoordinate(const nav_msgs::Odometry& odo
 
     pcl::transformPointCloud(*pMap,*new_map,trans,rot_flu);
 
-    pcl::io::savePCDFile(output_map_path,*new_map);
+
+    float DOWNSAMPLE_SIZE = 0.1;
+    if(!ros::param::get("map_downsampling_size",DOWNSAMPLE_SIZE))
+    {
+        LOG(ERROR)<<"ERROR: map_downsampling_size not set in launch file!!!"<<endl;
+        throw "Error!";
+    }
+
+    LidarCloudT::Ptr downsampled_new_map(new LidarCloudT);
+    pcl::VoxelGrid<MapPointT> sor;
+    sor.setInputCloud(new_map);
+    //sor.setLeafSize(0.2f, 0.2f, 0.2f);
+    sor.setLeafSize(DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE);
+    sor.filter(*downsampled_new_map);
+
+
+    pcl::io::savePCDFile(output_map_path,*downsampled_new_map);
 
     //保存新地图的0，0，0所对应的经纬度到配置文件.
     LOG(INFO)<<"saving config file..."<<endl;

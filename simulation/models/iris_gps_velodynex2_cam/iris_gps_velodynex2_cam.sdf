@@ -168,6 +168,7 @@
           <distortionT2>0.0</distortionT2>
         </plugin>
       </sensor>
+      <!--Lidar 1-->
       <sensor type="gpu_ray" name="${name}-HDL32E">
         <pose frame=''>0 0 0.24081 0 -0 0</pose>
         <!-- 0.74 original ; 0.24 would be better!!! -->
@@ -183,7 +184,7 @@
               <max_angle>3.14159</max_angle>
             </horizontal>
             <vertical>
-              <samples>32</samples><!--128-->
+              <samples>16</samples><!--128-->
               <resolution>1</resolution>
               <min_angle>-0.535292</min_angle><!-- min:-0.535292 max:0.186227-->
               <max_angle>0.186227</max_angle>
@@ -208,6 +209,48 @@
           <gaussianNoise>0.008</gaussianNoise>
         </plugin>
       </sensor>
+      <!--Lidar 2-->
+      <sensor type="gpu_ray" name="${name}-HDL32E_2">
+        <pose frame=''>0 0 -0.1 -1.57079 0 0</pose>
+        <!-- 0.74 original ; 0.24 would be better!!! -->
+        <visualize>false</visualize>
+        <update_rate>10</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <!-- samples2187samples -->
+              <samples>900</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159</min_angle>
+              <max_angle>3.14159</max_angle>
+            </horizontal>
+            <vertical>
+              <samples>32</samples><!--128-->
+              <resolution>1</resolution>
+              <min_angle>-0.785395</min_angle><!-- min:-0.535292 max:0.186227-->
+              <max_angle>0.785395</max_angle>
+            </vertical>
+          </scan>
+          <range>
+            <min>0.055</min>
+            <max>140</max>
+            <resolution>0.001</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.0</stddev>
+          </noise>
+        </ray>
+        <plugin name="gazebo_ros_laser_controller" filename="libgazebo_ros_velodyne_gpu_laser.so">
+          <topicName>/velodyne_points3</topicName>
+          <frameName>lidar2</frameName>
+          <min_range>0.9</min_range>
+          <max_range>130.0</max_range><!--default: 130m-->
+          <gaussianNoise>0.008</gaussianNoise>
+        </plugin>
+      </sensor>
+
       <sensor name="imu_sensor" type="imu">
         <always_on>true</always_on>
         <parent>base_link</parent>
@@ -259,47 +302,6 @@
           
         </plugin>
         <pose>0 0 0.24081 0 0 1.57079</pose>
-      </sensor>
-
-      <sensor name="world" type="depth">
-        <!-- openni plugin has the x pointing towards the scene, so rotate to have z -->
-        <!--pose frame="">0 1.1 1.1 0.0 1.5708 1.5708</pose-->
-        <pose frame="">0.0 0 -0.1 0 1.5708 0</pose>
-        <camera>
-          <horizontal_fov>1.57</horizontal_fov>
-          <image>
-            <width>619</width>
-            <height>619</height>
-            <format>L_INT8</format>
-          </image>
-          <clip>
-            <near>0.05</near>
-            <far>500.0</far>
-          </clip>
-          <noise>
-            <type>gaussian</type>
-            <mean>0</mean>
-            <stddev>0.04</stddev>
-          </noise>
-        </camera>
-        <plugin name="kinect_plugin" filename="libgazebo_ros_openni_kinect.so">
-          <baseline>0.1</baseline>
-          <alwaysOn>true</alwaysOn>
-          <!-- Keep this zero, update_rate in the parent <sensor> tag
-          will control the frame rate. -->
-          <updateRate>0.0</updateRate>
-          <cameraName>kinect_test</cameraName>
-          <imageTopicName>/kinect/fake_livox/rgb_image</imageTopicName>
-          <cameraInfoTopicName>/kinect/fake_livox/camera_info</cameraInfoTopicName>
-          <depthImageTopicName>/kinect/fake_livox/depth_image</depthImageTopicName>
-          <depthImageInfoTopicName>/kinect/fake_livox/depth_camera_info</depthImageInfoTopicName>
-          <pointCloudTopicName>/kinect/fake_livox/whole_cloud</pointCloudTopicName>
-          <frameName>lidar</frameName>
-          <pointCloudCutoff>0.05</pointCloudCutoff>
-          <pointCloudCutoffMax>500.0</pointCloudCutoffMax>
-        </plugin>
-        <always_on>true</always_on>
-        <update_rate>10.0</update_rate>
       </sensor>
     </link>
 

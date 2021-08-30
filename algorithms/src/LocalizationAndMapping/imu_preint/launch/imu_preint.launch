@@ -1,6 +1,5 @@
 <launch>
    <arg name="do_visualization" value="true"/>
-   <!--param name="use_sim_time" type="bool" value="true"-->
    <param name="imu_preint_result_visualization" type="bool" value="$(arg do_visualization)" />
    <param name="imu_lidar_extrinsic_path" type="string" value="$(find imu_preint)/config/imu_extrinsic.yaml"/>
    <param name="imu_topic_name" type="string" value="/external_imu"/>

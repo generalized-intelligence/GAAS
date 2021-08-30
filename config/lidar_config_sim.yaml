@@ -1,0 +1,34 @@
+%YAML:1.0
+---
+Lidars:
+  
+    - name: "main_lidar"
+      topic: "/velodyne_points2"
+      type: "velodyne_32e"
+      T_FLUBaselink_Lidar: !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: f
+        data: [1,0,0,0,
+              0,1,0,0,
+              0,0,1,0,
+              0,0,0,1]
+    
+    - name: "velodyne_downward"
+      topic: "/velodyne_points3"
+      type: "velodyne_32e"
+      T_FLUBaselink_Lidar: !!opencv-matrix
+        rows: 4
+        cols: 4
+        dt: f
+        data: [
+              1,0,0,0,
+              0,0,1,0,
+              0,-1,0,0,
+              0,0,0,1
+              ]
+
+#Lidar Extrinsic
+#Lidar Intrinsic (FOV,Cloud density)
+
+

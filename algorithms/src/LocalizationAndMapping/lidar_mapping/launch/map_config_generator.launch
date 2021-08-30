@@ -1,14 +1,15 @@
 <launch>
-   <param name="use_sim_time" type="bool" value="true"/>
-   <param name="map_path" type="string" value="/home/gi/Documents/SCLEGOLOAM_ENV/park_map/output_aligned_prev.pcd"/>
-   <param name="rosbag_path" type="string" value="/home/gi/Documents/SCLEGOLOAM_ENV/park_map/park_initial_pose.bag"/>
-   <param name="output_map_path" type="string" value="/home/gi/Documents/LOAM_VELODYNE_ENV/park_clear/output_aligned.pcd"/>
+   <param name="use_sim_time" type="bool" value="false"/>
+   <param name="map_path" type="string" value="/home/gi/Documents/HDL_SLAM/airsim_msbuilding/1630066882.086639000.pcd"/>
+   <param name="rosbag_path" type="string" value="/home/gi/Documents/HDL_SLAM/airsim_msbuilding/initial.bag"/>
+   <param name="output_map_path" type="string" value="/home/gi/Documents/HDL_SLAM/airsim_msbuilding/output.pcd"/>
    <param name="lidar_to_ground_height" type="double" value="1.50"/>
+   <param name="map_downsampling_size" type="double" value="0.4"/>
 
    <!-- using lio-sam: true; using lego-loam/sc lego-loam: false -->
    <param name="using_liosam_coordinate" type="bool" value="true"/>
 
 
-   <param name="z_angle_compensation" type="double" value="0"/>
+   <param name="z_angle_compensation" type="double" value="201"/>
    <node name="map_config_generator" pkg="lidar_mapping" type="map_config_generator" output="screen"/>
 </launch>
