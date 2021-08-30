@@ -1,5 +1,5 @@
 <launch>
-   <param name="use_sim_time" type="bool" value="true"/>
+   <param name="use_sim_time" type="bool" value="false"/>
    <param name="map_path" type="string" value="/home/gi/Documents/HDL_SLAM/airsim_msbuilding/1630066882.086639000.pcd"/>
    <param name="rosbag_path" type="string" value="/home/gi/Documents/HDL_SLAM/airsim_msbuilding/initial.bag"/>
    <param name="output_map_path" type="string" value="/home/gi/Documents/HDL_SLAM/airsim_msbuilding/output.pcd"/>
