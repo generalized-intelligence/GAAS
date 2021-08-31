@@ -1,12 +1,31 @@
-Steps to start airsim:
+# About Airsim Simulation
 
-Setup env:
+**We support Airsim 1.5.0-Linux and PX4 v1.11.3 so far.**
+
+Place your airsim repo under ~/Downloads/Airsim/ and place PX4-Autopilot repo under ~/Downloads/Airsim/AirSim/PX4/ and checkout to the certain tags, and compile them to enable the scripts offered by GAAS.
+
+
+
+## Start simulation by scripts (recommended):
+
+Launch airsim, px4-sitl, mavros, airsim_node and QGroundControl by:
+
+    ./scripts/run_airsim.sh
+
+and stop them all with:
+
+    ./scripts/stop_airsim.sh
+
+## Setup env:
  
     mkdir -p ~/Downloads/Airsim/ && https://github.com/microsoft/AirSim.git && cd ~/Downloads/Airsim/AirSim && git checkout v1.5.0-linux
 
     #install airsim with the scripts setup.sh and build.sh manually.
 
     sudo ln -s  /usr/lib/x86_64-linux-gnu/libstdc++.so.6  /usr/lib/x86_64-linux-gnu/libstdc++.so  # for clang+llvm we need cpplib files end with .so.
+    
+    
+(optional)
 
     mkdir -p ~/Downloads/Airsim/AirSim/cmake/airsim_sensors && cp ~/GAAS/simulation/src/airsim_sensors/CMakeLists.txt ~/Downloads/Airsim/AirSim/cmake/airsim_sensors/CMakeLists.txt
 
@@ -14,6 +33,8 @@ Setup env:
 
     cd ~/Downloads/Airsim/AirSim && ./build.sh
 
+
+## Steps to start airsim manually:
 
 step<1> prepare for simulation:
 
@@ -42,15 +63,8 @@ step<6> (optional) start QGroundControl.
 
 
 
-If you wanna use airsim node:
+**If you wanna use airsim node:**
 
     cd ~/Downloads/Airsim/AirSim/ros && catkin build -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8
     roslaunch airsim_ros_pkgs airsim_node.launch 
 
-You can also run:
-
-    ./scripts/run_airsim.sh
-
-and stop it with:
-
-    ./scripts/stop_airsim.sh
