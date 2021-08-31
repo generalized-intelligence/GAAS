@@ -180,7 +180,7 @@ Check out simulation/README.md to get more details of simulation env setup.
 
 (11). Multiple Submaps Switching --TODO
 
-(12). IMU-Preintegration and High-Frequency Localization--Done.
+(12). IMU-Preintegration and High-Frequency Localization --Done.
 
 (13). VTOL Mode Switching --TODO.
 
@@ -199,3 +199,7 @@ Check out simulation/README.md to get more details of simulation env setup.
 (20). System State Surveillance Service --Done.
 
 (21). HTTP Server on Ground Control Station --TODO.
+
+(22). Multiple Spinning Lidar Support --Done.
+
+(23). Airsim Simulation Env Support --Done.
