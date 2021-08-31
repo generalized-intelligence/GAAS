@@ -268,6 +268,11 @@ bool MapBlock::getXYZMinMaxSizeByPointCloud(const MapCloudT& mapCloud)
             z_max = pt.z;
         }
     }
+    const double Z_MAX_MIN = 120; // 地图高度的最小值.
+    if(z_max < Z_MAX_MIN)
+    {
+        z_max = Z_MAX_MIN;
+    }
     //step<2> 获取grid size.
     LOG(INFO)<<"in "<<__func__<<" stage 2."<<endl;
 
