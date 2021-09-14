@@ -4,7 +4,7 @@
 #include "localization_algorithm_abstract.h"
 
 
-class ICPLocalizationAlgorithm:LocalizationAlgorithmAbstract
+class ICPLocalizationAlgorithm:public LocalizationAlgorithmAbstract
 {
 private:
     bool doICPMatching();

@@ -71,6 +71,7 @@ public:
     std::string getCurrentMapName();
     void addToMemBuffer(const std::string& name);
     void removeFromMemBuffer(const std::string& name);
+    MapCloudT::Ptr getCurrentMapCloud(const Eigen::Matrix4f& position);
     MapCloudT::Ptr getCurrentMapCloud(const Eigen::Vector3d& position); // 获取地图点云块，切片，调度等细节实现隐藏在内部。
 };
 void RegistrationMapManager::selectMapByName(const std::string& map_name)
@@ -138,7 +139,11 @@ bool RegistrationMapManager::init(ros::NodeHandle &nh)
         cropMapWithNewCenter(this->currentCropboxCenterPosition);
     }
 }
-
+MapCloudT::Ptr RegistrationMapManager::getCurrentMapCloud(const Eigen::Matrix4f& position) // 获取地图点云块，切片，调度等细节实现隐藏在内部。
+{
+    Eigen::Vector3d v3d(position(0,3),position(1,3),position(2,3));
+    return getCurrentMapCloud(v3d);
+}
 MapCloudT::Ptr RegistrationMapManager::getCurrentMapCloud(const Eigen::Vector3d& position) // 获取地图点云块，切片，调度等细节实现隐藏在内部。
 {
 

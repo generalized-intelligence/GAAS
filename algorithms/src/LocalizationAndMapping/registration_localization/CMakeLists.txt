@@ -294,8 +294,8 @@ include_directories(
 
 add_executable(map_manager_test src/map_manager_test.cpp)
 target_link_libraries(map_manager_test ${REQUIRED_LIBS})
-#add_executable(registration_localization_node src/registration_localization_node.cpp)
-#target_link_libraries(registration_localization_node ${REQUIRED_LIBS} fast_gicp)
+add_executable(registration_localization_node src/registration_localization_node.cpp)
+target_link_libraries(registration_localization_node ${REQUIRED_LIBS} fast_gicp)
 
 #map publisher
 #add_executable(map_publisher src/map_publisher.cpp)

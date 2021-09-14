@@ -2,15 +2,24 @@
 #define LOCALIZATION_ALGORITHM_ABSTRACT
 
 #include "registraion_map_manager.h"
+#include "GPS_AHRS_sync.h"
 
 class LocalizationAlgorithmAbstract
 {
 private:
+    GPS_AHRS_Synchronizer::Ptr pGPS_AHRS_Sync;
     RegistrationMapManager::Ptr map_manager_binding;
+    bool poseGuessEverInit = false;
+
 
 public:
-    bool initLocalizationModule(ros::NodeHandle& nh,RegistrationMapManager::Ptr map_manager);
+    bool initLocalizationModule(ros::NodeHandle& nh,RegistrationMapManager::Ptr map_manager,GPS_AHRS_Synchronizer::Ptr sync);
+    bool queryPoseGuessEverInit()
+    {
+        return this->poseGuessEverInit;
+    }
     bool initPoseGuess();
+    Eigen::Matrix4f getInitialPoseGuess();
     virtual bool initLocalizationAlgorithm(ros::NodeHandle& nh) = 0;
 
     bool get_imu_preint_odometry(const ros::Time& cloud_stamp, Eigen::Matrix4f& output_pose);
@@ -24,12 +33,9 @@ public:
                                    bool need_transformed_cloud,const ros::Time& cloud_stamp) = 0;
 
 
-// Callbacks
-    bool lidar_callback();
-    bool gps_ahrs_callback();
-    std::string getMatchingAlgorithmType();
     void getInitialPoseWithGPSAndAHRS();
-
+// Callbacks
+    std::string getMatchingAlgorithmType();
 };
 
 
@@ -37,11 +43,11 @@ public:
 //{
 //    //通过pcd文件配置动态加载地图.
 //}
-bool LocalizationAlgorithmAbstract::initLocalizationModule(ros::NodeHandle& nh,RegistrationMapManager::Ptr map_manager)
+bool LocalizationAlgorithmAbstract::initLocalizationModule(ros::NodeHandle& nh,RegistrationMapManager::Ptr map_manager,GPS_AHRS_Synchronizer::Ptr sync)
 {
     this->map_manager_binding = map_manager; //create map_manager binding.
-    initLocalizationAlgorithm(ros::NodeHandle& nh);
-    initPoseGuess(ros::NodeHandle& nh);
+    initLocalizationAlgorithm(nh);
+    initPoseGuess();
 }
 
 #endif

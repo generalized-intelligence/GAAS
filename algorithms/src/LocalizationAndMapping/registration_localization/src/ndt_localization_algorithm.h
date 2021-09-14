@@ -3,7 +3,7 @@
 
 #include "localization_algorithm_abstract.h"
 
-class NDTLocalizationAlgorithm:LocalizationAlgorithmAbstract
+class NDTLocalizationAlgorithm:public LocalizationAlgorithmAbstract
 {
 private:
     bool doNDTMatching();

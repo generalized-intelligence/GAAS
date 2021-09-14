@@ -9,6 +9,7 @@
 
 struct GPS_AHRS_Synchronizer
 {
+    using Ptr = std::shared_ptr<GPS_AHRS_Synchronizer>;
     nav_msgs::Odometry ahrs_msg;
     sensor_msgs::NavSatFix gps_msg;
     bool ever_init = false;
