@@ -1,0 +1,259 @@
+/*
+ * nvbio
+ * Copyright (c) 2011-2014, NVIDIA CORPORATION. All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * Neither the name of the NVIDIA CORPORATION nor the
+ *      names of its contributors may be used to endorse or promote products
+ *      derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+///\mainpage NVBIO
+///
+///\htmlonly
+/// <img src="nvidia_cubes.png" style="position:relative; bottom:-10px; border:0px;"/>
+/// &nbsp;&nbsp;
+///\endhtmlonly
+///
+///\par
+///\n
+/// <a href="https://github.com/NVlabs/nvbio">NVBIO</a> is a library of reusable components designed by <a href="http://www.nvidia.com">NVIDIA</a> to accelerate bioinformatics applications
+/// using <i>CUDA</i>. Though it is specifically designed to unleash the power of <i>NVIDIA</i> <b>GPU</b>s,
+/// most of its components are completely cross-platform and can be used both from host C++ and device
+/// CUDA code.
+///\par
+/// The purpose of NVBIO is twofold: it can be thought of both as a solid basis to build new, modern applications targeting
+/// GPUs, which deferring the core computations to a library will always automatically and transparently benefit from new
+/// advances in GPU computing, and as example material to design novel bioinformatics algorithms for massively parallel architectures.
+///\par
+/// Additionally, NVBIO contains a suite of applications built on top of it, including a re-engineered
+/// implementation of the famous <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">Bowtie2</a> short read aligner.
+/// Unlike many prototypes, \subpage nvbowtie_page "nvBowtie" is an attempt to build an industrial strength aligner, reproducing most of Bowtie2's
+/// original features as well as adding a few more, such as efficient support for direct BAM (and soon CRAM) output.
+///\par
+/// Similarly, it contains the fastest BWT builders for strings and string-sets available to date.
+/// NVBIO can in fact perform the BWT of individual strings containing several billion characters or string-sets containing
+/// up to ~100 billion symbols at an unprecedented speed of roughly <i>80M symbols/s</i>, on a single Tesla K40.
+///
+/// \section Features
+///\par
+/// Here's a short list of some of the most noteworthy features of NVBIO:
+///\par
+/// - many \subpage strings_page "strings" and \ref StringSetInterface "string-sets" representations,
+///   including \subpage hello_dna_page "packed string" encodings for arbitrary \ref AlphabetsSection "alphabets"
+/// - \subpage fmindex_page "FM-index" and \ref BidirectionalFMIndex "Bidirectional FM-index" construction and lookup algorithms
+///   on arbitrary strings, and compile-time alphabets.
+/// - novel, state-of-the-art parallel \subpage sufsort_page "suffix sorting" and \subpage sufsort_page "BWT" construction
+///   algorithms for very large strings and string sets, on arbitrary alphabets
+/// - \subpage waveletfm_page "Wavelet Trees" and other succint data structures for large alphabet strings
+/// - efficient parallel \ref MEMFiltersSection "k-Maximal Extension Match" filters
+/// - novel, state-of-the-art parallel \subpage qgram_page "Q-Gram" (or k-mer) \subpage qgram_page "Index" construction and lookup
+/// - \subpage alignment_page "Dynamic Programming Alignment" with parallel implementations of most scoring algorithms
+///   (e.g. Edit-Distance, Smith-Waterman, Gotoh,...) with support for global, semi-global or local alignment,
+///   in both banded and full-matrix modes, on arbitrary string types
+/// - parallel \subpage bloom_filter_page "Bloom Filter" construction and lookup
+/// - state-of-the-art support for many \subpage primitives_page "parallel primitives", like sorting, reduction, prefix-sum,
+///   stream compaction, run-length encoding, etc
+/// - state-of-the-art \subpage io_page "I/O" of common sequencing formats (e.g. FASTA, FASTQ, BAM), with transparent,
+///   parallel compression/decompression
+///\par
+/// importantly, all of the above algorithms and data-structures have both CPU and GPU implementations,
+/// easily selected through template specialization.
+///
+/// \section Links
+///
+///\htmlonly
+/// <div>
+/// <a href="https://github.com/NVlabs/nvbio"><img src="browse-icon.png" style="position:relative; bottom:-10px; border:0px;"/></a>
+/// &nbsp;&nbsp;
+/// <a href="https://github.com/NVlabs/nvbio">Browse or fork NVBIO at GitHub</a>
+/// <br>
+///
+/// <a href="https://groups.google.com/forum/#!forum/nvbio-users"><img src="groups-icon.png" style="position:relative; bottom:-10px; border:0px;"/></a>
+/// &nbsp;&nbsp;
+/// <a href="https://groups.google.com/forum/#!forum/nvbio-users">The NVBIO users forum</a>
+/// <br>
+///
+/// <a href="https://github.com/NVlabs/nvbio"><img src="download-icon.png" style="position:relative; bottom:-10px; border:0px;"/></a>
+/// &nbsp;&nbsp;
+/// <a href="https://github.com/NVlabs/nvbio">Download NVBIO 1.1</a>
+/// </div>
+///\endhtmlonly
+///
+/// \section Documentation
+///\par
+/// Documentation for the NVBIO suite can be found here:
+///\n
+/// - \subpage nvbio_page - the NVBIO library
+/// - \subpage nvbowtie_page - a re-engineered implementation of the famous <a href="http://bowtie-bio.sourceforge.net/bowtie2/index.shtml">Bowtie2</a> short read aligner
+/// - \subpage nvbwt_page - a tool to perform BWT-based reference indexing
+/// - \subpage nvssa_page - a tool to build auxiliary Sampled Suffix Arrays needed for reference indexing
+/// - \subpage nvfm_server_page - a shared memory FM-index server
+/// - \subpage nvsetbwt_page - a tool to perform BWT-based read indexing
+/// - \subpage nvlighter_page - a re-engineered implementation of the <a href="https://github.com/mourisl/Lighter">Lighter</a> error corrector
+///
+/// \section RecentNew Recent News
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">13/2/2015 \n NVBIO 1.1.50 (dev)</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Added \subpage nvlighter_page "nvLighter", a re-engineered implementation of the <a href="https://github.com/mourisl/Lighter">Lighter</a> error corrector.
+///   * Added support for sequencing data output in many formats (.txt, FASTA, FASTQ, with optional gzip and LZ4 compression).
+/// </td></tr>
+/// </table>
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">13/2/2015 \n NVBIO 1.1</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Added support for position-dependent scoring in the \ref AlignersSection "Gotoh DP Alignment" module, and optimized
+///     it for protein sequences
+///   * Refined the string and string iterator interfaces
+///   * Added performance-oriented utilities such as the \ref VectorizedStringLoadingModule
+///     interface and the \subpage packed_streams_page "ForwardPackedStream" iterator.
+/// </td></tr>
+/// </table>
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">24/1/2015 \n NVBIO 1.0</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Major stability and <b>specificity</b> and <b>sensitivity</b> improvements to \subpage nvbowtie_page
+///    <img src="nvBowtie-ROC-pe-100-zoom.png" style="position:relative; bottom:-10px; border:0px;" width="50%" height="50%"/>
+///   * Added support for finding and reporting discordant alignments
+///   * Improved direct <b>BAM output speed</b> by over an order of magnitude with transparent parallel compression
+/// </td></tr>
+/// </table>
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">13/1/2015 \n NVBIO 0.9.99</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Made nvBowtie's command line compatible with Bowtie2
+///   * Added many missing features to nvBowtie, including support for:
+///      * trimming (-3/--trim3, -5/--trim5)
+///      * forward/reverse alignment (--nofw,--norc)
+///      * presets (--fast,--very-fast,--sensitive,--very-sensitive)
+/// </td></tr>
+/// </table>
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">20/12/2014 \n NVBIO 0.9.98</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Added multi-GPU support to nvBowtie, together with many accuracy and sensitivity improvements
+///   * Released a new version of nvSetBWT based on our freshly developed massively parallel algorithm: http://arxiv.org/pdf/1410.0562.pdf
+/// </td></tr>
+/// </table>
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">15/09/2014 \n NVBIO 0.9.97</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Added many Bowtie2-compatible command line options to nvBowtie
+///   * Added --ungapped-mates option to nvBowtie, which doubles speed at a minor cost in sensitivity (<0.2%)
+/// - <b>Bug Fixes:</b> \n
+///   * Fixed several memory-corruption bugs in nvBowtie's paired-end alignment
+/// </td></tr>
+/// </table>
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">26/05/2014 \n NVBIO 0.9.90</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Added a new \ref AlphabetsSection "Alphabets" module for managing different alphabets.
+///   * Added a new \ref sequence_io_page "Sequence IO" module for managing all kinds of sequence data;
+///		unlike the old io::ReadData, the containers in this module support various types
+///		of alphabet encodings, and can be used both for loading reads as well as for reading or mapping
+///		large reference data.
+///   * Rewrote the \ref fmindex_io_page "FM-Index IO" module; the new io::FMIndexData offers more uniform
+///		interfaces, and unlike its predecessor no longer holds any reference data, which can now be separately
+///		loaded through the new \ref sequence_io_page "Sequence IO" module.
+///   * Rewrote the \ref BatchScheduler "Batch Alignment Schedulers", adding support for a new OpenMP host backend.
+/// </td></tr>
+/// </table>
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">16/05/2014 \n NVBIO 0.9.7</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Simplified the interfaces for \ref packed_streams_page
+///   * Added a suite of easy-to-use and highly efficient host / device parallel primitives
+///   * More uniform handling of nvbio::vector views
+/// - <b>Bug Fixes:</b> \n
+///   * Fixed option parsing bug in nvBWT.
+/// </td></tr>
+/// </table>
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">08/05/2014 \n NVBIO 0.9.6</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Added a set of step-by-step introductory tutorials
+///   * Sped up MEM filtering
+/// </td></tr>
+/// </table>
+///\par
+/// <table>
+/// <tr><td style="white-space: nowrap; vertical-align:text-top;">15/04/2014 \n NVBIO 0.9.5</td>
+/// <td style="vertical-align:text-top;" width="90%">
+/// - <b>New Features:</b> \n
+///   * Added a whole new \ref qgram_page for q-gram indexing and q-gram counting.
+///   * Added a banded \ref AlignersAnchor "Myers bit-vector" edit-distance algorithm running just short of <b>1 TCUPS</b>!
+///   * Added parallel primitives for simple and efficient \ref SeedingAnchor "seed extraction" from string and string-sets
+///   * Added parallel \ref FMIndexFilters "FM-index" and \ref MEMFilters "MEM" filters
+///   * Further improved GPU BWT construction throughput by ~20%.
+///   * Added a set of examples showing how to build \ref qgram_page "q-gram" and \ref fmindex_page "FM-index" based all-mappers
+///	    in a few lines of code, as well as how to extract all \ref MEMFilters "MEM"s from a set of reads
+/// - <b>Bug Fixes:</b> \n
+///   * Fixed access violation bug in ModernGPU's SegmentedSort (thanks Sean Baxter), used at the core of our suffix sorting routines
+///   * Fixed FMIndexDataDevice constructor bug when loading the reverse index
+/// </td></tr>
+/// </table>
+///
+/// \section Dependencies
+///\par
+/// NVBIO depends on the following external libraries:
+///
+/// - <a href="http://nvlabs.github.io/cub/">CUB</a>
+/// - <a href="https://sites.google.com/site/yuta256/">SAIS</a>
+/// - <a href="http://www.zlib.net/">zlib</a>
+/// - <a href="http://www.barrgroup.com/Embedded-Systems/How-To/CRC-Calculation-C-Code">crc</a>
+/// - a modification of Nathaniel McClatchey's <a href="https://github.com/nmcclatchey/Priority-Deque/">priority_deque</a>
+///
+/// \section Requirements
+///\par
+/// NVBIO has been designed for GPUs supporting at least CUDA's <i>Compute Capability 3.5</i>.
+/// Due to the high memory requirements typical of bionformatics algorithms, Tesla K20, K20x or K40 are
+/// recommended.
+///
+/// \section Licensing
+///\par
+/// NVBIO has been developed by <a href="http://www.nvidia.com">NVIDIA Corporation</a> and is licensed under BSD.
+///
+/// \section Contributors
+///\par
+/// The main contributors of NVBIO are <a href="mailto:jpantaleoni@nvidia.com">Jacopo Pantaleoni</a> and <a href="mailto:nsubtil@nvidia.com">Nuno Subtil</a>.
+///
+///\htmlonly
+/// <a href="http://research.nvidia.com"><img src="cuda_small.png" style="position:relative; bottom:-10px; border:0px;"/></a>
+/// &nbsp;&nbsp;
+///\endhtmlonly

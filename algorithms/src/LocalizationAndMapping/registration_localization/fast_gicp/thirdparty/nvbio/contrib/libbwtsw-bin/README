@@ -1,0 +1,7 @@
+*** NOTE: this is GPL code
+
+Binaries built from //research/EmergingApplications/Investigations/genomics/libbwtsw
+
+libbwtsw-linux-amd64-release.a: gcc 4.4.7 (-O2 -g), P4 CL 35226
+bwtsw.*: VS2008 SP1 (cl.exe version 15.00.30729.01, /Zi /O2), P4 CL 35226
+

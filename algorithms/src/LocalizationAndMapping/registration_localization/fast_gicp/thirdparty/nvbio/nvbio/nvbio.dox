@@ -1,0 +1,1203 @@
+/*
+ * nvbio
+ * Copyright (c) 2011-2014, NVIDIA CORPORATION. All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *    * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *    * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *    * Neither the name of the NVIDIA CORPORATION nor the
+ *      names of its contributors may be used to endorse or promote products
+ *      derived from this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL NVIDIA CORPORATION BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+///\page nvbio_page NVBIO
+///
+///\htmlonly
+/// <img src="nvidia_cubes.png" style="position:relative; bottom:-10px; border:0px;"/>
+///\endhtmlonly
+///
+///\par
+///\n
+/// <b>NVBIO</b> is a library of reusable components designed to accelerate bioinformatics applications
+/// using <i>CUDA</i>. Though it is specifically designed to unleash the power of <i>NVIDIA</i> <b>GPU</b>s,
+/// most of its components are completely cross-platform and can be used both from host C++ and device
+/// CUDA code.
+///
+/// \section IntroductionSection Introduction
+///
+/// - \subpage generic_programming_page
+/// - \subpage host_device_page
+/// - \subpage hello_dna_page
+/// - \subpage hello_dna_2_page
+/// - \subpage fmmap_page
+/// - \subpage waveletfm_page
+/// - \subpage proteinsw_page
+///
+/// \section ModulesSection Modules
+///\par
+/// NVBIO includes the following modules:
+///
+/// - \subpage basic_page
+/// - \subpage strings_page
+/// - \subpage alignment_page
+/// - \subpage fmindex_page
+/// - \subpage qgram_page
+/// - \subpage sufsort_page
+/// - \subpage tries_page
+/// - \subpage io_page
+/// - \subpage fasta_page
+/// - \subpage fastq_page
+///
+/// \section PerformanceSection Performance
+///\par
+/// NVBIO is designed for performance. Here's a couple benchmarks showing the
+/// superior speed of its FM-index search, DP alignment and BWT construction
+/// algorithms.
+///
+/// <img src="benchmark-fm-index-speedup.png" style="position:relative; bottom:-10px; border:0px;" width="48%" height="48%"/>
+///\n
+/// <img src="benchmark-sw.png" style="position:relative; bottom:-10px; border:0px;" width="48%" height="48%"/>
+///\n
+/// <img src="benchmark-bwt.png" style="position:relative; bottom:-10px; border:0px;" width="48%" height="48%"/>
+///
+/// \section DependenciesSection Dependencies
+///\par
+/// NVBIO depends on the following external libraries:
+///
+/// - <a href="http://nvlabs.github.io/cub/">CUB</a>
+/// - <a href="https://sites.google.com/site/yuta256/">SAIS</a>
+/// - <a href="http://www.zlib.net/">zlib</a>
+/// - <a href="http://www.barrgroup.com/Embedded-Systems/How-To/CRC-Calculation-C-Code">crc</a>
+/// - a modification of Nathaniel McClatchey's <a href="https://github.com/nmcclatchey/Priority-Deque/">priority_deque</a>
+///
+/// \section Licensing
+///\par
+/// NVBIO has been developed by <a href="www.nvidia.com">NVIDIA Corporation</a> and is licensed under BSD.
+///
+/// \section Contributors
+///\par
+/// The main contributors of NVBIO are <a href="jpantaleoni@nvidia.com">Jacopo Pantaleoni</a> and <a href="nsubtil@nvidia.com">Nuno Subtil</a>.
+///
+///\htmlonly
+/// <a href="http://research.nvidia.com"><img src="cuda_small.png" style="position:relative; bottom:-10px; border:0px;"/></a>
+/// &nbsp;&nbsp;
+///\endhtmlonly
+
+/// \page host_device_page Host & Device
+///\par
+/// The user of NVBIO needs to familiarize with the fact that on a GPU equipped system
+/// there is both a <i>host</i>, controlled by a <i>CPU</i>, and one or multiple <i>GPU</i> <i>devices</i>,
+/// with distinct memory spaces.
+/// Hence, there can be several types of functions and data-structures:
+///\par
+/// - single-threaded functions that can be called by a host thread
+/// - single-threaded functions that can be called by a device thread
+/// - single-threaded functions that can be called both on the host and the device
+/// - parallel functions that can be called by a host thread, and spawn one or more sets of host threads
+/// - parallel functions that can be called by a host thread, but spawn one or more sets of device threads
+///\par
+/// - data-structures that encapsulate host data and are meant to be used on the host
+///   (e.g. a resizable host vector, nvbio::vector<host_tag,T>)
+/// - data-structures that encapsulate device data but are meant to be used on the host
+///   (e.g. a resizable device vector, nvbio::vector<device_tag,T>)
+/// - data-structures that encapsulate device data and are meant to be used on the device
+///\par
+/// Unified Virtual Memory (coming with the NVIDIA Maxwell generation) will eventually allow
+/// to use any data-structure anywhere, but for now we have to cope with the distinct memory
+/// spaces.
+///
+/// \section PlainViewsSection Plain Views
+///\par
+/// The fact that some data structures contain device data but can only be used from the host,
+/// coupled with the fact that at the moment CUDA does not allow to pass references
+/// as device kernel arguments and requires to pass PODs in, lends naturally to the definition of
+/// <i>plain views</i>: in NVBIO's speech, a plain view of an object is essentially a <i>shallow reference</i>
+/// to an object's data encapsulated in a POD data structure that can be passed as kernel parameters.
+///\par
+/// NVBIO defines the generic function plain_view() to obtain the plain view of a given object.
+/// Analogously it defines the meta function plain_view_subtype<T>::type to get the type of the
+/// plain view of any given type T (where defined).
+/// Moreover, as a convention NVBIO's data structures T define the subtype T::plain_view_type and
+/// T::const_plain_view_type to identify their plain view types.
+///\par
+/// As an example consider the following situation, where on the host you have created a large device vector
+/// you want to be filled by a device kernel.
+/// Ideally, you'd want to simply pass a reference to the vector to your kernel, as in:
+///\code
+/// __global__ void my_kernel(                   // the CUDA kernel
+///     nvbio::vector<device_tag,uint32>& vec)   // ideally, receive a reference: doesn't work without UVM!
+/// {
+///     const uint32 tid = threadIdx.x + blockIdx.x * blockDim.x; // compute a linear thread id
+///     if (tid < vec.size())
+///         vec[tid] = tid * 10;
+/// }
+///
+/// int main()
+/// {
+///     nvbio::vector<device_tag,uint32> vec( 1000000 );
+///
+///     const uint32 blockdim = 128;
+///     const uint32 n_blocks = util::divide_ri( vec.size(), blockdim ); 
+///     my_kernel<<<n_blocks,blockdim>>>( vec );
+/// }
+///\endcode
+///\par
+/// However, this won't be possible in CUDA until UVM is finally available. With NVBIO, you'd do this instead:
+///\code
+/// __global__ void my_kernel(                   // the CUDA kernel
+///     nvbio::vector_view<uint32> vec)          // NVBIO's surrogate of a reference
+/// {
+///     const uint32 tid = threadIdx.x + blockIdx.x * blockDim.x; // compute a linear thread id
+///     if (tid < vec.size())
+///         vec[tid] = tid * 10;
+/// }
+///
+/// int main()
+/// {
+///     nvbio::vector<device_tag,uint32> vec( 1000000 );
+///
+///     const uint32 blockdim = 128;
+///     const uint32 n_blocks = util::divide_ri( vec.size(), blockdim );
+///     my_kernel<<<n_blocks,blockdim>>>( nvbio::plain_view( vec ) );
+/// }
+///\endcode
+///\par
+/// This basic pattern can be applied to all of NVBIO's data structures that are meant to be setup from the
+/// host and accessed from the device.
+///
+/// Next: \ref hello_dna_page
+
+/// \page generic_programming_page Generic Programming
+///\par
+/// Most of NVBIO's functions and data structures are <em>C++ templates</em>
+/// providing the flexibility and compile-time code generation needed
+/// to accomodate the exponential amount of type combinations possible in typical
+/// bioinformatics applications.
+///\par
+/// Just as an example, consider the problem of string alignment: one user might
+/// want to use <em>Smith-Waterman</em> to perform <em>local</em> alignment between
+/// two <em>ASCII</em> strings.
+/// Another, might want to use <em>Edit-Distance</em> to align two <em>4-bit encoded</em>
+/// strings  <em>semi-globally</em>.
+/// Yet another might want to perform <em>banded</em> alignment using <em>Gotoh</em>'s
+/// affine gap penalties, this time <em>globally</em> between an ASCII pattern and a 2-bit text.\n
+/// Now consider the cross product of all the possible combinations:
+/// <table>
+/// <tr><td><b>Aligner</b></td><td>	<b>Alignment Type</b>	</td><td><b>DP Algorithm</b></td><td><b>Pattern Type</b></td><td><b>Text Type</b></td></tr>
+/// <tr><td>Edit-Distance</td>		<td>Global</td>			<td>Full Matrix</td>	<td>ASCII</td>	<td>ASCII</td></tr>
+/// <tr><td>Smith-Waterman</td>		<td>Semi-Global			</td><td>Banded</td>	<td>2-bit</td>	<td>2-bit</td></tr>
+/// <tr><td>Gotoh</td>				<td>Local</td>			<td></td>				<td>4-bit</td>  <td>4-bit</td></tr>
+/// </table>
+/// Hard-coding them would result in <b>3 x 3 x 2 x 3 x 3 = 54</b> <em>almost equivalent <b>code paths!</b></em>\n
+///\par
+/// <b><em>Templates</em></b> instead allow:
+///  - to express all these alignment problems elegantly using a <b><em>single interface</em></b>;
+///  - while at the same time <b><em>not imposing any constraints</em></b> on the user's possibilities
+///    who might for example easily experiment switching from ASCII to 2-bit encodings
+///    or perhaps yet another custom representation of his choice;
+///  - and to <b><em>optimize</em></b> the generated code at <em>compile-time</em>, specializing behaviour
+///    for an important subset of the exponentially (or even infinitely) sized cross product
+///    of all possible combinations.
+///\par
+/// And obviously, the same story goes for FM-indices, Bloom filters, and so on and so on...
+///
+/// Next: \ref host_device_page
+/// Top: \ref nvbio_page
+
+/// \page hello_dna_page Hello DNA!
+///\par
+/// This page will teach you to familiarize with some of NVBIO's basic containers and concepts,
+/// showing you how to instantiate a \ref packed_streams_page "PackedVector" to store some DNA string.
+/// Packed vectors are useful to represent streams of symbols using a few bits per symbol. For a DNA alphabet,
+/// we'll only need 2-bits:
+///
+///\code
+/// #include <nvbio/basic/packed_vector.h>
+/// #include <nvbio/strings/alphabet.h>
+///
+/// void main()
+/// {
+///     // our hello world ASCII string
+///     const char dna_string[] = "ACGTTGCA";
+///     const uint32 len = uint32( strlen( dna_string ) );
+///
+///     // our DNA alphabet size, in bits
+///     const uint32 ALPHABET_SIZE = AlphabetTraits<DNA>::SYMBOL_SIZE;
+///
+///     // instantiate a packed host vector
+///     nvbio::PackedVector<host_tag,ALPHABET_SIZE> h_dna( len );
+///
+///     // and fill it in with the contents of our original string, converted
+///     // to a 2-bit DNA alphabet (i.e. A = 0, C = 1, G = 2, T = 3)
+///     nvbio::assign( len, nvbio::from_string<DNA>( dna_string ), h_dna.begin() );
+///
+///     // copy the packed vector to the device
+///     nvbio::PackedVector<device_tag,ALPHABET_SIZE> d_dna( h_dna );
+/// }
+///\endcode
+///
+/// Next: \ref hello_dna_2_page
+/// Top: \ref nvbio_page
+
+/// \page hello_dna_2_page Hello DNA! - Part 2
+///\par
+/// This page will teach you to familiarize with NVBIO's notion of \ref strings_page "string sets" and
+/// with some basic parallel constructs.
+/// Assume you have the string from the previous example, but now want to extract all of its 3-mers,
+/// for example to use them in a seed & extend aligner.
+/// The collection of all 3-mers can be thought of as a set of substrings, or <i>infixes</i> of your original string;
+/// NVBIO represents such an object as an \ref InfixSets "InfixSet".
+/// Moreover, it provides a function to extract the coordinates of such seeds in <i>parallel</i>.
+///
+///\code
+/// #include <nvbio/basic/packed_vector.h>
+/// #include <nvbio/basic/primitives.h>
+/// #include <nvbio/strings/alphabet.h>
+/// #include <nvbio/strings/infix.h>
+/// #include <nvbio/strings/seeds.h>
+///
+/// using namespace nvbio;
+///
+/// void main()
+/// {
+///     // our hello world ASCII string
+///     const char dna_string[] = "ACGTTGCA";
+///     const uint32 len = uint32( strlen( dna_string ) );
+///
+///     // our DNA alphabet size, in bits
+///     const uint32 ALPHABET_SIZE = AlphabetTraits<DNA>::SYMBOL_SIZE;
+///
+///     // instantiate a packed host vector
+///     nvbio::PackedVector<host_tag,ALPHABET_SIZE> h_dna( len );
+///
+///     // and fill it in with the contents of our original string, converted
+///     // to a 2-bit DNA alphabet (i.e. A = 0, C = 1, G = 2, T = 3)
+///     nvbio::assign( len, nvbio::from_string<DNA>( dna_string ), h_dna.begin() );
+///
+///     // copy the packed vector to the device
+///     nvbio::PackedVector<device_tag,ALPHABET_SIZE> d_dna( h_dna );
+///
+///     // prepare a vector to store the coordinates of the resulting infixes
+///     nvbio::vector<device_tag,string_infix_coord_type> d_seed_coords;
+///
+///     const uint32 n_seeds = enumerate_string_seeds(
+///         len,                                   // the string length
+///         uniform_seeds_functor<>( 3u, 1u ),     // a seeding functor, specifying to extract
+///                                                // all 3-mers offset by 1 base each
+///         d_seed_coords );                       // the output infix coordinates
+///
+///     // define an infix-set to represent the resulting infixes
+///     typedef nvbio::PackedVector<device_tag,ALPHABET_SIZE>::iterator           packed_iterator_type;
+///     typedef nvbio::vector<device_tag,string_infix_coord_type>::const_iterator infix_iterator_type;
+///     typedef InfixSet<packed_iterator_type, infix_iterator_type>               infix_set_type;
+///
+///     infix_set_type d_seeds(
+///         n_seeds,                                // the number of infixes in the set
+///         d_dna.begin(),                          // the underlying string
+///         d_seed_coords.begin() );                // the iterator to the infix coordinates
+///
+///     ...
+///\endcode
+///
+///\par
+/// At this point it would be nice to do something with the string-set we just created.
+/// For the sake of the example, we will just print all its strings.
+/// Technically, we could just loop through the strings in the set, and print them on the host.
+/// However, suppose we want to do it in the native space of the set, i.e. on the device, and
+/// suppose we want to do it in parallel: how can we do this?
+/// Well, we will do it here using a \ref primitives_page "parallel primitive", and particularly
+/// the  \ref for_each() construct:
+///
+///\code
+///     ...
+///
+///     nvbio::for_each<device_tag>(
+///         n_seeds,                                      // the loop's sequence size
+///         seeds.begin(),                                // the loop's begin iterator
+///         print_strings<infix_set_type>() );            // the loop's body
+/// }
+///\endcode
+///\par
+/// \ref for_each() takes a functor encoding the body of our loop, and applies it to all elements
+/// of a sequence. In this case, the sequence is the string-set, and the body of our loop will be
+/// the following:
+///
+///\code
+/// template <typename string_set_type>
+/// struct print_strings
+/// {
+///     typedef typename string_set_type::string_type string_type;
+/// 
+///     NVBIO_HOST_DEVICE
+///     void operator() (const string_type string) const
+///     {
+///         // build an ASCII string
+///         char seed[4];
+///         nvbio::to_string<DNA>(
+///             string,                    // the input string
+///             nvbio::length( string ),   // its length
+///             seed );                    // the output ASCII string
+/// 
+///         // and print it...
+///         printf("%s\n", seed);
+///     }
+/// };
+///\endcode
+///
+///\par
+/// Notice how we marked our print_strings methods with the NVBIO_HOST_DEVICE qualifier: this
+/// tells the CUDA compiler that these methods can be compiled both for the host and the device.\n
+/// It is also worth mentioning that if we kept our vectors on the host (i.e. replacing the device_tag
+/// specifiers with host_tag), everything would have still run in parallel, except it would have
+/// run on the host.
+///
+/// Next: \ref fmmap_page
+/// Top: \ref nvbio_page
+
+/// \page hello_dna_3_page Hello DNA! - Part 3
+///\par
+/// This page will make you familiarize with the concept of plain views and how to write
+/// templated functors.
+/// Suppose that you want to extract each of the 3-mers of a DNA string, encoded as plain
+/// integer hashes. In a serial world, you'd just loop through them one by one. In a parallel
+/// world, you'd want to use a parallel for_each. The body of the for_each will be a functor
+/// class.
+///
+///\code
+/// #include <nvbio/basic/packed_vector.h>
+/// #include <nvbio/basic/dna.h>
+/// #include <nvbio/basic/primitives.h>
+///
+/// // define a functor to extract the i-th mer of a string as an integer hash
+/// //
+/// template <typename string_type, typename output_type>
+/// struct hash_functor
+/// {
+///     hash_functor(string_type _input, output_type _output) : input(_input), output(_output) {}
+///
+///     // define the functor operator() to extract the i-th 3-mer
+///     void operator() (const uint32 i) const
+///     {
+///         uint32 hash = 0;
+///         for (uint32 j = 0; j < 3; ++j)
+///             hash |= input[i+j] << (j*2);  // pack the j-th symbol using 2-bits
+///
+///         output[i] = hash;
+///     }
+///
+///     string_type         input;
+///     mutable output_type output;
+/// };
+///
+/// // define a utility function to instantiate the hash functor above, useful to
+/// // exploit C++'s Template Argument Deduction and avoid having to always
+/// // specify template arguments
+/// template <typename string_type, typename output_type>
+/// hash_functor<string_type,output_type> make_hash_functor(string_type _input, output_type _output)
+/// {
+///    return hash_functor<string_type,output_type>( _input, _output );
+/// }
+///
+/// void main()
+/// {
+///     // our hello world ASCII string
+///     const char dna_string[] = "ACGTTGCA";
+///     const uint32 len = (uint32)strlen( dna_string );
+///
+///     // our DNA alphabet size
+///     const uint32 ALPHABET_SIZE = 2u;
+///
+///     // instantiate a packed host vector
+///     nvbio::PackedVector<host_tag,ALPHABET_SIZE> h_dna;
+///
+///     // resize the vector
+///     h_dna.resize( len );
+///
+///     // and fill it in with the contents of our original string, converted
+///     // to a 2-bit DNA alphabet (i.e. A = 0, C = 1, G = 2, T = 3)
+///     nvbio::string_to_dna(
+///         dna_string,               // the input ASCII string
+///         h_dna.begin() );          // the output iterator
+///
+///     // define a vector for storing the output 3-mers
+///     nvbio::vector<host_tag,uint32> h_mers( len - 3u );
+///
+///     // for each i in [0,len-3], extract the i-th 3-mer, in parallel
+///     thrust::for_each(
+///         host_tag,
+///         thrust::make_counting_iterator( 0u ),       // the beginning of the loop sequence
+///         thrust::make_counting_iterator( len - 3u ), // the end of the loop sequence
+///         make_hash_functor(                          // the for_each "body" functor
+///            nvbio::plain_view( h_dna ),
+///            nvbio::plain_view( h_mers ) ) );
+/// }
+///\endcode
+///
+/// Next: \ref fmmap_page
+/// Top: \ref nvbio_page
+
+/// \page fmmap_page All-Mapping using an FM-index
+///\par
+/// NVBIO tries to make it easy to write modern bioinformatics applications exploiting parallel architectures.
+/// In this page we'll see how to apply it to build a prototype \ref fmindex_page "FM-index" based all-mapper.\n
+/// 
+/// \section InputSection Input
+///\par
+/// The first step for a reference-based aligner is loading a reference index, and streaming a set of reads.
+/// Let's start by loading the reference sequence and its FM-index, using the corresponding \ref sequence_io_page "Sequence"
+/// and \ref fmindex_io_page "FM-Index I/O" classes.
+///
+///\code
+/// #include <stdio.h>
+/// #include <stdlib.h>
+/// #include <nvbio/basic/timer.h>
+/// #include <nvbio/basic/console.h>
+/// #include <nvbio/basic/vector.h>
+/// #include <nvbio/basic/shared_pointer.h>
+/// #include <nvbio/basic/dna.h>
+/// #include <nvbio/io/sequence/sequence.h>
+/// #include <nvbio/io/fmindex/fmindex.h>
+///
+/// #include "util.h"
+///
+/// void main(int argc, const char** argv)
+/// {
+///     // perform some basic option parsing
+///     Params params( argc-2, argv );
+///
+///     const char* reads = argv[argc-1];
+///     const char* index = argv[argc-2];
+/// 
+///     // load a reference sequence in RAM
+///     io::SequenceDataHost h_ref;
+///     if (!io::load_sequence_file( DNA, &h_ref, index ))
+///     {
+///         log_error(stderr, "    failed loading reference \"%s\"\n", index);
+///         return 1u;
+///     }
+///
+///     // load an FM-index in RAM
+///     io::FMIndexDataHost h_fmi;
+///     if (!h_fmi.load( index, io::FMIndexData::FORWARD | io::FMIndexData::SA ))
+///     {
+///         log_error(stderr, "    failed loading index \"%s\"\n", index);
+///         return 1u;
+///     }
+///     ...
+///\endcode
+///
+///\par
+/// Besides some simple option parsing, at this point we have an application that loads an FM-index from disk
+/// into system memory, including the genome, its forward BWT and the Sampled Suffix Array.
+/// At this point, if we want our mapper to run on the GPU we can copy the FM-index in device memory with
+/// a single line, again specifying which of its components to load.
+/// Rather than keeping it on the stack we will store it in a <i>Pipeline</i> object, which we'll use
+/// to keep all the state of our mapper.
+///
+///\code
+/// struct Pipeline
+/// {
+///     Params                                params;    // the mapping params
+///     SharedPointer<io::SequenceDataDevice> ref_data;  // the device reference
+///     SharedPointer<io::FMIndexDataDevice>  fm_data;   // the device FM-index
+/// };
+///\endcode
+///
+///\code
+/// ...
+///     Pipeline pipeline;
+///
+///     // save the program options
+///     pipeline.params = params;
+///
+///     // build the device index
+///     pipeline.ref_data = new io::SequenceDataDevice( h_ref );
+///
+///     // build the device index
+///     pipeline.fm_data = new io::FMIndexDataDevice( h_fmi, io::FMIndexData::FORWARD |
+///                                                          io::FMIndexData::SA );
+/// ...
+///\endcode
+///
+///\par
+/// The second second step is to start streaming reads in; NVBIO's philosophy here is to use a batched approach, where
+/// the size of the batch will roughly determine the amount of available parallelism in the rest of the pipeline.
+/// In order to amortize fixed costs (e.g. grid launch / synchronization overhead) it's good to allow for as much
+/// parallelism as possible given your memory constraints - but as a rough guideline, suffice it to say that lightweight
+/// kernels should have at least ~128K items to process, possibly more (for example, sorting performance saturates at 16-32M keys).\n
+/// So if some stages of the alignment pipeline will parallelize across reads, it would be good to have at least 1M or so to
+/// process.
+/// Obviously, one million reads could require plenty of memory if the reads are long, so we might want to cap the maximum
+/// number of base pairs as well:
+///
+///\code
+/// ...
+///     const uint32 batch_reads   =   1*1024*1024;
+///     const uint32 batch_bps     = 100*1024*1024;
+///
+///     // open a read file, storing for each read both its forward and its reverse-complemented representations
+///     SharedPointer<io::SequenceDataStream> read_data_file(
+///         io::open_sequence_file(
+///             reads,
+///             io::Phred33,
+///             2*params.max_reads,
+///             uint32(-1),
+///             io::SequenceEncoding( io::FORWARD | io::REVERSE_COMPLEMENT ) ) );
+/// 
+///     // check whether the file opened correctly
+///     if (read_data_file == NULL || read_data_file->is_ok() == false)
+///     {
+///         log_error(stderr, "    failed opening file \"%s\"\n", reads);
+///         return 1u;
+///     }
+///
+///		io::SequenceDataHost h_read_data;
+/// 
+///     // start looping to consume the input reads
+///     while (1)
+///     {
+///         // load a batch of reads
+///         if (io::next( DNA_N, &h_read_data, read_data_file, batch_reads, batch_bps ) == 0);
+///             break;
+/// 
+///         log_info(stderr, "  loading reads... started\n");
+/// 
+///         // copy it to the device
+///         const io::SequenceDataDevice d_read_data( *h_read_data );
+/// 
+///         // remember we generated two strands per input read...
+///         const uint32 n_reads = d_read_data.size() / 2;
+/// 
+///         log_info(stderr, "  loading reads... done\n");
+///         log_info(stderr, "    %u reads\n", n_reads);
+///
+///         // do the real mapping work
+///         map( pipeline, d_read_data );
+///     }
+/// }
+///\endcode
+///
+///\par
+/// Now we are ready to start the real mapping work. In order to do it, we'll need to store
+/// another data structure in our pipeline, namely the \ref FMIndexFilters "FMIndexFilter".
+/// This data structure is just a context for performing FM-index based filtering, i.e. the process
+/// of finding potential matches of a set of strings using an FM-index.
+///
+///\code
+/// struct Pipeline
+/// {
+///     typedef io::FMIndexDataDevice::fm_index_type        fm_index_type;  // the fm-index view type
+///     typedef FMIndexFilterDevice<fm_index_type>          fm_filter_type; // the fm-index filter type
+///
+///     Params                                params;    // the mapping params
+///     SharedPointer<io::SequenceDataDevice> ref_data;  // the device reference
+///     SharedPointer<io::FMIndexDataDevice>  fm_data;   // the device FM-index
+///     fm_filter_type                        fm_filter; // the FM-index filter
+/// };
+///\endcode
+///\par
+/// Here you go, ready to write the bulk of the aligner.
+/// 
+/// \section MappingSection Mapping
+///\par
+/// We'll write a simple seed & extend aligner, so the first thing we'll want to do is
+/// split our reads in equal segments.
+/// As shown in the previous example, the collection of these seeds can be seen as an \ref InfixSet .
+/// Let's start with some boiler-plate code to make sure we have everythin we need:
+///
+///\code
+/// void map(Pipeline& pipeline, const io::SequenceDataAccess<DNA_N> reads)
+/// {
+///     // the reads can be accessed as a string-set, of this type
+///     typedef io::SequenceDataAccess<DNA>::sequence_string_set_type               genome_string;
+///
+///     // the reads can be accessed as a string-set, of this type
+///     typedef io::SequenceDataAccess<DNA_N>::sequence_string_set_type             read_string_set_type;
+///
+///     // the seeds will be infixes of a string-set, with this coordinates type
+///     typedef string_set_infix_coord_type                                         infix_coord_type;
+///
+///     // and we'll store them in a device vector
+///     typedef nvbio::vector<device_tag,infix_coord_type>                          infix_vector_type;
+///
+///     // finally, this will be the type of their infix-set
+///     typedef InfixSet<read_string_set_type, const string_set_infix_coord_type*>  seed_string_set_type;
+///
+///
+///     // fetch the program options
+///     const Params& params = pipeline.params;
+/// 
+///     // fetch the genome string
+///     const io::SequenceDataAccess<DNA> genome_access( *pipeline.ref_data );
+///     const uint32        genome_len = genome_access.bps();
+///     const genome_string genome( genome_access.sequence_stream() );
+/// 
+///     // fetch an fm-index view
+///     const Pipeline::fm_index_type fm_index = pipeline.fm_data->index();
+/// 
+///     // fetch the fm-index filter
+///     Pipeline::fm_filter_type& fm_filter = pipeline.fm_filter;
+///
+///     // prepare some vectors to store the query qgrams
+///     infix_vector_type seed_coords;
+/// 
+///     // extract the seeds
+///     const read_string_set_type read_string_set = reads.sequence_string_set();
+///     const seed_string_set_type seed_string_set = extract_seeds(
+///         read_string_set,
+///         params.seed_len,
+///         params.seed_intv,
+///         seed_coords );
+///     ...
+///\endcode
+///
+///\par
+/// The next step is mapping the seeds using the FM-index filter; we start by <i>ranking</i>
+/// their occurrences:
+///
+///\code
+/// ...
+///     // first step: rank the query seeds
+///     const uint64 n_hits = fm_filter.rank( fm_index, seed_string_set );
+/// ...
+///\endcode
+///
+///\par
+/// Now, each seed might have mapped to a whole range of suffixes in the Suffix Array of the genome,
+/// and all those locations are potential candidates for a valid alignment.
+/// We want to visit them all, which means we need to <i>locate</i> their coordinates.\n
+/// Notice that this process might involve a severe data expansion, as some seeds might map to 
+/// millions of genome locations: hence, we cannot simply locate all the <i>n_hits</i> in one go.
+/// The \ref FMIndexFilters "FMIndexFilter" interface gives us the chance to do it in batches,
+/// while doing the delicate job of parallelizing work at the finest possible grain and with
+/// the most evenly distributed load-balancing: i.e. spreading the variable sized suffix array
+/// ranges across multiple threads, so that each thread gets a single hit to locate.
+/// Well, in practice, you can ignore this, as NVBIO will do it for you.
+/// The only thing you need to remember is to process your hits in large batches:
+///
+///\code
+///     ...
+///     typedef uint2 hit_type; // each hit will be a (genome-pos,seed-id) coordinate pair
+/// 
+///     // prepare storage for the output hits
+///     nvbio::vector<device_tag,hit_type>      hits( batch_size );
+///     nvbio::vector<device_tag,uint32>        out_reads( batch_size );
+///     nvbio::vector<device_tag,int16>         out_scores( batch_size );
+///     nvbio::vector<device_tag,uint8>         temp_storage;
+///
+///     // loop through large batches of hits and locate & merge them
+///     for (uint64 hits_begin = 0; hits_begin < n_hits; hits_begin += batch_size)
+///     {
+///         const uint64 hits_end = nvbio::min( hits_begin + batch_size, n_hits );
+/// 
+///         fm_filter.locate(
+///             hits_begin,      // the beginning of the range of hits to locate
+///             hits_end,        // the end of the range of hits to locate
+///             hits.begin() );  // the output vector to be filled
+///         ...
+///\endcode
+///
+///\par
+/// At this point, remember the hit coordinates refer to the seeds, not to the reads
+/// they belong to.
+/// We hence want to convert them to <i>diagonals</i> of the genome/read matrices,
+/// and we do this employing the \ref transform() \ref primitives_page "parallel primitive"</a>:
+///
+///\code
+///     ...
+///         // transform the (index-pos,seed-id) hit coordinates into diagonals
+///         nvbio::transform<device_tag>(
+///             hits_end - hits_begin,
+///             hits.begin(),
+///             hits.begin(),
+///             hit_to_diagonal( nvbio::plain_view( seed_coords ) ) );
+///     ...
+///\endcode
+///
+///\code
+/// // transform an (index-pos,seed-id) hit into a diagonal (text-pos = index-pos - seed-pos, read-id)
+/// struct hit_to_diagonal
+/// {
+///     typedef uint2  argument_type;
+///     typedef uint2  result_type;
+/// 
+///     // constructor
+///     NVBIO_FORCEINLINE NVBIO_HOST_DEVICE
+///     hit_to_diagonal(const string_set_infix_coord_type* _seed_coords) : seed_coords(_seed_coords) {}
+/// 
+///     // functor operator
+///     NVBIO_FORCEINLINE NVBIO_HOST_DEVICE
+///     uint2 operator() (const uint2 hit) const
+///     {
+///         const uint32 index_pos = hit.x;
+///         const uint32 seed_id   = hit.y;
+/// 
+///         const string_set_infix_coord_type seed = seed_coords[ seed_id ];
+/// 
+///         const uint32 read_pos = infix_begin( seed );
+///         const uint32 read_id  =   string_id( seed );
+/// 
+///         return make_uint2( index_pos - read_pos, read_id );
+///     }
+/// 
+///     const string_set_infix_coord_type* seed_coords;
+/// };
+///\endcode
+///
+///\par
+/// We are finally ready for the <i>extension</i> or <i>verification</i> phase: we need to check if the
+/// candidate hits identified by the seeds are true alignments or not, i.e. whether they map to within
+/// a certain edit-distance from the reference genome.
+/// We'll do this using the banded \ref AlignersAnchor "Myers bit-vector" aligner, applied to the \ref BatchAlignmentSection
+/// "batch alignment" problem of aligning the string-set of reads associated to all hits against the string-set
+/// of corresponding genome locations.
+/// Both these string-sets can be thought of as <i>sparse</i> string sets, i.e. sparse collections of substrings of:
+///\par
+///  - the contiguously packed string of input reads
+///  - the reference genome
+///
+///\code
+///         ...
+///         // build the set of read infixes
+///         nvbio::transform<device_tag>(
+///             hits_end - hits_begin
+///             hits.begin(),
+///             read_infix_coords.begin(),
+///             read_infixes( nvbio::plain_view( reads ) ) );
+/// 
+///         // build the set of genome infixes
+///         nvbio::transform<device_tag>(
+///             hits_end - hits_begin
+///             hits.begin(),
+///             genome_infix_coords.begin(),
+///             genome_infixes<BAND_LEN>( genome_len, nvbio::plain_view( reads ) ) );
+/// 
+///         typedef nvbio::vector<device_tag,string_infix_coord_type>::const_iterator infix_iterator;
+/// 
+///         typedef io::SequenceDataAccess<DNA_N>::sequence_stream_type      read_stream;
+/// 
+///         const SparseStringSet<read_stream,infix_iterator> read_infix_set(
+///             hits_end - hits_begin,
+///             reads.sequence_stream(),
+///             read_infix_coords.begin() );
+/// 
+///         const SparseStringSet<genome_string,infix_iterator> genome_infix_set(
+///             hits_end - hits_begin,
+///             genome,
+///             genome_infix_coords.begin() );
+/// 
+///         // spawn a batched banded DP alignment
+///         typedef aln::MyersTag<5u> myers_dna5_tag;
+///
+///         aln::batch_banded_alignment_score<BAND_LEN>(
+///             aln::make_edit_distance_aligner<aln::SEMI_GLOBAL, myers_dna5_tag>(),
+///             read_infix_set,
+///             genome_infix_set,
+///             sinks.begin(),
+///             aln::DeviceThreadScheduler(),
+///             reads.max_read_len(),
+///             reads.max_read_len() + BAND_LEN );
+///     }
+/// }
+///\endcode
+///\par
+/// Technically, we are almost done: we now have the mapping score for each candidate hit.
+/// In this tutorial we won't do anything with them, but the accompanying code actually shows
+/// how to keep track of the best scores for each read by using <i>segmented reductions</i>.
+///\par
+/// This example should have given you an idea of how to build a pipeline based on some of NVBIO's
+/// parallel constructs, from FM-index filters to DP alignment.
+/// Hopefully, you are now set to read through the rest of the documentation and discover how
+/// many other useful tools might come to your help!
+///
+/// Next: \ref waveletfm_page
+/// Top: \ref nvbio_page
+
+
+/// \page waveletfm_page Protein Search using Wavelet Trees and an FM-index
+///\par
+/// In <a href="https://github.com/NVlabs/nvbio/blob/master/examples/waveletfm/waveletfm.cu">this example</a>,
+/// we want to show NVBIO's support for larger alphabets, particularly showing the composability
+/// of compact string representations like \ref WaveletTreeSection "Wavelet Trees", and self-compressed indices like
+/// the \ref FMIndexSection "FM-index".
+/// We are hence going to build a small app performing pattern matching on a protein string.
+///
+/// \section WaveletFM_BWTBuildingSection Building the BWT
+///
+///\par
+/// If we want to build an FM-index, the first thing is computing the BWT of the database string we want
+/// to index.
+/// In this example, we'll use a very naive string containing all protein characters in a row - but in a real app
+/// this string might contain millions of entries, hence we'll do this using NVBIO's very fast parallel
+/// construction algorithm running on a CUDA device.
+///
+///\par
+///\code
+/// int main(int argc, char* argv[])
+/// {
+///     log_info(stderr, "waveletfm... started\n");
+/// 
+///     // this string will be our protein database we want to search in - just a short string
+///     // with all protein characters in sequence
+///     const char* proteins = "ACDEFGHIKLMNOPQRSTVWYBZX";
+///     const uint32 text_len = 24;
+/// 
+///     // print the text
+///     log_info(stderr, "  text: %s\n", proteins);
+/// 
+///     // allocate a host packed vector
+///     PackedVector<host_tag,8u,true> h_text( text_len );
+/// 
+///     // pack the string
+///     from_string<PROTEIN>( proteins, proteins + text_len, h_text.begin() );
+/// 
+///     // copy it to the device
+///     PackedVector<device_tag,8u,true> d_text( h_text );
+/// 
+///     // allocate a vector for the BWT
+///     PackedVector<device_tag,8u,true> d_bwt( text_len + 1 );
+/// 
+///     BWTParams bwt_params;
+/// 
+///     // build the BWT
+///     const uint32 primary = cuda::bwt( text_len, d_text.begin(), d_bwt.begin(), &bwt_params );
+/// 
+///     // print the BWT
+///     {
+///         char proteins_bwt[ 25 ];
+/// 
+///         to_string<PROTEIN>( d_bwt.begin(), d_bwt.begin() + text_len, proteins_bwt );
+/// 
+///         proteins_bwt[24] = '\0';
+/// 
+///         log_info(stderr, "  bwt: %s (primary %u)\n", proteins_bwt, primary);
+///     }
+///     ...
+///\endcode
+///\par
+/// Done: if everything works correctly, this should print the string "bwt: XACDEFGHIKLMNOPQRSTVWYBZ (primary 1)".
+///
+/// \section WaveletFM_WaveletTreeSection It's a large alphabet, let's use a Wavelet Tree
+///
+///\par
+/// Compared to DNA, the protein alphabet is a largish one, with 24 letters. If we were to use a plain
+/// BWT encoding and a standard \ref RankDictionarySection "rank dictionary" based on sparse occurrence
+/// tables to build an FM-index, we would need storage proportional to the string length times the size
+/// of the alphabet.
+/// The thing is made even worse by the fact that, for the purpose of efficient string packing,
+/// NVBIO treats protein characters as 8-bit characters, as 5-bit packing would need cumbersome, slow bit-manipulation
+/// logic (because individual characters would stride word boundaries).
+/// This means an FM-index would require 128 times more storage than for the 2-bit DNA alphabet!
+///
+///\par
+/// But no worries: we can encode our BWT using \ref WaveletTreeSection, a wonderful succint data structure
+/// designed to encode large alphabet strings in small space (proportional to the string length times the
+/// number of <i>bits</i> required to represent each symbol, i.e. the <i>logarithm</i> of the alphabet size) while
+/// allowing O(1) ranking.
+/// Let's build a wavelet tree, then...
+///
+///\par
+///\code
+///     ...
+///     // define our wavelet tree storage type and its plain view
+///     typedef WaveletTreeStorage<device_tag>                          wavelet_tree_type;
+///     typedef WaveletTreeStorage<device_tag>::const_plain_view_type   wavelet_tree_view_type;
+/// 
+///     // build a wavelet tree
+///     wavelet_tree_type wavelet_bwt;
+/// 
+///     // setup the wavelet tree
+///     setup( text_len, d_bwt.begin(), wavelet_bwt );
+///     ...
+///\endcode
+///\par
+/// Et voila. At this point, we could even throw away the original bwt (the vector <i>d_bwt</i>), as the
+/// wavelet bwt encodes all the information we need.
+/// Notice that, behind the curtains, the wavelet tree construction is parallelized, in this case on
+/// the device.
+///
+/// \section WaveletFM_FMIndexSection Building and querying the FM-index
+///
+///\par
+/// We now need to setup an FM-index on top of the wavelet bwt. Remember the basic \ref FMIndexSection "fm_index"
+/// class has three template parameters, a TRankDictionary type, a TSuffixArray type, and a TL2
+/// type.
+/// These represent the kind of \ref RankDictionarySection "rank dictionary" used to encode
+/// the bwt (in our case the wavelet tree), the sampled suffix array (if needed), and an iterator
+/// to the L2 table (a table containing the sum of all character frequencies).
+/// In our case, we want to specialize this cass to use:
+///\par
+/// - the WaveletTreeStorage::const_plain_view_type class
+/// - a null_type suffix array (as the sampled suffix array is only needed for locating, which
+///   we won't do here - though it might be needed in a real app)
+/// - an L2 iterator to a device nvbio::vector of integers, i.e. nvbio::vector<device_tag,uint32>::const_iterator
+///
+///\par
+/// Notice that the default value for the TL2 iterator is null_type, in which case a raw pointer will be used.
+/// However, in this example we want to show that all of NVBIO's data structures, even when instanced on the device,
+/// can be accessed and used for computing from the host just as well - albeit potentially paying a very long latency tax
+/// when unified memory is not present.
+/// This can be achieved using proper iterators, which know the memory space they are pointing to, and issue
+/// cuda mem-copies when dereferenced.
+///
+///\par
+///\code
+///     ...
+///     typedef nvbio::vector<device_tag,uint32>::const_iterator            l2_iterator;
+///     typedef fm_index<wavelet_tree_view_type, null_type, l2_iterator>    fm_index_type;
+/// 
+///     // take the const view of the wavelet tree
+///     const wavelet_tree_view_type wavelet_bwt_view = plain_view( (const wavelet_tree_type&)wavelet_bwt );
+///
+///     // build the L2 vector
+///     nvbio::vector<device_tag,uint32> L2(257);
+/// 
+///     // note we perform this on the host, even though the wavelet tree is on the device -
+///     // gonna be slow, but it's not much stuff, and this is just an example anyway...
+///     // and we just want to show that NVBIO is designed to make everything work!
+///     L2[0] = 0;
+///     for (uint32 i = 1; i <= 256; ++i)
+///         L2[i] = L2[i-1] + rank( wavelet_bwt_view, text_len, i-1u );
+/// 
+///     // build the FM-index
+///     const fm_index_type fmi(
+///         text_len,
+///         primary,
+///         L2.begin(),
+///         wavelet_bwt_view,
+///         null_type() );
+/// 
+///     // do some string matching using our newly built FM-index - once again
+///     // we are doing it on the host, though all data is on the device: the entire
+///     // loop would be better moved to the device in a real app.
+///     log_info(stderr, "  string matching:\n");
+///     for (uint32 i = 0; i < text_len; ++i)
+///     {
+///         // match the i-th suffix of the text
+///         const uint32 pattern_len = text_len - i;
+/// 
+///         // compute the SA range containing the occurrences of the pattern we are after
+///         const uint2 range = match( fmi, d_text.begin() + i, pattern_len );
+///
+///         // print the number of occurrences of our pattern, equal to the SA range size
+///         log_info(stderr, "    rank(%s): %u\n", proteins + i, 1u + range.y - range.x);
+///     }
+/// 
+///     log_info(stderr, "waveletfm... done\n");
+///     return 0;
+/// }
+///\endcode
+///\par
+/// Compile, and run. With a bit of luck, you should see the following output:
+///\verbatim
+/// info    : waveletfm... started
+/// info    :   text: ACDEFGHIKLMNOPQRSTVWYBZX
+/// info    :   bwt: XACDEFGHIKLMNOPQRSTVWYBZ (primary 1)
+/// info    :   string matching:
+/// info    :     rank(ACDEFGHIKLMNOPQRSTVWYBZX): 1
+/// info    :     rank(CDEFGHIKLMNOPQRSTVWYBZX): 1
+/// info    :     rank(DEFGHIKLMNOPQRSTVWYBZX): 1
+/// info    :     rank(EFGHIKLMNOPQRSTVWYBZX): 1
+/// info    :     rank(FGHIKLMNOPQRSTVWYBZX): 1
+/// info    :     rank(GHIKLMNOPQRSTVWYBZX): 1
+/// info    :     rank(HIKLMNOPQRSTVWYBZX): 1
+/// info    :     rank(IKLMNOPQRSTVWYBZX): 1
+/// info    :     rank(KLMNOPQRSTVWYBZX): 1
+/// info    :     rank(LMNOPQRSTVWYBZX): 1
+/// info    :     rank(MNOPQRSTVWYBZX): 1
+/// info    :     rank(NOPQRSTVWYBZX): 1
+/// info    :     rank(OPQRSTVWYBZX): 1
+/// info    :     rank(PQRSTVWYBZX): 1
+/// info    :     rank(QRSTVWYBZX): 1
+/// info    :     rank(RSTVWYBZX): 1
+/// info    :     rank(STVWYBZX): 1
+/// info    :     rank(TVWYBZX): 1
+/// info    :     rank(VWYBZX): 1
+/// info    :     rank(WYBZX): 1
+/// info    :     rank(YBZX): 1
+/// info    :     rank(BZX): 1
+/// info    :     rank(ZX): 1
+/// info    :     rank(X): 1
+/// info    : waveletfm... done
+///\endverbatim
+///
+///\par
+/// Showing that, indeed, there's one match for each suffix of the original string.
+///
+/// Next: \ref proteinsw_page
+/// Top: \ref nvbio_page
+
+
+/// \page proteinsw_page Smith-Waterman Alignment of Protein Strings
+///\par
+/// In <a href="https://github.com/NVlabs/nvbio/tree/master/examples/proteinsw">this example</a>, we want to show
+/// how to perform Smith-Waterman alignment of protein strings, using a Blosum-62 substitution matrix, and the
+/// Gotoh variant of the Smith-Waterman aligner, supporting affine gap penalties.
+///\par
+/// We'll start by taking a hard-coded matrix representing the substition scores among protein characters
+/// in the order they appear in the \ref PROTEIN \ref AlphabetsSection "Alphabet".
+///
+///\code
+/// #include <nvbio/basic/console.h>
+/// #include <nvbio/basic/timer.h>
+/// #include <nvbio/basic/vector.h>
+/// #include <nvbio/basic/cuda/ldg.h>
+/// #include <nvbio/strings/string.h>
+/// #include <nvbio/strings/alphabet.h>
+/// #include <nvbio/alignment/alignment.h>
+/// #include <nvbio/alignment/batched.h>
+/// #include <thrust/sequence.h>
+/// #include <stdio.h>
+/// #include <stdlib.h>
+/// 
+/// using namespace nvbio;
+/// 
+/// int8 s_blosum62[] =
+/// {
+///  4,  0, -2, -1, -2,  0, -2, -1, -1, -1, -1, -2, -4, -1, -1, -1,  1,  0,  0, -3, -2, -2, -1,  0,
+///  0,  9, -3, -4, -2, -3, -3, -1, -3, -1, -1, -3, -4, -3, -3, -3, -1, -1, -1, -2, -2, -3, -3, -2,
+/// -2, -3,  6,  2, -3, -1, -1, -3, -1, -4, -3,  1, -4, -1,  0, -2,  0, -1, -3, -4, -3,  4,  1, -1,
+/// -1, -4,  2,  5, -3, -2,  0, -3,  1, -3, -2,  0, -4, -1,  2,  0,  0, -1, -2, -3, -2,  1,  4, -1,
+/// -2, -2, -3, -3,  6, -3, -1,  0, -3,  0,  0, -3, -4, -4, -3, -3, -2, -2, -1,  1,  3, -3, -3, -1,
+///  0, -3, -1, -2, -3,  6, -2, -4, -2, -4, -3,  0, -4, -2, -2, -2,  0, -2, -3, -2, -3, -1, -2, -1,
+/// -2, -3, -1,  0, -1, -2,  8, -3, -1, -3, -2,  1, -4, -2,  0,  0, -1, -2, -3, -2,  2,  0,  0, -1,
+/// -1, -1, -3, -3,  0, -4, -3,  4, -3,  2,  1, -3, -4, -3, -3, -3, -2, -1,  3, -3, -1, -3, -3, -1,
+/// -1, -3, -1,  1, -3, -2, -1, -3,  5, -2, -1,  0, -4, -1,  1,  2,  0, -1, -2, -3, -2,  0,  1, -1,
+/// -1, -1, -4, -3,  0, -4, -3,  2, -2,  4,  2, -3, -4, -3, -2, -2, -2, -1,  1, -2, -1, -4, -3, -1,
+/// -1, -1, -3, -2,  0, -3, -2,  1, -1,  2,  5, -2, -4, -2,  0, -1, -1, -1,  1, -1, -1, -3, -1, -1,
+/// -2, -3,  1,  0, -3,  0,  1, -3,  0, -3, -2,  6, -4, -2,  0,  0,  1,  0, -3, -4, -2,  3,  0, -1,
+/// -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,  1, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,
+/// -1, -3, -1, -1, -4, -2, -2, -3, -1, -3, -2, -2, -4,  7, -1, -2, -1, -1, -2, -4, -3, -2, -1, -2,
+/// -1, -3,  0,  2, -3, -2,  0, -3,  1, -2,  0,  0, -4, -1,  5,  1,  0, -1, -2, -2, -1,  0,  3, -1,
+/// -1, -3, -2,  0, -3, -2,  0, -3,  2, -2, -1,  0, -4, -2,  1,  5, -1, -1, -3, -3, -2, -1,  0, -1,
+///  1, -1,  0,  0, -2,  0, -1, -2,  0, -2, -1,  1, -4, -1,  0, -1,  4,  1, -2, -3, -2,  0,  0,  0,
+///  0, -1, -1, -1, -2, -2, -2, -1, -1, -1, -1,  0, -4, -1, -1, -1,  1,  5,  0, -2, -2, -1, -1,  0,
+///  0, -1, -3, -2, -1, -3, -3,  3, -2,  1,  1, -3, -4, -2, -2, -3, -2,  0,  4, -3, -1, -3, -2, -1,
+/// -3, -2, -4, -3,  1, -2, -2, -3, -3, -2, -1, -4, -4, -4, -2, -3, -3, -2, -3, 11,  2, -4, -3, -2,
+/// -2, -2, -3, -2,  3, -3,  2, -1, -2, -1, -1, -2, -4, -3, -1, -2, -2, -2, -1,  2,  7, -3, -2, -1,
+/// -2, -3,  4,  1, -3, -1,  0, -3,  0, -4, -3,  3, -4, -2,  0, -1,  0, -1, -3, -4, -3,  4,  1, -1,
+/// -1, -3,  1,  4, -3, -2,  0, -3,  1, -3, -1,  0, -4, -1,  3,  0,  0, -1, -2, -3, -2,  1,  4, -1,
+///  0, -2, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -4, -2, -1, -1,  0,  0, -1, -2, -1, -1, -1, -1,
+/// };
+/// ...
+///\endcode
+///\par
+/// and we proceed building a scoring scheme class that will be used in conjunction with the \ref GotohAligner;
+/// This class implements the interface needed by the \ref GotohAligner to know the substitution and gap penalties.
+///
+///\code
+/// ...
+/// template <typename matrix_iterator>
+/// struct BlosumScheme
+/// {
+///     NVBIO_FORCEINLINE NVBIO_HOST_DEVICE BlosumScheme(
+///         const matrix_iterator m, const int32 gap_open, const int32 gap_ext) :
+///         m_matrix(m), m_gap_open(gap_open), m_gap_ext(gap_ext) {}
+/// 
+///     // return the maximum match bonus at the given quality score
+///     NVBIO_FORCEINLINE NVBIO_HOST_DEVICE int32 match(const uint8 q = 0) const { return 11; };
+///
+///     // return the substitution score at the given (reference,query) position (r_i,q_j),
+///     // with values (r,q) and quality score qq
+///     NVBIO_FORCEINLINE NVBIO_HOST_DEVICE int32 substitution(
+///         const uint32 r_i, const uint32 q_j,
+///         const uint8  r,   const uint8  q,
+///         const uint8  qq = 0) const
+///     {
+///         return int8( m_matrix[ r + q*24 ] );
+///     };
+///
+///     // return gap open and extension penalties for the pattern (query) and the text (reference)
+///     NVBIO_FORCEINLINE NVBIO_HOST_DEVICE int32 pattern_gap_open()      const { return m_gap_open; };
+///     NVBIO_FORCEINLINE NVBIO_HOST_DEVICE int32 pattern_gap_extension() const { return m_gap_ext; };
+///     NVBIO_FORCEINLINE NVBIO_HOST_DEVICE int32 text_gap_open()         const { return m_gap_open; };
+///     NVBIO_FORCEINLINE NVBIO_HOST_DEVICE int32 text_gap_extension()    const { return m_gap_ext; };
+/// 
+///     const matrix_iterator   m_matrix;
+///     const int32             m_gap_open;
+///     const int32             m_gap_ext;
+/// };
+/// ...
+///\endcode
+///\par
+/// We can now build our actual test program:
+///
+///\code
+/// ...
+/// int main(int argc, char* argv[])
+/// {
+///     const uint32 n_strings = 50000;
+///     const uint32 P         = 128;
+///     const uint32 T         = 1024;
+/// 
+///     // alloc a device vector for holding the Blosum-62 scoring matrix
+///     nvbio::vector<device_tag,uint8> d_blosum62( 24*24 );
+/// 
+///     // copy the matrix to the device
+///     thrust::copy( s_blosum62, s_blosum62 + 24*24, d_blosum62.begin() );
+/// 
+///     // alloc the storage for the host strings
+///     nvbio::vector<host_tag,uint8>  h_pattern_strings( P * n_strings );
+///     nvbio::vector<host_tag,uint8>  h_text_strings( T * n_strings );
+/// 
+///     // fill the strings with random characters
+///     LCG_random rand;
+///     for (uint32 i = 0; i < P * n_strings; ++i)
+///         h_pattern_strings[i] = nvbio::min( uint8( rand.next() * 24.0f ), (uint8)23u );
+///     for (uint32 i = 0; i < T * n_strings; ++i)
+///         h_text_strings[i] = nvbio::min( uint8( rand.next() * 24.0f ), (uint8)23u );
+/// 
+///     // copy to the device
+///     nvbio::vector<device_tag,uint8>  d_pattern_strings( h_pattern_strings );
+///     nvbio::vector<device_tag,uint8>  d_text_strings( h_text_strings );
+///     nvbio::vector<device_tag,uint32> d_pattern_offsets( n_strings + 1 );
+///     nvbio::vector<device_tag,uint32> d_text_offsets( n_strings + 1 );
+/// 
+///     // build the string offsets
+///     thrust::sequence( d_pattern_offsets.begin(), d_pattern_offsets.end(), 0u, P );
+///     thrust::sequence( d_text_offsets.begin(),    d_text_offsets.end(),    0u, T );
+/// 
+///     // prepare a vector of alignment sinks
+///     nvbio::vector< device_tag, aln::BestSink< uint32 > > sinks( n_strings );
+/// 
+///     // instantiate our Blosum-62 scoring scheme on the device data, which we wrap in an ldg_pointer
+///     // so as to take advantage of the texture cache
+///     const BlosumScheme< cuda::ldg_pointer<uint8> > scoring( cuda::make_ldg_pointer( raw_pointer( d_blosum62 ) ), -5, -3 );
+/// 
+///     // and execute the batch alignment, on a GPU device
+///     aln::batch_alignment_score(
+///         aln::make_gotoh_aligner<aln::LOCAL,aln::TextBlockingTag>( scoring ),
+///         make_concatenated_string_set( n_strings, (const uint8*)raw_pointer( d_pattern_strings ), (const uint32*)raw_pointer( d_pattern_offsets ) ),
+///         make_concatenated_string_set( n_strings, (const uint8*)raw_pointer( d_text_strings ),    (const uint32*)raw_pointer( d_text_offsets ) ),
+///         sinks.begin(),
+///         aln::DeviceThreadBlockScheduler<128,1>(),
+///         P, T );
+/// 
+///     return 0;
+/// }
+///\endcode
+///
+/// Notice that in the above example we used a \ref TextBlockingTag specialization of the \ref GotohAligner,
+/// which is generally more efficient when the text is much longer than the pattern.
+/// In the <a href="https://github.com/NVlabs/nvbio/tree/master/examples/proteinsw">original example</a> you'll find
+/// a test of various template instantiations, useful for performing some due-diligence auto-tuning to understand
+/// which specialization is optimal for your use-case.
+/// Similarly, one can play with the \ref BatchScheduler "thread block scheduler" configuration to try attaining better utilization of the
+/// available hardware resources.
+///
+/// Top: \ref nvbio_page

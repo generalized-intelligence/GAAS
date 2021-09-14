@@ -1,0 +1,37 @@
+NOTES:
+
+A) Smith & waterman benchmarking
+
+* Reading the candidates from the reference in gather mode, we can appreciate a performance penalty in TITAN BLACK (~25%) but not in TITAN X. 
+Next step will be checking if this penalization is related to the "cache hierarchy".
+It's very strange that this does not happen in Maxwell. It is interesting to know the performance issue that is happening here.
+ 
+* The best performance is: in Kepler, using the implementation that combines interger & video instructions and in Maxwell, using the baseline implementation that just uses the integer instructions. 
+ 
+* In Kepler the mixing of instructions improves the code 57%, but that needs bigger effort to be integrated. This strategy requires to group in sets of 4 queries with the same or similar size, and designing a pipeline strategy to rerun the failed alignments using higher precision (In section B we give some numbers of this filtering efficiency).
+ 
+* The low performance in Maxwell compared to Kepler using video instructions is interesting.  We are talking about 111 GCUPS in Kepler compared with 17 GCUPS in Maxwell (it's 15% of the Kepler performance). 
+There is the suspiction that the compiler could generate better sass code for Maxwell when we use video instructions. With the implementation that simulates the video instructions using integer/logical instructions, we are showing that using a very naive own implementation of the MAX video instruction (that executes 20 op/max op), more performance is achieved than if we rely on the compiler to generate the emulated video instruction.
+ 
+The next performance metrics from the implementation that uses video instructions, shows that the compiler is generating 7 times more instructions in Maxwell than in Kepler, and this is one of the reasons for the performance degradation:
+​​                           GTX Titan Black:          GTX Titan X:
+Performance                  156 GCUPS                41.6 GCUPS
+IPC                            2.32                     2.57
+ICount                         418 M                   2923 M
+Registers/th                    64                       71
+ 
+ 
+B) Smith & waterman 8 bits filtering efficency
+
+It has been validated and checked the filtering efficiency of the 8bits/cell representation running all the algorithms against a big dataset, 20M of queries with sizes 100, 200, 400, 600, 800 and 1000.
+                     Percentage of
+                candidates with errors
+100:                     0%
+200:                     0.001%
+400:                     1.12%
+600:                     3.21%
+800:                     14%
+1000:                    48%
+ 
+We used the BWA scores, but this percentage could vary using other scores.
+It would be interesting to desing a pipeline strategy to rerun the failed alignments with more resolution per cell.

@@ -1,0 +1,186 @@
+Computational analysis:
+
+SW: 2 MIN + 3 ADDS + 1 CMP + {4 LOADS/STORES + 1 ADD + 1 CMP} = 6 OP; {12 OP}
+----------------------------------------------------------------------------------------------
+
+Task-parallel version SW
+-------------------------
+512nt x 512nt   --> 2048 x 2048
+time: 289 ms
+block size 1D: 128th
+grid size 1D: 1024th
+Registers/thread: 71
+Executed instructions: 8826M
+Inter-thread instructions: 0
+Executed IPC: 2.823
+
+ISR execution dependency: 32%
+ISR Data Request: 19%
+ISR Instruction fetch: 4.6%
+
+# SW: 128*1024 = 128K
+Ins per SW = 8826M / 128K = 67337
+Instructions per cell = 67337 / (512 * 512) = 0.25
+Operations per cell = 0.25 * 32 = 8.21
+
+Thread-cooperative version SW
+-----------------------------
+512nt x 512nt   --> 2048 x 2048
+time: 1.331 seg --> 21 seg --> 16 times (ok)
+block size 1D: 128th
+grid size 1D: 32768th
+Registers/thread: 29
+Executed instructions: 54682M
+Inter-thread instructions: 145467M
+Executed IPC: 3.707
+
+ISR execution dependency: 31.8%
+ISR Data Request: 0.3%
+ISR Instruction fetch: 9%
+
+# SW: 128*1024 = 128K
+Ins per SW = 54682M / 128K = 417190
+Instructions per cell = 67337 / (512 * 512) = 1.591
+Operations per cell = 0.25 * 32 = 50.92
+
+WORK RATE = 50.92 / 8.21 = 6.20 times more work
+SPEEDUP = 1.331 / 0.289 = 4.60 times faster
+
+
+MEMORY PRESSURE ANALISYS
+-------------------------
+
+Task-Parallel
+-------------
+Best scenario Memory Footprint now:
+2 sequences x 512 bases x 2 bits/base = 256 Bytes
+1 score column * 512 cells * 4 Bytes/cell = 2048 Bytes
+Interest to cache 1 sequence + score column = 2176 Bytes
+
+SM level:
+All in L1 or Shared Mem. = 48K / 2176 = 22 problems fitting on cache
+Combination L1 (48K) & Read-Only (64K) = min (48 K / 2048, 64K / 128) = (24, 512) = 24 SW fitting on cache 
+Die level:
+LLC 1.5 MB = 722 SW fitting on cache LLC
+
+READS: 193.76M - 21.434 GB/s (read 6.2 GB lines of 32 Bytes)
+WRITES: 193.21M - 21.364 GB/s (write 6.18 GB lines of 32 Bytes) 
+
+#SW 1024 * 128 = 131072 
+
+
+2048 th/SM * 15 SM = 30720 SW running on fly
+30720 SW * 2176 Bytes = 66846720 = 63MB best scenario -> to fit in mem cache.
+
+
+Thread-Cooperative (WARP-Wide)
+------------------------------
+Best scenario Memory Footprint now:
+2 sequences x 512 bases x 2 bits/base = 256 Bytes
+1 score column * 512 cells * 4 Bytes/cell = 2048 Bytes
+Interest to cache 1 sequence + score column = 2176 Bytes
+
+SM level:
+All in L1 or Shared Mem. = 48K / 2176 = 22 problems fitting on cache
+Combination L1 (48K) & Read-Only (64K) = min (48 K / 2048, 64K / 128) = (24, 512) = 24 SW fitting on cache 
+Die level:
+LLC 1.5 MB = 722 SW fitting on cache LLC
+
+READS:     3.75M - 90.137 MB/s (read 6.2 GB lines of 32 Bytes)
+WRITES: 1468.42M - 35.216 GB/s (write 6.18 GB lines of 32 Bytes) 
+
+#SW 1024 * 128 = 131072 
+
+
+2048 th/SM * 15 SM = 30720 SW running on fly
+30720 SW * 2176 Bytes = 66846720 = 63MB best scenario -> to fit in mem cache.
+
+
+SW-GOTOH: 5 SUBS + 1 CMP + 4 MAX + { 8 LOAD/STORES + 1 ADD + 1 CMP } = 10 OP; {20 OP}
+----------------------------------------------------------------------------------------------
+
+TASK PARALLEL
+-------------
+512nt x 512nt
+time: 416 ms
+block size 1D: 128th
+grid size 1D: 1024 blocks
+Registers/thread: 63
+Executed instructions: 14537M
+LD/STORE instructions: 21618M (?)
+Executed IPC: 3.28
+
+ISR Pipe Busy: 14.6%
+ISR Memory Throttle: 19.3%
+ISR Execution dependency: 33.9%
+ISR Data Request: 13.1%
+ISR Instruction fetch: 5.4%
+
+# SW: 128*1024 = 128K
+Ins per SW = 14537M / 128K = 116296
+Instructions per cell = 116296 / (512 * 512) = 0.443
+Operations per cell = 0.443 * 32 = 14.19
+
+
+WARP WIDE
+----------
+512nt x 512nt
+time: 1.54 sec
+block size 1D: 128th
+grid size 1D: 32768 blocks
+Registers/thread: 33
+Executed instructions: 66417M
+LD/STORE instructions: 5503M (?)
+Executed IPC: 3.91
+
+ISR Pipe Busy: 37.9%
+ISR Memory Throttle: 0%
+ISR Execution dependency: 35.1%
+ISR Data Request: 0.2%
+ISR Instruction fetch: 7.4%
+
+# SW: 128 * 32768 / 32 = 128K
+Ins per SW = 66417M / 128K = 531336
+Instructions per cell = 531336 / (512 * 512) = 2.026885986
+Operations per cell = 0.443 * 32 = 64.86
+
+
+* The task-parallel version is quite efficient running ~8 op/cell for SW and ~14 op/cell for SWG 
+
+
+Matrix score Scalability 
+-------------------------
+
+(GLOBAL ALIGNMENTS)
+
+TASK-PARALLEL (SW)
+  N = 16 - M = 16      =>  81.0 
+  N = 32 - M = 32      =>  99.5 
+  N = 64 - M = 64      => 105.8 
+  N = 128 - M = 128    => 106.9 
+  N = 256 - M = 256    => 108.0 
+  N = 512 - M = 512    => 108.5 
+  N = 1024 - M = 1024  => 108.6 
+  N = 2048 - M = 2048  => 108.5 
+
+
+TASK-PARALLEL (SW-Gotoh)
+  N = 16 - M = 16   => 60.9 
+  N = 32 - M = 32   => 67.0 
+  N = 64 - M = 64   => 69.4 
+  N = 128 - M = 128 => 70.5 
+  N = 256 - M = 256 => 70.9 
+  N = 512 - M = 512 => 71.0 
+
+
+WARP-WIDE (SW-Gotoh)
+  N = 16 - M = 16     =>  4.6
+  N = 32 - M = 32     => 48.3
+  N = 64 - M = 64     => 24.7
+  N = 128 - M = 128   => 22.2
+  N = 256 - M = 256   => 22.1
+  N = 512 - M = 512   => 22.2
+  N = 1024 - M = 1024 => 22.3
+  N = 2048 - M = 2048 => 22.4
+  N = 4096 - M = 4096 => 22.4
+  N = 8192 - M = 8192 => 22.3
