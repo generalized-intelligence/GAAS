@@ -25,12 +25,7 @@ find_package(Glog REQUIRED)
 
 find_package(CUDA) #if you wanna use cpu in a platform with cuda, disable this line.
 
-if (CUDA_FOUND)
-    add_definitions(-D CUDA_FOUND)
-    MESSAGE("To support cuda: update your eigen to eigen3.3.9;sudo make install&&sudo ldconfig -v")
-    #list(APPEND NDT_ACCELERATION_PACKAGE ndt_gpu_lib)
-    set (CMAKE_CUDA_CREATE_SHARED_LIBRARY false)
-endif ()
+
 
 find_package(catkin REQUIRED COMPONENTS
   cv_bridge
@@ -69,6 +64,14 @@ set(CMAKE_BUILD_TYPE "Release")
 
 find_package(PCL REQUIRED)
 set(Eigen3_DIR fast_gicp/thirdparty/Eigen/)#find_package(Eigen3 REQUIRED)
+set(EIGEN_INCLUDE_DIR ${Eigen3_DIR})
+if (CUDA_FOUND)
+    add_definitions(-D CUDA_FOUND)
+    MESSAGE("To support cuda: update your eigen to eigen3.3.9;sudo make install&&sudo ldconfig -v")
+    list(APPEND NDT_ACCELERATION_PACKAGE ndt_gpu_lib)
+    set (CMAKE_CUDA_CREATE_SHARED_LIBRARY false)
+endif ()
+
 
 #find_package(catkin)
 
@@ -80,7 +83,7 @@ endif()
 
 
 if(CUDA_FOUND)
-  include_directories(${CUDA_INCLUDE_DIRS})
+#  include_directories(${CUDA_INCLUDE_DIRS})
   link_directories(${CUDA_LIBRARY_DIRS})
 endif()
 
@@ -110,7 +113,7 @@ target_link_libraries(fast_gicp
 target_include_directories(fast_gicp PUBLIC
   fast_gicp/include
   ${PCL_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIR}
+  fast_gicp/thirdparty/Eigen
 )
 
 
@@ -138,6 +141,7 @@ target_include_directories(fast_vgicp_cuda PRIVATE
     fast_gicp/thirdparty/Eigen
     fast_gicp/thirdparty/nvbio
     ${catkin_INCLUDE_DIRS}
+    ${CUDA_INCLUDE_DIRS}
     )
 target_link_libraries(fast_vgicp_cuda
     ${catkin_LIBRARIES}
@@ -287,15 +291,165 @@ endif()
 include_directories(
         ${PCL_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
-        ${EIGEN3_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
         fast_gicp/include/
 )
+##icp libs
+
+
+##icp libs end
+
+message("Eigen3 dir:${Eigen3_DIR}")
+message("Eigen3 include dir:${EIGEN3_INCLUDE_DIRS}")
+message("Eigen include dir:${EIGEN_INCLUDE_DIRS}")
+
+## ndt libs
+if(CUDA_FOUND)
+    add_definitions(-D CUDA_FOUND)
+#    find_package(Eigen3 QUIET)
+    set(Eigen3_DIR fast_gicp/thirdparty/Eigen/)#find_package(Eigen3 REQUIRED)
+    set(EIGEN_INCLUDE_DIRS ${EIGEN3_DIR})
+    set(EIGEN3_INCLUDE_DIRS ${EIGEN3_DIR})
+
+#    if (NOT EIGEN3_FOUND)
+#        # Fallback to cmake_modules
+#        find_package(cmake_modules REQUIRED)
+#        find_package(Eigen REQUIRED)
+#        set(EIGEN3_INCLUDE_DIRS ${EIGEN_INCLUDE_DIRS})
+#        set(EIGEN3_LIBRARIES ${EIGEN_LIBRARIES})  # Not strictly necessary as Eigen is head only
+#        # Possibly map additional variables to the EIGEN3_ prefix.
+#    else ()
+#        set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+#    endif ()
+
+    set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
+    if (NOT DEFINED CUDA_CAPABILITY_VERSION_CHECKER)
+        set(CUDA_CAPABILITY_VERSION_CHECKER
+                "${CATKIN_DEVEL_PREFIX}/lib/capability_version_checker")
+    endif ()
+
+    execute_process(COMMAND ${CUDA_CAPABILITY_VERSION_CHECKER}
+            OUTPUT_VARIABLE CUDA_CAPABILITY_VERSION
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+#    if ("${CUDA_CAPABILITY_VERSION}" MATCHES "^[1-9][0-9]+$")
+#        set(CUDA_ARCH "sm_${CUDA_CAPABILITY_VERSION}")
+#        MESSAGE( "CUDA_ARCH matched: ${CUDA_ARCH}")
+#    else ()
+#        set(CUDA_ARCH "sm_52")
+#        MESSAGE( "CUDA_ARCH set to: ${CUDA_ARCH} by default")
+#        MESSAGE( "CUDA_CAPABILITY_VERSION: ${CUDA_CAPABILITY_VERSION}")
+#    endif ()
+    set(processor_type "${CMAKE_SYSTEM_PROCESSOR}")
+    message("Processor type: ${processor_type}")
+    if("${processor_type}" MATCHES "aarch64") # Jetson AGX Xavier
+        set(CUDA_ARCH "sm_72")
+    else() # x86/other
+        set(CUDA_ARCH "sm_61")
+    endif()
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-arch=${CUDA_ARCH};-std=c++14;--ptxas-options=-v)
+
+    set(SUBSYS_DESC "Point cloud ndt gpu library")
+
+#    catkin_package(
+#            DEPENDS PCL                                #Non-catkin CMake projects
+#            INCLUDE_DIRS ndt_gpu/ndt_gpu_include                        #The exported include paths
+#            LIBRARIES ndt_gpu_lib                           #The exported libraries from the project
+#    )
+
+    set(ndt_gpu_srcs
+            ./ndt_gpu/ndt_gpu_src/VoxelGrid.cu
+            ./ndt_gpu/ndt_gpu_src/MatrixDevice.cu
+            ./ndt_gpu/ndt_gpu_src/SymmetricEigenSolver.cu
+            ./ndt_gpu/ndt_gpu_src/MatrixHost.cu
+            ./ndt_gpu/ndt_gpu_src/Registration.cu
+            ./ndt_gpu/ndt_gpu_src/NormalDistributionsTransform.cu
+       )
+    set(incs
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/Registration.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/VoxelGrid.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/NormalDistributionsTransform.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/SymmetricEigenSolver.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/MatrixDevice.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/Matrix.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/debug.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/MatrixHost.h
+            ./ndt_gpu/ndt_gpu_include/ndt_gpu/common.h
+       )
+
+    include_directories(
+            fast_gicp/thirdparty/Eigen
+            ${PCL_INCLUDE_DIRS}
+            ${catkin_INCLUDE_DIRS}
+            ${CUDA_INCLUDE_DIRS}
+            ndt_gpu/ndt_gpu_include
+#            fast_gicp/thirdparty/nvbio
+#            ${catkin_INCLUDE_DIRS}
+#
+#            ${EIGEN3_INCLUDE_DIRS}
+    )
+    cuda_add_library(ndt_gpu_lib ${ndt_gpu_srcs} ${incs})
+    target_link_libraries(ndt_gpu_lib
+            ${CUDA_LIBRARIES}
+            #${CUDA_CUBLAS_LIBRARIES}
+            ${CUDA_curand_LIBRARY}
+            ${PCL_LIBRARIES}
+            ${catkin_LIBRARIES}
+            )
+
+##    add_executable(ndt_matching_node src/ndt_matching.cpp)
+##    target_link_libraries(ndt_matching_node ${REQUIRED_LIBS} ndt_gpu_lib
+##            ${CUDA_LIBRARIES}
+##            #${CUDA_CUBLAS_LIBRARIES}
+##            ${CUDA_curand_LIBRARY}
+##            )
+
+#else()
+    set(ndt_cpu_srcs
+        ndt_cpu/ndt_cpu_src/NormalDistributionsTransform.cpp
+        ndt_cpu/ndt_cpu_src/Registration.cpp
+        ndt_cpu/ndt_cpu_src/VoxelGrid.cpp
+        ndt_cpu/ndt_cpu_src/Octree.cpp
+        )
+
+    set(incs
+        ndt_cpu/ndt_cpu_include/ndt_cpu/debug.h
+        ndt_cpu/ndt_cpu_include/ndt_cpu/NormalDistributionsTransform.h
+        ndt_cpu/ndt_cpu_include/ndt_cpu/Registration.h
+        ndt_cpu/ndt_cpu_include/ndt_cpu/SymmetricEigenSolver.h
+        ndt_cpu/ndt_cpu_include/ndt_cpu/VoxelGrid.h
+        ndt_cpu/ndt_cpu_include/ndt_cpu/Octree.h
+        )
+
+    include_directories(
+            fast_gicp/thirdparty/Eigen
+            ${PCL_INCLUDE_DIRS}
+            ${catkin_INCLUDE_DIRS}
+            ndt_cpu/ndt_cpu_include
+    )
+
+    add_library(ndt_cpu_lib ${ndt_cpu_srcs})
+    set_target_properties(ndt_cpu_lib PROPERTIES LINKER_LANGUAGE CXX)
+    target_link_libraries(ndt_cpu_lib
+        ${PCL_LIBRARIES}
+        ${catkin_LIBRARIES}
+        )
+
+#    add_executable(ndt_matching_node src/ndt_matching.cpp)
+#    target_link_libraries(ndt_matching_node ${REQUIRED_LIBS} ndt_cpu_lib)
+endif()
+
+
+## ndt libs end.
+
+
+
+
 
 add_executable(map_manager_test src/map_manager_test.cpp)
 target_link_libraries(map_manager_test ${REQUIRED_LIBS})
 add_executable(registration_localization_node src/registration_localization_node.cpp)
-target_link_libraries(registration_localization_node ${REQUIRED_LIBS} fast_gicp)
+target_link_libraries(registration_localization_node ${REQUIRED_LIBS} fast_gicp ndt_cpu_lib ndt_gpu_lib)
 
 #map publisher
 #add_executable(map_publisher src/map_publisher.cpp)

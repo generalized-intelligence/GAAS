@@ -13,7 +13,6 @@
 #include "../../../CommonLibs/gaas_timer/Timer.h"
 #include "../../../CommonLibs/gaas_location/geometry.h"
 
-
 //#include "submap_manager.h"
 #include "pcl/filters/crop_box.h"
 
@@ -70,10 +69,16 @@ public:
     //std::shared_ptr<RegistrationMap> getCurrentMap();
     std::string getCurrentMapName();
     void addToMemBuffer(const std::string& name);
+    RegistrationMap::Ptr getCurrentMap();
     void removeFromMemBuffer(const std::string& name);
+    MapCloudT::Ptr getCurrentMapCloudBuffer();
     MapCloudT::Ptr getCurrentMapCloud(const Eigen::Matrix4f& position);
     MapCloudT::Ptr getCurrentMapCloud(const Eigen::Vector3d& position); // 获取地图点云块，切片，调度等细节实现隐藏在内部。
 };
+RegistrationMap::Ptr RegistrationMapManager::getCurrentMap()
+{
+    return this->current_map;
+}
 void RegistrationMapManager::selectMapByName(const std::string& map_name)
 {
     LOG(INFO)<<"Switch to map "<<map_name<<endl;//TODO:....
@@ -138,6 +143,10 @@ bool RegistrationMapManager::init(ros::NodeHandle &nh)
         this->currentCropboxCenterPosition<<0,0,0;
         cropMapWithNewCenter(this->currentCropboxCenterPosition);
     }
+}
+MapCloudT::Ptr RegistrationMapManager::getCurrentMapCloudBuffer()
+{
+    return this->pMapCropBuffer;
 }
 MapCloudT::Ptr RegistrationMapManager::getCurrentMapCloud(const Eigen::Matrix4f& position) // 获取地图点云块，切片，调度等细节实现隐藏在内部。
 {

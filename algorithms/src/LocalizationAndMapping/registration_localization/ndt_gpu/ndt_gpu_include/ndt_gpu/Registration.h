@@ -7,8 +7,8 @@
 #include "MatrixHost.h"
 #include "MatrixDevice.h"
 #include "common.h"
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Geometry>
+#include "../../../fast_gicp/thirdparty/Eigen/Eigen/Dense"
+#include "../../../fast_gicp/thirdparty/Eigen/Eigen/Geometry"
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 

@@ -13,11 +13,11 @@ class RegistrationMap
 {
 private:
     MapCloudT::Ptr pMapCloud;
-    GPSInfo map_gps_info;
     bool map_ready = false;
     float x_min,y_min,z_min;
     float x_max,y_max,z_max;
 public:
+    GPSInfo map_gps_info;
     using Ptr = std::shared_ptr<RegistrationMap>;
     std::string getName();
     bool loadMapFromFile(const std::string& path);
