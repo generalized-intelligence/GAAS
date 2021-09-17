@@ -31,13 +31,17 @@ public:
     {
         return this->poseGuessEverInit;
     }
-
+    bool queryLastResultAvail()
+    {
+        return last_result_avail;
+    }
     bool getInitialPoseWithGPSAndAHRS(Eigen::Matrix4f& output_pose,RegistrationMapManager::Ptr map_manager_binding);
     bool getInitialPoseGuess(Eigen::Matrix4f& output_pose,RegistrationMapManager::Ptr map_manager_binding);
 
-    virtual bool init(ros::NodeHandle& nh,MapCloudT::Ptr buffer)
+    virtual bool init(ros::NodeHandle& nh,MapCloudT::Ptr buffer,GPS_AHRS_Synchronizer::Ptr pGPS_AHRS_Sync_in)
     {
         this->loadMapBuffer(buffer);
+        this->pGPS_AHRS_Sync = pGPS_AHRS_Sync_in;
         this->initLocalizationAlgorithm(nh);
     }
 
@@ -55,10 +59,11 @@ public:
 
     void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& pLidarMsg,RegistrationMapManager::Ptr map_manager_binding)
     {
+        LOG(INFO)<<"[registration_localization] in lidar_callback():"<<endl;
         //step<1> get init pose estimation.
-        bool ever_init_pose_guess = queryPoseGuessEverInit();
-        Eigen::Matrix4f initial_pose;
-        if(!ever_init_pose_guess)
+        bool last_result_is_avail = queryLastResultAvail();
+        Eigen::Matrix4f initial_pose,output_pose;
+        if(!last_result_is_avail)
         {
             getInitialPoseWithGPSAndAHRS(initial_pose,map_manager_binding);
         }
@@ -67,8 +72,18 @@ public:
             getInitialPoseGuess(initial_pose,map_manager_binding);
         }
         auto currentMapCloud = map_manager_binding->getCurrentMapCloud(initial_pose);
-        Eigen::Matrix4f output_pose;
+        //TODO: add visualization.
+
         bool localization_result_valid = doMatchingWithInitialPoseGuess(currentMapCloud,map_manager_binding->getCurrentMapCloud(initial_pose),initial_pose,output_pose);
+        if(localization_result_valid)
+        {
+            last_result_avail = true;
+            this->last_result = output_pose;
+        }
+        else
+        {
+            last_result_is_avail = false;
+        }
     }
     void gps_ahrs_callback()
     {
@@ -77,9 +92,8 @@ public:
 };
 bool LocalizationAlgorithmAbstract::getInitialPoseGuess(Eigen::Matrix4f &output_pose, RegistrationMapManager::Ptr map_manager_binding)
 {
-    LOG(ERROR)<<"!!"<<endl;
-    throw "not implemented!";
-    return true;//TODO: not implemented!
+    output_pose = this->last_result;
+    return true;//TODO: do we need mutex?
 }
 
 bool LocalizationAlgorithmAbstract::getInitialPoseWithGPSAndAHRS(Eigen::Matrix4f& output_pose,RegistrationMapManager::Ptr map_manager_binding)

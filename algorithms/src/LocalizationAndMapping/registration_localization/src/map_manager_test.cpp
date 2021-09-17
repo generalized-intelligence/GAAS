@@ -17,7 +17,10 @@ int main(int argc,char** argv)
     LOG(INFO)<<"Map size:"<<pMapCrop->size()<<endl;
 
     initial_position <<-60,20,5;
-    MapCloudT::Ptr pMapCrop2 = rmm.getCurrentMapCloud(initial_position);
-    LOG(INFO)<<"Map size after move:"<<pMapCrop2->size()<<endl;
+    {
+        ScopeTimer t("switch map");
+        MapCloudT::Ptr pMapCrop2 = rmm.getCurrentMapCloud(initial_position);
+        LOG(INFO)<<"Map size after move:"<<pMapCrop2->size()<<endl;
+    }
     return 0;
 }

@@ -7,6 +7,11 @@
 #include <pcl/io/ply_io.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/registration/ndt.h>
+#include <pcl/filters/voxel_grid.h>
+
+#ifdef CUDA_FOUND  //To use ndt cpu version.
+    #undef CUDA_FOUND
+#endif
 
 #ifdef CUDA_FOUND
 //    #define EIGEN_DONT_VECTORIZE
@@ -31,6 +36,7 @@ protected:
     bool initLocalizationAlgorithm(ros::NodeHandle& nh);
     void loadMapBuffer(MapCloudT::Ptr buffer)  // 加载点云buffer 有些方法可能需要缓存加速
     {
+        ScopeTimer load_map_buffer_timer("load_map_buffer_timer");
         this->mapBuffer = buffer;
     }
 public:
@@ -67,6 +73,7 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
                                                               string initial_guess_type//"gps_ahrs","result_prev","imu_preint"
         )
 {
+    ScopeTimer ndt_timer("ndt_timer");
     //检查buffer.
     if(pmap_current!=this->mapBuffer)
     {//load new buffer
@@ -77,12 +84,59 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
         }
         loadMapBuffer(pmap_current);
     }
-    bool match_success = false;
+
+    const float DOWNSAMPLE_SIZE = 0.4;
+
+    //Downsampling
+    LidarCloudT::Ptr cloud_downsampled(new LidarCloudT);
+    pcl::VoxelGrid<LidarPointT> sor;
+    sor.setInputCloud(pcloud_current);
+    sor.setLeafSize(DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE);
+    sor.filter(*cloud_downsampled);
+    pcloud_current = cloud_downsampled;
 
 
 
-    return match_success;
+    //ndt.setInputTarget(pmap_cloud);
+    ndt.setInputSource (pcloud_current);// Setting point cloud to be aligned.
+    ndt_timer.watch("till input set.");
+    //ndt.setInputTarget (pmap_cloud);// Setting point cloud to be aligned to.
+    LidarCloudT::Ptr output_cloud (new LidarCloudT);
+    if(initial_guess_type == "gps_ahrs")
+    {
+        //ndt.setResolution (3.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
+        //ndt.setStepSize (0.5);
+        ndt.setMaximumIterations (10);  //Setting max number of registration iterations.
+        ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
+        LOG(INFO)<<"ndt with prev ndt initial guess"<<endl;
+#ifdef CUDA_FOUND
+        ndt.align(pose_guess);
+#else
+        ndt.align(*output_cloud,pose_guess);
+#endif
+    }
+    else if(initial_guess_type == "ndt_prev")
+    {
+        //ndt.setResolution (2.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
+        //ndt.setStepSize (0.5);
+        ndt.setMaximumIterations (10);  //Setting max number of registration iterations.
+        ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
+        LOG(INFO)<<"ndt with prev ndt initial guess"<<endl;
+#ifdef CUDA_FOUND
+        ndt.align(pose_guess);
+#else
+        ndt.align(*output_cloud,pose_guess);
+#endif
+    }
 
-
+    if(!ndt.hasConverged())
+    {
+        LOG(WARNING)<<"NDT with "<<initial_guess_type<<" initial guess failed!"<<endl;
+        return false;
+    }
+    output_pose = ndt.getFinalTransformation();
+    LOG(INFO)<<"NDT Converged. Transformation:"<<ndt.getFinalTransformation()<<endl;
+    LOG(INFO)<<"NDT with initial guess "<<initial_guess_type<<" finished; Iteration times:"<<ndt.getFinalNumIteration()<<endl;
+    return true;
 }
 #endif

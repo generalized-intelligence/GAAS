@@ -31,8 +31,26 @@ public:
             std::shared_ptr<NDTLocalizationAlgorithm> pNDT(new NDTLocalizationAlgorithm);
             pLocalizationAlgorithm = std::static_pointer_cast<LocalizationAlgorithmAbstract>(pNDT);
         }
-        pLocalizationAlgorithm->init(nh,this->pMapManager->getCurrentMapCloudBuffer());
-        bindCallbacks(nh);
+        pLocalizationAlgorithm->init(nh,this->pMapManager->getCurrentMapCloudBuffer(),gps_ahrs_sync);
+        //bindCallbacks(nh);
+        {//bind callbacks.
+            message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/raw/fix", 1);
+            message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/global_position/local", 1);
+
+            typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::NavSatFix, nav_msgs::Odometry> MySyncPolicy;
+            // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
+            message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), gps_sub, ahrs_sub);
+            sync.registerCallback(boost::bind(&RegistrationLocalizationNode::gps_ahrs_callback,this, _1, _2));
+
+            LOG(INFO)<<"[registration_localization] waiting for gps-ahrs msgs..."<<endl;
+            //wait until gps-ahrs synchronizer initialized;
+            while(!gps_ahrs_sync->ever_init)
+            {
+                ros::spinOnce();
+            }
+            lidarSubscriber = nh.subscribe("/gaas/preprocessing/velodyne_downsampled",1,&RegistrationLocalizationNode::lidar_callback,this);
+            LOG(INFO)<<"[registration_localization] bindCallbacks finished!"<<endl;
+        }
         ros::spin();
     }
     // Services callback
@@ -68,24 +86,25 @@ void RegistrationLocalizationNode::gps_ahrs_callback(const sensor_msgs::NavSatFi
     gps_ahrs_sync->sync_mutex.unlock();
     this->pLocalizationAlgorithm->gps_ahrs_callback();
 };
-void RegistrationLocalizationNode::bindCallbacks(ros::NodeHandle& nh)
-{
-    message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "image1", 1);
-    message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "image2", 1);
+//void RegistrationLocalizationNode::bindCallbacks(ros::NodeHandle& nh)
+//{
+//    message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/raw/fix", 1);
+//    message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/global_position/local", 1);
 
-    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::NavSatFix, nav_msgs::Odometry> MySyncPolicy;
-    // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
-    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), gps_sub, ahrs_sub);
-    sync.registerCallback(boost::bind(&RegistrationLocalizationNode::gps_ahrs_callback,this, _1, _2));
+//    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::NavSatFix, nav_msgs::Odometry> MySyncPolicy;
+//    // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
+//    message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), gps_sub, ahrs_sub);
+//    sync.registerCallback(boost::bind(&RegistrationLocalizationNode::gps_ahrs_callback,this, _1, _2));
 
-    //wait until gps-ahrs synchronizer initialized;
-    while(!gps_ahrs_sync->ever_init)
-    {
-        ros::spinOnce();
-    }
-
-    lidarSubscriber = nh.subscribe("/gaas/preprocess/velodyne_donwsampled",1,&RegistrationLocalizationNode::lidar_callback,this);
-}
+//    LOG(INFO)<<"[registration_localization] waiting for gps-ahrs msgs..."<<endl;
+//    //wait until gps-ahrs synchronizer initialized;
+//    while(!gps_ahrs_sync->ever_init)
+//    {
+//        ros::spinOnce();
+//    }
+//    lidarSubscriber = nh.subscribe("/gaas/preprocess/velodyne_donwsampled",1,&RegistrationLocalizationNode::lidar_callback,this);
+//    LOG(INFO)<<"[registration_localization] bindCallbacks() finished!"<<endl;
+//}
 int main(int argc,char** argv)
 {
     ros::init(argc,argv,"registration_localization_node");
