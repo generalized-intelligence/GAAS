@@ -10,11 +10,14 @@
     <param name="lidar_height_to_gps" type="double" value="0.14"/>
     <param name="ndt_downsample_size" type="double" value="0.7"/>
 
-    <param name="use_ndt" type="bool" value="true"/>
-    <!--ndt params-->
+    <param name="use_ndt" type="bool" value="false"/>
 
-    <param name="ndt_step_size" type="double" value="2.0"/>
-    <param name="ndt_resolution" type="double" value="8.0"/>
+    <!--icp params-->
+    <param name="icp_transformation_epsilon" type="double" value="0.05"/>
+    <param name="icp_resolution" type="double" value="10.0"/>
+    <param name="icp_max_correspondence_distance" value="8.0"/>
+    <param name="icp_euclidean_fitness_epsilon" value="0.5"/>
+
     <node name="registration_localization_node" pkg="registration_localization" type="registration_localization_node" output="screen"/>
     <group if="$(arg do_visualization)">
         <param name="do_visualization" type="bool" value="$(arg do_visualization)"/>

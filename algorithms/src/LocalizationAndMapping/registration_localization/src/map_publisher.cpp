@@ -43,7 +43,6 @@ int main(int argc,char** argv)
     LOG(INFO)<<"[map publisher] Initializing map publisher..."<<endl;
     ros::init(argc,argv,"map_publishing_node");
     ros::NodeHandle nh;
-    LOG(INFO)<<"Initializing map publisher..."<<endl;
     ros::Publisher map_pub = nh.advertise<sensor_msgs::PointCloud2>("/gaas/visualization/localization/ndt_map",1);
     ros::Publisher axes_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/visualization/localization/map_axes", 1);
 

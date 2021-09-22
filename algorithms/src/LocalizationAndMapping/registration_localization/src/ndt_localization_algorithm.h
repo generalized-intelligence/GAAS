@@ -122,7 +122,7 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
         ndt.align(*output_cloud,pose_guess);
 #endif
     }
-    else if(initial_guess_type == "ndt_prev")
+    else if(initial_guess_type == "prev_result")
     {
         //ndt.setResolution (2.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
         //ndt.setStepSize (0.5);

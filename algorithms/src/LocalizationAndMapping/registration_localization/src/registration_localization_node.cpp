@@ -15,17 +15,23 @@
 class RegistrationLocalizationNode
 {
 private:
-    const bool need_transformed_pointcloud = true;
+    const bool need_transformed_pointcloud = false;
 
     std::shared_ptr<LocalizationAlgorithmAbstract> pLocalizationAlgorithm;
     RegistrationMapManager::Ptr pMapManager;
     GPS_AHRS_Synchronizer::Ptr gps_ahrs_sync;
-    const bool use_ndt = true;
 
 
     ros::Subscriber lidarSubscriber;
     ros::Publisher pointCloudPublisher,registrationPosePublisher,GPS_AHRS_PosePublisher;
     tf2_ros::TransformBroadcaster tf_broadcaster;
+
+    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::NavSatFix, nav_msgs::Odometry> MySyncPolicy;
+    std::shared_ptr<message_filters::Synchronizer<MySyncPolicy> > pSync;
+
+    std::shared_ptr< message_filters::Subscriber<sensor_msgs::NavSatFix> >pGPSsub;
+    std::shared_ptr<message_filters::Subscriber<nav_msgs::Odometry> > pAHRSsub;
+
 
     bool initMapManager(ros::NodeHandle& nh);
 public:
@@ -34,11 +40,22 @@ public:
         initMapManager(nh);
         gps_ahrs_sync = GPS_AHRS_Synchronizer::Ptr(new GPS_AHRS_Synchronizer);
 
+        bool use_ndt = false;
+        if(!ros::param::get("use_ndt",use_ndt))
+        {
+            LOG(ERROR)<<"[registration localization] registration method not set in launch file!"<<endl;
+        }
+
         //init localization algorithm.
         if(use_ndt)
         {
             std::shared_ptr<NDTLocalizationAlgorithm> pNDT(new NDTLocalizationAlgorithm);
             pLocalizationAlgorithm = std::static_pointer_cast<LocalizationAlgorithmAbstract>(pNDT);
+        }
+        else
+        {
+            std::shared_ptr<ICPLocalizationAlgorithm> pICP(new ICPLocalizationAlgorithm);
+            pLocalizationAlgorithm = std::static_pointer_cast<LocalizationAlgorithmAbstract>(pICP);
         }
         pLocalizationAlgorithm->init(nh,this->pMapManager->getCurrentMapCloudBuffer(),gps_ahrs_sync);
         //bindCallbacks(nh);
@@ -46,13 +63,13 @@ public:
             registrationPosePublisher = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/registration_pose",1);
             pointCloudPublisher = nh.advertise<sensor_msgs::PointCloud2>("/gaas/visualization/localization/registration_merged_cloud",1);
             GPS_AHRS_PosePublisher = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/original_gps_ahrs_pose",1);
-            message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/raw/fix", 1);
-            message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/global_position/local", 1);
+            pGPSsub = std::shared_ptr<message_filters::Subscriber<sensor_msgs::NavSatFix> >(new message_filters::Subscriber<sensor_msgs::NavSatFix>(nh, "/mavros/global_position/raw/fix", 1) );
+            pAHRSsub = std::shared_ptr<message_filters::Subscriber<nav_msgs::Odometry> >(new message_filters::Subscriber<nav_msgs::Odometry>(nh, "/mavros/global_position/local", 1) );
 
-            typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::NavSatFix, nav_msgs::Odometry> MySyncPolicy;
+
             // ApproximateTime takes a queue size as its constructor argument, hence MySyncPolicy(10)
-            message_filters::Synchronizer<MySyncPolicy> sync(MySyncPolicy(10), gps_sub, ahrs_sub);
-            sync.registerCallback(boost::bind(&RegistrationLocalizationNode::gps_ahrs_callback,this, _1, _2));
+            pSync = std::shared_ptr<message_filters::Synchronizer<MySyncPolicy> >(new message_filters::Synchronizer<MySyncPolicy>(MySyncPolicy(10), *pGPSsub, *pAHRSsub) );
+            pSync->registerCallback(boost::bind(&RegistrationLocalizationNode::gps_ahrs_callback,this, _1, _2));
 
             LOG(INFO)<<"[registration_localization] waiting for gps-ahrs msgs..."<<endl;
             //wait until gps-ahrs synchronizer initialized;
