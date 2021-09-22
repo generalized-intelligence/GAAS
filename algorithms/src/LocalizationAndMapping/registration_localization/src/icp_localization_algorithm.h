@@ -16,10 +16,15 @@ protected:
     }
 
 public:
+    std::string getMatchingAlgorithmType()
+    {
+        return std::string("ICP");
+    }
     bool doMatchingWithInitialPoseGuess (LidarCloudT::Ptr pcloud_current,
                                         MapCloudT::Ptr pmap_current,
                                         Eigen::Matrix4f& pose_guess,
                                         Eigen::Matrix4f& output_pose,
+                                        LidarCloudT::Ptr& output_cloud_,
                                         string initial_guess_type="gps_ahrs"//"gps_ahrs","prev_result","imu_preint"
                 );
 
@@ -40,6 +45,7 @@ bool ICPLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
                                                               MapCloudT::Ptr pmap_current,
                                                               Eigen::Matrix4f &pose_guess,
                                                               Eigen::Matrix4f &output_pose,
+                                                              LidarCloudT::Ptr& output_cloud_,
                                                               std::string initial_guess_type)
 {
     throw "not implemented!";

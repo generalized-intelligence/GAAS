@@ -101,6 +101,10 @@ endif()
 ## Build ##
 ###########
 
+add_executable(map_publisher src/map_publisher.cpp)
+target_link_libraries(map_publisher ${REQUIRED_LIBS})
+
+
 add_library(fast_gicp SHARED
   fast_gicp/src/fast_gicp/gicp/lsq_registration.cpp
   fast_gicp/src/fast_gicp/gicp/fast_gicp.cpp

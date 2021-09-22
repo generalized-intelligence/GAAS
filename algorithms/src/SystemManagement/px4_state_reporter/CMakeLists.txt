@@ -14,7 +14,6 @@ set(CMAKE_BUILD_TYPE DEBUG)
 
 
 
-catkin_package()
 find_package(OpenCV 3.4.5 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
 find_package(Glog REQUIRED)
@@ -35,6 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
   mavros_msgs
   gaas_msgs
 )
+catkin_package()
 include_directories(
         ${catkin_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}

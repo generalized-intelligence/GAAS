@@ -51,13 +51,14 @@ public:
                                         MapCloudT::Ptr pmap_current,
                                         Eigen::Matrix4f& pose_guess,
                                         Eigen::Matrix4f& output_pose,
+                                        LidarCloudT::Ptr& output_cloud_,
                                         string initial_guess_type="gps_ahrs"//"gps_ahrs","prev_result","imu_preint"
                 )=0;
 
 // Callbacks
-    std::string getMatchingAlgorithmType();
+    virtual std::string getMatchingAlgorithmType() = 0;
 
-    void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& pLidarMsg,RegistrationMapManager::Ptr map_manager_binding)
+    bool lidar_callback(const sensor_msgs::PointCloud2ConstPtr& pLidarMsg,RegistrationMapManager::Ptr map_manager_binding,Eigen::Matrix4f& output_pose_,LidarCloudT::Ptr& output_cloud)
     {
         LOG(INFO)<<"[registration_localization] in lidar_callback():"<<endl;
         //step<1> get init pose estimation.
@@ -74,20 +75,26 @@ public:
         auto currentMapCloud = map_manager_binding->getCurrentMapCloud(initial_pose);
         //TODO: add visualization.
 
-        bool localization_result_valid = doMatchingWithInitialPoseGuess(currentMapCloud,map_manager_binding->getCurrentMapCloud(initial_pose),initial_pose,output_pose);
+        bool localization_result_valid = doMatchingWithInitialPoseGuess(currentMapCloud,map_manager_binding->getCurrentMapCloud(initial_pose),initial_pose,output_pose,output_cloud);
         if(localization_result_valid)
         {
             last_result_avail = true;
+            output_pose_ = output_pose;
             this->last_result = output_pose;
         }
         else
         {
             last_result_is_avail = false;
         }
+        return localization_result_valid;
     }
     void gps_ahrs_callback()
     {
         this->poseGuessEverInit = true;
+    }
+    virtual ~LocalizationAlgorithmAbstract()
+    {
+        ;
     }
 };
 bool LocalizationAlgorithmAbstract::getInitialPoseGuess(Eigen::Matrix4f &output_pose, RegistrationMapManager::Ptr map_manager_binding)

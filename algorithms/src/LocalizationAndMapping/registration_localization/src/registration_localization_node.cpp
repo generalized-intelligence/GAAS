@@ -7,9 +7,16 @@
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
+
+#include "geometry_msgs/PoseStamped.h"
+#include "geometry_msgs/TransformStamped.h"
+#include "tf2_ros/transform_broadcaster.h"
+
 class RegistrationLocalizationNode
 {
 private:
+    const bool need_transformed_pointcloud = true;
+
     std::shared_ptr<LocalizationAlgorithmAbstract> pLocalizationAlgorithm;
     RegistrationMapManager::Ptr pMapManager;
     GPS_AHRS_Synchronizer::Ptr gps_ahrs_sync;
@@ -17,6 +24,8 @@ private:
 
 
     ros::Subscriber lidarSubscriber;
+    ros::Publisher pointCloudPublisher,registrationPosePublisher,GPS_AHRS_PosePublisher;
+    tf2_ros::TransformBroadcaster tf_broadcaster;
 
     bool initMapManager(ros::NodeHandle& nh);
 public:
@@ -34,6 +43,9 @@ public:
         pLocalizationAlgorithm->init(nh,this->pMapManager->getCurrentMapCloudBuffer(),gps_ahrs_sync);
         //bindCallbacks(nh);
         {//bind callbacks.
+            registrationPosePublisher = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/registration_pose",1);
+            pointCloudPublisher = nh.advertise<sensor_msgs::PointCloud2>("/gaas/visualization/localization/registration_merged_cloud",1);
+            GPS_AHRS_PosePublisher = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/original_gps_ahrs_pose",1);
             message_filters::Subscriber<sensor_msgs::NavSatFix> gps_sub(nh, "/mavros/global_position/raw/fix", 1);
             message_filters::Subscriber<nav_msgs::Odometry> ahrs_sub(nh, "/mavros/global_position/local", 1);
 
@@ -65,7 +77,73 @@ public:
     // Subscribers callback
     void lidar_callback(const sensor_msgs::PointCloud2ConstPtr& pLidarMsg)
     {
-        this->pLocalizationAlgorithm->lidar_callback(pLidarMsg,pMapManager);
+        ScopeTimer timer("lidar_callback timer");
+        Eigen::Matrix4f output_pose;
+        LidarCloudT::Ptr transformed_cloud;
+        if(this->pLocalizationAlgorithm->lidar_callback(pLidarMsg,pMapManager,output_pose,transformed_cloud))
+        {
+
+            //publish output pose;
+            Eigen::Matrix3f rotmat = output_pose.block(0,0,3,3);
+            Eigen::Quaternionf quat(rotmat);
+            geometry_msgs::PoseStamped registration_pose_msg;
+
+            registration_pose_msg.header.frame_id="map";//地图坐标系的定位.
+            registration_pose_msg.header.stamp = pLidarMsg->header.stamp;//与雷达同步.
+
+            auto& pos = registration_pose_msg.pose.position;
+            auto& orient = registration_pose_msg.pose.orientation;
+            orient.x = quat.x();
+            orient.y = quat.y();
+            orient.z = quat.z();
+            orient.w = quat.w();
+
+            pos.x = output_pose(0,3);
+            pos.y = output_pose(1,3);
+            pos.z = output_pose(2,3);
+
+            timer.watch("before publishing pose:");
+            registrationPosePublisher.publish(registration_pose_msg);
+
+            timer.watch("till pose published:");
+
+            //publish tf2 transfrom.
+            Eigen::Matrix4f lidar_to_map = output_pose.inverse();
+            Eigen::Matrix3f l_m_rotmat = lidar_to_map.block(0,0,3,3);
+            Eigen::Quaternionf l_m_quat(l_m_rotmat);
+
+
+
+            geometry_msgs::TransformStamped map_lidar_trans_stamped;
+            map_lidar_trans_stamped.header.frame_id = "lidar";// we've got lidar as the top node of tf tree.
+            //So when localization is not avail, still we can solve lidar to body.
+            map_lidar_trans_stamped.child_frame_id = "map";
+
+            map_lidar_trans_stamped.header.stamp = pLidarMsg->header.stamp;
+            map_lidar_trans_stamped.transform.translation.x = lidar_to_map(0,3);
+            map_lidar_trans_stamped.transform.translation.y = lidar_to_map(1,3);
+            map_lidar_trans_stamped.transform.translation.z = lidar_to_map(2,3);
+            map_lidar_trans_stamped.transform.rotation.x = l_m_quat.x();
+            map_lidar_trans_stamped.transform.rotation.y = l_m_quat.y();
+            map_lidar_trans_stamped.transform.rotation.z = l_m_quat.z();
+            map_lidar_trans_stamped.transform.rotation.w = l_m_quat.w();
+
+            tf_broadcaster.sendTransform(map_lidar_trans_stamped);
+
+            if(need_transformed_pointcloud&&transformed_cloud!=nullptr)
+            {
+                sensor_msgs::PointCloud2 transformed_cloud_msg;
+                pcl::toROSMsg(*transformed_cloud,transformed_cloud_msg);
+                transformed_cloud_msg.header.frame_id = "map";
+                transformed_cloud_msg.header.stamp = pLidarMsg->header.stamp;
+                pointCloudPublisher.publish(transformed_cloud_msg);
+            }
+            //publish merged pointcloud
+        }
+        else
+        {
+            LOG(ERROR)<<"Localization with"<<this->pLocalizationAlgorithm->getMatchingAlgorithmType()<<" failed!"<<endl;
+        }
     }
     void gps_ahrs_callback(const sensor_msgs::NavSatFixConstPtr& gps_msg, const nav_msgs::OdometryConstPtr& odom);// 同步gps和ahrs.
 };
@@ -84,6 +162,32 @@ void RegistrationLocalizationNode::gps_ahrs_callback(const sensor_msgs::NavSatFi
     gps_ahrs_sync->ahrs_msg = *odom;
     gps_ahrs_sync->ever_init = true;
     gps_ahrs_sync->sync_mutex.unlock();
+
+    {
+        Eigen::Matrix4f gps_ahrs_initial_guess;
+        this->pLocalizationAlgorithm->getInitialPoseWithGPSAndAHRS(gps_ahrs_initial_guess,pMapManager);
+        Eigen::Matrix3f rotmat = gps_ahrs_initial_guess.block(0,0,3,3);
+        Eigen::Quaternionf quat(rotmat);
+        geometry_msgs::PoseStamped gps_ahrs_pose_msg;
+
+        gps_ahrs_pose_msg.header.frame_id="map";//地图坐标系的定位.
+        gps_ahrs_pose_msg.header.stamp = gps_msg->header.stamp;//与gps同步.
+
+        auto& pos = gps_ahrs_pose_msg.pose.position;
+        auto& orient = gps_ahrs_pose_msg.pose.orientation;
+        orient.x = quat.x();
+        orient.y = quat.y();
+        orient.z = quat.z();
+        orient.w = quat.w();
+
+        pos.x = gps_ahrs_initial_guess(0,3);
+        pos.y = gps_ahrs_initial_guess(1,3);
+        pos.z = gps_ahrs_initial_guess(2,3);
+
+        GPS_AHRS_PosePublisher.publish(gps_ahrs_pose_msg);
+        LOG(INFO)<<"GPS AHRS pose published!"<<endl;
+    }
+
     this->pLocalizationAlgorithm->gps_ahrs_callback();
 };
 //void RegistrationLocalizationNode::bindCallbacks(ros::NodeHandle& nh)
@@ -107,6 +211,8 @@ void RegistrationLocalizationNode::gps_ahrs_callback(const sensor_msgs::NavSatFi
 //}
 int main(int argc,char** argv)
 {
+    FLAGS_alsologtostderr = 1;
+    google::InitGoogleLogging("registration_localization_node");
     ros::init(argc,argv,"registration_localization_node");
     std::shared_ptr<ros::NodeHandle> pNH(new ros::NodeHandle);
     RegistrationLocalizationNode node;

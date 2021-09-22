@@ -33,6 +33,10 @@ protected:
     NDT_CORE ndt;
     double ndt_step_size,ndt_resolution;
     bool doNDTMatching();
+    std::string getMatchingAlgorithmType()
+    {
+        return std::string("NDT");
+    }
     bool initLocalizationAlgorithm(ros::NodeHandle& nh);
     void loadMapBuffer(MapCloudT::Ptr buffer)  // 加载点云buffer 有些方法可能需要缓存加速
     {
@@ -45,6 +49,7 @@ public:
                                          MapCloudT::Ptr pmap_current,
                                          Eigen::Matrix4f& pose_guess,
                                          Eigen::Matrix4f& output_pose,
+                                         LidarCloudT::Ptr& output_cloud_,
                                          string initial_guess_type="gps_ahrs"//"gps_ahrs","prev_result","imu_preint"
             );
 };
@@ -70,6 +75,7 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
                                                               MapCloudT::Ptr pmap_current,
                                                               Eigen::Matrix4f& pose_guess,
                                                               Eigen::Matrix4f& output_pose,
+                                                              LidarCloudT::Ptr& output_cloud_,
                                                               string initial_guess_type//"gps_ahrs","result_prev","imu_preint"
         )
 {
@@ -102,6 +108,7 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
     ndt_timer.watch("till input set.");
     //ndt.setInputTarget (pmap_cloud);// Setting point cloud to be aligned to.
     LidarCloudT::Ptr output_cloud (new LidarCloudT);
+    output_cloud_ = output_cloud;
     if(initial_guess_type == "gps_ahrs")
     {
         //ndt.setResolution (3.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
@@ -136,7 +143,7 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
     }
     output_pose = ndt.getFinalTransformation();
     LOG(INFO)<<"NDT Converged. Transformation:"<<ndt.getFinalTransformation()<<endl;
-    LOG(INFO)<<"NDT with initial guess "<<initial_guess_type<<" finished; Iteration times:"<<ndt.getFinalNumIteration()<<endl;
+    LOG(INFO)<<"NDT with initial guess "<<initial_guess_type<<" finished; Iteration times:"<<ndt.getFinalNumIteration()<<endl;    
     return true;
 }
 #endif
