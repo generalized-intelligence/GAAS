@@ -15,7 +15,7 @@
 class RegistrationLocalizationNode
 {
 private:
-    const bool need_transformed_pointcloud = true;
+    const bool need_transformed_pointcloud = false;
 
     std::shared_ptr<LocalizationAlgorithmAbstract> pLocalizationAlgorithm;
     RegistrationMapManager::Ptr pMapManager;
@@ -24,6 +24,7 @@ private:
 
     ros::Subscriber lidarSubscriber;
     ros::Publisher pointCloudPublisher,registrationPosePublisher,GPS_AHRS_PosePublisher;
+
     tf2_ros::TransformBroadcaster tf_broadcaster;
 
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::NavSatFix, nav_msgs::Odometry> MySyncPolicy;
@@ -31,6 +32,8 @@ private:
 
     std::shared_ptr< message_filters::Subscriber<sensor_msgs::NavSatFix> >pGPSsub;
     std::shared_ptr<message_filters::Subscriber<nav_msgs::Odometry> > pAHRSsub;
+
+    float lidar_height_to_gps = 0.0;//TODO: implement this compensation.
 
 
     bool initMapManager(ros::NodeHandle& nh);
@@ -41,7 +44,10 @@ public:
         gps_ahrs_sync = GPS_AHRS_Synchronizer::Ptr(new GPS_AHRS_Synchronizer);
 
         bool use_ndt = false;
-        if(!ros::param::get("use_ndt",use_ndt))
+        double downsample_size = -1;
+        if(! (ros::param::get("use_ndt",use_ndt) && ros::param::get("downsample_size",downsample_size)
+              &&ros::param::get("lidar_height_to_gps",lidar_height_to_gps)
+              ))
         {
             LOG(ERROR)<<"[registration localization] registration method not set in launch file!"<<endl;
         }
@@ -57,7 +63,7 @@ public:
             std::shared_ptr<ICPLocalizationAlgorithm> pICP(new ICPLocalizationAlgorithm);
             pLocalizationAlgorithm = std::static_pointer_cast<LocalizationAlgorithmAbstract>(pICP);
         }
-        pLocalizationAlgorithm->init(nh,this->pMapManager->getCurrentMapCloudBuffer(),gps_ahrs_sync);
+        pLocalizationAlgorithm->init(nh,this->pMapManager->getCurrentMapCloudBuffer(),gps_ahrs_sync,downsample_size);
         //bindCallbacks(nh);
         {//bind callbacks.
             registrationPosePublisher = nh.advertise<geometry_msgs::PoseStamped>("/gaas/localization/registration_pose",1);
@@ -103,6 +109,8 @@ public:
             //publish output pose;
             Eigen::Matrix3f rotmat = output_pose.block(0,0,3,3);
             Eigen::Quaternionf quat(rotmat);
+            LOG(INFO)<<"quat.norm()="<<quat.norm()<<endl;
+
             geometry_msgs::PoseStamped registration_pose_msg;
 
             registration_pose_msg.header.frame_id="map";//地图坐标系的定位.
@@ -124,17 +132,39 @@ public:
 
             timer.watch("till pose published:");
 
+//            //publish tf2 transfrom.
+//            Eigen::Matrix4f lidar_to_map = output_pose.inverse();
+//            Eigen::Matrix3f l_m_rotmat = lidar_to_map.block(0,0,3,3);
+//            Eigen::Quaternionf l_m_quat(l_m_rotmat);
+//            LOG(INFO)<<"l_m_quat.norm()="<<l_m_quat.norm()<<endl;
+
+
+
+//            geometry_msgs::TransformStamped map_lidar_trans_stamped;
+//            map_lidar_trans_stamped.header.frame_id = "lidar";// we've got lidar as the top node of tf tree.
+//            //So when localization is not avail, still we can solve lidar to body.
+//            map_lidar_trans_stamped.child_frame_id = "map";
+
+//            map_lidar_trans_stamped.header.stamp = pLidarMsg->header.stamp;
+//            map_lidar_trans_stamped.transform.translation.x = lidar_to_map(0,3);
+//            map_lidar_trans_stamped.transform.translation.y = lidar_to_map(1,3);
+//            map_lidar_trans_stamped.transform.translation.z = lidar_to_map(2,3);
+//            map_lidar_trans_stamped.transform.rotation.x = l_m_quat.x();
+//            map_lidar_trans_stamped.transform.rotation.y = l_m_quat.y();
+//            map_lidar_trans_stamped.transform.rotation.z = l_m_quat.z();
+//            map_lidar_trans_stamped.transform.rotation.w = l_m_quat.w();
             //publish tf2 transfrom.
-            Eigen::Matrix4f lidar_to_map = output_pose.inverse();
+            Eigen::Matrix4f lidar_to_map = output_pose;
             Eigen::Matrix3f l_m_rotmat = lidar_to_map.block(0,0,3,3);
             Eigen::Quaternionf l_m_quat(l_m_rotmat);
+            LOG(INFO)<<"l_m_quat.norm()="<<l_m_quat.norm()<<endl;
 
 
 
             geometry_msgs::TransformStamped map_lidar_trans_stamped;
-            map_lidar_trans_stamped.header.frame_id = "lidar";// we've got lidar as the top node of tf tree.
+            map_lidar_trans_stamped.header.frame_id = "map";// we've got lidar as the top node of tf tree.
             //So when localization is not avail, still we can solve lidar to body.
-            map_lidar_trans_stamped.child_frame_id = "map";
+            map_lidar_trans_stamped.child_frame_id = "lidar";
 
             map_lidar_trans_stamped.header.stamp = pLidarMsg->header.stamp;
             map_lidar_trans_stamped.transform.translation.x = lidar_to_map(0,3);
@@ -145,13 +175,18 @@ public:
             map_lidar_trans_stamped.transform.rotation.z = l_m_quat.z();
             map_lidar_trans_stamped.transform.rotation.w = l_m_quat.w();
 
+
+//end
+
+
+
             tf_broadcaster.sendTransform(map_lidar_trans_stamped);
 
             if(need_transformed_pointcloud&&transformed_cloud!=nullptr)
             {
                 sensor_msgs::PointCloud2 transformed_cloud_msg;
                 pcl::toROSMsg(*transformed_cloud,transformed_cloud_msg);
-                transformed_cloud_msg.header.frame_id = "map";
+                transformed_cloud_msg.header.frame_id = "lidar";
                 transformed_cloud_msg.header.stamp = pLidarMsg->header.stamp;
                 pointCloudPublisher.publish(transformed_cloud_msg);
             }

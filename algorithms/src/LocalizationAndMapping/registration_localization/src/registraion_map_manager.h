@@ -19,7 +19,8 @@
 
 
 const bool USE_DYNAMIC_CROPBOX = true;
-const double CROP_HALF_RANGE = 80;
+//const double CROP_HALF_RANGE = 80;
+const double CROP_HALF_RANGE = 40;
 class RegistrationMapManager
 {
 private:

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(registration_localization)
 
-#add_compile_options(-std=c++17 -O3)
-#set(CMAKE_BUILD_TYPE RELEASE)
-add_compile_options(-std=c++17 -O0)
-set(CMAKE_BUILD_TYPE DEBUG)
+add_compile_options(-std=c++17 -O3)
+set(CMAKE_BUILD_TYPE RELEASE)
+#add_compile_options(-std=c++17 -O0)
+#set(CMAKE_BUILD_TYPE DEBUG)
 
 
 

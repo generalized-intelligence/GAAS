@@ -77,13 +77,13 @@ bool ICPLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
         loadMapBuffer(pmap_current);
     }
 
-    const float DOWNSAMPLE_SIZE = 0.4;
+
 
     //Downsampling
     LidarCloudT::Ptr cloud_downsampled(new LidarCloudT);
     pcl::VoxelGrid<LidarPointT> sor;
     sor.setInputCloud(pcloud_current);
-    sor.setLeafSize(DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE);
+    sor.setLeafSize(downsample_size, downsample_size, downsample_size);
     sor.filter(*cloud_downsampled);
     pcloud_current = cloud_downsampled;
 
@@ -113,8 +113,15 @@ bool ICPLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
         LOG(INFO)<<"icp with prev initial guess"<<endl;
         icp.align(*output_cloud,pose_guess);
     }
+    else if(initial_guess_type == "imu_preint")
+    {
+        icp.setMaximumIterations (5);  //Setting max number of registration iterations.
+        LOG(INFO)<<"[ICP Matching] icp with imu preint initial guess"<<endl;
+        icp.align(*output_cloud,pose_guess);
+    }
 
-    if(!icp.hasConverged()&&icp.getFitnessScore()>5.0)
+
+    if(!icp.hasConverged()&&icp.getFitnessScore()>10.0)
     {
         LOG(WARNING)<<"ICP with "<<initial_guess_type<<" initial guess failed! Fitness score:"<<icp.getFitnessScore()<<endl;
         return false;

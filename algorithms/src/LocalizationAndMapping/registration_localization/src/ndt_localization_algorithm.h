@@ -42,6 +42,7 @@ protected:
     {
         ScopeTimer load_map_buffer_timer("load_map_buffer_timer");
         this->mapBuffer = buffer;
+        ndt.setInputTarget(mapBuffer);
     }
 public:
 
@@ -91,13 +92,11 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
         loadMapBuffer(pmap_current);
     }
 
-    const float DOWNSAMPLE_SIZE = 0.4;
-
     //Downsampling
     LidarCloudT::Ptr cloud_downsampled(new LidarCloudT);
     pcl::VoxelGrid<LidarPointT> sor;
     sor.setInputCloud(pcloud_current);
-    sor.setLeafSize(DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE);
+    sor.setLeafSize(downsample_size, downsample_size, downsample_size);
     sor.filter(*cloud_downsampled);
     pcloud_current = cloud_downsampled;
 
@@ -135,6 +134,20 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
         ndt.align(*output_cloud,pose_guess);
 #endif
     }
+
+    else if(initial_guess_type == "imu_preint")
+    {
+        ndt.setMaximumIterations (5);  //Setting max number of registration iterations.
+        ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
+        LOG(INFO)<<"ndt with prev ndt initial guess"<<endl;
+#ifdef CUDA_FOUND
+        ndt.align(pose_guess);
+#else
+        ndt.align(*output_cloud,pose_guess);
+#endif
+    }
+
+
 
     if(!ndt.hasConverged())
     {
