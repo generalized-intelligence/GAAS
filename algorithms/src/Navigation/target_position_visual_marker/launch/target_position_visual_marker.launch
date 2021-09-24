@@ -1,4 +1,4 @@
 <launch>
-    <param name="map_path" type="string" value="/home/gi/Documents/HDL_SLAM/airsim_msbuilding/output.pcd"/>
+    <param name="map_path" type="string" value="/home/gi/Downloads/GAAS_contrib_resources/map/airsim_msbuilding/output.pcd"/>
     <node name="target_position_visual_marker" pkg="target_position_visual_marker" type="target_position_visual_marker" output="screen"/>
 </launch>

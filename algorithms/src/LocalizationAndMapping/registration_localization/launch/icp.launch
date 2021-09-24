@@ -14,14 +14,14 @@
 
     <!--icp params-->
     <param name="icp_transformation_epsilon" type="double" value="0.05"/>
-    <param name="icp_resolution" type="double" value="10.0"/>
-    <param name="icp_max_correspondence_distance" value="8.0"/>
-    <param name="icp_euclidean_fitness_epsilon" value="0.5"/>
+    <param name="icp_resolution" type="double" value="1.0"/>
+    <param name="icp_max_correspondence_distance" value="2.0"/>
+    <param name="icp_euclidean_fitness_epsilon" value="0.1"/>
 
     <node name="registration_localization_node" pkg="registration_localization" type="registration_localization_node" output="screen"/>
     <group if="$(arg do_visualization)">
         <param name="do_visualization" type="bool" value="$(arg do_visualization)"/>
-        <param name="map_path" type="string" value="/home/gi/Downloads/GAAS_contrib_resources/map/airsim_msbuilding/output.pcd"/>
+        <!--param name="map_path" type="string" value="/home/gi/Downloads/GAAS_contrib_resources/map/airsim_msbuilding/output.pcd" -->
         <node name="map_publisher_node" pkg="registration_localization" type="map_publisher" output="screen"/>
         <node name="rviz" pkg="rviz" type="rviz" args="-d $(find registration_localization)/launch/registration_localization.rviz" required="false"/>
     </group>

@@ -19,7 +19,7 @@
 
 
 const bool USE_DYNAMIC_CROPBOX = true;
-
+const double CROP_HALF_RANGE = 80;
 class RegistrationMapManager
 {
 private:
@@ -48,8 +48,8 @@ private:
 
         float xmin,ymin,zmin,xmax,ymax,zmax;
         current_map->getXYZMinMax(xmin,ymin,zmin,xmax,ymax,zmax);
-        Eigen::Vector4f min_pt (newCenter[0]-80, newCenter[1]-80,zmin, 1.0f);
-        Eigen::Vector4f max_pt (newCenter[0]+80, newCenter[1]+80,zmax, 1.0f);
+        Eigen::Vector4f min_pt (newCenter[0]-CROP_HALF_RANGE, newCenter[1]-CROP_HALF_RANGE,zmin, 1.0f);
+        Eigen::Vector4f max_pt (newCenter[0]+CROP_HALF_RANGE, newCenter[1]+CROP_HALF_RANGE,zmax, 1.0f);
         box.setMin(min_pt);
         box.setMax(max_pt);
         box.filter(*pMapCropBuffer);
@@ -159,7 +159,7 @@ MapCloudT::Ptr RegistrationMapManager::getCurrentMapCloud(const Eigen::Vector3d&
     const double THRES_NEWCROP = 50;
     if(USE_DYNAMIC_CROPBOX)
     {
-        if(getEuclideanDistance(this->currentCropboxCenterPosition,position)>THRES_NEWCROP)
+        if(getEuclideanDistance2D(this->currentCropboxCenterPosition,position)>THRES_NEWCROP) //calc 2d distance to determine if new map crop is needed.
         {
             this->cropMapWithNewCenter(position);
         }

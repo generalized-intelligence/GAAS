@@ -19,6 +19,12 @@ inline double getEuclideanDistance(Eigen::Vector3d v1,Eigen::Vector3d v2)
 {
     return (v1-v2).norm();
 }
+inline double getEuclideanDistance2D(Eigen::Vector3d v1,Eigen::Vector3d v2)
+{
+    v1[2]=0;
+    v2[2]=0;
+    return getEuclideanDistance(v1,v2);
+}
 
 
 

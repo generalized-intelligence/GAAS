@@ -15,7 +15,7 @@
 class RegistrationLocalizationNode
 {
 private:
-    const bool need_transformed_pointcloud = false;
+    const bool need_transformed_pointcloud = true;
 
     std::shared_ptr<LocalizationAlgorithmAbstract> pLocalizationAlgorithm;
     RegistrationMapManager::Ptr pMapManager;

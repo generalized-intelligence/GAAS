@@ -15,6 +15,7 @@
 
 #include "../../../CommonLibs/gaas_types/typedefs.h"
 #include "../../../CommonLibs/gaas_timer/Timer.h"
+#include "registraion_map_manager.h"
 
 bool loadPCDmap(MapCloudT::Ptr& pmap_cloud)
 {
@@ -45,13 +46,20 @@ int main(int argc,char** argv)
     ros::NodeHandle nh;
     ros::Publisher map_pub = nh.advertise<sensor_msgs::PointCloud2>("/gaas/visualization/localization/ndt_map",1);
     ros::Publisher axes_pub = nh.advertise<geometry_msgs::PoseStamped>("/gaas/visualization/localization/map_axes", 1);
+    RegistrationMapManager rmm;
+    rmm.init(nh);
+
+
 
     MapCloudT::Ptr pmap=nullptr;
-    if(!loadPCDmap(pmap))
-    {
-        LOG(ERROR)<<"Load map failed!"<<endl;
-        return -1;
-    }
+//    if(!loadPCDmap(pmap))
+//    {
+//        LOG(ERROR)<<"Load map failed!"<<endl;
+//        return -1;
+//    }
+    RegistrationMap::Ptr rm;
+    rm = rmm.getCurrentMap();
+    pmap = rm->getMapCloud();
     sensor_msgs::PointCloud2 map_msg;
     pcl::toROSMsg(*pmap,map_msg);
     geometry_msgs::PoseStamped axes_pose;
@@ -80,7 +88,7 @@ int main(int argc,char** argv)
             LOG(INFO)<<"Map published."<<endl;
         }
         //loop_rate.sleep();
-        sleep(1);
+        sleep(4);
     }
 
     return 0;
