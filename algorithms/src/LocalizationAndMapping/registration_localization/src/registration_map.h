@@ -54,7 +54,13 @@ bool RegistrationMap::loadMapFromFile(const std::string &map_path)
 
     pcl::VoxelGrid<LidarPointT> sor;
     sor.setInputCloud(pFullMap);
-    const double DOWNSAMPLE_SIZE = 0.3;
+    double DOWNSAMPLE_SIZE = -1.0;
+    if(!ros::param::get("downsample_size",DOWNSAMPLE_SIZE))
+    {
+        LOG(ERROR)<<"downsample size not set in RegistrationMap::loadMapFromFile()!"<<endl;
+        throw "error!";
+    }
+    LOG(INFO)<<"[registration_map.h] downsample size:"<<DOWNSAMPLE_SIZE<<endl;
     sor.setLeafSize(DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE, DOWNSAMPLE_SIZE);
     sor.filter(*this->pMapCloud);
 

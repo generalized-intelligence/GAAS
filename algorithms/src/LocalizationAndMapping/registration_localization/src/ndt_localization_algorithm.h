@@ -9,9 +9,9 @@
 #include <pcl/registration/ndt.h>
 #include <pcl/filters/voxel_grid.h>
 
-#ifdef CUDA_FOUND  //To use ndt cpu version.
-    #undef CUDA_FOUND
-#endif
+//#ifdef CUDA_FOUND  //To use ndt cpu version.
+//    #undef CUDA_FOUND
+//#endif
 
 #ifdef CUDA_FOUND
 //    #define EIGEN_DONT_VECTORIZE
@@ -35,7 +35,11 @@ protected:
     bool doNDTMatching();
     std::string getMatchingAlgorithmType()
     {
-        return std::string("NDT");
+#ifdef CUDA_FOUND
+    return std::string("NDT GPU");
+#else
+    return std::string("NDT CPU");
+#endif
     }
     bool initLocalizationAlgorithm(ros::NodeHandle& nh);
     void loadMapBuffer(MapCloudT::Ptr buffer)  // 加载点云buffer 有些方法可能需要缓存加速
@@ -91,6 +95,7 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
         }
         loadMapBuffer(pmap_current);
     }
+    auto original_size = pcloud_current->size();
 
     //Downsampling
     LidarCloudT::Ptr cloud_downsampled(new LidarCloudT);
@@ -100,6 +105,7 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
     sor.filter(*cloud_downsampled);
     pcloud_current = cloud_downsampled;
 
+    LOG(INFO)<<"Map size:"<<pmap_current->size()<<"; lidar cloud size:"<<pcloud_current->size()<<";before downsampling size:"<<original_size<<endl;
 
 
     //ndt.setInputTarget(pmap_cloud);
@@ -113,7 +119,7 @@ bool NDTLocalizationAlgorithm::doMatchingWithInitialPoseGuess(LidarCloudT::Ptr p
         //ndt.setResolution (3.0);  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
         //ndt.setStepSize (0.5);
         ndt.setMaximumIterations (10);  //Setting max number of registration iterations.
-        ndt.setTransformationEpsilon (0.01); // Setting maximum step size for More-Thuente line search.
+        ndt.setTransformationEpsilon (0.05); // Setting maximum step size for More-Thuente line search.
         LOG(INFO)<<"ndt with prev ndt initial guess"<<endl;
 #ifdef CUDA_FOUND
         ndt.align(pose_guess);

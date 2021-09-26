@@ -4,7 +4,7 @@
 
 #include <glog/logging.h>
 #include <ros/ros.h>
-#include "registraion_map.h"
+#include "registration_map.h"
 #include <string>
 #include <map>
 #include <unordered_map>
@@ -53,7 +53,9 @@ private:
         Eigen::Vector4f max_pt (newCenter[0]+CROP_HALF_RANGE, newCenter[1]+CROP_HALF_RANGE,zmax, 1.0f);
         box.setMin(min_pt);
         box.setMax(max_pt);
-        box.filter(*pMapCropBuffer);
+        MapCloudT mp_tmp;
+        box.filter(mp_tmp);
+        pcl::copyPointCloud(mp_tmp,*pMapCropBuffer);
         this->map_crop_buffer_mutex.unlock();
     }
 

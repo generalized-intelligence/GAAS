@@ -2,7 +2,7 @@
 #define LOCALIZATION_ALGORITHM_ABSTRACT
 
 #include <ros/ros.h>
-#include "registraion_map_manager.h"
+#include "registration_map_manager.h"
 #include "GPS_AHRS_sync.h"
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>
@@ -30,7 +30,7 @@ protected:
 
     MapCloudT::Ptr mapBuffer = nullptr;
 
-    float downsample_size = -1;
+    double downsample_size = -1;
 
     //imu preint
     bool enable_imu_preint = false;
@@ -56,7 +56,7 @@ public:
     bool getInitialPoseWithGPSAndAHRS(Eigen::Matrix4f& output_pose,RegistrationMapManager::Ptr map_manager_binding);
     bool getInitialPoseGuess(Eigen::Matrix4f& output_pose,RegistrationMapManager::Ptr map_manager_binding);
 
-    virtual bool init(ros::NodeHandle& nh,MapCloudT::Ptr buffer,GPS_AHRS_Synchronizer::Ptr pGPS_AHRS_Sync_in,float downsample_size_in)
+    virtual bool init(ros::NodeHandle& nh,MapCloudT::Ptr buffer,GPS_AHRS_Synchronizer::Ptr pGPS_AHRS_Sync_in,double downsample_size_in)
     {
         //for imu preint
         if(!ros::param::get("enable_imu_preint_initial_guess",enable_imu_preint))
@@ -91,10 +91,14 @@ public:
 
     bool lidar_callback(const sensor_msgs::PointCloud2ConstPtr& pLidarMsg,RegistrationMapManager::Ptr map_manager_binding,Eigen::Matrix4f& output_pose_,LidarCloudT::Ptr& output_cloud)
     {
-        LOG(INFO)<<"[registration_localization] in lidar_callback():"<<endl;
+        LOG(INFO)<<"[registration_localization] in lidar_callback() with algorithm:"<<this->getMatchingAlgorithmType()<<endl;
         //step<1> get init pose estimation.
         bool last_result_is_avail = queryLastResultAvail();
         Eigen::Matrix4f initial_pose,output_pose;
+
+        LidarCloudT::Ptr pInputCloud(new LidarCloudT);
+        pcl::fromROSMsg(*pLidarMsg, *pInputCloud);
+
         if(!last_result_is_avail)
         {
             getInitialPoseWithGPSAndAHRS(initial_pose,map_manager_binding);
@@ -109,13 +113,13 @@ public:
         Eigen::Matrix4f imu_preint_pose_initial_guess;
         if(enable_imu_preint&&get_imu_preint_odometry(pLidarMsg->header.stamp,imu_preint_pose_initial_guess))
         {
-            localization_result_valid = doMatchingWithInitialPoseGuess(currentMapCloud,map_manager_binding->getCurrentMapCloud(initial_pose),imu_preint_pose_initial_guess,output_pose,output_cloud,"imu_preint");
+            localization_result_valid = doMatchingWithInitialPoseGuess(pInputCloud,map_manager_binding->getCurrentMapCloud(initial_pose),imu_preint_pose_initial_guess,output_pose,output_cloud,"imu_preint");
             int counter = 2;
             while(!localization_result_valid&&counter)
             {//retry once since we are using imu_preint result...
                 LOG(WARNING)<<"[ICP Matching] Retry once, do icp for 5 more times due to using inaccurate imu_preint initial guess."<<endl;
                 Eigen::Matrix4f guess = output_pose;
-                localization_result_valid = doMatchingWithInitialPoseGuess(currentMapCloud,map_manager_binding->getCurrentMapCloud(initial_pose),guess,output_pose,output_cloud,"imu_preint");
+                localization_result_valid = doMatchingWithInitialPoseGuess(pInputCloud,map_manager_binding->getCurrentMapCloud(initial_pose),guess,output_pose,output_cloud,"imu_preint");
                 counter--;
             }
         }
@@ -123,11 +127,11 @@ public:
         {
             if(this->localization_ever_init)
             {
-                localization_result_valid = doMatchingWithInitialPoseGuess(currentMapCloud,map_manager_binding->getCurrentMapCloud(initial_pose),initial_pose,output_pose,output_cloud,"prev_result");
+                localization_result_valid = doMatchingWithInitialPoseGuess(pInputCloud,map_manager_binding->getCurrentMapCloud(initial_pose),initial_pose,output_pose,output_cloud,"prev_result");
             }
             else
             {
-                localization_result_valid = doMatchingWithInitialPoseGuess(currentMapCloud,map_manager_binding->getCurrentMapCloud(initial_pose),initial_pose,output_pose,output_cloud,"gps_ahrs");
+                localization_result_valid = doMatchingWithInitialPoseGuess(pInputCloud,map_manager_binding->getCurrentMapCloud(initial_pose),initial_pose,output_pose,output_cloud,"gps_ahrs");
             }
         }
         if(localization_result_valid)

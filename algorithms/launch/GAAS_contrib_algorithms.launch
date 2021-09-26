@@ -1,17 +1,17 @@
 <launch>
   <!-- arg name="gaas_map_path" default="/home/gi/Documents/SCLEGOLOAM_ENV/park_map/output_aligned.pcd" --><!--"/home/gi/Documents/LeGO_LOAM_ENV/obstacle_avoidance_rover_legoloam_map_pcd/pcd/map_global_registered.pcd"-->
-  <arg name="gaas_map_path" default="/home/gi/Documents/HDL_SLAM/airsim_msbuilding/output.pcd"/>
+  <arg name="gaas_map_path" default="/home/gi/Downloads/GAAS_contrib_resources/map/airsim_msbuilding/output.pcd"/>
   <arg name="do_visualization" default="true"/>
   <param name="map_path" type="string" value="$(arg gaas_map_path)"/>
-  <include file="$(find registration_localization)/launch/ndt.launch"/>
-  <!--include file="$(find registration_localization)/launch/icp.launch"-->
+  <!--include file="$(find registration_localization)/launch/ndt.launch"-->
+  <include file="$(find registration_localization)/launch/icp.launch"/>
   <!--include file="$(find icp_lidar_localization)/launch/icp_lidar_localization.launch"-->
   <!--include file="$(find lidar_localization)/launch/ndt_lidar_localization.launch"-->
   <!-- include file="$(find lidar_points_integration)/launch/lidar_points_integration.launch" -->   <!-- for livox + velodyne -->
   <!--include file="$(find downsampling)/launch/downsampling.launch"-->                               <!-- for velodyne only -->
   <include file="$(find imu_preint)/launch/imu_preint.launch"/>
   <include file="$(find vision_lidar_fusion)/launch/vision_lidar_fusion.launch"/>
-  <!--include file="$(find px4_mavros_controller)/launch/px4_mavros_controller.launch" -->
+  <include file="$(find px4_mavros_controller)/launch/px4_mavros_controller.launch"/>
   <include file="$(find global_map_planner)/launch/global_astar_planner_node.launch"/>
   <include file="$(find target_point_navigator)/launch/target_point_navigator.launch"/>
   <include file="$(find obstacle_and_drivable_block_publisher)/launch/dynamic_map_block_generator.launch"/>

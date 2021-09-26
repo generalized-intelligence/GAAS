@@ -15,8 +15,8 @@
     <param name="use_ndt" type="bool" value="true"/>
     <!--ndt params-->
 
-    <param name="ndt_step_size" type="double" value="3.0"/>
-    <param name="ndt_resolution" type="double" value="5.0"/>
+    <param name="ndt_step_size" type="double" value="2.0"/>
+    <param name="ndt_resolution" type="double" value="8.0"/>
     <node name="registration_localization_node" pkg="registration_localization" type="registration_localization_node" output="screen"/>
     <group if="$(arg do_visualization)">
         <param name="do_visualization" type="bool" value="$(arg do_visualization)"/>

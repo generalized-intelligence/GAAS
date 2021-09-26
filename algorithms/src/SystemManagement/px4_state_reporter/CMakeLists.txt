@@ -3,14 +3,14 @@ project(px4_state_reporter)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 #add_compile_options(-std=c++11 -O0)
-add_compile_options(-std=c++11 -O0)
-#add_compile_options(-std=c++17 -O3)
+#add_compile_options(-std=c++11 -O0)
+add_compile_options(-std=c++17 -O3)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-set(CMAKE_BUILD_TYPE DEBUG)
-#set(CMAKE_BUILD_TYPE RELEASE)
+#set(CMAKE_BUILD_TYPE DEBUG)
+set(CMAKE_BUILD_TYPE RELEASE)
 
 
 

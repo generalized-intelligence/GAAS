@@ -1,5 +1,5 @@
 
-#include "registraion_map_manager.h"
+#include "registration_map_manager.h"
 #include "ndt_localization_algorithm.h"
 #include "icp_localization_algorithm.h"
 #include "GPS_AHRS_sync.h"

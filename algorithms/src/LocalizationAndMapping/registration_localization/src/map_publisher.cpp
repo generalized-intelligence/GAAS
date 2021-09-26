@@ -15,7 +15,7 @@
 
 #include "../../../CommonLibs/gaas_types/typedefs.h"
 #include "../../../CommonLibs/gaas_timer/Timer.h"
-#include "registraion_map_manager.h"
+#include "registration_map_manager.h"
 
 bool loadPCDmap(MapCloudT::Ptr& pmap_cloud)
 {

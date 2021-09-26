@@ -2,7 +2,7 @@
 #define SUBMAP_MANAGER_H
 
 #include <unordered_map>
-#include "registraion_map.h"
+#include "registration_map.h"
 //管理多张子地图加载 多张子地图共用一个坐标系 是同一个大地图的不同部分
 struct Submap{
     float x_size_m,y_size_m;
