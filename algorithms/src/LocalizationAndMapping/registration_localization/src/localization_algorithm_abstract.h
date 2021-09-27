@@ -74,6 +74,7 @@ public:
         this->pGPS_AHRS_Sync = pGPS_AHRS_Sync_in;
         this->downsample_size = downsample_size_in;
         this->initLocalizationAlgorithm(nh);
+        LOG(INFO)<<"Localization algorithm initialized!"<<endl;
     }
 
     bool get_imu_preint_odometry(const ros::Time& cloud_stamp, Eigen::Matrix4f& output_pose);

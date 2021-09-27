@@ -9,9 +9,9 @@
 #include <pcl/registration/ndt.h>
 #include <pcl/filters/voxel_grid.h>
 
-//#ifdef CUDA_FOUND  //To use ndt cpu version.
-//    #undef CUDA_FOUND
-//#endif
+#ifdef CUDA_FOUND  //To use ndt cpu version.
+    #undef CUDA_FOUND
+#endif
 
 #ifdef CUDA_FOUND
 //    #define EIGEN_DONT_VECTORIZE

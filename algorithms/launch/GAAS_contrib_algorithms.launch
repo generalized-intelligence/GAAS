@@ -3,8 +3,8 @@
   <arg name="gaas_map_path" default="/home/gi/Downloads/GAAS_contrib_resources/map/airsim_msbuilding/output.pcd"/>
   <arg name="do_visualization" default="true"/>
   <param name="map_path" type="string" value="$(arg gaas_map_path)"/>
-  <!--include file="$(find registration_localization)/launch/ndt.launch"-->
-  <include file="$(find registration_localization)/launch/icp.launch"/>
+  <include file="$(find registration_localization)/launch/ndt.launch"/>
+  <!--include file="$(find registration_localization)/launch/icp.launch"-->
   <!--include file="$(find icp_lidar_localization)/launch/icp_lidar_localization.launch"-->
   <!--include file="$(find lidar_localization)/launch/ndt_lidar_localization.launch"-->
   <!-- include file="$(find lidar_points_integration)/launch/lidar_points_integration.launch" -->   <!-- for livox + velodyne -->
