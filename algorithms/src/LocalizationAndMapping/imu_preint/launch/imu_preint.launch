@@ -2,6 +2,6 @@
    <arg name="do_visualization" value="true"/>
    <param name="imu_preint_result_visualization" type="bool" value="$(arg do_visualization)" />
    <param name="imu_lidar_extrinsic_path" type="string" value="$(find imu_preint)/config/imu_extrinsic.yaml"/>
-   <param name="imu_topic_name" type="string" value="/external_imu"/>
+   <param name="imu_topic_name" type="string" value="/mavros/imu/data"/>
    <node name="imu_preint_node" pkg="imu_preint" type="imu_preint_node" output="screen"/>
 </launch>

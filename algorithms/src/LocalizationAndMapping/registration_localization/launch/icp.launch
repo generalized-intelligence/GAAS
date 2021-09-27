@@ -1,0 +1,30 @@
+<launch>
+    <arg name="do_visualization" value="true"/>
+    <arg name="enable_imu_preint_initial_guess" value="true"/>
+
+
+    <param name="active_map_name" type="string" value="airsim_msbuilding"/>
+    <param name="map_config_file_path" type="string" value="/home/gi/GAAS/config/maps_config_sim.yaml"/>
+
+    <param name="lidar_topic_name" type="string" value="/velodyne_points2"/>
+    <param name="ndt_result_visualization" type="bool" value="$(arg do_visualization)" />
+    <param name="lidar_height_to_gps" type="double" value="0.14"/>
+    <param name="downsample_size" type="double" value="0.7"/>
+    <param name="enable_imu_preint_initial_guess" type="bool" value="$(arg enable_imu_preint_initial_guess)"/>
+
+    <param name="use_ndt" type="bool" value="false"/>
+
+    <!--icp params-->
+    <param name="icp_transformation_epsilon" type="double" value="2.0"/>
+    <param name="icp_resolution" type="double" value="10.0"/>
+    <param name="icp_max_correspondence_distance" type="double" value="8.0"/>
+    <param name="icp_euclidean_fitness_epsilon" type="double" value="0.3"/>
+
+    <node name="registration_localization_node" pkg="registration_localization" type="registration_localization_node" output="screen"/>
+    <group if="$(arg do_visualization)">
+        <param name="do_visualization" type="bool" value="$(arg do_visualization)"/>
+        <!--param name="map_path" type="string" value="/home/gi/Downloads/GAAS_contrib_resources/map/airsim_msbuilding/output.pcd" -->
+        <node name="map_publisher_node" pkg="registration_localization" type="map_publisher" output="screen"/>
+        <node name="rviz" pkg="rviz" type="rviz" args="-d $(find registration_localization)/launch/registration_localization.rviz" required="false"/>
+    </group>
+</launch>

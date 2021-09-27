@@ -1,0 +1,5 @@
+<launch>
+    <param name="active_map_name" type="string" value="airsim_msbuilding"/>
+    <param name="map_config_file_path" type="string" value="/home/gi/GAAS/config/maps_config_sim.yaml"/>
+    <node name="map_manager_test_node" pkg="registration_localization" type="map_manager_test" output="screen" launch-prefix="gdb --args "/>
+</launch>

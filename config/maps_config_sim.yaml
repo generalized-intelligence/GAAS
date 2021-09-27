@@ -1,0 +1,12 @@
+%YAML:1.0
+---
+Maps:
+    - name: "airsim_msbuilding"
+      path: "/home/gi/Downloads/GAAS_contrib_resources/map/airsim_msbuilding/output.pcd"
+    
+    - name: "gazebo_park"
+      path: "/home/gi/Downloads/GAAS_contrib_resources/map/park_map/output_aligned.pcd"
+
+#Lidar Extrinsic
+#Lidar Intrinsic (FOV,Cloud density)
+

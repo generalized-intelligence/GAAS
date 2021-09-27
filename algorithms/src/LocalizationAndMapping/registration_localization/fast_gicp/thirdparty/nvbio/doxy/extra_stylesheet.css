@@ -1,0 +1,441 @@
+/******************************************************************************
+ *  General
+ *****************************************************************************/
+
+body, table, div, p, dl {
+		font: 12px/22px arial,sans-serif;
+}
+
+body {
+        background-color: #EEE;
+        color: black;
+        margin: 0;
+}
+
+/******************************************************************************
+ *  Page width
+ *****************************************************************************/
+
+div.contents {
+        width: 760px;
+        margin-left: auto;
+        margin-right: auto;
+		margin-top: 10px;
+        padding-left: 60px;
+        padding-right: 60px;
+        padding-bottom: 20px;
+        background-color: white;
+        border-radius: 8px;
+		border: 1px solid #AAA;
+}
+
+div.contents p:first-of-type {
+		color: #666666;
+}
+
+div.textblock p:first-of-type {
+		color: #666666;
+}
+
+div.header {
+        width: 760px;
+        margin-left: auto;
+        margin-right: auto;
+		margin-top: 10px;
+        padding-left: 60px;
+        padding-right: 60px;
+		background-image: none;
+        background-color: white;
+        border-radius: 8px;
+		border: 1px solid #AAA;
+}
+
+#top {
+        width: 880px;
+        margin-left: auto;
+        margin-right: auto;
+}
+
+#MSearchBox {
+        margin-top: 6px;
+        margin-left: 330px;
+		right: auto;
+}
+
+address.footer {
+        width: 880px;
+        margin-left: auto;
+        margin-right: auto;
+}
+
+
+
+/******************************************************************************
+ *  Navigation bar
+ *****************************************************************************/
+
+
+#projectname {
+		font: bold 300% "courier new",courier,monospace;
+}
+
+div.headertitle {
+		padding: 5px 5px 0px 0px;
+}
+
+div.title {
+		color: #2B4068;
+		padding-top: 8px;
+		padding-bottom: 8px;
+		font: bold 115% "courier new",courier,monospace;
+		padding-left: 40px;
+		text-indent: -40px;
+}
+
+#navrow1 {
+		border-top: 1px solid #7092BE;
+}
+
+
+#titlearea {
+		border-bottom: none;
+}
+
+.tablist li {
+		line-height: 30px;
+		background-image: url('tab_b_alt.png');
+}
+
+.tablist a, .navpath li.navelem a, .tablist li.current a, .tablist a:hover {
+		text-shadow: none;
+}
+
+.navpath li.navelem a {
+		color: white;
+}
+
+.navpath ul {
+		background-image: url('tab_a.png');
+		border: none;
+}
+
+li.navelem {
+		padding: 0 20px;
+		font-style:italic;
+}
+
+.tabs {
+    	font-size: 12px;
+}
+
+.tabs2, .tabs3, .tabs4 {
+    	font-size: 11px;
+}
+
+.tabs, .tabs2, .tabs3, .tabs4 {
+		border-right: 1px solid #7092BE;
+		border-left: 1px solid #7092BE;
+		background-image: url('tab_b_alt.png');
+}
+
+
+/******************************************************************************
+ *  TestFooter
+ *****************************************************************************/
+
+hr.footer {
+        display: none;
+}
+
+.footer {
+        background-color: #EEE;
+}
+
+/******************************************************************************
+ *  Text content
+ *****************************************************************************/
+
+.contents a {
+		color: #5675B2;
+}
+
+.contents a:visited {
+		color: #5675B2;
+}
+
+h2 {
+		margin-top: 30px;
+		margin-bottom: 0px;
+		margin-left: 40px;
+        font-weight: bold;
+		font-size: 110%;
+		color: #2B4068;
+}
+
+h1, h2.groupheader, tr.heading h2 {
+		margin-left: -10px;
+		margin-top: 30px;
+		margin-bottom: 10px;
+		padding-left: 8px;
+		padding-top: 6px;
+		padding-bottom: 4px;
+		font: bold 110% "courier new",courier,monospace;
+		color: white;
+		background-image: url('tab_a.png');
+		background-color: white;
+		border-top: none;
+		border-bottom: none;
+		border-radius: 8px;
+		background-repeat: repeat-x;
+		background-position: 0 -5px;
+		width: 101%;
+}
+
+
+div.textblock {
+		margin-top: 20px;
+}
+
+
+p.startli, p.startdd, p.starttd {
+		margin-top: 1em;
+		margin-bottom: 1em;
+}
+
+/** Workaround where image in brief class description creates unwanted "." caption */
+.caption {
+		display: none;
+}
+
+.centercaption {
+		font-weight: bold;
+		font-size: 80%;
+		text-align: center;
+}
+
+dt {
+		font-style: italic;
+}
+
+.memproto, dl.reflist dt {
+		padding-top: 20px;
+		border-top: 2px solid #888;
+		border-left: 2px solid #888;
+		border-right: 2px solid #888;
+		border-bottom: 1px solid #ECECEC;
+		background-image: none;
+		background-color: #FAFAFB;
+		text-shadow: none;
+		box-shadow: 3px 3px 30px rgba(0, 0, 0, 0.05);
+}
+
+div.memdoc {
+		padding-bottom: 20px;
+		border-bottom: 2px solid #888;
+		border-left: 2px solid #888;
+		border-right: 2px solid #888;
+		background-image: none;
+		background-color: #FFF;
+		box-shadow: 3px 3px 30px rgba(0, 0, 0, 0.05);
+}
+
+div.memdoc p {
+		margin-left: 40px;
+		color: #666666;
+}
+
+div.memdoc dt {
+		color: black;
+}
+
+div.toc {
+		box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.15);
+		margin: 10px -10px 40px 20px;
+		width: 225px;
+}
+
+/** Detailed class name and template params */
+div.textblock h3 {
+		font: 11px/16px "courier new",courier,monospace;		
+		color: cadetblue;
+		white-space: pre-wrap;
+		margin-bottom: 40px;
+}
+
+table.memname tbody tr:first-child td:nth-child(2) {
+		padding-top: 50px;
+}
+
+table.memname tbody tr td {
+}
+
+table.memname tbody tr td.paramtype {
+		padding-left: 40px;
+}
+
+table.memname tbody tr td.memname {
+		position: absolute;
+		width: 760px;
+}
+
+dl.section.user b {
+		color: #222;
+}
+
+dl.section.user a b {
+		color: #5675B2;
+}
+
+dl.section.user a:visited b {
+		color: #5675B2;
+}
+
+dl.section.user dd {
+		margin-right: 40px;
+		color: #666666;
+}
+
+/******************************************************************************
+ *  Class/namespace indices 
+ *****************************************************************************/
+
+.directory tr.even {
+		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+		border-top: 1px solid rgba(0, 0, 0, 0.05);
+		background-color: white;
+}
+
+td.entry {
+		padding-top: 3px;
+}
+
+
+/******************************************************************************
+ * Code syntax highlighting
+ *****************************************************************************/
+
+div.line {
+		line-height: normal;
+		font-size: 11px;
+}
+
+span.comment {
+		color: green;
+}
+
+span.preprocessor, span.keyword, span.keywordflow, span.keywordtype {
+		color: darkred;
+        font-weight: bold;
+}
+
+a.code, a.code:visited {
+		color: #4665A2;
+		font-weight: bold;
+}
+
+div.fragment {
+		color: black;
+		border-color: #DDD;
+		padding: 14px 14px 14px 14px;
+		margin-top: 20px;
+		margin-bottom: 20px;
+		background-color: white;
+		border-radius: 8px 8px 8px 8px;
+		box-shadow: 3px 3px 20px rgba(0, 0, 0, 0.04);
+		border-style: dashed;
+}
+
+
+
+
+/******************************************************************************
+ * Brief member descriptions 
+ *****************************************************************************/
+
+.mdescLeft, .mdescRight, .memItemLeft, .memItemRight, .memTemplItemLeft, .memTemplItemRight, .memTemplParams {
+		background-color: white;
+}
+
+.directory td.desc {
+		padding-bottom: 1px;
+}
+
+.params, .paramname, .retval, .paramname {
+		vertical-align: top;
+		padding-right: 8px;
+}
+
+dl.tparams, dl.params {
+		color: black;
+}
+
+div.memitem {
+		margin-bottom: 40px;
+		margin-top: 40px;
+}
+
+.memTemplParams, td.memTemplItemLeft, td.memItemLeft {
+		padding-left: 20px;
+		font-family: "courier new",courier,monospace;
+		font-size: 85%;
+}
+
+.memTemplParams {
+		color: cadetblue;
+		white-space: normal;
+}
+
+td.memTemplItemRight, td.memItemRight {
+		vertical-align: top;
+		font-family: "courier new",courier,monospace;
+}
+
+td.memItemRight a.el:first-of-type, td.memTemplItemRight a.el:first-of-type {
+		color: darkGoldenrod;
+}
+
+td.memTemplItemLeft, td.memItemLeft {
+		color: cadetblue;
+}
+
+div.groupHeader {
+		margin-left: 10px;
+		margin-bottom: 12px;
+		font-style:italic;
+}
+
+td.memSeparator {
+		border-bottom: none;
+		border-top: 1px dashed #999;
+        line-height: 8px;
+}
+
+td.mdescLeft, td.mdescRight {
+		padding-top: 10px;
+		padding-bottom: 20px;
+}
+
+td.mdescLeft{
+		color: #666666;
+}
+
+td.mdescRight {
+		color: #666666;
+}
+
+td.memname, td.paramtype, div.memtemplate {
+		font-family: "courier new",courier,monospace;
+}
+
+.memtemplate {
+		padding-bottom: 10px;
+		line-height: 180%;
+		font-size: 85%;
+		color: cadetblue;
+}
+
+td.paramname {
+		font-family: "courier new",courier,monospace;
+		font-weight: bold;
+		color: darkred;
+}

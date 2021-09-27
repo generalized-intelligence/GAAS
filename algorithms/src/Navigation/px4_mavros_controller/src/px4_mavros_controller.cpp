@@ -27,7 +27,6 @@
 #include <mavros_msgs/CommandTOL.h>
 #include <mavros_msgs/SetMode.h>
 
-#include "../../../LocalizationAndMapping/lidar_localization/src/ndt_algo.h" // 引用gps处理struct MapGPSInfo.
 
 using std::cout;
 using std::endl;

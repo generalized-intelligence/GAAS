@@ -1,0 +1,14 @@
+addsources(
+bwt.h
+fmindex_device.h
+fmindex.h
+fmindex_inl.h
+paged_text.cpp
+paged_text.h
+paged_text_inl.h
+rank_dictionary.h
+rank_dictionary_inl.h
+ssa.h
+ssa_inl.h
+backtrack.h
+)

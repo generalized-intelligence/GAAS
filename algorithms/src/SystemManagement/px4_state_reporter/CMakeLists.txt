@@ -3,18 +3,17 @@ project(px4_state_reporter)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 #add_compile_options(-std=c++11 -O0)
-add_compile_options(-std=c++11 -O0)
-#add_compile_options(-std=c++17 -O3)
+#add_compile_options(-std=c++11 -O0)
+add_compile_options(-std=c++17 -O3)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-set(CMAKE_BUILD_TYPE DEBUG)
-#set(CMAKE_BUILD_TYPE RELEASE)
+#set(CMAKE_BUILD_TYPE DEBUG)
+set(CMAKE_BUILD_TYPE RELEASE)
 
 
 
-catkin_package()
 find_package(OpenCV 3.4.5 REQUIRED)
 find_package(PCL 1.8 REQUIRED)
 find_package(Glog REQUIRED)
@@ -35,6 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
   mavros_msgs
   gaas_msgs
 )
+catkin_package()
 include_directories(
         ${catkin_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}

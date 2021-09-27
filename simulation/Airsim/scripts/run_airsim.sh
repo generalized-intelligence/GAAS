@@ -21,7 +21,7 @@
 
 
 # session name: init
-sudo nvidia-smi --power-limit=90
+#sudo nvidia-smi --power-limit=90
 tmux new -s init -d
 tmux neww -n processes "(roscore)"
 tmux neww -n processes "(cd ~/Downloads/Airsim/MSBuild2018/LinuxNoEditor && ./MSBuild2018.sh );sleep 10000"

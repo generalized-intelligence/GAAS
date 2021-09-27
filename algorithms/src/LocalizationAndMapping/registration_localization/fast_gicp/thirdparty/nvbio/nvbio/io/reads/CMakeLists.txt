@@ -1,0 +1,13 @@
+addsources(
+bam.cpp
+bam.h
+reads.cpp
+reads_fastq.cpp
+reads_fastq.h
+reads_txt.cpp
+reads_txt.h
+reads.h
+reads_priv.h
+sam.cpp
+sam.h
+)

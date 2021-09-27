@@ -6,7 +6,7 @@
    <param name="icp_result_visualization" type="bool" value="$(arg do_visualization)" />
    <param name="lidar_height_to_gps" type="double" value="0.14"/>
    <param name="icp_downsample_size" type="double" value="0.5"/>
-
+   <param name="map_path" type="string" value="/home/gi/Downloads/GAAS_contrib_resources/map/airsim_msbuilding/output.pcd"/>
    <!--icp params-->
 
    <param name="icp_transformation_epsilon" type="double" value="0.05"/>
