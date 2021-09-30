@@ -1,5 +1,5 @@
 
-#include "registration_map_manager.h"
+#include "../../../CommonLibs/gaas_map/registration_map_manager.h"
 #include "ndt_localization_algorithm.h"
 #include "icp_localization_algorithm.h"
 #include "GPS_AHRS_sync.h"

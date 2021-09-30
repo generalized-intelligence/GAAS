@@ -1,8 +1,8 @@
 #ifndef REGISTRATION_MAP_H_FILE
 #define REGISTRATION_MAP_H_FILE
 
-#include "../../../CommonLibs/gaas_types/typedefs.h"
-#include "../../../CommonLibs/gaas_location/gps_info.h"
+#include "../gaas_types/typedefs.h"
+#include "../gaas_location/gps_info.h"
 #include "opencv2/core/persistence.hpp"
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/common.h>

@@ -10,8 +10,8 @@
 #include <unordered_map>
 #include <memory>
 #include <mutex>
-#include "../../../CommonLibs/gaas_timer/Timer.h"
-#include "../../../CommonLibs/gaas_location/geometry.h"
+#include "../gaas_timer/Timer.h"
+#include "../gaas_location/geometry.h"
 
 //#include "submap_manager.h"
 #include "pcl/filters/crop_box.h"

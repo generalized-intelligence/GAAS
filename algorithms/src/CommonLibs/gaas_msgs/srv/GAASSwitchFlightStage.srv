@@ -1,0 +1,6 @@
+std_msgs/Header header
+std_msgs/Int32 new_mode
+std_msgs/String description
+---
+bool success
+

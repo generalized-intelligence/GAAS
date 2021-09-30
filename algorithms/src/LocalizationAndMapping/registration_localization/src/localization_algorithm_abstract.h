@@ -2,7 +2,7 @@
 #define LOCALIZATION_ALGORITHM_ABSTRACT
 
 #include <ros/ros.h>
-#include "registration_map_manager.h"
+#include "../../../CommonLibs/gaas_map/registration_map_manager.h"
 #include "GPS_AHRS_sync.h"
 #include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Quaternion.h>

@@ -23,7 +23,7 @@
 # session name: init
 #sudo nvidia-smi --power-limit=90
 tmux new -s init -d
-tmux neww -n processes "(roscore)"
+tmux neww -n processes "(roscore);sleep 10000"
 tmux neww -n processes "(cd ~/Downloads/Airsim/MSBuild2018/LinuxNoEditor && ./MSBuild2018.sh );sleep 10000"
 tmux neww -n processes "(cd ~/Downloads/Airsim/AirSim/PX4/PX4-Autopilot && make px4_sitl_default none_iris)"
 tmux neww -n processes "(sleep 5 && roslaunch mavros px4_airsim.launch;sleep 10000)"

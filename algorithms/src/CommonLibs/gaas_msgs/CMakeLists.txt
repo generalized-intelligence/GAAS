@@ -87,6 +87,7 @@ add_message_files(
 add_service_files(
     FILES
     GAASGetAStarPath.srv
+    GAASSwitchFlightStage.srv
 #   Service1.srv
 #   Service2.srv
 )
