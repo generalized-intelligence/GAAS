@@ -32,6 +32,7 @@ include_directories(
         ${catkin_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}
         ${PCL_INCLUDE_DIRS}
+        ${OPENCV_INCLUDE_DIRECTORIES}
 )
 catkin_package()
 set(REQUIRED_LIBS

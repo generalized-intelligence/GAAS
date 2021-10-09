@@ -11,8 +11,8 @@ class GAASFlightStatusT:public JSONSerializableAbstract//用于和地面同步�
 {
 public:
     string current_map_name;
-    FlightStageT current_mode = FlightStage::IDLE_STAGE;
-    LocationT currentLocation,TargetLocation;
+    FlightStageT current_mode = FlightStage::NOT_INITIALIZED_STAGE;
+    LocationT currentLocation,targetLocation;
 
 
     void initFlightStatus(const string& curr_map_name,const FlightStageT& curr_stage,
