@@ -203,3 +203,7 @@ Check out simulation/README.md to get more details of simulation env setup.
 (22). Multiple Spinning Lidar Support --Done.
 
 (23). Airsim Simulation Env Support --Done.
+
+## Current status:
+
+Adding logics for flight stage manager module. Including flight stage transfer service clients(triggered by mission config file) and servers(including localization module, flight control commander module and target navigation module.) 
